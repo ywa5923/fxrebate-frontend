@@ -11,7 +11,11 @@ export function RatingComponent({ value = 0, onChange }: RatingComponentProps) {
   const [rating, setRating] = useState<number>(value);
   const stars = 5;
 
- 
+  // ✅ Sync state when `value` changes (important for table rows)
+  useEffect(() => {
+    setRating(value);
+  }, [value]);
+
   const handleRatingChange = (val: number[]) => {
     setRating(val[0]);
     onChange?.(val[0]);
@@ -25,7 +29,7 @@ export function RatingComponent({ value = 0, onChange }: RatingComponentProps) {
         max={stars}
         step={0.5}
         value={[rating]}
-        //onValueChange={handleRatingChange}
+      // onValueChange={handleRatingChange} //  Ensure slider updates rating
       >
         {Array.from({ length: stars }).map((_, index) => {
           const isHalf = rating > index && rating < index + 1;
