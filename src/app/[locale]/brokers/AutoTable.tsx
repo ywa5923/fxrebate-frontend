@@ -208,8 +208,8 @@ export function AutoTable<TData, TValue>({
                  }else if(ratingOptions.includes(cell.column.columnDef.accessorKey)){
                  
                   let cellValue=parseFloat(cell.getValue() as string);
-                 
-                 
+                 if(cellValue!=0)
+                 console.log("=======================",cellValue)
                   return(<TableCell key={cell.id} className="text-center" > 
                         <RatingComponent 
                         value={cellValue} 

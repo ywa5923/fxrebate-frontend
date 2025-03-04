@@ -1,6 +1,6 @@
 import { FiStar } from "react-icons/fi";
 import * as Slider from "@radix-ui/react-slider";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type RatingComponentProps = {
   value?: number;
@@ -11,6 +11,7 @@ export function RatingComponent({ value = 0, onChange }: RatingComponentProps) {
   const [rating, setRating] = useState<number>(value);
   const stars = 5;
 
+ 
   const handleRatingChange = (val: number[]) => {
     setRating(val[0]);
     onChange?.(val[0]);

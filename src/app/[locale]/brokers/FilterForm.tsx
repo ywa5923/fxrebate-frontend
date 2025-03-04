@@ -54,7 +54,7 @@ export function FilterForm({ filters }: { filters: FilterField[] }) {
         const newParams = { ...params }; // Ensure a new object reference
         return newParams;
       });
-  },[searchParams]);
+  },[]);
 
 
     return (
@@ -69,7 +69,7 @@ export function FilterForm({ filters }: { filters: FilterField[] }) {
 
                // console.log(`Rendering CustomSelectBox for ${filter.field}:`, selected);
                 return (
-                    <CustomSelectBox filter={filter} selected={selected} key={filter.field}  />
+                    <CustomSelectBox filter={filter}  key={filter.field}  />
                 )
             })}
         </>
