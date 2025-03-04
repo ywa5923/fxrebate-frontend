@@ -4,6 +4,8 @@ import { BASE_URL } from "@/constants";
 import { buildBrokerUrl } from "@/lib/buildBrokerUrl";
 import { BrokersSearchParams } from "@/types";
 import { BrokerOptions } from "@/types";
+import { AutoTable } from "./AutoTable";
+import Pagination from "./Paginations";
 export const dynamic = "force-dynamic";
 
 type Params = { locale: string };
@@ -31,21 +33,23 @@ export default async function Brokers({
   const ratingOptionsSlugs=Object.keys(ratingOptions);
 
   const columns = {...defaultLoadedColumns,...dynamicColumns };
-   
-    
+//   <TranslationProvider translations={t}>
+//   <MyComponent />
+// </TranslationProvider>
  
-
-  //console.log("ferfergreg",dynamicColumns);
-
-  console.log("translations", t.main_header);
-  console.log("==================brokers", totalPages);
   return (
-    <>
-      Start zustand11
-      <TranslationProvider translations={t}>
-        <MyComponent />
-      </TranslationProvider>
-    </>
+    <div className="container mx-auto py-10">
+    <AutoTable
+      data={data}
+      columnNames={columns}
+      filters={filter_options}
+      defaultLoadedColumns={defaultLoadedColumns}
+      allowSortingOptions={allowSortingOptions}
+      booleanOptions={booleanOptionsSlugs}
+      ratingOptions={ratingOptionsSlugs}
+    />
+    <Pagination totalPages={totalPages} />
+  </div>
   );
 }
 
