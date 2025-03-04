@@ -11,7 +11,6 @@ export function RatingComponent({ value = 0, onChange }: RatingComponentProps) {
   const [rating, setRating] = useState<number>(value);
   const stars = 5;
 
-  // ✅ Sync state when `value` changes (important for table rows)
   useEffect(() => {
     setRating(value);
   }, [value]);
