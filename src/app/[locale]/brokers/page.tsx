@@ -1,5 +1,5 @@
 import MyComponent from "@/components/MyComponent";
-import { TranslationProvider } from "@/components/providers/translations";
+import { TranslationProvider } from "@/providers/translations";
 import { BASE_URL } from "@/constants";
 import { buildBrokerUrl } from "@/lib/buildBrokerUrl";
 import { BrokersSearchParams } from "@/types";
@@ -7,6 +7,7 @@ import { BrokerOptions } from "@/types";
 import { AutoTable } from "./AutoTable";
 import Pagination from "./Paginations";
 export const dynamic = "force-dynamic";
+import { cookies } from 'next/headers';
 
 type Params = { locale: string };
 
@@ -23,9 +24,20 @@ export default async function Brokers({
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const locale = resolvedParams.locale;
 
-  const t = await getTranslations(locale);
+  console.log("country resolvedSearchParams",resolvedSearchParams.countryCode);
+
+  const cookieStore = await cookies();
+  
+  // Retrieve the 'countryCode' cookie value
+  const countryCode = cookieStore.get('countryCode')?.value || 'default';
+
+  console.log('xxxxxxxxCountry code from cookie:', countryCode);
+
+  //const t = await getTranslations(locale);
   const [data, totalPages] = await getBrokers( locale, resolvedSearchParams);
   const [dynamicColumns,defaultLoadedColumns,allowSortingOptions,booleanOptions,ratingOptions ]= await getDynamicOptions(locale);
+
+  console.log(dynamicColumns,"dynamicColumns")
   let filter_options = await getFilters(locale);
  
   const booleanOptionsSlugs=Object.keys(booleanOptions);

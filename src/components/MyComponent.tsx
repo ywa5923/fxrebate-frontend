@@ -1,13 +1,13 @@
 "use client";
 import React from 'react'
-import { useTranslation } from '@/components/providers/translations'
-import { Translations } from '@/components/providers/translations';
+import { useTranslation } from '@/providers/translations'
+import { Translations } from '@/providers/translations';
 
 const MyComponent = () => {
-  const t:Translations = useTranslation();
+  //const t:Translations = useTranslation();
 
   return (
-    <div>{t.main_header}</div>
+    <div>{}</div>
   )
 }
 

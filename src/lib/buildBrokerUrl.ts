@@ -5,7 +5,7 @@ export function buildBrokerUrl(locale: string, searchParams: BrokersSearchParams
 
     // Destructure the parameters with default values
     const {
-        brokerColumns = '',
+       columns = '',
         page = 1,
         sortBy = '',
         sortOrder = '',
@@ -28,8 +28,8 @@ export function buildBrokerUrl(locale: string, searchParams: BrokersSearchParams
     let url = `${BASE_URL}/brokers?language[eq]=${locale}&page=${page}`;
 
     // Append columns filter if specified
-    if (brokerColumns) {
-        url += `&columns[in]=${brokerColumns}`;
+    if (columns) {
+        url += `&columns[in]=${columns}`;
     }
     // Add sorting if both sortBy and sortOrder are present
     if (sortBy && sortOrder) {

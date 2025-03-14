@@ -70,14 +70,7 @@ export default function ColumnsSelector<TData>({
       setCheckedColumns(columns.split(","))
      }
     },[])
-    // let tableColumns:ColumnDef<TData>[]=table
-    //   .getAllColumns()
-    //   .filter(
-    //     (column) =>
-    //       typeof column.accessorFn !== "undefined" && column.getCanHide()
-    //   );
-
-   //console.log("table columns",tableColumns);
+   
    
   return (
     <>
