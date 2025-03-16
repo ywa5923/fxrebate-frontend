@@ -1,11 +1,17 @@
 import { BASE_URL } from '@/constants';
 import { BrokersSearchParams } from '@/types';
 
-export function buildBrokerUrl(locale: string, searchParams: BrokersSearchParams={}) {
+export function buildBrokerUrl(locale: string, zone:string,searchParams: BrokersSearchParams) {
+
+     // Initialize the base URL
+     let url = `${BASE_URL}/brokers?language[eq]=${locale}&page=1&zone[eq]=${zone}`;
+
+    if(Object.keys(searchParams).length === 0)
+        return url;
 
     // Destructure the parameters with default values
     const {
-       columns = '',
+        columns = '',
         page = 1,
         sortBy = '',
         sortOrder = '',
@@ -24,8 +30,8 @@ export function buildBrokerUrl(locale: string, searchParams: BrokersSearchParams
         filter_mobile = '',
     } = searchParams ;
 
-    // Initialize the base URL
-    let url = `${BASE_URL}/brokers?language[eq]=${locale}&page=${page}`;
+    
+
 
     // Append columns filter if specified
     if (columns) {
@@ -38,7 +44,7 @@ export function buildBrokerUrl(locale: string, searchParams: BrokersSearchParams
     }
 
     // Dynamically add filters if they exist
-    const InFilters: Omit<BrokersSearchParams, 'brokerColumns' | 'page' | 'sortBy' | 'sortOrder' |'filter_min_deposit'>= {
+    const InFilters: Omit<BrokersSearchParams, 'columns' | 'page' | 'sortBy' | 'sortOrder' |'filter_min_deposit'|'country'>= {
         filter_offices,
         filter_headquarters,
         filter_withdrawal_methods,

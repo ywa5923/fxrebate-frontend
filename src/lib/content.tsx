@@ -23,14 +23,14 @@ type NavItem = {
 export const navItems: NavItem[] = [
     {
         id: 1,
-        name: 'Home',
+        name: 'home',
         href: '/',
         lightIcon: './assets/icons/homeIcon-light.svg',
         darkIcon: './assets/icons/homeIcon-dark.svg',
     },
     {
         id: generateRandomId(),
-        name: 'Brokers',
+        name: '_brokers_',
         subItems: [
             {
                 id: generateRandomId(),

@@ -20,7 +20,6 @@ import {TriangleDownIcon} from "@radix-ui/react-icons";
 
 export function ModalFilter({filters}:{filters:any}) {
 
-console.log(filters)
   return (
    
    

@@ -7,7 +7,7 @@ import { BrokerOptions } from "@/types";
 import { AutoTable } from "./AutoTable";
 import Pagination from "./Paginations";
 export const dynamic = "force-dynamic";
-import { cookies } from 'next/headers';
+import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 
 type Params = { locale: string };
 
@@ -24,20 +24,18 @@ export default async function Brokers({
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const locale = resolvedParams.locale;
 
-  console.log("country resolvedSearchParams",resolvedSearchParams.countryCode);
+  const zone = await getZoneFromCookie();
+  if(!zone){
+    throw new Error("Zone not found");
+  }
 
-  const cookieStore = await cookies();
-  
-  // Retrieve the 'countryCode' cookie value
-  const countryCode = cookieStore.get('countryCode')?.value || 'default';
-
-  console.log('xxxxxxxxCountry code from cookie:', countryCode);
+ 
 
   //const t = await getTranslations(locale);
-  const [data, totalPages] = await getBrokers( locale, resolvedSearchParams);
+  const [data, totalPages] = await getBrokers( locale,zone, resolvedSearchParams);
   const [dynamicColumns,defaultLoadedColumns,allowSortingOptions,booleanOptions,ratingOptions ]= await getDynamicOptions(locale);
 
-  console.log(dynamicColumns,"dynamicColumns")
+ 
   let filter_options = await getFilters(locale);
  
   const booleanOptionsSlugs=Object.keys(booleanOptions);
@@ -65,20 +63,16 @@ export default async function Brokers({
   );
 }
 
-const getTranslations = async (locale: string) => {
-  const res = await fetch(
-    `${BASE_URL}/locale_resources?key[eq]=brokers&group[eq]=page&lang[eq]=${locale}`,
-    { next: { revalidate: 7200 } }
-  );
-  const t = await res.json();
-  return t.data[0].value;
-};
+
 
 const getBrokers = async (
   locale: string,
-  searchParams?: BrokersSearchParams
+  zone: string,
+  searchParams?: BrokersSearchParams|{}
 ) => {
-  const url = buildBrokerUrl(locale, searchParams);
+
+  const url = buildBrokerUrl(locale,zone, searchParams);
+  
   console.log("url=========================", url);
 
   const res = await fetch(url, { cache: "no-store" });
@@ -120,9 +114,9 @@ const getDynamicOptions = async (locale: string) => {
 };
 
 
-const getFilters=async (locale: string)=> {
+const getFilters=async (locale: string,zone: string)=> {
     try {
-        const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro`;
+        const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
         const res = await fetch(url, { cache: "no-store" });
     
         if (!res.ok) {

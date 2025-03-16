@@ -1,57 +1,48 @@
 import { NextResponse } from 'next/server';
-import  createMiddleware  from 'next-intl/middleware';
+import { NextRequest } from 'next/server';
+import { getCountryByIP } from './lib/getCountryByIP';
+import { getZoneByCountry } from './lib/getZoneByCountry';
 
+export async function middleware(req:NextRequest) {
 
-const intlMiddleware = createMiddleware({
-  locales:["en","ro"],
-  defaultLocale:"en"
-})
-export async function middleware(req:any) {
-
-   // Step 1: Skip static assets by checking if the URL path starts with "_next/static"
-   if (req.nextUrl.pathname.startsWith('/_next/static')) {
-    return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", req.nextUrl.pathname);
+   //Skip static assets by checking if the URL path starts with "_next/static"
+   if (req.nextUrl.pathname.startsWith('/_next/static') ||req.nextUrl.pathname.startsWith('/assets')) {
+    return response;
   }
+
+  console.log("Path name in middleware", req.nextUrl.pathname)
+
+   //Check if 'zone' cookie is already set
+   const existingZone = req.cookies.get('zone');
+   if (existingZone) {
+     return response;
+   }
+
+   //Get country from IP
   //const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.ip;
   const ip="78.96.85.163";
-  const apiKey = process.env.IPREGISTRY_API_KEY;
-  const response = await fetch(`https://api.ipregistry.co/${ip}?key=ira_Yqs7i0q8xk09d6HPG9De8cqBLmU8bZ4RIHgc`);
-  const data = await response.json();
+  const country=await getCountryByIP(ip);
 
-  
-
-  // Check if IP is flagged as a proxy or VPN
-  if (data.security.is_proxy || data.security.is_vpn || data.security.is_tor) {
-    return new NextResponse("Access Denied: Proxy/VPN detected.", { status: 403 });
+  if (!country) {
+    return new NextResponse("Access Denied", { status: 403 });
   }
-  const countryCode= data.location.country.code;
 
-  // Rewrite URL to add the country code
-  const url = req.nextUrl;
-  url.searchParams.set('countryCode', countryCode);
-
-  // Create the rewritten response
-  const rewrittenResponse = NextResponse.rewrite(url);
-
-  // Set the countryCode in the cookie
-  rewrittenResponse.cookies.set('countryCode', countryCode, {
-    path: '/', // Ensures cookie is available throughout the site
+  //Get zone code
+  const zone = await getZoneByCountry(country);
+ 
+  // Set the zone cookie
+  response.cookies.set('zone', zone ?? '', {
+    path: '/',
     httpOnly: true,
-    secure: false, // Ensure this is secure in production
-    sameSite: 'lax', // Use Lax for cross-site requests
+    secure: process.env.NODE_ENV === 'production', // Secure only in production
+    sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
 
-  
-   // Step 2: Add the countryCode to the request
- 
-  //console.log(req);
-  // Pass the request to the intlMiddleware
- // return intlMiddleware(req); 
+  return response;
 
-
- //return NextResponse.next();
- return rewrittenResponse;
 }
 
 export const config = {

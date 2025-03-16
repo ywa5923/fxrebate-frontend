@@ -1,4 +1,5 @@
 export interface BrokersSearchParams {
+    zone?:string;
     columns?: string;
     page?: number;
     sortBy?: string;
