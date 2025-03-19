@@ -16,7 +16,7 @@ import { useMounted } from '@/lib/hooks'
 import { LanguageItem } from '@/lib/types'
 import { languageItems } from '@/lib/content'
 
-const Header = ({_t}: { _t: Record<string, string> }) => {
+const Header = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageItem>(languageItems[0]);
 
   const [isOpen, setIsOpen] = useState(false);

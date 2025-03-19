@@ -1,18 +1,16 @@
-'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
-
 import { useMounted } from '@/lib/hooks';
 import { fadeIn, opacityAnimation } from '@/lib/motions';
 import { Tag } from '../ui/Tag';
 import { Button } from '../ui/MButton';
 import { VideoDialog } from '../ui/VideoDialog';
-
 import InViewContainer from '../InViewContainer';
+import { Translations, useTranslation } from '@/providers/translations';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 const lottieDarkAnimation = { ...(await import('../../../public/assets/lottie/FX-Hero-dark-graphic.json')) };
@@ -21,7 +19,7 @@ const lottieLightAnimation = { ...(await import('../../../public/assets/lottie/F
 const HERO_TAGS = [
     {
         icon: '/assets/icons/dolar.svg',
-        text: 'Where every trade matters',
+        text: 'where_every_trade_matters',
         alt: 'dolar',
     },
     {
@@ -39,6 +37,7 @@ const HERO_TAGS = [
 export const Content = () => {
     const { resolvedTheme } = useTheme();
     const mounted = useMounted();
+    const _t:Translations=useTranslation();
 
     if (!mounted) return null;
 
@@ -61,7 +60,7 @@ export const Content = () => {
                                         width={20}
                                         height={20}
                                     />
-                                    <span className="text-xs font-medium text-white">{tag.text}</span>
+                                    <span className="text-xs font-medium text-white">{tag.text?_t[tag.text]:""}</span>
                                     {tag.starIcon && (
                                         <Image
                                             src={tag.starIcon}
@@ -84,13 +83,12 @@ export const Content = () => {
                             ease: 'easeInOut',
                         })}
                         className="section-title leading-[111%]">
-                        Get the highest Cash Back rates for your trades.
+                       { _t["hero_header"]}
                     </motion.h1>
                     <motion.p
                         variants={fadeIn({ direction: 'up', delay: 0.5, duration: 1.25, value: 25, ease: 'easeInOut' })}
                         className="section-description max-w-2xl dark:text-white text-black sm:my-3.5">
-                        Trade smarter, save bigger. We beat any competitor&apos;s cashback offers and give you unmatched
-                        support from real trading experts.
+                         { _t["hero_content"]}
                     </motion.p>
                     <motion.div
                         variants={fadeIn({
@@ -104,12 +102,12 @@ export const Content = () => {
                         <Link
                             href="#"
                             className="text-center text-sm sm:text-base text-nowrap max-w-3xs w-full xxs:min-w-auto xxs:w-auto bg-black dark:bg-white text-white dark:text-black font-medium px-[22px] py-[13px] sm:py-[11px] rounded-lg shadow-[0px_3px_8.1px_0px_rgba(0,0,0,0.22)] transition-all duration-300 hover:bg-black/80 dark:hover:bg-white/80">
-                            Join now
+                            {_t["join_now"]}
                         </Link>
                         <Button
                             buttonContainerClassName="py-1.5 w-full xxs:w-auto !max-w-3xs"
                             buttonClassName="py-1.5 !max-w-3xs min-w-auto xxs:min-w-3xs"
-                            text="See how it works?"
+                            text={_t["hero_btn_text"]}
                             iconImage="/assets/icons/play.svg"
                             href="#"
                         />

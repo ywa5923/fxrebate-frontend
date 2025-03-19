@@ -28,7 +28,7 @@ export type CardType = {
   title: string;
   description: string;
   className: string;
-  tagContent?: ReactNode;
+  tagContent?: string;
   button?: {
     text: string;
     iconImage: string;

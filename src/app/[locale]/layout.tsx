@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 
 
 import '@/app/globals.css';
+import { TranslationProvider } from '@/providers/translations';
 
 
 export const metadata: Metadata = {
@@ -39,22 +40,20 @@ export default async function RootLayout({
     const _t = await getTranslations(locale,zone,"layout","navbar");
     // Accessing the current route parameters
 
-    const headersList = await headers(); 
-    const pathname = headersList.get("x-pathname") || "/";
+    // const headersList = await headers(); 
+    // const pathname = headersList.get("x-pathname") || "/";
 
-
-
-    console.log("----------------------page name",pathname)
-     
-    console.log("layout locale",locale)
-    console.log("layout zone",zone)
-    console.log("translations on layout",_t.navbar)
+    //console.log("layout locale",locale)
+    //console.log("layout zone",zone)
+    //console.log("translations on layout",_t.navbar)
     
     return (
         <html lang="{locale}" suppressHydrationWarning className={cn(satoshi.variable, 'bg-[#FFF] dark:bg-black')}>
             <body>
                 <Providers>
-                    <Header _t={_t.navbar}/>
+                    <TranslationProvider translations={_t.navbar}>
+                    <Header />
+                    </TranslationProvider>
                     {children}
                     <Footer />
                 </Providers>

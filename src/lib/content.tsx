@@ -25,16 +25,16 @@ export const navItems: NavItem[] = [
         id: 1,
         name: 'home',
         href: '/',
-        lightIcon: './assets/icons/homeIcon-light.svg',
-        darkIcon: './assets/icons/homeIcon-dark.svg',
+        lightIcon: '/assets/icons/homeIcon-light.svg',
+        darkIcon: '/assets/icons/homeIcon-dark.svg',
     },
     {
         id: generateRandomId(),
-        name: '_brokers_',
+        name: 'brokers',
         subItems: [
             {
                 id: generateRandomId(),
-                name: 'Forex Brokers',
+                name: 'forex_brokers',
                 itemsList: [
                     { id: generateRandomId(), brokerName: '4XC', brokerLogo: '/assets/FbsBroker.png', href: '#' },
                     { id: generateRandomId(), brokerName: 'AAFX', brokerLogo: '/assets/FbsBroker.png', href: '#' },
@@ -211,98 +211,98 @@ export const navItems: NavItem[] = [
             },
             {
                 id: generateRandomId(),
-                name: 'Forex Brokers List',
+                name: 'forex_brokers_list',
                 href: 'https://www.cashbackforex.com/brokers/forex-rebates',
                 external: true,
             },
-            { id: generateRandomId(), name: 'Ratings/ Reviews', href: '#' },
-            { id: generateRandomId(), name: 'Guides', href: '#' },
-            { id: generateRandomId(), name: 'Best Brokers 2025', href: '#' },
-            { id: generateRandomId(), name: 'Brokers Promotions', href: '#' },
-            { id: generateRandomId(), name: 'Brokers Contests', href: '#' },
+            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
+            { id: generateRandomId(), name: 'guides', href: '#' },
+            { id: generateRandomId(), name: 'best_brokers_2025', href: '#' },
+            { id: generateRandomId(), name: 'brokers_promotions', href: '#' },
+            { id: generateRandomId(), name: 'brokers_contests', href: '#' },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'Crypto',
+        name: 'crypto',
         subItems: [
-            { id: generateRandomId(), name: 'Crypto Exchanges', href: '#' },
-            { id: generateRandomId(), name: 'Crypto Exchanges List', href: '#' },
-            { id: generateRandomId(), name: 'Ratings/ Reviews', href: '#' },
-            { id: generateRandomId(), name: 'Guides', href: '#' },
-            { id: generateRandomId(), name: 'Best Exchanges 2025', href: '#' },
-            { id: generateRandomId(), name: 'Exchanges Promotions', href: '#' },
-            { id: generateRandomId(), name: 'Exchanges Contests', href: '#' },
+            { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
+            { id: generateRandomId(), name: 'crypto_exchanges_list', href: '#' },
+            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
+            { id: generateRandomId(), name: 'guides', href: '#' },
+            { id: generateRandomId(), name: 'best_exchanges_2025', href: '#' },
+            { id: generateRandomId(), name: 'exchanges_promotions', href: '#' },
+            { id: generateRandomId(), name: 'exchanges_contests', href: '#' },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'Props',
+        name: 'props',
         subItems: [
-            { id: generateRandomId(), name: 'Prop Firms', href: '#' },
-            { id: generateRandomId(), name: 'Prop Firms List', href: '#' },
-            { id: generateRandomId(), name: 'Ratings/ Reviews', href: '#' },
-            { id: generateRandomId(), name: 'Guides', href: '#' },
-            { id: generateRandomId(), name: 'Best Prop Firms 2025', href: '#' },
-            { id: generateRandomId(), name: 'Prop Firms Promotions', href: '#' },
-            { id: generateRandomId(), name: 'Prop Firms Contests', href: '#' },
+            { id: generateRandomId(), name: 'prop_firms', href: '#' },
+            { id: generateRandomId(), name: 'prop_firms_list', href: '#' },
+            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
+            { id: generateRandomId(), name: 'guides', href: '#' },
+            { id: generateRandomId(), name: 'best_prop_firms_2025', href: '#' },
+            { id: generateRandomId(), name: 'prop_firms_promotions', href: '#' },
+            { id: generateRandomId(), name: 'prop_irms_contests', href: '#' },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'Tools',
+        name: 'tools',
         subItems: [
-            { id: generateRandomId(), name: 'Currency Converter', href: '#' },
-            { id: generateRandomId(), name: 'Fibonacci Calculator', href: '#' },
-            { id: generateRandomId(), name: 'Margin Calculator', href: '#' },
-            { id: generateRandomId(), name: 'Pip Calculator', href: '#' },
-            { id: generateRandomId(), name: 'Pivot Point Calculator', href: '#' },
-            { id: generateRandomId(), name: 'Risk Position Calculator', href: '#' },
-            { id: generateRandomId(), name: 'Economic Calendar', href: '#' },
-            { id: generateRandomId(), name: 'Brokers Spread Comparison', href: '#' },
-            { id: generateRandomId(), name: 'Market Volatility', href: '#' },
-            { id: generateRandomId(), name: 'Market Correlation', href: '#' },
-            { id: generateRandomId(), name: 'Interest Rates', href: '#' },
+            { id: generateRandomId(), name: 'currency_converter', href: '#' },
+            { id: generateRandomId(), name: 'fibonacci_calculator', href: '#' },
+            { id: generateRandomId(), name: 'margin_calculator', href: '#' },
+            { id: generateRandomId(), name: 'pip_calculator', href: '#' },
+            { id: generateRandomId(), name: 'pivot_point_calculator', href: '#' },
+            { id: generateRandomId(), name: 'risk_position_calculator', href: '#' },
+            { id: generateRandomId(), name: 'economic_calendar', href: '#' },
+            { id: generateRandomId(), name: 'brokers_spread_comparison', href: '#' },
+            { id: generateRandomId(), name: 'market_volatility', href: '#' },
+            { id: generateRandomId(), name: 'market_correlation', href: '#' },
+            { id: generateRandomId(), name: 'interest_rates', href: '#' },
         ],
     },
-    { id: generateRandomId(), name: 'Charts', href: '#' },
-    { id: generateRandomId(), name: 'Affiliate Program', href: '#' },
+    { id: generateRandomId(), name: 'charts', href: '#' },
+    { id: generateRandomId(), name: 'affiliate_program', href: '#' },
     {
         id: generateRandomId(),
-        name: 'Academy',
+        name: 'academy',
         subItems: [
             {
                 id: generateRandomId(),
-                name: 'Trading Academy',
+                name: 'trading_academy',
                 linksList: [
-                    { id: generateRandomId(), name: 'Learn Forex Trading', href: '#' },
-                    { id: generateRandomId(), name: 'Learn Crypto Trading', href: '#' },
-                    { id: generateRandomId(), name: 'Learn Prop Trading', href: '#' },
+                    { id: generateRandomId(), name: 'learn_forex_trading', href: '#' },
+                    { id: generateRandomId(), name: 'learn_crypto_trading', href: '#' },
+                    { id: generateRandomId(), name: 'learn_prop_trading', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'What are',
+                name: 'what_are',
                 linksList: [
-                    { id: generateRandomId(), name: 'Forex Broker', href: '#' },
-                    { id: generateRandomId(), name: 'Crypto Exchange', href: '#' },
-                    { id: generateRandomId(), name: 'Prop Firm', href: '#' },
+                    { id: generateRandomId(), name: 'forex_broker', href: '#' },
+                    { id: generateRandomId(), name: 'crypto_exchange', href: '#' },
+                    { id: generateRandomId(), name: 'prop_firm', href: '#' },
                 ],
             },
-            { id: generateRandomId(), name: 'Crypto Exchanges', href: '#' },
-            { id: generateRandomId(), name: 'Prop Firms', href: '#' },
+            { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
+            { id: generateRandomId(), name: 'prop_firms', href: '#' },
             {
                 id: generateRandomId(),
-                name: 'How to Choose a',
+                name: 'how_to_choose_a',
                 linksList: [
-                    { id: generateRandomId(), name: 'Forex Broker', href: '#' },
-                    { id: generateRandomId(), name: 'Crypto Exchange', href: '#' },
-                    { id: generateRandomId(), name: 'Prop Firm', href: '#' },
+                    { id: generateRandomId(), name: 'forex_broker', href: '#' },
+                    { id: generateRandomId(), name: 'crypto_exchange', href: '#' },
+                    { id: generateRandomId(), name: 'prop_firm', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'Financial Services Authorities',
+                name: 'financial_services_authorities',
                 href: 'https://fxrebate.eu/help/financial-services-authorities',
                 external: true,
             },
@@ -310,68 +310,68 @@ export const navItems: NavItem[] = [
     },
     {
         id: generateRandomId(),
-        name: 'Forum',
+        name: 'forum',
         subItems: [
-            { id: generateRandomId(), name: 'Blogs', href: '#' },
-            { id: generateRandomId(), name: 'Latest Posts', href: '#' },
-            { id: generateRandomId(), name: 'Chat Room (Telegram)', href: '#', external: true },
+            { id: generateRandomId(), name: 'blogs', href: '#' },
+            { id: generateRandomId(), name: 'latest_posts', href: '#' },
+            { id: generateRandomId(), name: 'chat_room_(telegram)', href: '#', external: true },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'Support',
+        name: 'support',
         subItems: [
-            { id: generateRandomId(), name: 'About Us', href: '#' },
+            { id: generateRandomId(), name: 'about_us', href: '#' },
             {
                 id: generateRandomId(),
-                name: 'Legal Documents',
+                name: 'legal_documents',
                 linksList: [
-                    { id: generateRandomId(), name: 'Terms of Service', href: '#' },
-                    { id: generateRandomId(), name: 'Privacy Policy', href: '#' },
+                    { id: generateRandomId(), name: 'terms_of_service', href: '#' },
+                    { id: generateRandomId(), name: 'privacy_policy', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'Business Information',
+                name: 'business_information',
                 linksList: [
-                    { id: generateRandomId(), name: 'Mission Statement', href: '#' },
-                    { id: generateRandomId(), name: 'What are Rebates?', href: '#' },
-                    { id: generateRandomId(), name: 'How Rebates are Paid?', href: '#' },
-                    { id: generateRandomId(), name: 'Rebates - Pros & Cons', href: '#' },
-                    { id: generateRandomId(), name: 'FXRebate Deal Types', href: '#' },
-                    { id: generateRandomId(), name: 'FXRebate Private Deal', href: '#' },
+                    { id: generateRandomId(), name: 'mission_statement', href: '#' },
+                    { id: generateRandomId(), name: 'what_are_rebates?', href: '#' },
+                    { id: generateRandomId(), name: 'how_rebates_are_paid?', href: '#' },
+                    { id: generateRandomId(), name: 'rebates_pros_&_cons', href: '#' },
+                    { id: generateRandomId(), name: 'FXRebate_deal_types', href: '#' },
+                    { id: generateRandomId(), name: 'FXRebate_private_deal', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'Promotions',
+                name: 'promotions',
                 linksList: [
-                    { id: generateRandomId(), name: 'Forex Brokers', href: '#' },
-                    { id: generateRandomId(), name: 'Crypto Exchanges', href: '#' },
-                    { id: generateRandomId(), name: 'Prop Firms', href: '#' },
+                    { id: generateRandomId(), name: 'forex_brokers', href: '#' },
+                    { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
+                    { id: generateRandomId(), name: 'prop_firms', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'Contests',
+                name: 'contests',
                 linksList: [
-                    { id: generateRandomId(), name: 'Forex Brokers', href: '#' },
-                    { id: generateRandomId(), name: 'Crypto Exchanges', href: '#' },
-                    { id: generateRandomId(), name: 'Prop Firms', href: '#' },
+                    { id: generateRandomId(), name: 'forex_brokers', href: '#' },
+                    { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
+                    { id: generateRandomId(), name: 'prop_firms', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'FAQs',
+                name: 'faqs',
                 linksList: [
-                    { id: generateRandomId(), name: 'Payment Information', href: '#' },
-                    { id: generateRandomId(), name: 'Rebate Program', href: '#' },
-                    { id: generateRandomId(), name: 'Affiliate Program', href: '#' },
+                    { id: generateRandomId(), name: 'payment_information', href: '#' },
+                    { id: generateRandomId(), name: 'rebate_program', href: '#' },
+                    { id: generateRandomId(), name: 'affiliate_program', href: '#' },
                 ],
             },
-            { id: generateRandomId(), name: 'Help Center', href: '#' },
-            { id: generateRandomId(), name: 'Contact Us', href: '#' },
-            { id: generateRandomId(), name: 'Live Chat', href: '#' },
+            { id: generateRandomId(), name: 'help_center', href: '#' },
+            { id: generateRandomId(), name: 'contact_us', href: '#' },
+            { id: generateRandomId(), name: 'live_chat', href: '#' },
         ],
     },
 ];
@@ -448,23 +448,23 @@ export const socialItems = [
 ];
 
 export const companyStats = {
-    title: 'FXRebate in Numbers: Proven Success, Real Rewards',
+    title: 'company_stats_title',
     stats: [
-        { id: generateRandomId(), num: 8, nextSuffix: 'K+', subheading: 'Active Clients' },
-        { id: generateRandomId(), num: 20, nextSuffix: '+ Years', subheading: 'Experience in Financial Markets' },
-        { id: generateRandomId(), num: 5, prevSuffix: '$', nextSuffix: 'Million+', subheading: 'Paid in Rebates' },
+        { id: generateRandomId(), num: 8, nextSuffix: 'K+', subheading: 'active_clients' },
+        { id: generateRandomId(), num: 20, nextSuffix: '+_years', subheading: 'experience_in_financial_markets' },
+        { id: generateRandomId(), num: 5, prevSuffix: '$', nextSuffix: 'million_+', subheading: 'paid_in_rebates' },
         {
             id: generateRandomId(),
             num: 500,
             prevSuffix: '$',
             nextSuffix: 'K+',
-            subheading: 'Paid in Affiliate Commissions',
+            subheading: 'paid_in_affiliate_commissions',
         },
     ],
 };
 
 export const ourPartners = {
-    title: 'FXRebate partners',
+    title: 'FXRebate_partners',
     items: [
         { id: generateRandomId(), name: 'FBS', href: '#', lightIcon: '/assets/partners/FBS-light.webp' },
         { id: generateRandomId(), name: 'Fortrade', href: '#', lightIcon: '/assets/partners/Fortrade-light.webp' },
@@ -488,7 +488,7 @@ export const ourPartners = {
 };
 
 export const ourPaymentMethods = {
-    title: 'FXRebate Payment Options',
+    title: 'payment_options',
     methods: [
         { id: generateRandomId(), name: 'Skrill', href: '#', lightIcon: '/assets/payments/skrill.webp' },
         {
@@ -518,39 +518,38 @@ export const ourPaymentMethods = {
 };
 
 export const whyUs = {
-    title: 'Why Us',
-    description:
-        'Our platform stands out with a robust set of features designed to deliver unmatched value, flexibility, and reliability.',
+    title: 'why_us',
+    description:'why_us_header',
+        
     features: [
         {
             id: generateRandomId(),
             darkBgImage: '/assets/whyUs/dark-cup.webp',
             lightBgImage: '/assets/whyUs/light-cup.webp',
-            title: 'Price Leadership',
-            description: 'At FXRebate, we pride ourselves on delivering the best value in the market.',
+            title: 'why_us_t',
+            description: 'why_us_d',
         },
         {
             id: generateRandomId(),
             darkBgImage: '/assets/whyUs/dark-stairs.webp',
             lightBgImage: '/assets/whyUs/light-stairs.webp',
-            title: 'Multi-Tier Value',
-            description:
-                'FXRebate has a structured rewards system that benefits traders, affiliates, and partners at multiple levels. This model ensures sustainable earnings and long-term engagement by creating value across different tiers of participation.',
+            title: 'why_us_t1',
+            description:'why_us_d1', 
         },
         {
             id: generateRandomId(),
             darkBgImage: '/assets/whyUs/dark-hand.webp',
             lightBgImage: '/assets/whyUs/light-hand.webp',
-            title: 'Service Excellence',
-            description:
-                'At FXRebate, we prioritize delivering an exceptional experience for our users through robust, reliable, and professional services.',
+            title: 'why_us_t2',
+            description: 'why_us_d2',
+               
         },
         {
             id: generateRandomId(),
             darkBgImage: '/assets/whyUs/dark-shield.webp',
             lightBgImage: '/assets/whyUs/light-shield.webp',
-            title: 'Trust & Credibility',
-            description: 'At FXRebate, trust and credibility are the foundation of our business.',
+            title: 'why_us_t3',
+            description: 'why_us_d3',
         },
     ],
 };
@@ -558,56 +557,46 @@ export const whyUs = {
 export const whyJoinUs = [
     {
         id: generateRandomId(),
-        title: 'Your Best Partner for Maximum Cashback',
-        description:
-            "Joining FXRebate means gaining access to the most rewarding, reliable, and customer-focused rebate platform available. Here's what sets us apart:",
+        title: 'why_join_us_t1',
+        description:'why_join_us_d1',   
         className: 'dark:text-white dark:bg-black text-black bg-white',
-        tagContent: (
-            <>
-                <Image src="/assets/icons/whyJoinUs.svg" alt="tag" width={16} height={16} />
-                <span className="text-sm font-medium text-white">Why join us</span>
-            </>
-        ),
+        tagContent:'why_join_us'
     },
     {
         id: generateRandomId(),
-        title: 'Best rate guarantee',
-        description:
-            'Earn money back on every trade through our reliable network of top-rated brokers, crypto exchanges and prop firms. Your cashback is deposited directly into your FXRebate Wallet or to your Trading Account, providing you with consistent, hassle-free rewards for every transaction. With FXRebate, every trade truly matters.',
+        title: 'why_join_us_t2',
+        description:'why_join_us_d2',
         className: 'dark:text-white dark:bg-dark-green-200 text-black bg-white-200',
     },
     {
         id: generateRandomId(),
-        title: 'Best affiliate network',
-        description:
-            'Earn more with FXRebate’s 3-tier affiliate program! Get rewarded not just for your referrals, but also for their referrals—up to a total of 12.5% in commissions.',
+        title: 'why_join_us_t3',
+        description:'why_join_us_d3',
         className: 'dark:bg-white text-black bg-[#FBFBFB]',
         button: {
-            text: 'Join the affiliate network',
+            text: 'btn_join_the_aff_network',
             iconImage: '/assets/icons/arrow-right.svg',
             href: '#',
         },
     },
     {
         id: generateRandomId(),
-        title: 'Access to the industry-leading trading tools',
-        description:
-            'Gain access to cutting-edge trading tools designed to enhance your strategy and performance. From advanced analytics to automated solutions, our industry-leading tools empower traders with precision, efficiency, and a competitive edge.',
+        title: 'why_join_us_t4',
+        description: 'why_join_us_d4',
         className: 'dark:text-white dark:bg-black text-black bg-white-200',
         button: {
-            text: 'View all tools',
+            text: 'btn_view_all_tools',
             iconImage: '/assets/icons/arrow-right.svg',
             href: '#',
         },
     },
     {
         id: generateRandomId(),
-        title: 'Superb 24-hour support',
-        description:
-            'Friendly and knowledgeable support from professionals’ traders. Our support staff are professionals with more than 20 years of experience in financial markets. We are there for you via phone, chat or email.',
+        title: 'why_join_us_t5',
+        description:'why_join_us_d5',
         className: 'dark:bg-white text-black bg-[#FBFBFB]',
         button: {
-            text: 'Contact us',
+            text: 'btn_contact_us',
             iconImage: '/assets/icons/arrow-right.svg',
             href: '#',
         },
@@ -615,7 +604,7 @@ export const whyJoinUs = [
 ];
 
 export const testimonials = {
-    title: 'Trusted by Thousands of Traders Worldwide',
+    title: 'testimonials_title',
     items: [
         {
             id: generateRandomId(),

@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate";
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@theme  {
   --breakpoint-xxs: 400px;
   --breakpoint-xs: 480px;
   --breakpoint-sm: 640px;
@@ -61,10 +61,10 @@
 
 @layer utilities {
   .section-title {
-    @apply dark:text-white text-black text-center capitalize text-[32px] sm:text-5xl md:text-[64px] font-bold;
+    @apply dark:text-white text-black text-center  text-[32px] sm:text-5xl md:text-[64px] font-bold;
   }
   .section-description {
-    @apply text-center capitalize text-base md:text-xl font-normal;
+    @apply text-center  text-base md:text-xl font-normal;
   }
 }
 
@@ -105,6 +105,7 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --color-accent: #1d885b;
 }
 
 .dark {

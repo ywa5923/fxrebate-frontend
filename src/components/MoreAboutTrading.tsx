@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, Carousel } from "./ui/CardsCarousel";
 import { generateRandomId } from "@/lib/utils";
@@ -40,44 +41,44 @@ const DummyContent = () => {
 const data = [
   {
     id: generateRandomId(),
-    category: "Artificial Intelligence",
-    title: "Academy",
+    category: "artificial_intelligence",
+    title: "academy",
     src: "/assets/moreAboutTrading/Academy.webp",
     content: <DummyContent />,
   },
   {
     id: generateRandomId(),
-    category: "Productivity",
-    title: "Charts",
+    category: "productivity",
+    title: "charts",
     src: "/assets/moreAboutTrading/Charts.webp",
     content: <DummyContent />,
   },
   {
     id: generateRandomId(),
-    category: "Product",
-    title: "Trading Tools",
+    category: "product",
+    title: "trading_tools",
     src: "/assets/moreAboutTrading/TradingTools.webp",
     content: <DummyContent />,
   },
 
   {
     id: generateRandomId(),
-    category: "Product",
-    title: "Academy",
+    category: "product",
+    title: "academy",
     src: "/assets/moreAboutTrading/Academy.webp",
     content: <DummyContent />,
   },
   {
     id: generateRandomId(),
     category: "iOS",
-    title: "Productivity",
+    title: "productivity",
     src: "/assets/moreAboutTrading/Charts.webp",
     content: <DummyContent />,
   },
   {
     id: generateRandomId(),
-    category: "Hiring",
-    title: "Trading",
+    category: "hiring",
+    title: "trading",
     src: "/assets/moreAboutTrading/TradingTools.webp",
     content: <DummyContent />,
   },

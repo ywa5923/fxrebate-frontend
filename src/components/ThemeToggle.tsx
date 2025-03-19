@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { FiMoon, FiSun } from "react-icons/fi";
 import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { Translations, useTranslation } from '@/providers/translations';
 
 const ThemeToggle = () => {
   const { setTheme, resolvedTheme } = useTheme()
@@ -18,6 +19,7 @@ const ThemeToggle = () => {
   const buttonTextColor = isLightTheme ? "text-white" : "text-slate-300";
   const sunButtonTextColor = isLightTheme ? "text-black" : "text-white";
   const justifyContent = isLightTheme ? "justify-start" : "justify-end";
+  const _t:Translations=useTranslation();
 
   if (!mounted) return null; 
 
@@ -37,7 +39,7 @@ const ThemeToggle = () => {
           ) : (
             <FiSun className="relative z-10 text-lg md:text-sm" />
           )}
-          <span className="relative z-10 text-base font-bold capitalize">{mode}</span>
+          <span className="relative z-10 text-base font-bold capitalize">{_t[mode]}</span>
         </button>
       ))}
       <div className={cn("absolute inset-0 z-0 flex", justifyContent)}>

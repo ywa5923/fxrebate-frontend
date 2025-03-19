@@ -10,12 +10,15 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navItems } from '@/lib/content'
 import { useMounted, useWindowSize } from '@/lib/hooks'
+import {Translations, useTranslation} from "@/providers/translations";
+
 
 interface ICustomDesktopMenuBar {
   visible: boolean;
 }
 
 export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
+  const _t:Translations = useTranslation();
   const { resolvedTheme } = useTheme();
   const { width } = useWindowSize();
   const mounted = useMounted();
@@ -130,7 +133,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
             </Link>
           ) : item.href ? (
             <Link href={item.href || '#'} onMouseEnter={() => handleCloseMenu()}>
-              <span className='block hover:text-white hover:bg-accent px-2.5 py-1 rounded-sm transition-colors duration-200'>{item.name}</span>
+              <span className='block hover:text-white hover:bg-green-700 px-2.5 py-1 rounded-sm transition-colors duration-200'>{_t[item.name] || item.name}</span>
             </Link>
           ) : (
             <div className='relative'>
@@ -138,12 +141,12 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                 onMouseEnter={() => handleOpenMenu(item.id)}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  'hover:text-white hover:bg-accent px-2.5 py-1 rounded-sm transition-colors duration-200',
-                  openedMenu === item.id ? "bg-accent text-white" : ""
+                  'hover:text-white hover:bg-green-700 px-2.5 py-1 rounded-sm transition-colors duration-200',
+                  openedMenu === item.id ? "bg-green-700 text-white" : ""
                 )}
                 data-menu-button
               >
-                {item.name}
+                {_t[item.name] || item.name}
               </button>
               {openedMenu === item.id && item.subItems && (
                 <motion.div
@@ -161,13 +164,13 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                         <div className='relative' onMouseLeave={handleCloseSubMenu}>
                           <button
                             className={cn(
-                              "w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-accent",
-                              openedSubMenu === subItem.id ? "bg-accent text-white" : ""
+                              "w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700",
+                              openedSubMenu === subItem.id ? "bg-green-700 text-white" : ""
                             )}
                             onMouseEnter={() => handleOpenSubMenu(subItem.id)}
                             onClick={() => handleOpenSubMenu(subItem.id)}
                           >
-                            {subItem.name}
+                            {_t[subItem.name] || subItem.name}
                             <IoIosArrowForward className='ml-auto h-4 w-4' />
                           </button>
                           {openedSubMenu === subItem.id && (
@@ -180,7 +183,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                               ref={el => { submenuRefs.current[subItem.id] = el }}
                               className='absolute top-0 left-full z-50 w-full min-w-[13rem] rounded-md bg-white-500 dark:bg-dark-gray-100 p-4'
                             >
-                              <p className="font-bold text-base text-black dark:text-white pb-2 whitespace-nowrap">{subItem.name}</p>
+                              <p className="font-bold text-base text-black dark:text-white pb-2 whitespace-nowrap">{_t[subItem.name] || subItem.name}</p>
                               <div className="flex flex-col">
                                 {subItem.linksList.map((link) => (
                                   <Link
@@ -188,9 +191,9 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                                     href={link.href || '#'}
                                     target={link.external ? '_blank' : '_self'}
                                     rel={link.external ? 'noopener noreferrer' : ''}
-                                    className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-accent rounded-sm px-2.5 py-1.5'
+                                    className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-green-700 rounded-sm px-2.5 py-1.5'
                                   >
-                                    {link.name}
+                                    {_t[link.name] || link.name}
                                   </Link>
                                 ))}
                               </div>
@@ -201,12 +204,12 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                         <div className='relative' onMouseLeave={handleCloseSubMenu}>
                           <button
                             className={cn(
-                              "w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-accent",
-                              openedSubMenu === subItem.id ? "bg-accent text-white" : ""
+                              "w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700",
+                              openedSubMenu === subItem.id ? "bg-green-700 text-white" : ""
                             )}
                             onMouseEnter={() => handleOpenSubMenu(subItem.id)}
                           >
-                            {subItem.name}
+                            {_t[subItem.name] || subItem.name}
                             <IoIosArrowForward className='ml-auto h-4 w-4' />
                           </button>
                           {openedSubMenu === subItem.id && (
@@ -228,7 +231,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                                         width={32}
                                         height={32}
                                       />
-                                      <span className='text-black dark:text-white text-sm font-medium capitalize'>{item.brokerName}</span>
+                                      <span className='text-black dark:text-white text-sm font-medium capitalize'>{_t[item.brokerName] || item.brokerName}</span>
                                     </Link>
                                   </li>
                                 </ul>
@@ -241,9 +244,9 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                           href={subItem.href || '#'}
                           target={subItem.external ? '_blank' : '_self'}
                           rel={subItem.external ? 'noopener noreferrer' : ''}
-                          className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-accent hover:text-white'
+                          className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
                         >
-                          {subItem.name}
+                          {_t[subItem.name] || subItem.name}
                         </Link>
                       )}
                     </div>

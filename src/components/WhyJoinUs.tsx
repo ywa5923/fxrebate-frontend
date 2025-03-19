@@ -5,13 +5,14 @@ import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 
 import { MTag } from "./ui/Tag";
 import { MButton } from "./ui/MButton";
-
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { fadeIn } from "@/lib/motions";
 import { CardType } from "@/lib/types";
 import { whyJoinUs } from "@/lib/content";
 
 import InViewContainer from "./InViewContainer";
+import { Translations,useTranslation } from "@/providers/translations";
 
 const WhyJoinUs = () => {
   const ref = useRef(null);
@@ -43,6 +44,7 @@ interface CardProps {
 const Card = ({ position, card, scrollYProgress }: CardProps) => {
   const scaleFromPct = (position - 1) / whyJoinUs.length;
   const y = useTransform(scrollYProgress, [scaleFromPct, 1], [0, 0]);
+  const _t:Translations= useTranslation();
 
   return (
     <motion.div
@@ -60,26 +62,29 @@ const Card = ({ position, card, scrollYProgress }: CardProps) => {
             variants={fadeIn({ direction: "up", duration: 1, value: 25, ease: "easeInOut" })}
             containerClassName="gap-1 py-2 pl-2 pr-3 mb-4"
           >
-            {card.tagContent}
+            <Image src="/assets/icons/whyJoinUs.svg" alt="tag" width={16} height={16} />
+
+            <span className="text-sm font-medium text-white">{_t[card.tagContent]||card.tagContent}</span>
+            
           </MTag>
         )}
         <motion.h3
           variants={fadeIn({ direction: "up", delay: 0.25, duration: 1, value: 25, ease: "easeInOut" })}
-          className="max-w-[915px] mx-auto capitalize text-[32px] sm:text-5xl md:text-[64px] leading-[115%] font-bold mb-8"
+          className="max-w-[915px] mx-auto  text-[32px] sm:text-5xl md:text-[64px] leading-[115%] font-bold mb-8"
         >
-          {card.title}
+          {_t[card.title]||card.title}
         </motion.h3>
         <motion.p
           variants={fadeIn({ direction: "up", delay: 0.5, duration: 1, value: 25, ease: "easeInOut" })}
           className="section-description max-w-2xl mx-auto"
         >
-          {card.description}
+          {_t[card.description]||card.description}
         </motion.p>
         {card.button && (
           <MButton
             variants={fadeIn({ direction: "up", delay: 0.75, duration: 1, value: 25, type: "tween" })}
             buttonContainerClassName="mt-8"
-            text={card.button.text}
+            text={_t[card.button.text]||card.button.text}
             iconImage={card.button.iconImage}
             href={card.button.href}
           />
