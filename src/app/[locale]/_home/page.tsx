@@ -13,12 +13,17 @@ import MoreAboutTrading from "@/components/MoreAboutTrading";
 import { TranslationProvider } from "@/providers/translations";
 import { getTranslations } from "@/lib/getTranslations";
 
-export default async function Home() {
+export default async function Home({params}:{params:Promise<{locale: string}>}) {
+
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+
   const { title: paymentTitle, methods } = ourPaymentMethods;
   const { title: partnersTitle, items: partnersItems } = ourPartners;
 
-  const _t=await getTranslations("ro","eu","home_page","client");
-  console.log(_t)
+  const _t=await getTranslations(locale,"eu","home_page","client");
+  
+ // console.log(_t)
 
   return (
     <>
