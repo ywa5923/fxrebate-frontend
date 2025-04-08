@@ -15,12 +15,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" suppressHydrationWarning className={cn(satoshi.variable, 'bg-[#FFF] dark:bg-black')}>
-            <body>
-                <Providers>
-                    {children}
-                </Providers>
-            </body>
-        </html>
+      <>
+       {children}
+      </>
+                   
+               
     );
 } 

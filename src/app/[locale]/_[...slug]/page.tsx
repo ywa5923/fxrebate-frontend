@@ -13,13 +13,14 @@ type PageComponent = React.ComponentType<{
 }>;
 
 const staticRoutes: Record<string, PageComponent> = {
-  "brokers/best-forex-brokers": BrokersPage
+  "forex-broker/forex-brokers-reviews": BrokersPage
 }
 const dynamicRoutes: Record<string, PageComponent> = {
-    "forex-broker/forex-brokers-rebates/([A-Za-z0-9]{2,50})(?:/([A-Za-z0-9]{2,50}))?": BrokerPage
+    "forex-broker/forex-brokers-rebates/([A-Za-z0-9-]{2,50})(?:/([A-Za-z0-9-]{2,50}))?": BrokerPage
 }
 
-
+//en/forex-broker/forex-brokers-reviews
+//fr/courtier-forex/avis-courtiers-forex
 
 export default async function DynamicPage({params,searchParams}:{params:Promise<Record<string,string | string[]>>,searchParams:Promise<Record<string,string>>}) {
    let resolvedParams=await params;
@@ -36,6 +37,7 @@ export default async function DynamicPage({params,searchParams}:{params:Promise<
    console.log("originalPath",originalPath);
 
    const { component: Page, matchedText, capturedSegments } = getPageComponent(originalPath);
+
    return <Page locale={locale} zone={zone} searchParams={resolvedSearchParams} capturedSegments={capturedSegments}/>
 
    
@@ -50,7 +52,7 @@ function getPageComponent(originalPath: string): {
   if (Page) {
     return { component: Page, matchedText: null };
   }
-
+ 
   for (let [key, value] of Object.entries(dynamicRoutes)) {
     const match = originalPath.match(key);
     if (match) {

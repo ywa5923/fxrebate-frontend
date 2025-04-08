@@ -10,7 +10,21 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['framer-motion']
-  }
+  },
+  async rewrites() {
+    return [
+        // {
+        //     source: '/en/mue',
+        //     destination: '/en/forex-broker/forex-brokers-reviews',
+        //     locale: false // Use `locale: false` so that the prefix matches the desired locale correctly
+        // },
+        // {
+        //     source: '/ro/brokeri/:id/:broker_name',
+        //     destination: '/ro/brokers/:id/:broker_name',
+        //     locale: false
+        // }
+    ]
+}
 };
 
 
