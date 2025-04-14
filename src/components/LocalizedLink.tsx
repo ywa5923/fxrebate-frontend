@@ -1,16 +1,48 @@
-
 "use client";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getLocalizedPath } from "@/app/[lang]/layout";
 import { ReactNode } from "react";
+import { useTranslation } from "@/providers/translations";
 
 interface LocalizedLinkProps {
-  routeKey: string; // Original route key (e.g., 'dashboard', 'users')
+  routeKey: string;
   children: ReactNode;
   className?: string;
-  // Add other Link props as needed
+  [key: string]: any;
+}
+
+interface Translations {
+  locales: Record<string, string>;
+  navbar: Record<string, string>;
+  'route-maps': Record<string, string>;
+}
+
+function getLocalizedPath(routeKey: string, urls: Record<string, string>): string {
+  // Direct match for static routes
+  if (urls[routeKey]) {
+    return urls[routeKey];
+  }
+
+  // Handle dynamic routes
+  for (const [source, destination] of Object.entries(urls)) {
+    const sourceRegex = new RegExp(
+      "^" + source.replace(/:([a-zA-Z0-9_]+)/g, "([^/]+)") + "$"
+    );
+    const match = routeKey.match(sourceRegex);
+
+    if (match) {
+      const dynamicParams = match.slice(1);
+      const paramNames = source.match(/(?<=:)[a-zA-Z0-9_]+/g) || [];
+      
+      return paramNames.reduce((path, paramName, index) => 
+        path.replace(`:${paramName}`, dynamicParams[index]), 
+        destination
+      );
+    }
+  }
+
+  return routeKey;
 }
 
 export default function LocalizedLink({ 
@@ -19,13 +51,21 @@ export default function LocalizedLink({
   className,
   ...props
 }: LocalizedLinkProps) {
-  // Get current language from route params
-  const params = useParams();
-  const lang = params.locale as string;
+  const { locale } = useParams();
+  const lang = locale as string;
   
-  // Generate localized href
-  const localizedPath = getLocalizedPath(routeKey, lang);
-  const href = `/${lang}/${localizedPath}`;
+  // Skip translation for English
+  if (lang === 'en') {
+    return (
+      <Link href={routeKey} className={className} {...props}>
+        {children}
+      </Link>
+    );
+  }
+
+  const _t = useTranslation() as Translations;
+  const localizedPath = getLocalizedPath(routeKey, _t['route-maps']);
+  const href = `/${lang}${localizedPath.startsWith('/') ? localizedPath : `/${localizedPath}`}`;
 
   return (
     <Link href={href} className={className} {...props}>

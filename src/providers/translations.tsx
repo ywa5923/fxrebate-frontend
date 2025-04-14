@@ -1,14 +1,18 @@
 "use client"
 import {createContext,useContext,ReactNode} from "react";
 
-export const TranslationContext = createContext({});
+type NestedTranslations = { [key: string]: string };
+type TranslationValue = string | ReactNode | { [key: string]: string | ReactNode };
+export type Translations = Record<string, TranslationValue>;
+export type NavbarTranslations = { [key: string]: string };
 
-export type Translations = Record<string, string>;
 type TranslationProviderProps = {
     children: ReactNode;
     translations: Translations;
-
 }
+
+export const TranslationContext = createContext<Translations>({});
+
 export const TranslationProvider:React.FC<TranslationProviderProps> = ({children, translations}) => {
     
     return(

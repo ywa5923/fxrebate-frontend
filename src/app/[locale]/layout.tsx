@@ -24,19 +24,21 @@ export default async function LocaleLayout({
   if (zone === null) {
     throw new Error("Zone not found");
   }
-  const _t = await getTranslations(locale, zone, "layout", "navbar");
-  const _urls = await getTranslations(locale, zone, "layout", "urls");
-  const _localeFlags = await getLocaleFlags();
+  const _t = await getTranslations(locale, zone, "layout", "navbar,route-maps");
 
-  const navbarTranslations = _t.navbar;
-  navbarTranslations.locales = _localeFlags;
-  navbarTranslations.urls = _t.urls;
+  console.log("vedvever",_t['navbar']);
+  
+  //to do add flags to the translations
+  const _localeFlags = await getLocaleFlags();
+  _t.locales = _localeFlags;
+
+ 
 
   return (
     <html lang={locale} suppressHydrationWarning className={cn(satoshi.variable, 'bg-[#FFF] dark:bg-black')}>
       <body>
         <Providers>
-          <TranslationProvider translations={navbarTranslations}>
+          <TranslationProvider translations={_t}>
             <Header />
             {children}
             <Footer />

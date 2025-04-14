@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -37,7 +36,7 @@ const HERO_TAGS = [
 export const Content = () => {
     const { resolvedTheme } = useTheme();
     const mounted = useMounted();
-    const _t:Translations=useTranslation();
+    const _t: Translations = useTranslation();
 
     if (!mounted) return null;
 
@@ -60,7 +59,9 @@ export const Content = () => {
                                         width={20}
                                         height={20}
                                     />
-                                    <span className="text-xs font-medium text-white">{tag.text?_t[tag.text]:""}</span>
+                                    <span className="text-xs font-medium text-white">
+                                        {tag.text ? _t[tag.text] as string : ""}
+                                    </span>
                                     {tag.starIcon && (
                                         <Image
                                             src={tag.starIcon}
@@ -83,12 +84,12 @@ export const Content = () => {
                             ease: 'easeInOut',
                         })}
                         className="section-title leading-[111%]">
-                       { _t["hero_header"]}
+                        {_t["hero_header"] as string}
                     </motion.h1>
                     <motion.p
                         variants={fadeIn({ direction: 'up', delay: 0.5, duration: 1.25, value: 25, ease: 'easeInOut' })}
                         className="section-description max-w-2xl dark:text-white text-black sm:my-3.5">
-                         { _t["hero_content"]}
+                        {_t["hero_content"] as string}
                     </motion.p>
                     <motion.div
                         variants={fadeIn({
@@ -102,12 +103,12 @@ export const Content = () => {
                         <Link
                             href="#"
                             className="text-center text-sm sm:text-base text-nowrap max-w-3xs w-full xxs:min-w-auto xxs:w-auto bg-black dark:bg-white text-white dark:text-black font-medium px-[22px] py-[13px] sm:py-[11px] rounded-lg shadow-[0px_3px_8.1px_0px_rgba(0,0,0,0.22)] transition-all duration-300 hover:bg-black/80 dark:hover:bg-white/80">
-                            {_t["join_now"]}
+                            {_t["join_now"] as string}
                         </Link>
                         <Button
                             buttonContainerClassName="py-1.5 w-full xxs:w-auto !max-w-3xs"
                             buttonClassName="py-1.5 !max-w-3xs min-w-auto xxs:min-w-3xs"
-                            text={_t["hero_btn_text"]}
+                            text={_t["hero_btn_text"] as string}
                             iconImage="/assets/icons/play.svg"
                             href="#"
                         />

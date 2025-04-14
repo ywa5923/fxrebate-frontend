@@ -17,13 +17,13 @@ export const Button = forwardRef<HTMLDivElement, IButton>(({ text, iconImage, hr
     <div ref={ref} className={cn("", buttonContainerClassName)}>
       <Link
         href={href}
-        className={cn("group min-w-3xs relative flex items-center justify-between gap-3.5 rounded-lg border hover:!border-green-400 border-accent pl-6 py-2 pr-2 transition-all duration-300", buttonClassName)}
+        className={cn("group min-w-1xs relative flex items-center justify-between gap-3.5 rounded-lg border hover:!border-green-400 border-accent pl-6 py-2 pr-2 transition-all duration-300", buttonClassName)}
         style={{ background: 'linear-gradient(90deg, rgba(0, 106, 61, 0.70) 0%, rgba(0, 66, 23, 0.70) 99.99%)' }}
       >
         <span className="text-white text-sm sm:text-base font-medium ">
           {text}
         </span>
-        <div className="p-1 bg-accent rounded-[5px] min-h-8 min-w-8 flex items-center justify-center">
+        <div className="p-1 bg-accent rounded-[5px] min-h-8 min-w-8 flex bg-green-700 items-center justify-center">
           <Image
             src={iconImage}
             alt="icon"
