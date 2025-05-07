@@ -5,14 +5,14 @@ import { Rating } from '@/components/ui/rating';
 import { ReactNode } from 'react';
 import { BrokerProfile } from './BrokerProfile';
 import { Headquarters } from './Headquarters';
-
+import { SupportedLanguages } from './SupportedLanguages';
 interface BrokerInfo {
   name: string;
   founded: string;
   headquarters: string;
   offices: string;
   accountCurrency: string;
-  supportedLanguages: string;
+  supportedLanguages: string[];
   fundingMethods: string;
   financialInstruments: string;
   prohibitedCountries: string;
@@ -42,7 +42,7 @@ async function getBrokerInfo(brokerId: string, brokerName: string): Promise<Brok
     headquarters: "London, UK",
     offices: "London, UK",
     accountCurrency: "USD, EUR, GBP, CAD, AUD, CHF, JPY, NZD, RUB, CNY, INR, MXN, ZAR, SGD, HKD, KRW, TWD, THB, PHP, IDR, MYR, VND, PLN, BRL, CZK, DKK, NOK, SEK, TRY, RON, HUF, ARS, COP, EGP, ILS, MAD, PKR, QAR, SAR, TND, VES, ZMW",
-    supportedLanguages: "English, Spanish, French, German, Italian, Portuguese, Russian, Chinese, Japanese, Korean, Turkish, Arabic, Hindi, Polish, Dutch, Swedish, Norwegian, Danish, Czech, Hungarian, Romanian, Turkish, Arabic, Hindi, Polish, Dutch, Swedish, Norwegian, Danish, Czech, Hungarian, Romanian",
+    supportedLanguages: ["USA", "Spain", "France", "Germany", "Italy", "Portugal", "Russian", "Chinese", "Japan", "Korean", "turkey", "Philippines","Poland"],
     fundingMethods: "Credit Card, Debit Card, Bank Transfer, Skrill, Neteller, PayPal, Wire Transfer, Crypto",
     financialInstruments:"Futures,Forex,CFDs,Stocks,Indices,Commodities,Cryptocurrencies",
     prohibitedCountries: "United States, Cuba, Iran, North Korea, Crimea, Donetsk",
@@ -117,6 +117,7 @@ export async function GeneralInformation({ brokerId, brokerName }: GeneralInform
             categories={["Forex Broker", "Forex Rebates"]}
           />
          <Headquarters coordinates="51.5074,-0.1278;40.7128,-74.0060" />
+         <SupportedLanguages languages={brokerInfo.supportedLanguages} />
 
             <div className="space-y-2">
               <div className="flex justify-start">
