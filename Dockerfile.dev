@@ -11,10 +11,13 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy the rest of the app
 COPY . .
+
+# Install Next.js globally
+RUN pnpm add -g next
 
 # Expose development port
 EXPOSE 3000
