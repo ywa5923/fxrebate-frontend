@@ -4,6 +4,11 @@ FROM node:20
 # Install pnpm globally
 RUN npm install -g pnpm
 
+# Set up PNPM
+RUN pnpm setup
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="${PNPM_HOME}:${PATH}"
+
 # Set working directory
 WORKDIR /app
 
