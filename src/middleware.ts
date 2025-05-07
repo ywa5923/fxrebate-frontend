@@ -47,7 +47,8 @@ export async function middleware(req: NextRequest) {
     zone = await getZoneByCountry(country) ?? undefined;
 
     if (!zone) {
-      return new NextResponse("Zone not found", { status: 404 });
+      //return new NextResponse("Zone not found", { status: 404 });
+      zone = "US";
     }
 
     // Set the zone cookie
