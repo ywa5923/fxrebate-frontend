@@ -12,8 +12,11 @@ import InViewContainer from '../InViewContainer';
 import { Translations, useTranslation } from '@/providers/translations';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
-const lottieDarkAnimation = { ...(await import('../../../public/assets/lottie/FX-Hero-dark-graphic.json')) };
-const lottieLightAnimation = { ...(await import('../../../public/assets/lottie/FX-Hero-light-graphic.json')) };
+//const lottieDarkAnimation = { ...(await import('../../../public/assets/lottie/FX-Hero-dark-graphic.json')) };
+//const lottieLightAnimation = { ...(await import('../../../public/assets/lottie/FX-Hero-light-graphic.json')) };
+const lottieDarkAnimation = await fetch('/assets/lottie/FX-Hero-dark-graphic.json').then(res => res.json());
+const lottieLightAnimation = await fetch('/assets/lottie/FX-Hero-light-graphic.json').then(res => res.json());
+
 
 const HERO_TAGS = [
     {
