@@ -88,6 +88,8 @@ const getDynamicOptions = async (locale: string) => {
 
     try {
         const res = await fetch(url, { cache: "no-store" });
+        console.log("res=========================", res);
+        console.log("url=========================", url);
 
         if (!res.ok) {
             console.error(`Error fetching dynamic options data: ${res.status} ${res.statusText}`);
