@@ -122,7 +122,9 @@ const getFilters=async (locale: string,zone: string)=> {
     try {
         const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
         const res = await fetch(url, { cache: "no-store" });
-    
+        console.log("res=========================", res);
+        console.log("url=========================", url);
+
         if (!res.ok) {
           const errorData = await res.json();
           console.error("FiltersEerrorData=========================", errorData);
