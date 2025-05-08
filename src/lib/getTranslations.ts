@@ -2,11 +2,13 @@ import { BASE_URL } from "@/constants";
 
 export const getTranslations = async (locale: string, zone: string,key:string,section:string) => {
     const url = new URL(`${BASE_URL}/locale_resources`);
+  
     url.searchParams.append("key[eq]", key);
     url.searchParams.append("lang[eq]", locale);
     url.searchParams.append("zone[eq]", zone);
     section.includes(",") ? url.searchParams.append("section[in]", section) : url.searchParams.append("section[eq]", section);
 
+    console.log("url~~~~~~~~~~~~~~~~",url.toString());
     const res = await fetch(url.toString(), { cache: "no-store" });
 
     //{ next: { revalidate: 7200 } }

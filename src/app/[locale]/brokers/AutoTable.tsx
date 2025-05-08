@@ -8,6 +8,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Link from "next/link"
 import { CheckCircledIcon,CrossCircledIcon } from "@radix-ui/react-icons"
 import { RatingComponent } from "./RatingComponent"
+import { RatingDisplay } from "./RatingDisplay"
 
 import {
   ColumnDef,
@@ -210,11 +211,9 @@ export function AutoTable<TData, TValue>({
                   let cellValue=parseFloat(cell.getValue() as string);
                
                   return(<TableCell key={cell.id} className="text-center" > 
-                        <RatingComponent 
+                        <RatingComponent
                         value={cellValue} 
-                       
                          />
-
                   </TableCell>)
                  }
                 
