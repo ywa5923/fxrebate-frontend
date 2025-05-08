@@ -88,12 +88,11 @@ const getDynamicOptions = async (locale: string) => {
 
     try {
         const res = await fetch(url, { cache: "no-store" });
-        console.log("res=========================", res);
-        console.log("url=========================", url);
+       
 
         if (!res.ok) {
-          const errorData = await res.json();
-           console.error("errorData=========================", errorData);
+          const errorData = await res.clone().json();
+          console.error("FiltersErrorData:", errorData);
             console.error(`Error fetching dynamic options data: ${res.status} ${res.statusText}`);
             throw new Error("Could not fetching broker options from server.Please try again later");
         }
@@ -121,7 +120,7 @@ const getDynamicOptions = async (locale: string) => {
 const getFilters = async (locale: string, zone: string) => {
   try {
     const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
-    console.log("Fetching filters from:", url);
+   // console.log("Fetching filters from:", url);
     
     const res = await fetch(url, { 
       cache: "no-store",
@@ -131,12 +130,12 @@ const getFilters = async (locale: string, zone: string) => {
     });
 
     // First check if we got HTML instead of JSON
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await res.text();
-      console.error("Received non-JSON response:", text.substring(0, 200)); // Log first 200 chars
-      throw new Error(`Invalid response type: ${contentType}`);
-    }
+    // const contentType = res.headers.get('content-type');
+    // if (!contentType || !contentType.includes('application/json')) {
+    //   const text = await res.text();
+    //   console.error("Received non-JSON response:", text.substring(0, 200)); // Log first 200 chars
+    //   throw new Error(`Invalid response type: ${contentType}`);
+    // }
 
     if (!res.ok) {
       const errorData = await res.clone().json();
@@ -147,7 +146,7 @@ const getFilters = async (locale: string, zone: string) => {
     const data = await res.json();
     return data;
   } catch (error) {
-    console.error("Error fetching filters:", error);
+    console.error("Error fetching filters:", error.message);
     if (error instanceof Error) {
       throw new Error(`Could not load filters: ${error.message}`);
     }
