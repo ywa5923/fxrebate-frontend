@@ -36,7 +36,7 @@ export default async function Brokers({
   const [dynamicColumns,defaultLoadedColumns,allowSortingOptions,booleanOptions,ratingOptions ]= await getDynamicOptions(locale);
 
  
-  let filter_options = await getFilters(locale);
+  let filter_options = await getFilters(locale, zone);
  
   const booleanOptionsSlugs=Object.keys(booleanOptions);
 
@@ -118,24 +118,21 @@ const getDynamicOptions = async (locale: string) => {
 };
 
 
-const getFilters=async (locale: string,zone: string)=> {
-    try {
-        const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
-        const res = await fetch(url, { cache: "no-store" });
-        const text = await res.text();
-        console.error("Raw response text:", text); 
-        console.log("res=========================", res);
-        console.log("url=========================", url);
+const getFilters = async (locale: string, zone: string) => {
+  try {
+    const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
+    const res = await fetch(url, { cache: "no-store" });
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          console.error("FiltersEerrorData=========================", errorData);
-            console.error("Error fetching filters:", res.status, res.statusText);
-            throw new Error(`Failed to fetch filters: ${res.status} ${res.statusText}`);
-        }
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching filters:", error);
-        throw new Error("Could not load filters. Please try again later.");
-      }
+    if (!res.ok) {
+      const errorData = await res.clone().json();
+      console.error("FiltersErrorData=========================", errorData);
+      throw new Error(`Failed to fetch filters: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching filters:", error);
+    throw new Error("Could not load filters. Please try again later.");
   }
+}
