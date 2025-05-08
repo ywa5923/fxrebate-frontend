@@ -124,6 +124,8 @@ const getFilters=async (locale: string,zone: string)=> {
         const res = await fetch(url, { cache: "no-store" });
     
         if (!res.ok) {
+          const errorData = await res.json();
+          console.error("FiltersEerrorData=========================", errorData);
             console.error("Error fetching filters:", res.status, res.statusText);
             throw new Error(`Failed to fetch filters: ${res.status} ${res.statusText}`);
         }
