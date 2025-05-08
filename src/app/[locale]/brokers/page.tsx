@@ -92,6 +92,8 @@ const getDynamicOptions = async (locale: string) => {
         console.log("url=========================", url);
 
         if (!res.ok) {
+          const errorData = await res.json();
+           console.error("errorData=========================", errorData);
             console.error(`Error fetching dynamic options data: ${res.status} ${res.statusText}`);
             throw new Error("Could not fetching broker options from server.Please try again later");
         }
