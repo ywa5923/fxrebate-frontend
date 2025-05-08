@@ -121,13 +121,26 @@ const getDynamicOptions = async (locale: string) => {
 const getFilters = async (locale: string, zone: string) => {
   try {
     const url = `${BASE_URL}/broker-filters?language[eq]=${locale}&country[eq]=ro&zone[eq]=${zone}`;
-    const res = await fetch(url, { cache: "no-store" });
-   
-    console.log("url=========================", url);
+    console.log("Fetching filters from:", url);
+    
+    const res = await fetch(url, { 
+      cache: "no-store",
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    // First check if we got HTML instead of JSON
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await res.text();
+      console.error("Received non-JSON response:", text.substring(0, 200)); // Log first 200 chars
+      throw new Error(`Invalid response type: ${contentType}`);
+    }
 
     if (!res.ok) {
       const errorData = await res.clone().json();
-      console.error("FiltersErrorData=========================", errorData);
+      console.error("FiltersErrorData:", errorData);
       throw new Error(`Failed to fetch filters: ${res.status} ${res.statusText}`);
     }
 
@@ -135,6 +148,9 @@ const getFilters = async (locale: string, zone: string) => {
     return data;
   } catch (error) {
     console.error("Error fetching filters:", error);
+    if (error instanceof Error) {
+      throw new Error(`Could not load filters: ${error.message}`);
+    }
     throw new Error("Could not load filters. Please try again later.");
   }
 }
