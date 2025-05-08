@@ -44,11 +44,11 @@ export async function middleware(req: NextRequest) {
     }
 
     //Get zone code
-    zone = await getZoneByCountry(country) ?? undefined;
-
+    //zone = await getZoneByCountry(country) ?? undefined;
+    zone = "zone1";
     if (!zone) {
-      //return new NextResponse("Zone not found", { status: 404 });
-      zone = "zone1";
+      return new NextResponse("Zone not found", { status: 404 });
+      
     }
 
     // Set the zone cookie
