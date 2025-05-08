@@ -108,8 +108,8 @@ const getDynamicOptions = async (locale: string) => {
             brokerOptions.ratingOptions || [],
         ];
     } catch (error) {
-        console.error("Network error or unexpected issue:", error);
-        throw new Error("Could not load broker options from server.Please try again later");
+        console.error("Network error or unexpected issue:", error,url);
+        throw new Error("Could not load broker options from server.Please try again later:"+url);
     }
 };
 
