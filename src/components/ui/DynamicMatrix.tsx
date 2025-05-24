@@ -30,10 +30,23 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   const [selectedColHeaders, setSelectedColHeaders] = React.useState<string[]>([])
 
   const addRow = () => {
-    const newRow = selectedColHeaders.map(colHeader => ({
+    if (matrix.length === 0 || matrix[0].length === 0) {
+      // If matrix is empty, create first row with one empty cell
+      setMatrix([[
+        {
+          value: '',
+          rowHeader: rowHeaders[0] || '',
+          colHeader: columnHeaders[0] || ''
+        }
+      ]])
+      return
+    }
+
+    // Create new row with same number of columns as existing rows
+    const newRow = matrix[0].map(cell => ({
       value: '',
-      rowHeader: selectedRowHeaders[matrix.length] || '',
-      colHeader
+      rowHeader: rowHeaders[matrix.length] || '',
+      colHeader: cell.colHeader
     }))
     setMatrix([...matrix, newRow])
   }
@@ -44,12 +57,25 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   }
 
   const addColumn = () => {
+    if (matrix.length === 0) {
+      // If matrix is empty, create first row with one empty cell
+      setMatrix([[
+        {
+          value: '',
+          rowHeader: rowHeaders[0] || '',
+          colHeader: columnHeaders[0] || ''
+        }
+      ]])
+      return
+    }
+
+    // Add new column to all existing rows
     const newMatrix = matrix.map(row => [
       ...row,
       {
         value: '',
-        rowHeader: row[0]?.rowHeader || '',
-        colHeader: selectedColHeaders[row[0]?.length || 0] || ''
+        rowHeader: row[0].rowHeader,
+        colHeader: columnHeaders[row.length] || ''
       }
     ])
     setMatrix(newMatrix)
