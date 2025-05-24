@@ -1,0 +1,316 @@
+"use client"
+
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+
+import Multiselect from 'react-select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { InfoIcon } from "lucide-react"
+
+
+interface FormField {
+  id: number
+  slug: string
+  name: string
+  data_type: string
+  form_type: string
+  options?: { value: string; label: string }[]
+  required?: number
+  description?: string
+  placeholder?: string
+  min?: number
+  max?: number
+  step?: number
+  tooltip?: string
+  meta_data?: { value: string; label: string }[]
+}
+
+interface DynamicFormProps {
+  fields: FormField[]
+  onSubmit: (data: any) => void
+}
+
+export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
+  
+  // Create a dynamic schema based on the fields
+  const schemaObject: { [key: string]: any } = {}
+  fields.forEach((field) => {
+    let fieldSchema;
+    switch (field.form_type) {
+      case "text":
+        fieldSchema = z.string()
+        break
+      case "number":
+        fieldSchema = z.number()
+        break
+      case "boolean":
+        fieldSchema = z.boolean()
+        break
+      case "date":
+        fieldSchema = z.date()
+        break
+      case "select":
+        fieldSchema = z.string()
+        
+        break
+      case "multiselect":
+       // Use string validation with pipe delimiter format
+       fieldSchema = field.required === 1
+       ? z.string().refine(val => val && val.length > 0, {
+           message: `Please select at least one ${field.name}`,
+         })
+       : z.string().optional();
+        
+        break;
+      default:
+        fieldSchema = z.string()
+    }
+    console.log("fieldSchema1is11 aaaaa: ",  field)
+    // Add validation based on field properties
+    if (field.required == 1) {
+      if (field.data_type === "text" || field.data_type === "select") {
+        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
+      } else if (field.data_type === "number") {
+        fieldSchema = (fieldSchema as z.ZodNumber).min(1, `${field.name} is required`);
+      }else if (field.form_type === "select") {
+        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
+        console.log("fieldSchema is aaaaa: ",  field)
+        // For select fields, validate they're not empty strings
+        // fieldSchema = (fieldSchema as z.ZodString).refine(val => val && val.trim() !== "", {
+        //   message: `${field.name} is required`,
+        // });
+        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
+      }
+    }
+    
+    if (field.data_type === "number") {
+      if (field.min !== undefined) fieldSchema = (fieldSchema as z.ZodNumber).min(field.min);
+      if (field.max !== undefined) fieldSchema = (fieldSchema as z.ZodNumber).max(field.max);
+    }
+
+    schemaObject[field.slug] = fieldSchema
+   
+  })
+ // console.log("fieldSchema is aaaaa: ",  schemaObject)
+
+  const formSchema = z.object(schemaObject)
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: fields.reduce((acc, field) => {
+      switch (field.data_type) {
+        case "boolean":
+          return { ...acc, [field.slug]: false }
+        case "multiselect":
+          return { ...acc, [field.slug]: "" }
+        case "date":
+          return { ...acc, [field.slug]: null }
+        default:
+          return { ...acc, [field.slug]: "" }
+      }
+    }, {}),
+  })
+
+  function handleSubmit(data: z.infer<typeof formSchema>) {
+  
+    console.log("Form data submitted:", data);
+    
+    // Log any empty required fields for debugging
+    fields.forEach(field => {
+      if (field.required === 1) {
+        const value = data[field.slug];
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          console.warn(`Warning: Required field ${field.name} is empty:`, value);
+        }
+      }
+    });
+    onSubmit(data);
+  }
+
+  const renderFormField = (field: FormField, formField: any) => {
+    switch (field.form_type) {
+      case "textarea":
+        return (
+          <Textarea
+            placeholder={field.placeholder || `Enter ${field.name.toLowerCase()}`}
+            {...formField}
+          />
+        )
+      case "select":
+        return (
+          <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+            <SelectTrigger>
+              <SelectValue placeholder={field.placeholder || `Select ${field.name.toLowerCase()}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.meta_data && Array.isArray(field.meta_data) && field.meta_data.map((option:any) => (
+             
+               
+               <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
+      case "multiselect":
+        return (
+          <Multiselect
+            options={field.meta_data}
+            isMulti
+            classNamePrefix="react-select"
+            onChange={(selected) => {
+              const values = selected ? selected.map((option: { value: string }) => option.value).join('|#|') : '';
+              console.log(`Multiselect changed for ${field.slug}:`, values);
+              formField.onChange(values);
+              setTimeout(() => form.trigger(field.slug), 100);
+            }}
+            value={field.meta_data?.filter(option => 
+              formField.value ? formField.value.split('|#|').includes(option.value) : false
+            ) || []}
+            placeholder={field.placeholder || `Select ${field.name.toLowerCase()}`}
+            onBlur={formField.onBlur}
+            name={field.name}
+            id={field.slug}
+          />
+        )
+      case "checkbox":
+        return (
+          <Checkbox
+            checked={formField.value}
+            onCheckedChange={formField.onChange}
+          />
+        )
+      case "radio":
+        return (
+          <RadioGroup onValueChange={formField.onChange} defaultValue={formField.value}>
+            {field.options?.map((option) => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <RadioGroupItem value={option.value} id={`${field.slug}-${option.value}`} />
+                <label htmlFor={`${field.slug}-${option.value}`}>{option.label}</label>
+              </div>
+            ))}
+          </RadioGroup>
+        )
+      case "switch":
+        return (
+          <Switch
+            checked={formField.value}
+            onCheckedChange={formField.onChange}
+          />
+        )
+      case "date":
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !formField.value && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {formField.value ? format(formField.value, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={formField.value}
+                onSelect={formField.onChange}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        )
+      default:
+        return (
+          <Input
+            type={field.data_type === "number" ? "number" : "text"}
+            placeholder={field.placeholder || `Enter ${field.name.toLowerCase()}`}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            {...formField}
+          />
+        )
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        {fields.map((field) => (
+          <FormField
+            key={field.id}
+            control={form.control}
+            name={field.slug}
+            render={({ field: formField }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel>{field.name}</FormLabel>
+                  {field.tooltip && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{field.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <FormControl>
+                  {renderFormField(field, formField)}
+                </FormControl>
+                {field.description && (
+                  <FormDescription>{field.description}</FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  )
+}
+
