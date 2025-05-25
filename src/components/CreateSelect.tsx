@@ -22,20 +22,22 @@ type Option = {
   value: string;
 };
 
-const initialOptions: Option[] = [
-  { label: "Apple", value: "apple" },
-  { label: "Banana", value: "banana" },
-  { label: "Orange", value: "orange" },
-];
+interface CreateSelectProps {
+  options: Option[];
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}
 
-export function CreateSelect() {
-  const [options, setOptions] = useState<Option[]>(initialOptions);
-  const [selected, setSelected] = useState<Option | null>(null);
+export function CreateSelect({ options, value, onValueChange, placeholder = "Select or create...", className }: CreateSelectProps) {
+  const [selected, setSelected] = useState<Option | null>(value ? options.find(opt => opt.value === value) || null : null);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
   const handleSelect = (option: Option) => {
     setSelected(option);
+    onValueChange?.(option.value);
     setOpen(false);
   };
 
@@ -44,7 +46,7 @@ export function CreateSelect() {
       label: inputValue,
       value: inputValue.toLowerCase().replace(/\s+/g, "-"),
     };
-    setOptions((prev) => [...prev, newOption]);
+    onValueChange?.(newOption.value);
     setSelected(newOption);
     setOpen(false);
   };
@@ -56,8 +58,8 @@ export function CreateSelect() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-between">
-          {selected ? selected.label : "Select or create..."}
+        <Button variant="outline" className={cn("w-full justify-between", className)}>
+          {selected ? selected.label : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">

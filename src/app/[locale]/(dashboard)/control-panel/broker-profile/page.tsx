@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion"
 import { DynamicMatrix } from "@/components/ui/DynamicMatrix"
 import { CreateSelect } from "@/components/CreateSelect"
+import { CreateMultiSelect } from "@/components/CreateMultiSelect"
 interface FormField {
   id: number
   slug: string
@@ -49,7 +50,7 @@ export default async function BrokerProfilePage() {
   const columnHeaders = [{value: "Column 1", type: "numberWithReferenceWithUnit", units: ["USD", "EUR", "GBP"], references: ["Reference 1", "Reference 2", "Reference 3"]}, {value: "Column 2", type: "numberWithUnit", units: ["USD", "EUR", "GBP"]}, {value: "Column 3", type: "numberWithUnit", units: ["USD", "EUR", "GBP"]}]
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6">s
       <h1 className="text-2xl font-bold mb-6">Broker Profile</h1>
       {
         formSections.map((section: any) => (
@@ -67,7 +68,7 @@ export default async function BrokerProfilePage() {
        rowHeaders={rowHeaders}
         columnHeaders={columnHeaders}
 />
-<CreateSelect />
+<CreateMultiSelect />
     </div>
   )
 }

@@ -2,6 +2,9 @@
 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Plus, Minus, X } from "lucide-react"
+import { CreateSelect } from "@/components/CreateSelect"
 import {
   Select,
   SelectContent,
@@ -9,8 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Plus, Minus, X } from "lucide-react"
 
 interface MatrixCell {
   value: string | { value: number; unit: string } | { value: number; reference: string; unit: string }
@@ -32,8 +33,7 @@ interface DynamicMatrixProps {
 
 export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMatrixProps) {
   const [matrix, setMatrix] = React.useState<MatrixCell[][]>([[]])
-  const [selectedRowHeaders, setSelectedRowHeaders] = React.useState<string[]>([])
-  const [selectedColHeaders, setSelectedColHeaders] = React.useState<string[]>([])
+  const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<string[]>(columnHeaders.map(h => h.value))
 
   const addRow = () => {
     if (matrix.length === 0 || matrix[0].length === 0) {
@@ -80,14 +80,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
       // If matrix is empty, create first row with one empty cell
       setMatrix([[
         {
-          value: columnHeaders[0]?.type === 'numberWithReferenceWithUnit'
-            ? { value: 0, reference: columnHeaders[0].references?.[0] || '', unit: columnHeaders[0].units?.[0] || '' }
-            : columnHeaders[0]?.type === 'numberWithUnit'
-              ? { value: 0, unit: columnHeaders[0].units?.[0] || '' }
-              : '',
+          value: '',
           rowHeader: rowHeaders[0] || '',
-          colHeader: columnHeaders[0]?.value || '',
-          type: columnHeaders[0]?.type
+          colHeader: '',
+          type: undefined
         }
       ]])
       return
@@ -96,18 +92,13 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     // Add new column to all existing rows
     const newMatrix = matrix.map(row => {
       const currentRowHeader = row[0]?.rowHeader || rowHeaders[0] || ''
-      const columnHeader = columnHeaders[row.length]
       return [
         ...row,
         {
-          value: columnHeader?.type === 'numberWithReferenceWithUnit'
-            ? { value: 0, reference: columnHeader.references?.[0] || '', unit: columnHeader.units?.[0] || '' }
-            : columnHeader?.type === 'numberWithUnit'
-              ? { value: 0, unit: columnHeader.units?.[0] || '' }
-              : '',
+          value: '',
           rowHeader: currentRowHeader,
-          colHeader: columnHeader?.value || '',
-          type: columnHeader?.type
+          colHeader: '',
+          type: undefined
         }
       ]
     })
@@ -128,12 +119,12 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                   ...cell,
                   value: cell.type === 'numberWithReferenceWithUnit'
                     ? { 
-                        value: Number(value), 
+                        value: value === '' ? 0 : parseFloat(value as string) || 0, 
                         reference: (cell.value as { value: number; reference: string; unit: string }).reference,
                         unit: (cell.value as { value: number; reference: string; unit: string }).unit
                       }
                     : cell.type === 'numberWithUnit'
-                      ? { value: Number(value), unit: (cell.value as { value: number; unit: string }).unit }
+                      ? { value: value === '' ? 0 : parseFloat(value as string) || 0, unit: (cell.value as { value: number; unit: string }).unit }
                       : String(value)
                 }
               : cell
@@ -197,9 +188,21 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   }
 
   const updateColumnHeader = (colIndex: number, header: string) => {
+    const columnHeader = columnHeaders.find(h => h.value === header)
     const newMatrix = matrix.map(row =>
       row.map((cell, index) =>
-        index === colIndex ? { ...cell, colHeader: header } : cell
+        index === colIndex 
+          ? { 
+              ...cell, 
+              colHeader: header,
+              type: columnHeader?.type,
+              value: columnHeader?.type === 'numberWithReferenceWithUnit'
+                ? { value: 0, reference: columnHeader.references?.[0] || '', unit: columnHeader.units?.[0] || '' }
+                : columnHeader?.type === 'numberWithUnit'
+                  ? { value: 0, unit: columnHeader.units?.[0] || '' }
+                  : ''
+            }
+          : cell
       )
     )
     setMatrix(newMatrix)
@@ -207,151 +210,168 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-4">
-        <Button onClick={addRow} variant="outline" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={addRow} variant="outline" size="sm" className="h-7 text-xs">
+          <Plus className="h-3 w-3 mr-1" />
           Add Row
         </Button>
-        <Button onClick={addColumn} variant="outline" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={addColumn} variant="outline" size="sm" className="h-7 text-xs">
+          <Plus className="h-3 w-3 mr-1" />
           Add Column
         </Button>
       </div>
 
       <div className="border rounded-lg overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="border p-2 bg-muted">Row/Column</th>
-              {matrix[0]?.map((_, colIndex) => (
-                <th key={colIndex} className="border p-2 bg-muted">
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={matrix[0][colIndex]?.colHeader}
-                      onValueChange={(value) => updateColumnHeader(colIndex, value)}
-                    >
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue placeholder="Select header" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {columnHeaders.map((header) => (
-                          <SelectItem key={header.value} value={header.value}>
-                            {header.value}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeColumn(colIndex)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {matrix.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                <td className="border p-2">
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={row[0]?.rowHeader}
-                      onValueChange={(value) => updateRowHeader(rowIndex, value)}
-                    >
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue placeholder="Select header" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {rowHeaders.map((header) => (
-                          <SelectItem key={header} value={header}>
-                            {header}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeRow(rowIndex)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </td>
-                {row.map((cell, colIndex) => (
-                  <td key={colIndex} className="border p-2">
-                    <div className="flex gap-2">
-                      <Input
-                        type={cell.type?.includes('number') ? 'number' : 'text'}
-                        value={cell.type?.includes('number') 
-                          ? (cell.value as { value: number; reference?: string; unit: string }).value 
-                          : cell.value as string}
-                        onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
-                        placeholder="Enter value"
-                      />
-                      {cell.type === 'numberWithReferenceWithUnit' && (
-                        <>
-                          <Select
-                            value={(cell.value as { value: number; reference: string; unit: string }).reference}
-                            onValueChange={(reference) => updateCellReference(rowIndex, colIndex, reference)}
-                          >
-                            <SelectTrigger className="w-[100px]">
-                              <SelectValue placeholder="Reference" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {columnHeaders.find(h => h.value === cell.colHeader)?.references?.map((reference) => (
-                                <SelectItem key={reference} value={reference}>
-                                  {reference}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Select
-                            value={(cell.value as { value: number; reference: string; unit: string }).unit}
-                            onValueChange={(unit) => updateCellUnit(rowIndex, colIndex, unit)}
-                          >
-                            <SelectTrigger className="w-[100px]">
-                              <SelectValue placeholder="Unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
-                                <SelectItem key={unit} value={unit}>
-                                  {unit}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
-                      {cell.type === 'numberWithUnit' && (
+        <div className="min-w-[300px] inline-block w-full">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="border p-1 bg-muted sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px]">Row/Column</th>
+                {matrix[0]?.map((_, colIndex) => (
+                  <th key={colIndex} className="border p-1 bg-muted w-[250px]">
+                    <div className="flex items-center gap-1">
+                      <div className="w-full">
                         <Select
-                          value={(cell.value as { value: number; unit: string }).unit}
-                          onValueChange={(unit) => updateCellUnit(rowIndex, colIndex, unit)}
+                          value={matrix[0][colIndex]?.colHeader}
+                          onValueChange={(value: string) => {
+                            updateColumnHeader(colIndex, value)
+                          }}
                         >
-                          <SelectTrigger className="w-[100px]">
-                            <SelectValue placeholder="Unit" />
+                          <SelectTrigger className="h-9 text-sm w-full">
+                            <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
-                            {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
-                              <SelectItem key={unit} value={unit}>
-                                {unit}
+                            {existingColumnHeaders.map((header) => (
+                              <SelectItem key={header} value={header} className="text-sm">
+                                {header}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeColumn(colIndex)}
+                        className="h-9 w-9 p-0 ml-1 flex-shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </td>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {matrix.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  <td className="border p-1 sticky left-0 bg-background z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px]">
+                    <div className="flex items-center gap-1">
+                      <div className="w-full">
+                        <CreateSelect
+                          value={row[0]?.rowHeader}
+                          options={rowHeaders.map(header => ({
+                            label: header,
+                            value: header
+                          }))}
+                          onValueChange={(value: string) => {
+                            updateRowHeader(rowIndex, value)
+                          }}
+                          placeholder="Select or create"
+                          className="h-9 text-sm w-full"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeRow(rowIndex)}
+                        className="h-9 w-9 p-0 ml-1 flex-shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                  {row.map((cell, colIndex) => (
+                    <td key={colIndex} className="border p-1 bg-background w-[250px]">
+                      {cell.colHeader ? (
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <Input
+                            type="text"
+                            value={cell.type?.includes('number') 
+                              ? String((cell.value as { value: number; reference?: string; unit: string }).value || '')
+                              : cell.value as string}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              updateCell(rowIndex, colIndex, value)
+                            }}
+                            placeholder="Value"
+                            className="h-9 text-sm w-full"
+                          />
+                          {cell.type === 'numberWithReferenceWithUnit' && (
+                            <>
+                              <Select
+                                value={(cell.value as { value: number; reference: string; unit: string }).reference}
+                                onValueChange={(reference: string) => updateCellReference(rowIndex, colIndex, reference)}
+                              >
+                                <SelectTrigger className="h-9 text-sm w-full">
+                                  <SelectValue placeholder="Ref" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {columnHeaders.find(h => h.value === cell.colHeader)?.references?.map((ref) => (
+                                    <SelectItem key={ref} value={ref} className="text-sm">
+                                      {ref}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={(cell.value as { value: number; reference: string; unit: string }).unit}
+                                onValueChange={(unit: string) => updateCellUnit(rowIndex, colIndex, unit)}
+                              >
+                                <SelectTrigger className="h-9 text-sm w-full">
+                                  <SelectValue placeholder="Unit" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
+                                    <SelectItem key={unit} value={unit} className="text-sm">
+                                      {unit}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
+                          {cell.type === 'numberWithUnit' && (
+                            <Select
+                              value={(cell.value as { value: number; unit: string }).unit}
+                              onValueChange={(unit: string) => updateCellUnit(rowIndex, colIndex, unit)}
+                            >
+                              <SelectTrigger className="h-9 text-sm w-full">
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
+                                  <SelectItem key={unit} value={unit} className="text-sm">
+                                    {unit}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="h-9 w-full text-sm text-muted-foreground flex items-center">
+                          Select column type
+                        </div>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
