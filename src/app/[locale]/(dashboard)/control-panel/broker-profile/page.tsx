@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { DynamicMatrix } from "@/components/ui/DynamicMatrix"
-
+import { CreateSelect } from "@/components/CreateSelect"
 interface FormField {
   id: number
   slug: string
@@ -46,7 +46,7 @@ async function getBrokerOptions() {
 export default async function BrokerProfilePage() {
   const formSections = await getBrokerOptions()
   const rowHeaders = ["Header 1", "Header 2", "Header 3"]
-  const columnHeaders = ["Column 1", "Column 2", "Column 3"]
+  const columnHeaders = [{value: "Column 1", type: "numberWithReferenceWithUnit", units: ["USD", "EUR", "GBP"], references: ["Reference 1", "Reference 2", "Reference 3"]}, {value: "Column 2", type: "numberWithUnit", units: ["USD", "EUR", "GBP"]}, {value: "Column 3", type: "numberWithUnit", units: ["USD", "EUR", "GBP"]}]
 
   return (
     <div className="container mx-auto p-6">
@@ -64,10 +64,10 @@ export default async function BrokerProfilePage() {
         ))
       }
      <DynamicMatrix 
-  rowHeaders={rowHeaders}
-  columnHeaders={columnHeaders}
- 
+       rowHeaders={rowHeaders}
+        columnHeaders={columnHeaders}
 />
+<CreateSelect />
     </div>
   )
 }

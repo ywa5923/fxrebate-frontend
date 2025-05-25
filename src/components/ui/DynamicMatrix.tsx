@@ -13,14 +13,20 @@ import { Input } from "@/components/ui/input"
 import { Plus, Minus, X } from "lucide-react"
 
 interface MatrixCell {
-  value: string
+  value: string | { value: number; unit: string } | { value: number; reference: string; unit: string }
   rowHeader: string
   colHeader: string
+  type?: 'numberWithUnit' | 'numberWithReferenceWithUnit'
 }
 
 interface DynamicMatrixProps {
   rowHeaders: string[]
-  columnHeaders: string[]
+  columnHeaders: { 
+    value: string
+    type?: 'numberWithUnit' | 'numberWithReferenceWithUnit'
+    units?: string[]
+    references?: string[]
+  }[]
   onChange?: (matrix: MatrixCell[][]) => void
 }
 
@@ -34,20 +40,33 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
       // If matrix is empty, create first row with one empty cell
       setMatrix([[
         {
-          value: '',
+          value: columnHeaders[0]?.type === 'numberWithReferenceWithUnit'
+            ? { value: 0, reference: columnHeaders[0].references?.[0] || '', unit: columnHeaders[0].units?.[0] || '' }
+            : columnHeaders[0]?.type === 'numberWithUnit'
+              ? { value: 0, unit: columnHeaders[0].units?.[0] || '' }
+              : '',
           rowHeader: rowHeaders[0] || '',
-          colHeader: columnHeaders[0] || ''
+          colHeader: columnHeaders[0]?.value || '',
+          type: columnHeaders[0]?.type
         }
       ]])
       return
     }
 
     // Create new row with same number of columns as existing rows
-    const newRow = matrix[0].map(cell => ({
-      value: '',
-      rowHeader: rowHeaders[matrix.length] || '',
-      colHeader: cell.colHeader
-    }))
+    const newRow = matrix[0].map(cell => {
+      const columnHeader = columnHeaders.find(h => h.value === cell.colHeader)
+      return {
+        value: cell.type === 'numberWithReferenceWithUnit'
+          ? { value: 0, reference: columnHeader?.references?.[0] || '', unit: columnHeader?.units?.[0] || '' }
+          : cell.type === 'numberWithUnit'
+            ? { value: 0, unit: columnHeader?.units?.[0] || '' }
+            : '',
+        rowHeader: rowHeaders[matrix.length] || '',
+        colHeader: cell.colHeader,
+        type: cell.type
+      }
+    })
     setMatrix([...matrix, newRow])
   }
 
@@ -61,23 +80,37 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
       // If matrix is empty, create first row with one empty cell
       setMatrix([[
         {
-          value: '',
+          value: columnHeaders[0]?.type === 'numberWithReferenceWithUnit'
+            ? { value: 0, reference: columnHeaders[0].references?.[0] || '', unit: columnHeaders[0].units?.[0] || '' }
+            : columnHeaders[0]?.type === 'numberWithUnit'
+              ? { value: 0, unit: columnHeaders[0].units?.[0] || '' }
+              : '',
           rowHeader: rowHeaders[0] || '',
-          colHeader: columnHeaders[0] || ''
+          colHeader: columnHeaders[0]?.value || '',
+          type: columnHeaders[0]?.type
         }
       ]])
       return
     }
 
     // Add new column to all existing rows
-    const newMatrix = matrix.map(row => [
-      ...row,
-      {
-        value: '',
-        rowHeader: row[0].rowHeader,
-        colHeader: columnHeaders[row.length] || ''
-      }
-    ])
+    const newMatrix = matrix.map(row => {
+      const currentRowHeader = row[0]?.rowHeader || rowHeaders[0] || ''
+      const columnHeader = columnHeaders[row.length]
+      return [
+        ...row,
+        {
+          value: columnHeader?.type === 'numberWithReferenceWithUnit'
+            ? { value: 0, reference: columnHeader.references?.[0] || '', unit: columnHeader.units?.[0] || '' }
+            : columnHeader?.type === 'numberWithUnit'
+              ? { value: 0, unit: columnHeader.units?.[0] || '' }
+              : '',
+          rowHeader: currentRowHeader,
+          colHeader: columnHeader?.value || '',
+          type: columnHeader?.type
+        }
+      ]
+    })
     setMatrix(newMatrix)
   }
 
@@ -86,11 +119,66 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     setMatrix(newMatrix)
   }
 
-  const updateCell = (rowIndex: number, colIndex: number, value: string) => {
+  const updateCell = (rowIndex: number, colIndex: number, value: string | number) => {
     const newMatrix = matrix.map((row, rIndex) =>
       rIndex === rowIndex
         ? row.map((cell, cIndex) =>
-            cIndex === colIndex ? { ...cell, value } : cell
+            cIndex === colIndex
+              ? {
+                  ...cell,
+                  value: cell.type === 'numberWithReferenceWithUnit'
+                    ? { 
+                        value: Number(value), 
+                        reference: (cell.value as { value: number; reference: string; unit: string }).reference,
+                        unit: (cell.value as { value: number; reference: string; unit: string }).unit
+                      }
+                    : cell.type === 'numberWithUnit'
+                      ? { value: Number(value), unit: (cell.value as { value: number; unit: string }).unit }
+                      : String(value)
+                }
+              : cell
+          )
+        : row
+    )
+    setMatrix(newMatrix)
+    onChange?.(newMatrix)
+  }
+
+  const updateCellReference = (rowIndex: number, colIndex: number, reference: string) => {
+    const newMatrix = matrix.map((row, rIndex) =>
+      rIndex === rowIndex
+        ? row.map((cell, cIndex) =>
+            cIndex === colIndex
+              ? {
+                  ...cell,
+                  value: { 
+                    ...(cell.value as { value: number; reference: string; unit: string }),
+                    reference
+                  }
+                }
+              : cell
+          )
+        : row
+    )
+    setMatrix(newMatrix)
+    onChange?.(newMatrix)
+  }
+
+  const updateCellUnit = (rowIndex: number, colIndex: number, unit: string) => {
+    const newMatrix = matrix.map((row, rIndex) =>
+      rIndex === rowIndex
+        ? row.map((cell, cIndex) =>
+            cIndex === colIndex
+              ? {
+                  ...cell,
+                  value: cell.type === 'numberWithReferenceWithUnit'
+                    ? { 
+                        ...(cell.value as { value: number; reference: string; unit: string }),
+                        unit
+                      }
+                    : { value: (cell.value as { value: number; unit: string }).value, unit }
+                }
+              : cell
           )
         : row
     )
@@ -148,8 +236,8 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                       </SelectTrigger>
                       <SelectContent>
                         {columnHeaders.map((header) => (
-                          <SelectItem key={header} value={header}>
-                            {header}
+                          <SelectItem key={header.value} value={header.value}>
+                            {header.value}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -197,11 +285,67 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                 </td>
                 {row.map((cell, colIndex) => (
                   <td key={colIndex} className="border p-2">
-                    <Input
-                      value={cell.value}
-                      onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
-                      placeholder="Enter value"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type={cell.type?.includes('number') ? 'number' : 'text'}
+                        value={cell.type?.includes('number') 
+                          ? (cell.value as { value: number; reference?: string; unit: string }).value 
+                          : cell.value as string}
+                        onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
+                        placeholder="Enter value"
+                      />
+                      {cell.type === 'numberWithReferenceWithUnit' && (
+                        <>
+                          <Select
+                            value={(cell.value as { value: number; reference: string; unit: string }).reference}
+                            onValueChange={(reference) => updateCellReference(rowIndex, colIndex, reference)}
+                          >
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue placeholder="Reference" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {columnHeaders.find(h => h.value === cell.colHeader)?.references?.map((reference) => (
+                                <SelectItem key={reference} value={reference}>
+                                  {reference}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={(cell.value as { value: number; reference: string; unit: string }).unit}
+                            onValueChange={(unit) => updateCellUnit(rowIndex, colIndex, unit)}
+                          >
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue placeholder="Unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
+                                <SelectItem key={unit} value={unit}>
+                                  {unit}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </>
+                      )}
+                      {cell.type === 'numberWithUnit' && (
+                        <Select
+                          value={(cell.value as { value: number; unit: string }).unit}
+                          onValueChange={(unit) => updateCellUnit(rowIndex, colIndex, unit)}
+                        >
+                          <SelectTrigger className="w-[100px]">
+                            <SelectValue placeholder="Unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {columnHeaders.find(h => h.value === cell.colHeader)?.units?.map((unit) => (
+                              <SelectItem key={unit} value={unit}>
+                                {unit}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
                   </td>
                 ))}
               </tr>
