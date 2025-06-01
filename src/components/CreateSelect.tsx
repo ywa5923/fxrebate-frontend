@@ -30,7 +30,7 @@ interface CreateSelectProps {
   className?: string;
 }
 
-export function CreateSelect({ options, value, onValueChange, placeholder = "Select or create...", className }: CreateSelectProps) {
+export function CreateSelect({ options, value, onValueChange, placeholder = "Select class of instruments", className }: CreateSelectProps) {
   const [selected, setSelected] = useState<Option | null>(value ? options.find(opt => opt.value === value) || null : null);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");

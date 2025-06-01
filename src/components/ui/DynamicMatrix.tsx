@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { CreateMultiSelect } from "@/components/CreateMultiSelect"
+import { useEffect } from "react"
 
 interface MatrixCell {
   value: string | { value: number; unit: string } | { value: number; reference: string; unit: string }
@@ -35,6 +37,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   const [matrix, setMatrix] = React.useState<MatrixCell[][]>([[]])
   const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<string[]>(columnHeaders.map(h => h.value))
 
+ 
   const addRow = () => {
     if (matrix.length === 0 || matrix[0].length === 0) {
       // If matrix is empty, create first row with one empty cell
@@ -52,6 +55,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
       ]])
       return
     }
+   
 
     // Create new row with same number of columns as existing rows
     const newRow = matrix[0].map(cell => {
@@ -209,6 +213,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     onChange?.(newMatrix)
   }
 
+  useEffect(() => {
+    addRow()
+  }, [])
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -278,9 +286,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                           onValueChange={(value: string) => {
                             updateRowHeader(rowIndex, value)
                           }}
-                          placeholder="Select or create"
+                          placeholder="Select class of instruments"
                           className="h-9 text-sm w-full"
                         />
+                         <CreateMultiSelect placeholder="Select instruments" /> 
                       </div>
                       <Button
                         variant="ghost"

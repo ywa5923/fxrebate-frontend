@@ -68,7 +68,7 @@ export default async function BrokerProfilePage() {
        rowHeaders={rowHeaders}
         columnHeaders={columnHeaders}
 />
-<CreateMultiSelect />
+ <CreateMultiSelect /> 
     </div>
   )
 }
