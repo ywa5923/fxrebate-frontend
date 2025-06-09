@@ -22,14 +22,13 @@ type Option = {
   value: string;
 };
 
-const initialOptions: Option[] = [
-  { label: "Apple", value: "apple" },
-  { label: "Banana", value: "banana" },
-  { label: "Orange", value: "orange" },
-];
-
-export function CreateMultiSelect({placeholder="Select instrument"}: {placeholder: string}) {
-  const [options, setOptions] = useState<Option[]>(initialOptions);
+export function CreateMultiSelect({
+  placeholder = "Select instrument",
+  options = []
+}: {
+  placeholder: string;
+  options?: Option[];
+}) {
   const [selected, setSelected] = useState<Option[]>([]);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -48,7 +47,6 @@ export function CreateMultiSelect({placeholder="Select instrument"}: {placeholde
       label: inputValue,
       value: inputValue.toLowerCase().replace(/\s+/g, "-"),
     };
-    setOptions((prev) => [...prev, newOption]);
     setSelected((prev) => [...prev, newOption]);
     setInputValue("");
     setOpen(false);
@@ -68,7 +66,7 @@ export function CreateMultiSelect({placeholder="Select instrument"}: {placeholde
           <Button
             variant="outline"
             className={cn(
-              "w-full flex min-h-[2.5rem] justify-start items-center flex-wrap gap-1"
+              "w-full flex min-h-[2.5rem] justify-start items-center flex-wrap gap-1 bg-inherit"
             )}
             type="button"
           >
