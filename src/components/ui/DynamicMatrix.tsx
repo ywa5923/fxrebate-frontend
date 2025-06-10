@@ -17,11 +17,7 @@ import { useEffect } from "react"
 
 interface MatrixCell {
   value: {
-    number?: string
-    select?: string
-    select2?: string
-    text?: string
-    textarea?: string
+   [key: string]: string
   }
   rowHeader: string
   colHeader: string
@@ -65,39 +61,18 @@ interface DynamicMatrixProps {
 }
 
 export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMatrixProps) {
-  const [matrix, setMatrix] = React.useState<MatrixCell[][]>(() => {
-    if (rowHeaders.length === 0 || columnHeaders.length === 0) {
-      return [[]]
-    }
-    return rowHeaders.map(rowHeader => 
-      columnHeaders.map(colHeader => ({
-        value: {
-          number: '',
-          select: '',
-          select2: '',
-          text: '',
-          textarea: ''
-        },
-        rowHeader: rowHeader.slug,
-        colHeader: colHeader.slug,
-        type: colHeader.form_type.name
-      }))
-    )
-  })
+  const [matrix, setMatrix] = React.useState<MatrixCell[][]>([[]])
+
+  
+  
   const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<string[]>(columnHeaders.map(h => h.name))
 
   const addRow = () => {
     if (matrix.length === 0 || matrix[0].length === 0) {
       const initialCell: MatrixCell = {
-        value: {
-          number: '',
-          select: '',
-          select2: '',
-          text: '',
-          textarea: ''
-        },
-        rowHeader: rowHeaders[0]?.slug || '',
-        colHeader: columnHeaders[0]?.slug || '',
+        value: {},
+        rowHeader: rowHeaders[0]?.slug ,
+        colHeader: columnHeaders[0]?.slug,
         type: columnHeaders[0]?.form_type.name
       }
       setMatrix([[initialCell]])
@@ -107,14 +82,8 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     const newRow = matrix[0].map(cell => {
       const columnHeader = columnHeaders.find(h => h.slug === cell.colHeader)
       const newCell: MatrixCell = {
-        value: {
-          number: '',
-          select: '',
-          select2: '',
-          text: '',
-          textarea: ''
-        },
-        rowHeader: rowHeaders[matrix.length]?.slug || '',
+        value: {},
+        rowHeader: rowHeaders[0]?.slug || '',
         colHeader: cell.colHeader,
         type: columnHeader?.form_type.name
       }
@@ -132,13 +101,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   const addColumn = () => {
     if (matrix.length === 0) {
       const initialCell: MatrixCell = {
-        value: {
-          number: '',
-          select: '',
-          select2: '',
-          text: '',
-          textarea: ''
-        },
+        value: {},
         rowHeader: rowHeaders[0]?.slug || '',
         colHeader: '',
         type: undefined
@@ -150,13 +113,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     const newMatrix = matrix.map(row => {
       const currentRowHeader = row[0]?.rowHeader || rowHeaders[0]?.slug || ''
       const newCell: MatrixCell = {
-        value: {
-          number: '',
-          select: '',
-          select2: '',
-          text: '',
-          textarea: ''
-        },
+        value: {},
         rowHeader: currentRowHeader,
         colHeader: '',
         type: undefined
@@ -211,13 +168,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
               ...cell, 
               colHeader: header,
               type: columnHeader?.form_type.name,
-              value: {
-                number: '',
-                select: '',
-                select2: '',
-                text: '',
-                textarea: ''
-              }
+              value: {}
             }
           : cell
       )
@@ -300,7 +251,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                         >
                           <SelectTrigger className="h-9 text-sm w-full">
                             <SelectValue placeholder="Select class of instruments">
-                              {rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.name || "Select class of instruments"}
+                             {/* {rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.name || "Select class of instruments"} */}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
@@ -337,7 +288,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                               {item.type === 'number' && (
                                 <Input
                                   type="text"
-                                  value={cell.value?.number || ''}
+                                  value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     updateCell(rowIndex, colIndex, value, 'number')
@@ -348,7 +299,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                               )}
                               {item.type === 'single-select' && (
                                 <Select
-                                  value={cell.value?.select || ''}
+                                  value={cell.value?.[item.name] || ''}
                                   onValueChange={(value: string) => updateCell(rowIndex, colIndex, value, 'select')}
                                 >
                                   <SelectTrigger className="h-9 text-sm w-full">
@@ -366,7 +317,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                               {item.type === 'text' && (
                                 <Input
                                   type="text"
-                                  value={cell.value?.text || ''}
+                                  value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     updateCell(rowIndex, colIndex, value, 'text')
@@ -377,7 +328,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                               )}
                               {item.type === 'textarea' && (
                                 <textarea
-                                  value={cell.value?.textarea || ''}
+                                  value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     updateCell(rowIndex, colIndex, value, 'textarea')
