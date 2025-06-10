@@ -128,9 +128,9 @@ export function CreateMultiSelect({
               </CommandEmpty>
             ) : (
               <CommandGroup>
-                {filteredOptions.map((option) => (
+                {filteredOptions.map((option, index) => (
                   <CommandItem
-                    key={option.value}
+                    key={option.value + index}
                     onSelect={() => toggleOption(option)}
                     className="cursor-pointer"
                   >
