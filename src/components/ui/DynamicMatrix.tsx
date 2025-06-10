@@ -42,10 +42,12 @@ interface MatrixCell {
 interface DynamicMatrixProps {
   rowHeaders: {
     name: string
+    slug: string
     options: { value: string; label: string }[]
   }[]
   columnHeaders: { 
     name: string
+    slug: string
     form_type: {
       name: 'numberWithUnit' | 'numberWithReferenceWithUnit' | 'numberWithSelect' | 'number' | 'numberWithSelectWithSelect' | 'text' | 'textarea' | 'textareaWithNumericWithSelect'
       items: {
@@ -76,8 +78,8 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
           text: '',
           textarea: ''
         },
-        rowHeader: rowHeader.name,
-        colHeader: colHeader.name,
+        rowHeader: rowHeader.slug,
+        colHeader: colHeader.slug,
         type: colHeader.form_type.name
       }))
     )
@@ -94,8 +96,8 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
           text: '',
           textarea: ''
         },
-        rowHeader: rowHeaders[0]?.name || '',
-        colHeader: columnHeaders[0]?.name || '',
+        rowHeader: rowHeaders[0]?.slug || '',
+        colHeader: columnHeaders[0]?.slug || '',
         type: columnHeaders[0]?.form_type.name
       }
       setMatrix([[initialCell]])
@@ -103,7 +105,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     }
 
     const newRow = matrix[0].map(cell => {
-      const columnHeader = columnHeaders.find(h => h.name === cell.colHeader)
+      const columnHeader = columnHeaders.find(h => h.slug === cell.colHeader)
       const newCell: MatrixCell = {
         value: {
           number: '',
@@ -112,7 +114,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
           text: '',
           textarea: ''
         },
-        rowHeader: rowHeaders[matrix.length]?.name || '',
+        rowHeader: rowHeaders[matrix.length]?.slug || '',
         colHeader: cell.colHeader,
         type: columnHeader?.form_type.name
       }
@@ -137,7 +139,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
           text: '',
           textarea: ''
         },
-        rowHeader: rowHeaders[0]?.name || '',
+        rowHeader: rowHeaders[0]?.slug || '',
         colHeader: '',
         type: undefined
       }
@@ -146,7 +148,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     }
 
     const newMatrix = matrix.map(row => {
-      const currentRowHeader = row[0]?.rowHeader || rowHeaders[0]?.name || ''
+      const currentRowHeader = row[0]?.rowHeader || rowHeaders[0]?.slug || ''
       const newCell: MatrixCell = {
         value: {
           number: '',
@@ -201,7 +203,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   }
 
   const updateColumnHeader = (colIndex: number, header: string) => {
-    const columnHeader = columnHeaders.find(h => h.name === header)
+    const columnHeader = columnHeaders.find(h => h.slug === header)
     const newMatrix = matrix.map(row =>
       row.map((cell, index) =>
         index === colIndex 
@@ -246,7 +248,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
           <table className="w-full">
             <thead>
               <tr>
-                <th className="border p-1 bg-muted md:sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-x-auto md:overflow-visible">
+                <th className="border p-1 bg-muted md:sticky left-0 z-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-visible md:overflow-visible">
                   <div className="min-w-[200px]">Row/Column</div>
                 </th>
                 {matrix[0]?.map((_, colIndex) => (
@@ -262,10 +264,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                           <SelectTrigger className="h-9 text-sm w-full">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
-                          <SelectContent>
-                            {existingColumnHeaders.map((header) => (
-                              <SelectItem key={header} value={header} className="text-sm">
-                                {header}
+                          <SelectContent className="z-[100]">
+                            {columnHeaders.map((header) => (
+                              <SelectItem key={header.slug} value={header.slug} className="text-sm">
+                                {header.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -297,11 +299,13 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                           }}
                         >
                           <SelectTrigger className="h-9 text-sm w-full">
-                            <SelectValue placeholder="Select class of instruments" />
+                            <SelectValue placeholder="Select class of instruments">
+                              {rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.name || "Select class of instruments"}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {rowHeaders.map((header) => (
-                              <SelectItem key={header.name} value={header.name} className="text-sm">
+                              <SelectItem key={header.slug} value={header.slug} className="text-sm">
                                 {header.name}
                               </SelectItem>
                             ))}
@@ -316,10 +320,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className={`w-full ${rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"}`}>
+                      <div className={`w-full min-h-[36px] ${rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"}`}>
                         <CreateMultiSelect 
                           placeholder="Select multiple instruments"
-                          options={rowHeaders.find(h => h.name === row[0]?.rowHeader)?.options || []}
+                          options={rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.options || []}
                         />
                       </div>
                     </div>
@@ -328,7 +332,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                     <td key={colIndex} className="border p-1 w-[250px]">
                       {cell.colHeader ? (
                         <div className="flex flex-wrap gap-2 items-center">
-                          {columnHeaders.find(h => h.name === cell.colHeader)?.form_type.items.map((item, itemIndex) => (
+                          {columnHeaders.find(h => h.slug === cell.colHeader)?.form_type.items.map((item, itemIndex) => (
                             <React.Fragment key={item.name}>
                               {item.type === 'number' && (
                                 <Input
@@ -350,7 +354,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                                   <SelectTrigger className="h-9 text-sm w-full">
                                     <SelectValue placeholder={item.placeholder || "Select"} />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent className="z-[100]">
                                     {item.options?.map((option) => (
                                       <SelectItem key={option.value} value={option.value} className="text-sm">
                                         {option.label}

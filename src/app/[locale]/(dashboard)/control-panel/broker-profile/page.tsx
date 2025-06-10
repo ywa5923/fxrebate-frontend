@@ -47,14 +47,14 @@ async function getBrokerOptions() {
 async function getMatrixHeaders() {
   try {
     const response = await fetch(
-      "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=test&type[eq]=column&broker_id_strict[eq]=0",
+      "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0",
       { next: { revalidate:0 } }
     )
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const responseData = await response.json()
-    return responseData.data
+    return responseData
   } catch (error) {
     console.error('Error fetching matrix headers:', error)
     throw error
@@ -66,26 +66,31 @@ async function getMatrixHeaders() {
 
 export default async function BrokerProfilePage() {
   const formSections = await getBrokerOptions()
-  //url="http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=test&type[eq]=column&broker_id_strict[eq]=0"
-  //nst rowHeaders = ["Header 1", "Header 2", "Header 3"]
-  const rowHeaders=[{
+
+  const rowHeaders2=[{
     name: "Header 1",
+    slug: "header_1",
     options: [{value: "USD", label: "USD"}, {value: "EUR", label: "EUR"}, {value: "GBP", label: "GBP"}]
   },
   {
     name: "Header 2",
+    slug: "header_2",
     options: [{value: "USD", label: "USD2"}, {value: "EUR", label: "EUR2"}, {value: "GBP", label: "GBP2"}]
   },
   {
     name: "Header 3",
+    slug: "header_3",
     options: [{value: "USD", label: "USD3"}, {value: "EUR", label: "EUR3"}, {value: "GBP", label: "GBP3"}]
   }
 ]
-  const columnHeaders2 = await getMatrixHeaders()
+  const {columnHeaders, rowHeaders} = await getMatrixHeaders()
+
+  
  
-  const columnHeaders3= [
+  const columnHeaders2= [
     {
     name: "Column 1", 
+    slug: "column_1",
     form_type: {
       name: "numberWithSelect", 
       items: [
@@ -104,6 +109,7 @@ export default async function BrokerProfilePage() {
    },
    {
     name: "Column 2", 
+    slug: "column_2",
     form_type: {
       name: "number", 
       items: [{name: "column_2_number", type: "number", placeholder: "Enter a number"}]
@@ -111,6 +117,7 @@ export default async function BrokerProfilePage() {
    },
    {
     name: "Column 3", 
+    slug: "column_3",
     form_type: {
       name: "numberWithSelectWithSelect", 
       items: [
@@ -134,6 +141,7 @@ export default async function BrokerProfilePage() {
    },
    {
     name: "Column 4", 
+    slug: "column_4",
     form_type: {
       name: "text", 
       items: [{name: "column_4_text", type: "text", placeholder: "Enter a text"}]
@@ -141,6 +149,7 @@ export default async function BrokerProfilePage() {
    },
    {
     name: "Column 5d", 
+    slug: "column_5",
     form_type: {
       name: "textarea", 
       items: [{name: "column_5_textarea", type: "textarea", placeholder: "Enter a text"}]
@@ -148,6 +157,7 @@ export default async function BrokerProfilePage() {
    },
    {
     name: "Column 6", 
+    slug: "column_6",
     form_type: {
       name: "textareaWithNumericWithSelect", 
       items: [
@@ -175,7 +185,7 @@ export default async function BrokerProfilePage() {
       }
      <DynamicMatrix 
        rowHeaders={rowHeaders}
-        columnHeaders={columnHeaders2}
+        columnHeaders={columnHeaders}
 />
  {/* <CreateMultiSelect />  */}
     </div>

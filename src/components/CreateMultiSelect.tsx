@@ -66,45 +66,47 @@ export function CreateMultiSelect({
           <Button
             variant="outline"
             className={cn(
-              "w-full flex min-h-[2.5rem] justify-start items-center flex-wrap gap-1 bg-inherit"
+              "w-full h-auto min-h-[36px] flex justify-start items-start gap-1 bg-inherit py-1 px-2"
             )}
             type="button"
           >
             {selected.length === 0 && (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
-            {selected.map((item) => (
-              <span
-                key={item.value}
-                className="flex items-center gap-1 px-2 py-0.5 text-sm rounded bg-muted"
-              >
-                {item.label}
+            <div className="flex items-start gap-1 flex-wrap w-full">
+              {selected.map((item) => (
                 <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelected((prev) =>
-                      prev.filter((i) => i.value !== item.value)
-                    );
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
+                  key={item.value}
+                  className="flex items-center gap-1 px-2 py-0.5 text-sm rounded bg-muted"
+                >
+                  {item.label}
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelected((prev) =>
                         prev.filter((i) => i.value !== item.value)
                       );
-                    }
-                  }}
-                  className="cursor-pointer text-muted-foreground hover:text-destructive focus:outline-none"
-                >
-                  <X className="w-3 h-3" />
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelected((prev) =>
+                          prev.filter((i) => i.value !== item.value)
+                        );
+                      }
+                    }}
+                    className="cursor-pointer text-muted-foreground hover:text-destructive focus:outline-none"
+                  >
+                    <X className="w-3 h-3" />
+                  </span>
                 </span>
-              </span>
-            ))}
+              ))}
+            </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-full p-0" align="start" sideOffset={5}>
           <Command>
             <CommandInput
               placeholder="Search or create..."
