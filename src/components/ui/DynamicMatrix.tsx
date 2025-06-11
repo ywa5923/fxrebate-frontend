@@ -308,26 +308,19 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange, initialMatr
                   <td className={`border p-1 md:sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-x-auto md:overflow-visible ${rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"}`}>
                     <div className="flex flex-col gap-2 min-w-[200px]">
                       <div className="flex items-center gap-2">
-                        <Select
-                          value={row[0]?.rowHeader}
-                          onValueChange={(value: string) => {
-                            updateRowHeader(rowIndex, value)
-                           
-                          }}
-                        >
-                          <SelectTrigger className="h-9 text-sm w-full">
-                            <SelectValue placeholder="Select class of instruments">
-                             {/* {rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.name || "Select class of instruments"} */}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {rowHeaders.map((header) => (
-                              <SelectItem key={header.slug} value={header.slug} className="text-sm">
-                                {header.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="w-full">
+                          <CreateSelect
+                            value={row[0]?.rowHeader}
+                            onValueChange={(value: string) => {
+                              updateRowHeader(rowIndex, value)
+                            }}
+                            options={rowHeaders.map(header => ({
+                              value: header.slug,
+                              label: header.name
+                            }))}
+                            placeholder="Select class of instruments"
+                          />
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
