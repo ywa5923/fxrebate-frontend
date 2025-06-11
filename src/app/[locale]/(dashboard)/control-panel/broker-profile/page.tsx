@@ -168,8 +168,39 @@ export default async function BrokerProfilePage() {
     }
    }
  ]
+
+ const initialMatrixData = [
+  [
+    {
+      value: {},
+      rowHeader: rowHeaders[1]?.slug || '',
+      colHeader: columnHeaders[0]?.slug || '',
+      type: columnHeaders[0]?.form_type.name,
+      selectedRowHeaderSubOptions: [
+        { value: "row-subheader-1", label: "Row subheader 1" },
+        { value: "row-subheader-2", label: "Row subheader 2" }
+      ]
+    },
+    {
+      value:  {Number: 'jyykyk'},
+      rowHeader: rowHeaders[0]?.slug || '',
+      colHeader: columnHeaders[1]?.slug || '',
+      type: columnHeaders[1]?.form_type.name,
+      
+    },
+    {
+      value:  {Number: '34', Currency: 'lots'},
+      
+      rowHeader: rowHeaders[0]?.slug || '',
+      colHeader: columnHeaders[2]?.slug || '',
+      type: columnHeaders[2]?.form_type.name,
+    
+    }
+  ]
+]
+
   return (
-    <div className="container mx-auto p-6">s
+    <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Broker Profile</h1>
       {
         formSections.map((section: any) => (
@@ -186,6 +217,7 @@ export default async function BrokerProfilePage() {
      <DynamicMatrix 
        rowHeaders={rowHeaders}
         columnHeaders={columnHeaders}
+        initialMatrix={initialMatrixData}
 />
  {/* <CreateMultiSelect />  */}
     </div>

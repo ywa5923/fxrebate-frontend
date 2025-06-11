@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Minus, X } from "lucide-react"
+import { Plus, Minus, X, Save } from "lucide-react"
 import { CreateSelect } from "@/components/CreateSelect"
 import {
   Select,
@@ -17,11 +17,12 @@ import { useEffect } from "react"
 
 interface MatrixCell {
   value: {
-   [key: string]: string
+    [key: string]: string | number | undefined
   }
   rowHeader: string
   colHeader: string
-  type?: 'numberWithUnit' | 'numberWithReferenceWithUnit' | 'numberWithSelect' | 'number' | 'numberWithSelectWithSelect' | 'text' | 'textarea' | 'textareaWithNumericWithSelect'
+  type?: string
+  selectedRowHeaderSubOptions?: { value: string; label: string }[]
 }
 
 // interface DynamicMatrixProps {
@@ -45,7 +46,7 @@ interface DynamicMatrixProps {
     name: string
     slug: string
     form_type: {
-      name: 'numberWithUnit' | 'numberWithReferenceWithUnit' | 'numberWithSelect' | 'number' | 'numberWithSelectWithSelect' | 'text' | 'textarea' | 'textareaWithNumericWithSelect'
+      name:  string
       items: {
         name: string
         type: 'number' | 'single-select' | 'multi-select' | 'text' | 'textarea'
@@ -58,12 +59,13 @@ interface DynamicMatrixProps {
     }
   }[]
   onChange?: (matrix: MatrixCell[][]) => void
+  initialMatrix?: MatrixCell[][]
 }
 
-export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMatrixProps) {
-  const [matrix, setMatrix] = React.useState<MatrixCell[][]>([[]])
-
+export function DynamicMatrix({ rowHeaders, columnHeaders, onChange, initialMatrix }: DynamicMatrixProps) {
   
+  
+  const [matrix, setMatrix] = React.useState<MatrixCell[][]>(initialMatrix || [[]]);
   
   const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<string[]>(columnHeaders.map(h => h.name))
 
@@ -152,7 +154,12 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
   const updateRowHeader = (rowIndex: number, header: string) => {
     const newMatrix = matrix.map((row, index) =>
       index === rowIndex
-        ? row.map(cell => ({ ...cell, rowHeader: header }))
+        ? row.map((cell, colIndex) => {
+            if (colIndex === 0) {
+              return { ...cell, rowHeader: header, selectedRowHeaderSubOptions: [] }
+            }
+            return { ...cell, rowHeader: header }
+          })
         : row
     )
     setMatrix(newMatrix)
@@ -177,9 +184,58 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     onChange?.(newMatrix)
   }
 
+  const updateSelectedOptions = (rowIndex: number, selected: { value: string; label: string }[]) => {
+    const newMatrix = matrix.map((row, rIndex) =>
+      rIndex === rowIndex
+        ? row.map((cell, cIndex) =>
+            cIndex === 0 // Only update the first cell in the row
+              ? {
+                  ...cell,
+                 selectedRowHeaderSubOptions: selected
+                }
+              : cell
+          )
+        : row
+    )
+    setMatrix(newMatrix)
+    onChange?.(newMatrix)
+  }
+
+  const handleSave = async () => {
+
+    console.log("matrix----",matrix)
+    // try {
+    //   const response = await fetch('http://localhost:8080/api/v1/matrix/save', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Accept': 'application/json',
+    //     },
+    //     body: JSON.stringify({ 
+    //       matrix,
+    //       broker_id: 1,
+    //       matrix_id: 'Matrix-1'
+    //     }),
+    //   });
+
+    //   if (!response.ok) {
+    //     throw new Error('Failed to save matrix data');
+    //   }
+
+    //   const data = await response.json();
+    //   console.log('Matrix data saved successfully:', data);
+    // } catch (error) {
+    //   console.error('Error saving matrix data:', error);
+    // }
+  };
+
   useEffect(() => {
-    addRow()
-  }, [])
+    if (!initialMatrix) {
+      addRow()
+    } else {
+      setMatrix(initialMatrix);
+    }
+  }, [initialMatrix])
 
   return (
     <div className="space-y-2">
@@ -191,6 +247,15 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
         <Button onClick={addColumn} variant="outline" size="sm" className="h-7 text-xs">
           <Plus className="h-3 w-3 mr-1" />
           Add Column
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          variant="outline" 
+          size="default" 
+          className="h-9 ml-auto bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          Save Matrix
         </Button>
       </div>
 
@@ -247,6 +312,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                           value={row[0]?.rowHeader}
                           onValueChange={(value: string) => {
                             updateRowHeader(rowIndex, value)
+                           
                           }}
                         >
                           <SelectTrigger className="h-9 text-sm w-full">
@@ -275,6 +341,10 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                         <CreateMultiSelect 
                           placeholder="Select multiple instruments"
                           options={rowHeaders.find(h => h.slug === row[0]?.rowHeader)?.options || []}
+                          initialSelected={row[0]?.selectedRowHeaderSubOptions || []}
+                          onChange={(selected) => {
+                            updateSelectedOptions(rowIndex, selected);
+                          }}
                         />
                       </div>
                     </div>
@@ -291,7 +361,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                                   value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    updateCell(rowIndex, colIndex, value, 'number')
+                                    updateCell(rowIndex, colIndex, value, item.name)
                                   }}
                                   placeholder={item.placeholder || "Value"}
                                   className="h-9 text-sm w-full"
@@ -299,8 +369,8 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                               )}
                               {item.type === 'single-select' && (
                                 <Select
-                                  value={cell.value?.[item.name] || ''}
-                                  onValueChange={(value: string) => updateCell(rowIndex, colIndex, value, 'select')}
+                                  value={String(cell.value?.[item.name] || '')}
+                                  onValueChange={(value: string) => updateCell(rowIndex, colIndex, value, item.name)}
                                 >
                                   <SelectTrigger className="h-9 text-sm w-full">
                                     <SelectValue placeholder={item.placeholder || "Select"} />
@@ -320,7 +390,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                                   value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    updateCell(rowIndex, colIndex, value, 'text')
+                                    updateCell(rowIndex, colIndex, value, item.name)
                                   }}
                                   placeholder={item.placeholder || "Enter text"}
                                   className="h-9 text-sm w-full"
@@ -331,7 +401,7 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
                                   value={cell.value?.[item.name] || ''}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    updateCell(rowIndex, colIndex, value, 'textarea')
+                                    updateCell(rowIndex, colIndex, value, item.name)
                                   }}
                                   placeholder={item.placeholder || "Enter text"}
                                   className="h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background"
@@ -356,3 +426,24 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange }: DynamicMa
     </div>
   )
 }
+
+// {
+//   matrix: [
+//     [
+//       {
+//         value: { /* cell values */ },
+//         rowHeader: "header_slug",
+//         colHeader: "column_slug",
+//         type: "type",
+//         selectedOptions: [
+//           { value: "option1", label: "Option 1" },
+//           { value: "option2", label: "Option 2" }
+//         ]
+//       },
+//       // ... other cells
+//     ],
+//     // ... other rows
+//   ],
+//   broker_id: 1,
+//   matrix_id: "Matrix-1"
+// }

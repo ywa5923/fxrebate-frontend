@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,22 +24,27 @@ type Option = {
 
 export function CreateMultiSelect({
   placeholder = "Select instrument",
-  options = []
+  options = [],
+  onChange,
+  initialSelected = [],
 }: {
   placeholder: string;
   options?: Option[];
+  onChange?: (selected: Option[]) => void;
+  initialSelected?: Option[];
 }) {
-  const [selected, setSelected] = useState<Option[]>([]);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
   const toggleOption = (option: Option) => {
-    const exists = selected.find((item) => item.value === option.value);
+    const exists = initialSelected.find((item) => item.value === option.value);
+    let newSelected: Option[];
     if (exists) {
-      setSelected((prev) => prev.filter((item) => item.value !== option.value));
+      newSelected = initialSelected.filter((item) => item.value !== option.value);
     } else {
-      setSelected((prev) => [...prev, option]);
+      newSelected = [...initialSelected, option];
     }
+    onChange?.(newSelected);
   };
 
   const handleCreate = () => {
@@ -47,13 +52,19 @@ export function CreateMultiSelect({
       label: inputValue,
       value: inputValue.toLowerCase().replace(/\s+/g, "-"),
     };
-    setSelected((prev) => [...prev, newOption]);
+    const newSelected = [...initialSelected, newOption];
+    onChange?.(newSelected);
     setInputValue("");
     setOpen(false);
   };
 
+  const removeOption = (value: string) => {
+    const newSelected = initialSelected.filter((i) => i.value !== value);
+    onChange?.(newSelected);
+  };
+
   const isSelected = (option: Option) =>
-    selected.some((item) => item.value === option.value);
+    initialSelected.some((item) => item.value === option.value);
 
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(inputValue.toLowerCase())
@@ -70,11 +81,11 @@ export function CreateMultiSelect({
             )}
             type="button"
           >
-            {selected.length === 0 && (
+            {initialSelected.length === 0 && (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
             <div className="flex items-start gap-1 flex-wrap w-full">
-              {selected.map((item) => (
+              {initialSelected.map((item) => (
                 <span
                   key={item.value}
                   className="flex items-center gap-1 px-2 py-0.5 text-sm rounded bg-muted"
@@ -85,16 +96,12 @@ export function CreateMultiSelect({
                     tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelected((prev) =>
-                        prev.filter((i) => i.value !== item.value)
-                      );
+                      removeOption(item.value);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        setSelected((prev) =>
-                          prev.filter((i) => i.value !== item.value)
-                        );
+                        removeOption(item.value);
                       }
                     }}
                     className="cursor-pointer text-muted-foreground hover:text-destructive focus:outline-none"
@@ -148,3 +155,4 @@ export function CreateMultiSelect({
     </div>
   );
 }
+
