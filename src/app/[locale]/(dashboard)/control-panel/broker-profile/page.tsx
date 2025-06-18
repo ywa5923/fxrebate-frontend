@@ -61,6 +61,23 @@ async function getMatrixHeaders() {
   }
 }
 
+async function getMatrixData() {
+  try {
+    const response = await fetch(
+      "http://localhost:8080/api/v1/matrix",
+      { next: { revalidate:0 } }  
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const responseData = await response.json()
+    return responseData.matrix
+  } catch (error) {
+    console.error('Error fetching matrix data:', error)
+    throw error
+  }
+}
+
 
 
 
@@ -169,7 +186,9 @@ export default async function BrokerProfilePage() {
    }
  ]
 
- const initialMatrixData = [
+ const initialMatrixData = await getMatrixData()
+
+ const initialMatrixData2 = [
   [
     {
       value: {},

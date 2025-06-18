@@ -204,29 +204,29 @@ export function DynamicMatrix({ rowHeaders, columnHeaders, onChange, initialMatr
   const handleSave = async () => {
 
     console.log("matrix----",matrix)
-    // try {
-    //   const response = await fetch('http://localhost:8080/api/v1/matrix/save', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Accept': 'application/json',
-    //     },
-    //     body: JSON.stringify({ 
-    //       matrix,
-    //       broker_id: 1,
-    //       matrix_id: 'Matrix-1'
-    //     }),
-    //   });
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/matrix/store', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ 
+          matrix,
+          broker_id: 1,
+          matrix_id: 'Matrix-1'
+        }),
+      });
 
-    //   if (!response.ok) {
-    //     throw new Error('Failed to save matrix data');
-    //   }
+      if (!response.ok) {
+        throw new Error('Failed to save matrix data');
+      }
 
-    //   const data = await response.json();
-    //   console.log('Matrix data saved successfully:', data);
-    // } catch (error) {
-    //   console.error('Error saving matrix data:', error);
-    // }
+      const data = await response.json();
+      console.log('Matrix data saved successfully:', data);
+    } catch (error) {
+      console.error('Error saving matrix data:', error);
+    }
   };
 
   useEffect(() => {
