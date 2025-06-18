@@ -87,6 +87,31 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
             onValueChange={setInputValue}
           />}
         
+        {filteredOptions.length === 0 && inputValue && !isCreating && (
+              <CommandEmpty className="flex flex-col justify-between items-center px-3 py-2">
+                <span className="text-sm text-muted-foreground w-full">No results.</span>
+                <Button 
+                  onClick={() => {
+                    const newOption: Option = {
+                      label: inputValue,
+                      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
+                    };
+                   
+                    onValueChange?.(newOption.value);
+                    setSelected(newOption);
+                    setIsCreating(false);
+                    setNewOptionInput("");
+                    setOpen(false);
+                  }} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
+                >
+                  <PlusCircle className="w-4 h-4 mr-1" />
+                  Add "{inputValue}" 
+                </Button>
+              </CommandEmpty>
+            )}
             <CommandGroup>
               {isCreating ? (
                 <div className="p-2 space-y-2">

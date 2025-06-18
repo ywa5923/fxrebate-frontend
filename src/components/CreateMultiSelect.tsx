@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverTrigger,
@@ -14,7 +15,7 @@ import {
   CommandItem,
   CommandEmpty,
 } from "@/components/ui/command";
-import { Check, PlusCircle, X } from "lucide-react";
+import { Check, PlusCircle, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Option = {
@@ -35,6 +36,8 @@ export function CreateMultiSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [newOptionInput, setNewOptionInput] = useState("");
 
   const toggleOption = (option: Option) => {
     const exists = initialSelected.find((item) => item.value === option.value);
@@ -47,15 +50,28 @@ export function CreateMultiSelect({
     onChange?.(newSelected);
   };
 
-  const handleCreate = () => {
-    const newOption: Option = {
-      label: inputValue,
-      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
-    };
-    const newSelected = [...initialSelected, newOption];
-    onChange?.(newSelected);
-    setInputValue("");
-    setOpen(false);
+  const handleCreateClick = () => {
+    setIsCreating(true);
+    setNewOptionInput("");
+  };
+
+  const handleSaveNewOption = () => {
+    if (newOptionInput.trim()) {
+      const newOption: Option = {
+        label: newOptionInput.trim(),
+        value: newOptionInput.trim().toLowerCase().replace(/\s+/g, "-"),
+      };
+      const newSelected = [...initialSelected, newOption];
+      onChange?.(newSelected);
+      setIsCreating(false);
+      setNewOptionInput("");
+      setOpen(false);
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setIsCreating(false);
+    setNewOptionInput("");
   };
 
   const removeOption = (value: string) => {
@@ -115,40 +131,88 @@ export function CreateMultiSelect({
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start" sideOffset={5}>
           <Command>
-            <CommandInput
+            {!isCreating && <CommandInput
               placeholder="Search or create..."
               value={inputValue}
               onValueChange={setInputValue}
-            />
-            {filteredOptions.length === 0 && inputValue ? (
-              <CommandEmpty className="flex justify-between items-center px-3 py-2">
-                <span>No results.</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCreate}
-                  className="ml-auto text-xs"
+            />}
+            {filteredOptions.length === 0 && inputValue && !isCreating && (
+              <CommandEmpty className="flex flex-col justify-between items-center px-3 py-2">
+                <span className="text-sm text-muted-foreground w-full">No results.</span>
+                <Button 
+                  onClick={() => {
+                    const newOption: Option = {
+                      label: inputValue,
+                      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
+                    };
+                    const newSelected = [...initialSelected, newOption];
+                    onChange?.(newSelected);
+                    setInputValue("");
+                    setOpen(false);
+                  }} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
                 >
-                  <PlusCircle className="h-4 w-4 mr-1" />
-                  Create "{inputValue}"
+                  <PlusCircle className="w-4 h-4 mr-1" />
+                  Add "{inputValue}" 
                 </Button>
               </CommandEmpty>
-            ) : (
-              <CommandGroup>
-                {filteredOptions.map((option, index) => (
-                  <CommandItem
-                    key={option.value + index}
-                    onSelect={() => toggleOption(option)}
-                    className="cursor-pointer"
-                  >
-                    {option.label}
-                    {isSelected(option) && (
-                      <Check className="ml-auto w-4 h-4 text-green-500" />
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
             )}
+            <CommandGroup>
+              {isCreating ? (
+                <div className="p-2 space-y-2">
+                  <Input
+                    placeholder="Enter new option name..."
+                    value={newOptionInput}
+                    onChange={(e) => setNewOptionInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveNewOption();
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleSaveNewOption}
+                      disabled={!newOptionInput.trim()}
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      Save
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleCancelCreate}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <CommandItem onSelect={handleCreateClick}>
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <PlusCircle className="w-4 h-4 mr-1" />
+                    Create new instrument
+                  </Button>
+                </CommandItem>
+              )}
+              
+              {!isCreating && filteredOptions.map((option, index) => (
+                <CommandItem
+                  key={option.value + index}
+                  onSelect={() => toggleOption(option)}
+                  className="cursor-pointer"
+                >
+                  {option.label}
+                  {isSelected(option) && (
+                    <Check className="ml-auto w-4 h-4 text-green-500" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
           </Command>
         </PopoverContent>
       </Popover>
