@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverTrigger,
@@ -14,7 +15,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import { Check, PlusCircle } from "lucide-react";
+import { Check, PlusCircle, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Option = {
@@ -34,6 +35,8 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
   const [selected, setSelected] = useState<Option | null>(value ? options.find(opt => opt.value === value) || null : null);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [newOptionInput, setNewOptionInput] = useState("");
 
   const handleSelect = (option: Option) => {
     setSelected(option);
@@ -41,14 +44,28 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
     setOpen(false);
   };
 
-  const handleCreate = () => {
-    const newOption = {
-      label: inputValue,
-      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
-    };
-    onValueChange?.(newOption.value);
-    setSelected(newOption);
-    setOpen(false);
+  const handleCreateClick = () => {
+    setIsCreating(true);
+    setNewOptionInput("");
+  };
+
+  const handleSaveNewOption = () => {
+    if (newOptionInput.trim()) {
+      const newOption = {
+        label: newOptionInput.trim(),
+        value: newOptionInput.trim().toLowerCase().replace(/\s+/g, "-"),
+      };
+      onValueChange?.(newOption.value);
+      setSelected(newOption);
+      setIsCreating(false);
+      setNewOptionInput("");
+      setOpen(false);
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setIsCreating(false);
+    setNewOptionInput("");
   };
 
   const filteredOptions = options.filter((option) =>
@@ -64,22 +81,54 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput
+        {!isCreating && <CommandInput
             placeholder="Search or create..."
             value={inputValue}
             onValueChange={setInputValue}
-          />
-          {filteredOptions.length === 0 && inputValue ? (
-            <CommandEmpty className="flex justify-between px-2 py-2">
-              <span>No results.</span>
-              <Button variant="ghost" size="sm" onClick={handleCreate}>
-                <PlusCircle className="w-4 h-4 mr-1" />
-                Create "{inputValue}"
-              </Button>
-            </CommandEmpty>
-          ) : (
+          />}
+        
             <CommandGroup>
-              {filteredOptions.map((option) => (
+              {isCreating ? (
+                <div className="p-2 space-y-2">
+                  <Input
+                    placeholder="Enter new class name..."
+                    value={newOptionInput}
+                    onChange={(e) => setNewOptionInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveNewOption();
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleSaveNewOption}
+                      disabled={!newOptionInput.trim()}
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      Save
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleCancelCreate}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <CommandItem onSelect={handleCreateClick}>
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <PlusCircle className="w-4 h-4 mr-1" />
+                    Create new class of instruments
+                  </Button>
+                </CommandItem>
+              )}
+         
+              {!isCreating && filteredOptions.map((option) => (
                 <CommandItem
                   key={option.value}
                   onSelect={() => handleSelect(option)}
@@ -91,7 +140,7 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
                 </CommandItem>
               ))}
             </CommandGroup>
-          )}
+          
         </Command>
       </PopoverContent>
     </Popover>
