@@ -192,6 +192,7 @@ export default async function BrokerProfilePage() {
   [
     {
       value: {},
+      public_value:{},
       rowHeader: rowHeaders[1]?.slug || '',
       colHeader: columnHeaders[0]?.slug || '',
       type: columnHeaders[0]?.form_type.name,
@@ -237,6 +238,7 @@ export default async function BrokerProfilePage() {
        rowHeaders={rowHeaders}
         columnHeaders={columnHeaders}
         initialMatrix={initialMatrixData}
+        is_admin={true}
 />
  {/* <CreateMultiSelect />  */}
     </div>
