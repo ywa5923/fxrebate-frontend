@@ -21,12 +21,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
+import { toast } from "sonner";
 
 interface MatrixCell {
   value: {
     [key: string]: string | number | undefined;
   };
-  public_value?: {
+  public_value: {
     [key: string]: string | number | undefined;
   };
   rowHeader: string;
@@ -61,6 +62,7 @@ interface DynamicMatrixProps {
         name: string;
         type: "number" | "single-select" | "multi-select" | "text" | "textarea";
         placeholder?: string;
+        required?: boolean;
         options?: {
           value: string;
           label: string;
@@ -80,10 +82,12 @@ export function DynamicMatrix({
   initialMatrix,
   is_admin,
 }: DynamicMatrixProps) {
+
   const [status, setStatus] = React.useState<string>("");
   const [matrix, saveMatrix] = React.useState<MatrixCell[][]>(
     initialMatrix || [[]]
   );
+  const [validationErrors, setValidationErrors] = React.useState<{[key: string]: string[]}>({});
 
   const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<
     string[]
@@ -92,12 +96,49 @@ export function DynamicMatrix({
   const setMatrix = (matrix: MatrixCell[][]) => {
     saveMatrix(matrix);
     setStatus("");
+    setValidationErrors({});
+  };
+
+  const validateMatrix = () => {
+    const errors: {[key: string]: string[]} = {};
+    
+    matrix.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell.colHeader) {
+          const columnHeader = columnHeaders.find(h => h.slug === cell.colHeader);
+          const cellErrors: string[] = [];
+          
+          // Check if row header is selected
+          if (!cell.rowHeader) {
+            cellErrors.push("Row header is required");
+          }
+          
+          // Check if required fields are filled
+          columnHeader?.form_type.items.forEach(item => {
+            const value = is_admin 
+              ? (cell.public_value?.[item.name] || '')
+              : (cell.value?.[item.name] || '');
+            
+            if (!value && item.required !== false) {
+              cellErrors.push(`${item.name} is required`);
+            }
+          });
+          
+          if (cellErrors.length > 0) {
+            errors[`${rowIndex}-${colIndex}`] = cellErrors;
+          }
+        }
+      });
+    });
+    
+    return errors;
   };
 
   const addRow = () => {
     if (matrix.length === 0 || matrix[0].length === 0) {
       const initialCell: MatrixCell = {
         value: {},
+        public_value: {},
         rowHeader: rowHeaders[0]?.slug,
         colHeader: columnHeaders[0]?.slug,
         type: columnHeaders[0]?.form_type.name,
@@ -110,6 +151,7 @@ export function DynamicMatrix({
       const columnHeader = columnHeaders.find((h) => h.slug === cell.colHeader);
       const newCell: MatrixCell = {
         value: {},
+        public_value: {},
         rowHeader: rowHeaders[0]?.slug || "",
         colHeader: cell.colHeader,
         type: columnHeader?.form_type.name,
@@ -129,7 +171,8 @@ export function DynamicMatrix({
     if (matrix.length === 0) {
       const initialCell: MatrixCell = {
         value: {},
-        rowHeader: rowHeaders[0]?.slug || "",
+        public_value: {},
+        rowHeader: rowHeaders[0]?.slug,
         colHeader: "",
         type: undefined,
       };
@@ -141,6 +184,7 @@ export function DynamicMatrix({
       const currentRowHeader = row[0]?.rowHeader || rowHeaders[0]?.slug || "";
       const newCell: MatrixCell = {
         value: {},
+        public_value: {},
         rowHeader: currentRowHeader,
         colHeader: "",
         type: undefined,
@@ -157,6 +201,22 @@ export function DynamicMatrix({
     setMatrix(newMatrix);
     onChange?.(newMatrix);
   };
+
+
+  const loadDefaultPublicValues = (initialMatrix: MatrixCell[][]) => {
+    const newMatrix = initialMatrix.map((row) =>
+      row.map((cell) => {
+        if(is_admin && (!cell.public_value || Object.keys(cell.public_value).length === 0)){
+          return {
+            ...cell,
+            public_value: cell.value,
+          }
+        }
+        return cell
+      })
+    )
+    setMatrix(newMatrix)
+  }
 
   const updateCell = (
     rowIndex: number,
@@ -251,7 +311,17 @@ export function DynamicMatrix({
   };
 
   const handleSave = async () => {
+    const errors = validateMatrix();
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setStatus("error");
+      toast.error("Validation errors");
+      return;
+    }
+    
     setStatus("loading");
+    setValidationErrors({});
 
     try {
       const response = await fetch(
@@ -276,10 +346,12 @@ export function DynamicMatrix({
 
       const data = await response.json();
       setStatus("success");
+      toast.success("Matrix data saved successfully");
       console.log("Matrix data saved successfully:", data);
     } catch (error) {
       console.error("Error saving matrix data:", error);
-      setStatus("idle");
+      setStatus("error");
+      toast.error("Error saving matrix data");
     }
   };
 
@@ -287,7 +359,8 @@ export function DynamicMatrix({
     if (!initialMatrix) {
       addRow();
     } else {
-      setMatrix(initialMatrix);
+      loadDefaultPublicValues(initialMatrix);
+      //setMatrix(initialMatrix);
     }
   }, [initialMatrix]);
 
@@ -312,18 +385,24 @@ export function DynamicMatrix({
           <Plus className="h-3 w-3 mr-1" />
           Add Column
         </Button>
-        <Button
-          onClick={handleSave}
-          variant="outline"
-          size="default"
-          disabled={status === "loading" || status === "success"}
-          className="h-9 ml-auto bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
+        <Button 
+          onClick={handleSave} 
+          variant="outline" 
+          size="default" 
+          disabled={status === "loading"}
+          className={`h-9 ml-auto ${
+            status === "error" 
+              ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200" 
+              : "bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
+          }`}
         >
           <Save className="h-4 w-4 mr-2" />
-          {status === "loading"
-            ? "Saving..."
-            : status === "success"
-            ? "Saved"
+          {status === "loading" 
+            ? "Saving..." 
+            : status === "success" 
+            ? "Saved" 
+            : status === "error"
+            ? "Validation Errors"
             : "Save Matrix"}
         </Button>
       </div>
@@ -380,12 +459,12 @@ export function DynamicMatrix({
                 <tr
                   key={rowIndex}
                   className={
-                    rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"
+                    rowIndex % 2 === 0 ? "bg-background" : "bg-green-50"
                   }
                 >
                   <td
                     className={`border p-1 md:sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-x-auto md:overflow-visible ${
-                      rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"
+                      rowIndex % 2 === 0 ? "bg-background" : "bg-green-50"
                     }`}
                   >
                     <div className="flex flex-col gap-2 min-w-[200px]">
@@ -433,7 +512,12 @@ export function DynamicMatrix({
                       </div>
                     </div>
                   </td>
-                  {row.map((cell, colIndex) => (
+                  {row.map((cell, colIndex) => {
+                    const cellKey = `${rowIndex}-${colIndex}`;
+                    const cellErrors = validationErrors[cellKey] || [];
+                    const hasError = cellErrors.length > 0;
+
+                   return(
                     <td key={colIndex} className="border p-1 w-[250px]">
                       {cell.colHeader ? (
                         <div className="flex flex-wrap gap-2 items-center">
@@ -443,19 +527,16 @@ export function DynamicMatrix({
                               let public_value =
                                 cell.public_value?.[item.name] || "";
                               let broker_value = cell.value?.[item.name] || "";
-                              //if public_value is empty, set it to broker_value
-                              if (
-                                !cell.public_value ||
-                                Object.keys(cell.public_value).length === 0
-                              ) {
-                                public_value = broker_value;
-                              }
+                              
                               let value = is_admin
                                 ? public_value
                                 : broker_value;
+                              
+                              
+                              
                               return (
                                 <React.Fragment key={item.name}>
-                                  <TooltipProvider>
+                                 {is_admin && <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <div className="flex items-center gap-1">
@@ -468,95 +549,108 @@ export function DynamicMatrix({
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
+                                  }
                                   {item.type === "number" && (
-                                    <Input
-                                      type="text"
-                                      value={value}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        updateCell(
-                                          rowIndex,
-                                          colIndex,
-                                          value,
-                                          item.name,
-                                          is_admin
-                                        );
-                                      }}
-                                      placeholder={item.placeholder || "Value"}
-                                      className="h-9 text-sm w-full"
-                                    />
+                                    <div className="w-full">
+                                      <Input
+                                        type="text"
+                                        value={value}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          updateCell(
+                                            rowIndex,
+                                            colIndex,
+                                            value,
+                                            item.name,
+                                            is_admin || false
+                                          );
+                                        }}
+                                        placeholder={item.placeholder || "Value"}
+                                        className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}
+                                      />
+                                      
+                                    </div>
                                   )}
                                   {item.type === "single-select" && (
-                                    <Select
-                                      value={String(value)}
-                                      onValueChange={(value: string) =>
-                                        updateCell(
-                                          rowIndex,
-                                          colIndex,
-                                          value,
-                                          item.name,
-                                          is_admin
-                                        )
-                                      }
-                                    >
-                                      <SelectTrigger className="h-9 text-sm w-full">
-                                        <SelectValue
-                                          placeholder={
-                                            item.placeholder || "Select"
-                                          }
-                                        />
-                                      </SelectTrigger>
-                                      <SelectContent className="z-[100]">
-                                        {item.options?.map((option) => (
-                                          <SelectItem
-                                            key={option.value}
-                                            value={option.value}
-                                            className="text-sm"
-                                          >
-                                            {option.label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
+                                    <div className="w-full">
+                                      <Select
+                                        value={String(value)}
+                                        onValueChange={(value: string) =>
+                                          updateCell(
+                                            rowIndex,
+                                            colIndex,
+                                            value,
+                                            item.name,
+                                            is_admin || false
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}>
+                                          <SelectValue
+                                            placeholder={
+                                              item.placeholder || "Select"
+                                            }
+                                          />
+                                        </SelectTrigger>
+                                        <SelectContent className="z-[100]">
+                                          {item.options?.map((option) => (
+                                            <SelectItem
+                                              key={option.value}
+                                              value={option.value}
+                                              className="text-sm"
+                                            >
+                                              {option.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                     
+                                    </div>
                                   )}
                                   {item.type === "text" && (
-                                    <Input
-                                      type="text"
-                                      value={value}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        updateCell(
-                                          rowIndex,
-                                          colIndex,
-                                          value,
-                                          item.name,
-                                          is_admin
-                                        );
-                                      }}
-                                      placeholder={
-                                        item.placeholder || "Enter text"
-                                      }
-                                      className="h-9 text-sm w-full"
-                                    />
+                                    <div className="w-full">
+                                      <Input
+                                        type="text"
+                                        value={value}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          updateCell(
+                                            rowIndex,
+                                            colIndex,
+                                            value,
+                                            item.name,
+                                            is_admin || false
+                                          );
+                                        }}
+                                        placeholder={
+                                          item.placeholder || "Enter text"
+                                        }
+                                        className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}
+                                      />
+                                      
+                                    </div>
                                   )}
                                   {item.type === "textarea" && (
-                                    <textarea
-                                      value={value}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        updateCell(
-                                          rowIndex,
-                                          colIndex,
-                                          value,
-                                          item.name,
-                                          is_admin
-                                        );
-                                      }}
-                                      placeholder={
-                                        item.placeholder || "Enter text"
-                                      }
-                                      className="h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background"
-                                    />
+                                    <div className="w-full">
+                                      <textarea
+                                        value={value}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          updateCell(
+                                            rowIndex,
+                                            colIndex,
+                                            value,
+                                            item.name,
+                                            is_admin || false
+                                          );
+                                        }}
+                                        placeholder={
+                                          item.placeholder || "Enter text"
+                                        }
+                                        className={`h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background ${hasError ? 'border-red-500' : ''}`}
+                                      />
+                                      
+                                    </div>
                                   )}
                                 </React.Fragment>
                               );
@@ -567,8 +661,14 @@ export function DynamicMatrix({
                           Select column type
                         </div>
                       )}
+                      {hasError && (
+                        <div className="text-red-500 text-xs mt-1">
+                          {cellErrors.join(', ')}
+                        </div>
+                      )}
                     </td>
-                  ))}
+                  )
+                })}
                 </tr>
               ))}
             </tbody>
