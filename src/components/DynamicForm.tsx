@@ -40,7 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
-
+import { toast } from "sonner";
 
 interface FormField {
   id: number
@@ -71,15 +71,15 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
   for (const field of fields) {
 
 
-    if (field.data_type === "numberWithUnit") {
+    if (field.form_type === "numberWithUnit") {
       schemaObject[field.slug] = field.required === 1
         ? z.object({
             value: z.number(),
             unit: z.string(),
           })
         : z.object({
-            value: z.number().optional(),
-            unit: z.string().optional(),
+            value: z.number(),
+            unit: z.string(),
           }).optional();
       continue;
     }
@@ -156,11 +156,18 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
   })
 
   function handleSubmit(data: z.infer<typeof formSchema>) {
-  
     console.log("Form data submitted:", data);
-    
-   
+    toast.success("Form data submitted successfully");
     onSubmit(data);
+  }
+
+  function handleFormSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const formData = form.getValues();
+    console.log("Form data before validation:", formData);
+    
+    // Now proceed with validation and submission
+    form.handleSubmit(handleSubmit)(e);
   }
 
   const renderFormField = (field: FormField, formField: any) => {
@@ -218,7 +225,7 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
             </SelectContent>
           </Select>
         )
-      case "multiselect":
+      case "multiple-select":
         return (
           <Multiselect
             options={field.meta_data}
@@ -307,7 +314,7 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={handleFormSubmit} className="space-y-8">
         {fields.map((field) => (
           <FormField
             key={field.id}

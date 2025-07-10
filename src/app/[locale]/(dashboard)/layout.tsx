@@ -19,17 +19,50 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import { Frame } from 'lucide-react';
 
-export default function DashboardLayout({
+async function getBrokerOptions() {
+  try {
+    const response = await fetch(
+      "http://localhost:8080/api/v1/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers",
+      { next: { revalidate:0 } } // Revalidate every hour
+    )
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const responseData = await response.json()
+    
+    console.log(responseData)
+    
+    return responseData.data; // Fallback to original format if structure is different
+  } catch (error) {
+    console.error('Error fetching broker options:', error)
+    throw error
+  }
+}
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const brokerOptions = await getBrokerOptions()
+
+  let sidebarOptionsLinks = brokerOptions?.map((broker: any) => {
+    return {
+      name: broker.name,
+      url: `broker-profile/${broker.id}`,
+      icon: "TrendingUp"
+    }
+  }) || []
+
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
         <SidebarProvider>
-          <AppSidebar />
+          <AppSidebar brokerOptions={sidebarOptionsLinks}/>
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4">

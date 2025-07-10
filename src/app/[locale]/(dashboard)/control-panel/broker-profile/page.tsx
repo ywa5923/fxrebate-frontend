@@ -238,7 +238,7 @@ export default async function BrokerProfilePage() {
        rowHeaders={rowHeaders}
         columnHeaders={columnHeaders}
         initialMatrix={initialMatrixData}
-        is_admin={true}
+        is_admin={false}
 />
  {/* <CreateMultiSelect />  */}
     </div>

@@ -25,13 +25,47 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+import { 
+  Frame, 
+  Building2, 
+  Banknote, 
+  TrendingUp, 
+  BarChart3, 
+  Wallet, 
+  Shield, 
+  Globe, 
+  Zap, 
+  Users, 
+  Settings, 
+  FileText, 
+  CreditCard, 
+  Smartphone 
+} from "lucide-react"
+
+const iconMap: Record<string, LucideIcon> = {
+  Frame,
+  Building2,
+  Banknote,
+  TrendingUp,
+  BarChart3,
+  Wallet,
+  Shield,
+  Globe,
+  Zap,
+  Users,
+  Settings,
+  FileText,
+  CreditCard,
+  Smartphone
+}
+
 export function NavProjects({
   projects,
 }: {
   projects: {
     name: string
     url: string
-    icon: LucideIcon
+    icon: string
   }[]
 }) {
   const { isMobile } = useSidebar()
@@ -40,14 +74,16 @@ export function NavProjects({
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
+        {projects.map((item) => {
+          const IconComponent = iconMap[item.icon] || Building2
+          return (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild>
+                <a href={item.url}>
+                  <IconComponent />
+                  <span>{item.name}</span>
+                </a>
+              </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction showOnHover>
@@ -76,7 +112,8 @@ export function NavProjects({
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
-        ))}
+          )
+        })}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
             <MoreHorizontal className="text-sidebar-foreground/70" />
