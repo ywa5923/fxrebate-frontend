@@ -59,21 +59,3 @@ export interface LanguageItem {
   code: string;
 }
 
-export interface BrokerOptionCategory {
-  id: string | number;
-  name: string;
-  options: Array<BrokerOption>;
-}
-
-export interface BrokerOption { 
-  id: number;
-  slug: string;
-  name: string;
-  data_type?: string;
-  form_type?: string;
-  required?: number;
-  description?: string;
-  placeholder?: string;
-  tooltip?: string;
-  meta_data?: Array<{ value: string; label: string }>;
-}

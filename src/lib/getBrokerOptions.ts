@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/constants";
-import { BrokerOptionCategory } from "./types";
+import { BrokerOptionCategory } from "@/types";
 
 export async function getBrokerOptions<T=BrokerOptionCategory[]>(
   locale: string = "en", 

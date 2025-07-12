@@ -41,26 +41,11 @@ import {
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
 import { toast } from "sonner";
+import { BrokerOption } from "@/types";
 
-interface FormField {
-  id: number
-  slug: string
-  name: string
-  data_type: string
-  form_type: string
-  options?: { value: string; label: string }[]
-  required?: number
-  description?: string
-  placeholder?: string
-  min?: number
-  max?: number
-  step?: number
-  tooltip?: string
-  meta_data?: { value: string; label: string }[]
-}
 
 interface DynamicFormProps {
-  fields: FormField[]
+  fields: BrokerOption[]
   onSubmit?: (data: any) => void
   action?: (formData: FormData) => Promise<void>
 }
@@ -171,7 +156,7 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
     form.handleSubmit(handleSubmit)(e);
   }
 
-  const renderFormField = (field: FormField, formField: any) => {
+  const renderFormField = (field: BrokerOption, formField: any) => {
     switch (field.form_type) {
       case "numberWithUnit":
         return (
