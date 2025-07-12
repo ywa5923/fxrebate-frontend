@@ -7,6 +7,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react"
+import Link from "next/link"
 
 import {
   DropdownMenu,
@@ -79,12 +80,12 @@ export function NavProjects({
           return (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild>
-                <a href={item.url}>
-                  <IconComponent />
+                <Link href={item.url} className="flex items-center gap-2">
+                  <IconComponent className="h-4 w-4" />
                   <span>{item.name}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
-            <DropdownMenu>
+            {/*<DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction showOnHover>
                   <MoreHorizontal />
@@ -110,7 +111,7 @@ export function NavProjects({
                   <span>Delete Project</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu>*/}
           </SidebarMenuItem>
           )
         })}

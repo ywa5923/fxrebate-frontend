@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { Frame } from 'lucide-react';
+import { getBrokerOptions } from '@/lib/getBrokerOptions';
 
-async function getBrokerOptions() {
+async function getBrokerOptions2() {
   try {
     const response = await fetch(
       "http://localhost:8080/api/v1/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers",
@@ -34,7 +35,7 @@ async function getBrokerOptions() {
     
     const responseData = await response.json()
     
-    console.log(responseData)
+   
     
     return responseData.data; // Fallback to original format if structure is different
   } catch (error) {
@@ -48,12 +49,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const brokerOptions = await getBrokerOptions()
+  const brokerOptions = await getBrokerOptions("en")
 
-  let sidebarOptionsLinks = brokerOptions?.map((broker: any) => {
+  let sidebarOptionsLinks = brokerOptions?.map((optionCategory: any) => {
+    let categoryName = optionCategory.name.toLowerCase().replace(/ /g, '-')
     return {
-      name: broker.name,
-      url: `broker-profile/${broker.id}`,
+      name: optionCategory.name,
+      url: `/en/control-panel/broker-profile/${optionCategory.id}/${categoryName}`,  
       icon: "TrendingUp"
     }
   }) || []
@@ -62,7 +64,7 @@ export default async function DashboardLayout({
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
         <SidebarProvider>
-          <AppSidebar brokerOptions={sidebarOptionsLinks}/>
+          <AppSidebar brokerOptionsLinks={sidebarOptionsLinks}/>
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4">

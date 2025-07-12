@@ -61,7 +61,8 @@ interface FormField {
 
 interface DynamicFormProps {
   fields: FormField[]
-  onSubmit: (data: any) => void
+  onSubmit?: (data: any) => void
+  action?: (formData: FormData) => Promise<void>
 }
 
 export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
@@ -158,7 +159,7 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
   function handleSubmit(data: z.infer<typeof formSchema>) {
     console.log("Form data submitted:", data);
     toast.success("Form data submitted successfully");
-    onSubmit(data);
+    onSubmit?.(data);
   }
 
   function handleFormSubmit(e: React.FormEvent) {

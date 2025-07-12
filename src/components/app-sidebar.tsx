@@ -156,14 +156,14 @@ const data = {
   ],
 }
 
-export function AppSidebar({ brokerOptions, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptions?: any }) {
+export function AppSidebar({ brokerOptionsLinks, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
      
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
-        <NavProjects projects={brokerOptions} />
+        <NavProjects projects={brokerOptionsLinks} />
       </SidebarContent>
       <SidebarFooter>
         {/* <NavUser user={data.user} /> */}
