@@ -2,7 +2,7 @@ import { getBrokerOptions } from "@/lib/getBrokerOptions";
 import { submitBrokerProfile } from "../actions";
 import { notFound } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
-import { BrokerOptionCategory } from "@/lib/types";
+import { BrokerOptionCategory } from "@/types";
 
 
 export default async function BrokerProfilePage({ 
@@ -68,7 +68,7 @@ export default async function BrokerProfilePage({
         <h1 className="text-2xl font-bold mb-6">{matchedCategory.name}</h1>
         <DynamicForm 
           fields={matchedCategory.options} 
-          onSubmit={submitBrokerProfile} 
+          action={submitBrokerProfile} 
         />
       </div>
     );

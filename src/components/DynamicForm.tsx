@@ -46,16 +46,14 @@ import { BrokerOption } from "@/types";
 
 interface DynamicFormProps {
   fields: BrokerOption[]
-  onSubmit?: (data: any) => void
   action?: (formData: FormData) => Promise<void>
 }
 
-export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
+export function DynamicForm({ fields, action }: DynamicFormProps) {
   
   // Create a dynamic schema based on the fields
   const schemaObject: { [key: string]: any } = {}
   for (const field of fields) {
-
 
     if (field.form_type === "numberWithUnit") {
       schemaObject[field.slug] = field.required === 1
@@ -67,6 +65,14 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
             value: z.number(),
             unit: z.string(),
           }).optional();
+      continue;
+    }
+
+    // Handle image fields
+    if (field.form_type === "image") {
+      schemaObject[field.slug] = field.required === 1
+        ? z.instanceof(File).or(z.string())
+        : z.instanceof(File).or(z.string()).optional();
       continue;
     }
 
@@ -141,19 +147,44 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
     }, {}),
   })
 
-  function handleSubmit(data: z.infer<typeof formSchema>) {
-    console.log("Form data submitted:", data);
-    toast.success("Form data submitted successfully");
-    onSubmit?.(data);
-  }
-
-  function handleFormSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const formData = form.getValues();
-    console.log("Form data before validation:", formData);
+  async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
+    console.log("Server action form data:", data);
     
-    // Now proceed with validation and submission
-    form.handleSubmit(handleSubmit)(e);
+    // Convert to FormData for Server Action
+    const formDataObj = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof File) {
+          // Handle file uploads
+          formDataObj.append(key, value);
+        } else if (typeof value === 'object' && value !== null) {
+          // Handle complex objects like numberWithUnit
+          Object.entries(value).forEach(([subKey, subValue]) => {
+            if (subValue !== undefined && subValue !== null) {
+              formDataObj.append(`${key}.${subKey}`, String(subValue));
+            }
+          });
+        } else if (Array.isArray(value)) {
+          // Handle arrays
+          value.forEach(item => {
+            formDataObj.append(key, String(item));
+          });
+        } else {
+          formDataObj.append(key, String(value));
+        }
+      }
+    });
+    
+    // Call the Server Action
+    if (action) {
+      try {
+        await action(formDataObj);
+        toast.success("Form submitted successfully");
+      } catch (error) {
+        toast.error("Failed to submit form");
+        console.error("Server action error:", error);
+      }
+    }
   }
 
   const renderFormField = (field: BrokerOption, formField: any) => {
@@ -284,6 +315,19 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
             </PopoverContent>
           </Popover>
         )
+      case 'image':
+        return (
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                formField.onChange(file);
+              }
+            }}
+          />
+        )
       default:
         return (
           <Input
@@ -300,7 +344,7 @@ export function DynamicForm({ fields, onSubmit }: DynamicFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleFormSubmit} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleServerActionSubmit)} className="space-y-8">
         {fields.map((field) => (
           <FormField
             key={field.id}
