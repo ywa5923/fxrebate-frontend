@@ -42,15 +42,17 @@ import {
 import { InfoIcon } from "lucide-react"
 import { toast } from "sonner";
 import { Option, OptionValue } from "@/types";
+import { useRouter } from "next/navigation";
 
 
 interface DynamicFormProps {
   options: Option[]
-  action?: (formData: FormData) => Promise<void>
+  action?: (formData: FormData, originalData?: OptionValue[]) => Promise<void>
   optionsValues: OptionValue[]
 }
 
 export function DynamicForm({ options, action, optionsValues }: DynamicFormProps) {
+  const router = useRouter();
   
   // Create a dynamic schema based on the fields
   const schemaObject: { [key: string]: any } = {}
@@ -96,7 +98,24 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
         );
         break
       case "checkbox":
-        fieldSchema = z.boolean()
+        fieldSchema = z.preprocess(
+          (val) => {
+            if (val === null || val === undefined) return false;
+           // if (typeof val === 'string') return val === 'true';
+            return Boolean(val);
+          },
+          z.boolean()
+        )
+        break
+      case "switch":
+        fieldSchema = z.preprocess(
+          (val) => {
+            if (val === null || val === undefined) return false;
+            if (typeof val === 'string') return val === 'true';
+            return Boolean(val);
+          },
+          z.boolean()
+        )
         break
       case "date":
         fieldSchema = z.date()
@@ -105,7 +124,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
         fieldSchema = z.string()
         
         break
-      case "multiple-select":
+      case "multi-select":
        // Use string validation with pipe delimiter format
        // Create the array schema
       fieldSchema = z.array(z.string());
@@ -141,8 +160,21 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
     resolver: zodResolver(formSchema),
     defaultValues: options.reduce((acc, option) => {
        let optionValue =  optionsValues?.find((optionValue: OptionValue) => optionValue.option_slug === option.slug)
-       if(optionValue){
-        return { ...acc, [option.slug]: optionValue.value }
+       if(optionValue!==null || optionValue!==undefined){
+        
+         switch (option.form_type) {
+        case "checkbox":
+          return { ...acc, [option.slug]: optionValue?.value === 'true' }
+        case "multi-select":
+          return { ...acc, [option.slug]: optionValue?.value?.split("; ") }
+     
+        case "numberWithUnit":
+          return { ...acc, [option.slug]: { value: undefined, unit: undefined } }
+        default:
+          return { ...acc, [option.slug]: optionValue?.value }
+      }
+
+        //return { ...acc, [option.slug]: optionValue.value }
        }
        return { ...acc, [option.slug]: null }
        
@@ -163,6 +195,8 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
     console.log("Server action form data:", data);
+
+    
     
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
@@ -171,29 +205,35 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
         if (value instanceof File) {
           // Handle file uploads
           formDataObj.append(key, value);
-        } else if (typeof value === 'object' && value !== null) {
+        //} else if (typeof value === 'object' && value !== null) {
           // Handle complex objects like numberWithUnit
-          Object.entries(value).forEach(([subKey, subValue]) => {
-            if (subValue !== undefined && subValue !== null) {
-              formDataObj.append(`${key}.${subKey}`, String(subValue));
-            }
-          });
+          // Object.entries(value).forEach(([subKey, subValue]) => {
+          //   if (subValue !== undefined && subValue !== null) {
+          //     formDataObj.append(`${key}.${subKey}`, String(subValue));
+          //   }
+          // });
+          //to do
+          //formDataObj.append(key,value.value+)
+          
         } else if (Array.isArray(value)) {
-          // Handle arrays
-          value.forEach(item => {
-            formDataObj.append(key, String(item));
-          });
+          // Handle arrays by joining with semicolon
+          formDataObj.append(key, value.join("; "));
+        
         } else {
           formDataObj.append(key, String(value));
         }
+        console.log("Array field:", key,value,Array.isArray(value),typeof value === 'object');
       }
+      
     });
     
     // Call the Server Action
     if (action) {
       try {
-        await action(formDataObj);
+        await action(formDataObj,optionsValues);
         toast.success("Form submitted successfully");
+        // Refresh the page after successful submission using Next.js router
+        router.refresh();
       } catch (error) {
         toast.error("Failed to submit form");
         console.error("Server action error:", error);
@@ -222,7 +262,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
                 <SelectValue placeholder="Unit" />
               </SelectTrigger>
               <SelectContent>
-                {option.meta_data?.map((metaData:any) => (
+                {option.meta_data?.map((metaData:{value:string;label:string}) => (
                   <SelectItem key={metaData?.value} value={metaData?.value}>
                     {metaData?.label}
                   </SelectItem>
@@ -236,6 +276,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
           <Textarea
             placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
             {...formField}
+            value={formField.value || ''} // Ensure value is never null
           />
         )
       case "select":
@@ -255,12 +296,13 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
             </SelectContent>
           </Select>
         )
-      case "multiple-select":
+      case "multi-select":
         return (
           <Multiselect
             options={option.meta_data}
             isMulti
             classNamePrefix="react-select"
+            instanceId={option.slug} // Add stable instanceId to prevent hydration errors
             onChange={(selected) => {
               // Store the actual array of selected values
               const values = selected ? selected.map((option: { value: string }) => option.value) : [];
@@ -281,7 +323,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
       case "checkbox":
         return (
           <Checkbox
-            checked={formField.value}
+            checked={Boolean(formField.value)}
             onCheckedChange={formField.onChange}
           />
         )
@@ -299,7 +341,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
       case "switch":
         return (
           <Switch
-            checked={formField.value}
+            checked={Boolean(formField.value)}
             onCheckedChange={formField.onChange}
           />
         )
@@ -346,9 +388,8 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
           <Input
             type={option.form_type === "number" ? "text" : "text"}
             placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
-           
-          
             {...formField}
+            value={formField.value || ''} // Ensure value is never null
           />
         )
     }

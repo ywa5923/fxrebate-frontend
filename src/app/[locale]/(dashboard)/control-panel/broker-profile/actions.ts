@@ -1,5 +1,6 @@
 'use server'
 
+import { OptionValue } from "@/types";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 // Cloudflare R2 configuration
@@ -71,30 +72,32 @@ async function uploadToCloudflareR2(file: File, fileName: string): Promise<strin
   }
 }
 
-export async function submitBrokerProfile(formData: FormData | any) {
+export async function submitBrokerProfile(formData: FormData,orginalOptionValues:OptionValue[] ) {
+ 
   console.log("server action formData received", formData);
-  console.log("formData type:", typeof formData);
-  console.log("formData constructor:", formData.constructor.name);
-  
+ // console.log("formData type:", typeof formData);
+  //console.log("formData constructor:", formData.constructor.name);
+  console.log("server original data",orginalOptionValues)
   let data: Record<string, any> = {};
   let files: Record<string, File> = {};
-  
+  //console.log("Processing FormData=============",typeof formData);
   // Handle both FormData and plain objects
   if (formData instanceof FormData) {
-    console.log("Processing FormData");
-    console.log("formData.entries available:", typeof formData.entries);
+    //console.log("Processing FormData=============");
+   // console.log("formData.entries available:", typeof formData.entries);
     
     try {
       for (const [key, value] of formData.entries()) {
-        console.log(`Processing entry: ${key}`, value);
+       // console.log(`Processing entry: ${key}`, value);
         if (value instanceof File) {
-          files[key] = value;
-          console.log(`File received: ${key}`, {
-            name: value.name,
-            size: value.size,
-            type: value.type
-          });
+          files[key] = value as File;
+          // console.log(`File received: ${key}`, {
+          //   name: (value as File).name,
+          //   size: (value as File).size,
+          //   type: (value as File).type
+          // });
         } else {
+          // Check if this is an array field (contains semicolon-separated values)
           data[key] = value;
         }
       }
@@ -102,6 +105,8 @@ export async function submitBrokerProfile(formData: FormData | any) {
       console.error("Error iterating over formData:", error);
       throw new Error("Failed to process form data");
     }
+
+    
   } else {
     console.log("Processing plain object");
     // Handle plain object (from onSubmit)
@@ -134,22 +139,30 @@ export async function submitBrokerProfile(formData: FormData | any) {
   }
   
   // Format data as option_values array
-  const optionValues = Object.entries(data).map(([option_slug, value]) => ({
-    option_slug,
-    value: String(value),
-    broker_option_id: 1
-  }));
+  const optionValues = Object.entries(data)
+    .map(([option_slug, value]) => {
+      const originalOption = orginalOptionValues.find(option => option.option_slug === option_slug);
+      return {
+        id: originalOption?.id,
+        option_slug,
+        value: String(value),
+        //broker_option_id: 1
+      };
+    })
+   // .filter(option => option.id !== undefined); // Filter out entries without valid IDs
   
   const requestData = {
     option_values: optionValues
   };
   
-  console.log("Formatted data for PHP:", JSON.stringify(requestData));
+  console.log("Formatted data for PHP:", JSON.stringify(requestData, null, 2));
+  console.log("Number of option values:", optionValues.length);
+  console.log("Original option values count:", orginalOptionValues.length);
   
   //Send to PHP server
   try {
-    const response = await fetch("http://localhost:8080/api/v1/brokers/1/option-values", {
-      method: "POST",
+    const response = await fetch("http://localhost:8080/api/v1/brokers/200/option-values", {
+      method: orginalOptionValues.length > 0 ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
       },
@@ -157,7 +170,15 @@ export async function submitBrokerProfile(formData: FormData | any) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Try to get error details from response
+      let errorDetails = '';
+      try {
+        const errorResponse = await response.text();
+        errorDetails = ` - Response: ${errorResponse}`;
+      } catch (e) {
+        errorDetails = ' - Could not read error response';
+      }
+      throw new Error(`HTTP error! status: ${response.status}${errorDetails}`);
     }
 
     const result = await response.json();
