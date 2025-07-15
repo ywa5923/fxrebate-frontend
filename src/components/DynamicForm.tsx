@@ -41,22 +41,23 @@ import {
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
 import { toast } from "sonner";
-import { BrokerOption } from "@/types";
+import { Option, OptionValue } from "@/types";
 
 
 interface DynamicFormProps {
-  fields: BrokerOption[]
+  options: Option[]
   action?: (formData: FormData) => Promise<void>
+  optionsValues: OptionValue[]
 }
 
-export function DynamicForm({ fields, action }: DynamicFormProps) {
+export function DynamicForm({ options, action, optionsValues }: DynamicFormProps) {
   
   // Create a dynamic schema based on the fields
   const schemaObject: { [key: string]: any } = {}
-  for (const field of fields) {
+  for (const option of options) {
 
-    if (field.form_type === "numberWithUnit") {
-      schemaObject[field.slug] = field.required === 1
+    if (option.form_type === "numberWithUnit") {
+      schemaObject[option.slug] = option.required === 1
         ? z.object({
             value: z.number(),
             unit: z.string(),
@@ -69,22 +70,32 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
     }
 
     // Handle image fields
-    if (field.form_type === "image") {
-      schemaObject[field.slug] = field.required === 1
+    if (option.form_type === "image") {
+      schemaObject[option.slug] = option.required === 1
         ? z.instanceof(File).or(z.string())
         : z.instanceof(File).or(z.string()).optional();
       continue;
     }
 
     let fieldSchema;
-    switch (field.data_type) {
+    switch (option.form_type) {
       case "text":
         fieldSchema = z.string()
         break
       case "number":
-        fieldSchema = z.number()
+        let numberSchema = z.number();
+        if (option.min_constraint ) {
+          numberSchema = numberSchema.min(option.min_constraint);
+        }
+        if (option.max_constraint ) {
+          numberSchema = numberSchema.max(option.max_constraint);
+        }
+        fieldSchema = z.preprocess(
+          (val) => (val === "" ? undefined : Number(val)),
+          numberSchema
+        );
         break
-      case "boolean":
+      case "checkbox":
         fieldSchema = z.boolean()
         break
       case "date":
@@ -94,13 +105,13 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
         fieldSchema = z.string()
         
         break
-      case "array":
+      case "multiple-select":
        // Use string validation with pipe delimiter format
        // Create the array schema
       fieldSchema = z.array(z.string());
        // Apply validation immediately if required
-      if (field.required === 1) {
-          fieldSchema = fieldSchema.min(1, `Please select at least one ${field.name}`);
+      if (option.required === 1) {
+          fieldSchema = fieldSchema.min(1, `Please select at least one ${option.name}`);
         } 
         break;
       default:
@@ -108,42 +119,45 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
     }
     
     // Add validation based on field properties
-    if (field.required == 1) {
-      if (field.data_type === "text" || field.data_type === "select") {
-        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
-      } else if (field.data_type === "number") {
-        fieldSchema = (fieldSchema as z.ZodNumber).min(1, `${field.name} is required`);
-      }else if (field.form_type === "select") {
-        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
-        fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.name} is required`);
-      }
-    }
+    // if (option.required == 1) {
+    //   if (option.data_type === "text" || option.data_type === "select") {
+    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
+    //   } else if (option.data_type === "number") {
+    //     fieldSchema = (fieldSchema as z.ZodNumber).min(1, `${option.name} is required`);
+    //   }else if (option.form_type === "select") {
+    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
+    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
+    //   }
+    // }
     
-    if (field.data_type === "number") {
-      if (field.min !== undefined) fieldSchema = (fieldSchema as z.ZodNumber).min(field.min);
-      if (field.max !== undefined) fieldSchema = (fieldSchema as z.ZodNumber).max(field.max);
-    }
+    
 
-    schemaObject[field.slug] = fieldSchema
+    schemaObject[option.slug] = fieldSchema
   }
 
   const formSchema = z.object(schemaObject)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: fields.reduce((acc, field) => {
-      switch (field.data_type) {
-        case "boolean":
-          return { ...acc, [field.slug]: false }
-        case "array":
-          return { ...acc, [field.slug]: [] }
-        case "date":
-          return { ...acc, [field.slug]: null }
-        case "numberWithUnit":
-          return { ...acc, [field.slug]: { value: undefined, unit: undefined } }
-        default:
-          return { ...acc, [field.slug]: "" }
-      }
+    defaultValues: options.reduce((acc, option) => {
+       let optionValue =  optionsValues?.find((optionValue: OptionValue) => optionValue.option_slug === option.slug)
+       if(optionValue){
+        return { ...acc, [option.slug]: optionValue.value }
+       }
+       return { ...acc, [option.slug]: null }
+       
+      // switch (option.data_type) {
+      //   case "boolean":
+      //     return { ...acc, [option.slug]: false }
+      //   case "array":
+      //     return { ...acc, [option.slug]: [] }
+      //   case "date":
+      //     return { ...acc, [option.slug]: null }
+      //   case "numberWithUnit":
+      //     return { ...acc, [option.slug]: { value: undefined, unit: undefined } }
+      //   default:
+      //     return { ...acc, [option.slug]: "" }
+      // }
     }, {}),
   })
 
@@ -187,17 +201,16 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
     }
   }
 
-  const renderFormField = (field: BrokerOption, formField: any) => {
-    switch (field.form_type) {
+  const renderFormField = (option: Option, formField: any) => {
+    switch (option.form_type) {
       case "numberWithUnit":
         return (
           <div className="flex gap-2">
             <Input
               type="number"
-              placeholder={field.placeholder || `Enter ${field.name.toLowerCase()}`}
-              min={field.min}
-              max={field.max}
-              step={field.step}
+              placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
+              min={option.min_constraint}
+              max={option.max_constraint}
               value={formField.value?.value || ''}
               onChange={(e) => formField.onChange({ ...formField.value, value: parseFloat(e.target.value) })}
             />
@@ -209,9 +222,9 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
                 <SelectValue placeholder="Unit" />
               </SelectTrigger>
               <SelectContent>
-                {field.meta_data?.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {option.meta_data?.map((metaData:any) => (
+                  <SelectItem key={metaData?.value} value={metaData?.value}>
+                    {metaData?.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -221,7 +234,7 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
       case "textarea":
         return (
           <Textarea
-            placeholder={field.placeholder || `Enter ${field.name.toLowerCase()}`}
+            placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
             {...formField}
           />
         )
@@ -229,14 +242,14 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
         return (
           <Select onValueChange={formField.onChange} defaultValue={formField.value}>
             <SelectTrigger>
-              <SelectValue placeholder={field.placeholder || `Select ${field.name.toLowerCase()}`} />
+              <SelectValue placeholder={option.placeholder || `Select ${option.name.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {field.meta_data && Array.isArray(field.meta_data) && field.meta_data.map((option:any) => (
+              {option.meta_data && Array.isArray(option.meta_data) && option.meta_data.map((metaData:any) => (
              
                
-               <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+               <SelectItem key={metaData?.id} value={metaData?.value}>
+                  {metaData?.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -245,7 +258,7 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
       case "multiple-select":
         return (
           <Multiselect
-            options={field.meta_data}
+            options={option.meta_data}
             isMulti
             classNamePrefix="react-select"
             onChange={(selected) => {
@@ -256,13 +269,13 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
               // Trigger validation after selection changes
              // setTimeout(() => form.trigger(field.slug), 100);
             }}
-            value={field.meta_data?.filter(option => 
-              Array.isArray(formField.value) && formField.value.includes(option.value)
+            value={option.meta_data?.filter(metaData => 
+              Array.isArray(formField.value) && formField.value.includes(metaData.value)
             ) || []}
-            placeholder={field.placeholder || `Select ${field.name.toLowerCase()}`}
+            placeholder={option.placeholder || `Select ${option.name.toLowerCase()}`}
           
-            name={field.name}
-            id={field.slug}
+            name={option.name}
+            id={option.slug}
           />
         )
       case "checkbox":
@@ -275,10 +288,10 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
       case "radio":
         return (
           <RadioGroup onValueChange={formField.onChange} defaultValue={formField.value}>
-            {field.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={`${field.slug}-${option.value}`} />
-                <label htmlFor={`${field.slug}-${option.value}`}>{option.label}</label>
+            {option.meta_data?.map((metaData:any) => (
+              <div key={metaData.value} className="flex items-center space-x-2">
+                <RadioGroupItem value={metaData.value} id={`${option.slug}-${metaData.value}`} />
+                <label htmlFor={`${option.slug}-${metaData.value}`}>{metaData.label}</label>
               </div>
             ))}
           </RadioGroup>
@@ -331,11 +344,10 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
       default:
         return (
           <Input
-            type={field.data_type === "number" ? "number" : "text"}
-            placeholder={field.placeholder || `Enter ${field.name.toLowerCase()}`}
-            min={field.min}
-            max={field.max}
-            step={field.step}
+            type={option.form_type === "number" ? "text" : "text"}
+            placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
+           
+          
             {...formField}
           />
         )
@@ -345,33 +357,33 @@ export function DynamicForm({ fields, action }: DynamicFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleServerActionSubmit)} className="space-y-8">
-        {fields.map((field) => (
+        {options.map((option) => (
           <FormField
-            key={field.id}
+            key={option.id}
             control={form.control}
-            name={field.slug}
+            name={option.slug}
             render={({ field: formField }) => (
               <FormItem>
                 <div className="flex items-center gap-2">
-                  <FormLabel>{field.name}</FormLabel>
-                  {field.tooltip && (
+                  <FormLabel>{option.name}</FormLabel>
+                  {option.tooltip && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{field.tooltip}</p>
+                          <p>{option.tooltip}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   )}
                 </div>
                 <FormControl>
-                  {renderFormField(field, formField)}
+                  {renderFormField(option, formField)}
                 </FormControl>
-                {field.description && (
-                  <FormDescription>{field.description}</FormDescription>
+                {option.description && (
+                  <FormDescription>{option.description}</FormDescription>
                 )}
                 <FormMessage />
               </FormItem>

@@ -1,16 +1,17 @@
-export interface BrokerOption {
+import { OptionValue } from "./OptionValue"
+
+export interface Option {
     id: number
     slug: string
     name: string
     data_type: string
     form_type: string
-    options?: { value: string; label: string }[]
     required?: number
     description?: string
     placeholder?: string
-    min?: number
-    max?: number
-    step?: number
+    min_constraint?: number
+    max_constraint?: number
     tooltip?: string
     meta_data?: { value: string; label: string }[]
+    option_values?: OptionValue[]
   }

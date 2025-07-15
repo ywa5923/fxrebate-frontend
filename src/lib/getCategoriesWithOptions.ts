@@ -1,12 +1,12 @@
 import { BASE_URL } from "@/constants";
-import { BrokerOptionCategory } from "@/types";
+import { OptionCategory } from "@/types";
 
-export async function getBrokerOptions<T=BrokerOptionCategory[]>(
+export async function getCategoriesWithOptions(
   locale: string = "en", 
   broker_type: string = "brokers",  
   all_columns: boolean = true,
   zone_code: string | null = null
-): Promise<T> {
+): Promise<OptionCategory[]> {
     const url = new URL(`${BASE_URL}/broker_options`);
   
     url.searchParams.append("language[eq]", locale);
@@ -18,6 +18,7 @@ export async function getBrokerOptions<T=BrokerOptionCategory[]>(
     }
    
     try {
+      
         const response = await fetch(url.toString(), { cache: "no-store" });
         //link example:http://localhost:8080/api/v1/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers"
       
@@ -27,7 +28,7 @@ export async function getBrokerOptions<T=BrokerOptionCategory[]>(
       
       const responseData = await response.json()
       
-      return responseData.data as T;
+      return responseData.data as OptionCategory[];
     } catch (error) {
       console.error('Error fetching broker options:', error)
       throw error

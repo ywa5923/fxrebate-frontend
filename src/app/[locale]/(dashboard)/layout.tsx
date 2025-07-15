@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { Frame } from 'lucide-react';
-import { getBrokerOptions } from '@/lib/getBrokerOptions';
+import { getCategoriesWithOptions } from '@/lib/getCategoriesWithOptions';
 
 async function getBrokerOptions2() {
   try {
@@ -49,9 +49,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const brokerOptions = await getBrokerOptions("en")
+  const categoriesWithOptions = await getCategoriesWithOptions("en")
 
-  let sidebarOptionsLinks = brokerOptions?.map((optionCategory: any) => {
+  let sidebarOptionsLinks = categoriesWithOptions?.map((optionCategory: any) => {
     let categoryName = optionCategory.name.toLowerCase().replace(/ /g, '-')
     return {
       name: optionCategory.name,

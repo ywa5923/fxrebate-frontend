@@ -1,6 +1,6 @@
-import { BrokerOption } from "./";
+import { Option } from ".";
 
-export interface BrokerOptionCategory {
+export interface OptionCategory {
     id: string | number;
     name: string;
     slug: string;
@@ -13,5 +13,5 @@ export interface BrokerOptionCategory {
     font_weight?: string;
     position?: string|number;
     default_language?: string;
-    options: Array<BrokerOption>;
+    options: Array<Option>;
   }
