@@ -39,6 +39,8 @@ export const getOptionsValues = async (
                 option_slug: item.option_slug,
                 value: item.value,
                 public_value: item.public_value,
+                ...(item?.metadata?.unit ? { metadata: item.metadata,isNumberWithUnit:true } : {}),
+               
               
             }));
         }

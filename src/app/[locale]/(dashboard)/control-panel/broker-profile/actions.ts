@@ -72,9 +72,20 @@ async function uploadToCloudflareR2(file: File, fileName: string): Promise<strin
   }
 }
 
+function isValidJsonString(str:string) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 export async function submitBrokerProfile(formData: FormData,orginalOptionValues:OptionValue[] ) {
  
   console.log("server action formData received", formData);
+
+ 
  // console.log("formData type:", typeof formData);
   //console.log("formData constructor:", formData.constructor.name);
   console.log("server original data",orginalOptionValues)
@@ -98,7 +109,11 @@ export async function submitBrokerProfile(formData: FormData,orginalOptionValues
           // });
         } else {
           // Check if this is an array field (contains semicolon-separated values)
-          data[key] = value;
+          if(isValidJsonString(value as string)){
+            data[key] = JSON.parse(value as string);
+          }else{
+            data[key] = value;
+          }
         }
       }
     } catch (error) {
@@ -142,11 +157,30 @@ export async function submitBrokerProfile(formData: FormData,orginalOptionValues
   const optionValues = Object.entries(data)
     .map(([option_slug, value]) => {
       const originalOption = orginalOptionValues.find(option => option.option_slug === option_slug);
+      let meta_data_unit:string|null=null
+      let valueToSave:string|null=null
+         
+      if (
+        value &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        "unit" in value &&
+        "value" in value
+      ) {
+       
+        meta_data_unit = value.unit;
+        valueToSave = String(value.value);
+      } else {
+        valueToSave = String(value);
+      }
+      
       return {
         id: originalOption?.id,
         option_slug,
-        value: String(value),
-        //broker_option_id: 1
+        value: valueToSave,
+        //...(meta_data_unit !== null ? { metadata: { unit: meta_data_unit } } : {})
+        metadata: meta_data_unit ? { unit: meta_data_unit } : null
+      
       };
     })
    // .filter(option => option.id !== undefined); // Filter out entries without valid IDs
@@ -155,9 +189,9 @@ export async function submitBrokerProfile(formData: FormData,orginalOptionValues
     option_values: optionValues
   };
   
-  console.log("Formatted data for PHP:", JSON.stringify(requestData, null, 2));
-  console.log("Number of option values:", optionValues.length);
-  console.log("Original option values count:", orginalOptionValues.length);
+  // console.log("Formatted data for PHP:", JSON.stringify(requestData, null, 2));
+  // console.log("Number of option values:", optionValues.length);
+  // console.log("Original option values count:", orginalOptionValues.length);
   
   //Send to PHP server
   try {

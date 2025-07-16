@@ -169,7 +169,9 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
           return { ...acc, [option.slug]: optionValue?.value?.split("; ") }
      
         case "numberWithUnit":
-          return { ...acc, [option.slug]: { value: undefined, unit: undefined } }
+          return { ...acc, [option.slug]: { value: optionValue?.value, unit: optionValue?.metadata?.unit } }
+        case "image":
+          return { ...acc, [option.slug]: optionValue?.value }
         default:
           return { ...acc, [option.slug]: optionValue?.value }
       }
@@ -194,7 +196,7 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
   })
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
-    console.log("Server action form data:", data);
+   // console.log("Server action form data from client:", data);
 
     
     
@@ -205,22 +207,18 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
         if (value instanceof File) {
           // Handle file uploads
           formDataObj.append(key, value);
-        //} else if (typeof value === 'object' && value !== null) {
-          // Handle complex objects like numberWithUnit
-          // Object.entries(value).forEach(([subKey, subValue]) => {
-          //   if (subValue !== undefined && subValue !== null) {
-          //     formDataObj.append(`${key}.${subKey}`, String(subValue));
-          //   }
-          // });
-          //to do
-          //formDataObj.append(key,value.value+)
+       
           
         } else if (Array.isArray(value)) {
           // Handle arrays by joining with semicolon
           formDataObj.append(key, value.join("; "));
         
-        } else {
-          formDataObj.append(key, String(value));
+        } 
+        else if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+          formDataObj.append(key, JSON.stringify(value));
+        }
+        else {
+          formDataObj.append(key, value);
         }
         console.log("Array field:", key,value,Array.isArray(value),typeof value === 'object');
       }
@@ -372,16 +370,60 @@ export function DynamicForm({ options, action, optionsValues }: DynamicFormProps
         )
       case 'image':
         return (
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                formField.onChange(file);
-              }
-            }}
-          />
+          <div>
+            {formField.value && typeof formField.value === "string" && (
+              <div className="text-sm text-muted-foreground mb-2">
+                Current file:{" "}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        href={formField.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-blue-600 hover:text-blue-800"
+                      >
+                        {formField.value.split("/").pop()}
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      align="center"
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        boxShadow: "none",
+                        padding: 0
+                      }}
+                    >
+                      <img
+                        src={formField.value}
+                        alt="Current file"
+                        style={{
+                          maxWidth: 200,
+                          maxHeight: 200,
+                          display: "block",
+                          border: "none",
+                          background: "transparent",
+                          boxShadow: "none"
+                        }}
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  formField.onChange(file);
+                }
+              }}
+            />
+          </div>
         )
       default:
         return (

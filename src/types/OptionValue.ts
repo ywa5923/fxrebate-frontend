@@ -12,6 +12,8 @@ export interface OptionValue {
   broker_id?: number;
   broker_option_id?: number;
   zone_id?: number | null;
+  metadata?: (Record<string, any> & { unit?: string }) | null;
+  isNumberWithUnit?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
 }

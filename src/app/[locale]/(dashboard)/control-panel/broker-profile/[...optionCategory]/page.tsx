@@ -29,7 +29,7 @@ export default async function BrokerProfilePage({
     const categoriesWithOptions = await getCategoriesWithOptions("en");
     const optionsValues: OptionValue[] = await getOptionsValues(200, "Brokers", categoryId, "en");
 
-    console.log("muie",optionsValues);
+    console.log("muie",optionsValues)
    
    // console.log("All broker options:", brokerOptionsWithCategories);
     
