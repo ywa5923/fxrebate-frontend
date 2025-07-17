@@ -81,7 +81,7 @@ function isValidJsonString(str:string) {
   return true;
 }
 
-export async function submitBrokerProfile(formData: FormData,orginalOptionValues:OptionValue[] ) {
+export async function submitBrokerProfile(formData: FormData, orginalOptionValues?: OptionValue[]) {
  
   console.log("server action formData received", formData);
 
@@ -156,7 +156,7 @@ export async function submitBrokerProfile(formData: FormData,orginalOptionValues
   // Format data as option_values array
   const optionValues = Object.entries(data)
     .map(([option_slug, value]) => {
-      const originalOption = orginalOptionValues.find(option => option.option_slug === option_slug);
+      const originalOption = orginalOptionValues?.find(option => option.option_slug === option_slug);
       let meta_data_unit:string|null=null
       let valueToSave:string|null=null
          
@@ -196,7 +196,7 @@ export async function submitBrokerProfile(formData: FormData,orginalOptionValues
   //Send to PHP server
   try {
     const response = await fetch("http://localhost:8080/api/v1/brokers/200/option-values", {
-      method: orginalOptionValues.length > 0 ? "PUT" : "POST",
+      method: (orginalOptionValues && orginalOptionValues.length > 0) ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
       },

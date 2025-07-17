@@ -48,10 +48,11 @@ import { useRouter } from "next/navigation";
 interface DynamicFormProps {
   options: Option[]
   action?: (formData: FormData, originalData?: OptionValue[]) => Promise<void>
-  optionsValues: OptionValue[]
+  optionsValues: OptionValue[],
+  is_admin: boolean
 }
 
-export function DynamicForm({ options, action, optionsValues }: DynamicFormProps) {
+export function DynamicForm({ options, action, optionsValues, is_admin }: DynamicFormProps) {
   const router = useRouter();
   
   // Create a dynamic schema based on the fields

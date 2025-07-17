@@ -13,7 +13,8 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 1;
+  let brokerId = 200;
+  let is_admin=true;
   try {
     const resolvedParams = await params;
     const categoryId = resolvedParams.optionCategory[0];
@@ -27,9 +28,9 @@ export default async function BrokerProfilePage({
    // console.log("Category ID type:", typeof categoryId);
 
     const categoriesWithOptions = await getCategoriesWithOptions("en");
-    const optionsValues: OptionValue[] = await getOptionsValues(200, "Brokers", categoryId, "en");
+    const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en");
 
-    console.log("muie",optionsValues)
+   
    
    // console.log("All broker options:", brokerOptionsWithCategories);
     
@@ -78,6 +79,7 @@ export default async function BrokerProfilePage({
           options={matchedCategory.options as Option[]} 
           optionsValues={optionsValues}
           action={submitBrokerProfile} 
+          is_admin={is_admin}
         />
       </div>
     );
