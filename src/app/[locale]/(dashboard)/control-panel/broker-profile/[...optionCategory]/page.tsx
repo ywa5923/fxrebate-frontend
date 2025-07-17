@@ -14,7 +14,7 @@ export default async function BrokerProfilePage({
 }) {
  
   let brokerId = 200;
-  let is_admin=true;
+  let is_admin=false;
   try {
     const resolvedParams = await params;
     const categoryId = resolvedParams.optionCategory[0];

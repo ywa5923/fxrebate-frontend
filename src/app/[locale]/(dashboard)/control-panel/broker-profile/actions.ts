@@ -81,7 +81,7 @@ function isValidJsonString(str:string) {
   return true;
 }
 
-export async function submitBrokerProfile(formData: FormData, orginalOptionValues?: OptionValue[]) {
+export async function submitBrokerProfile(formData: FormData, is_admin: boolean,orginalOptionValues?: OptionValue[]) {
  
   console.log("server action formData received", formData);
 
@@ -177,7 +177,8 @@ export async function submitBrokerProfile(formData: FormData, orginalOptionValue
       return {
         id: originalOption?.id,
         option_slug,
-        value: valueToSave,
+        //value: valueToSave,
+        ...(is_admin ? { public_value: valueToSave } : {value: valueToSave}),
         //...(meta_data_unit !== null ? { metadata: { unit: meta_data_unit } } : {})
         metadata: meta_data_unit ? { unit: meta_data_unit } : null
       
