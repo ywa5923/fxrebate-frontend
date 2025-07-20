@@ -16,5 +16,7 @@ export interface OptionValue {
   isNumberWithUnit?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
+  optionable_type?: string | null;
+  optionable_id?: number | null;
 }
 

@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
 import { Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
+import { getCompanies } from "@/lib/getCompanies";
+import Companies from "./Companies";
 
 
 export default async function BrokerProfilePage({ 
@@ -15,9 +17,15 @@ export default async function BrokerProfilePage({
  
   let brokerId = 200;
   let is_admin=false;
+  let broker_type = 'broker';
+  //brokertype: broker, props, crypto
+ 
+
   try {
     const resolvedParams = await params;
     const categoryId = resolvedParams.optionCategory[0];
+    const categorySlug = resolvedParams.optionCategory[1];
+
     
     if (!categoryId) {
       console.log("No category ID provided");
@@ -26,10 +34,13 @@ export default async function BrokerProfilePage({
 
    // console.log("Looking for category ID:", categoryId);
    // console.log("Category ID type:", typeof categoryId);
+    //locale is null for defualt langauge
+   
 
-    const categoriesWithOptions = await getCategoriesWithOptions("en");
-    const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en");
+    const categoriesWithOptions = await getCategoriesWithOptions('en',broker_type);
+   
 
+  
    
    
    // console.log("All broker options:", brokerOptionsWithCategories);
@@ -70,12 +81,34 @@ export default async function BrokerProfilePage({
       notFound();
     }
 
-   // console.log("Found broker options:", matchedCategory);
+    //let modelType=matchedCategory.options[0]?.applicable_for
+    console.log("modelType========================================",categorySlug);
+
+    let companies = null;
+    if(categorySlug=='my-companies'){
+      companies = await getCompanies(brokerId,null,null,'en');
+      console.log("companies========================================",companies);
+    }
+    
+    const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
+
+    // If this is the companies category, render the Companies component
+    if(categorySlug=='my-companies' && companies){
+      return (
+        <Companies 
+          broker_id={brokerId}
+          companies={companies}
+          options={matchedCategory.options as Option[]}
+          is_admin={is_admin}
+        />
+      );
+    }
 
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">{matchedCategory.name}</h1>
         <DynamicForm 
+          broker_id={brokerId}
           options={matchedCategory.options as Option[]} 
           optionsValues={optionsValues}
           action={submitBrokerProfile} 

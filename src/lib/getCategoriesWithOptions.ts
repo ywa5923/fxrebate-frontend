@@ -2,19 +2,24 @@ import { BASE_URL } from "@/constants";
 import { OptionCategory } from "@/types";
 
 export async function getCategoriesWithOptions(
-  locale: string = "en", 
-  broker_type: string = "brokers",  
-  all_columns: boolean = true,
+  locale:string | null = null, 
+  broker_type: string | null = null,
   zone_code: string | null = null
 ): Promise<OptionCategory[]> {
-    const url = new URL(`${BASE_URL}/broker_options`);
+    const url = new URL(`${BASE_URL}/option-categories`);
   
-    url.searchParams.append("language[eq]", locale);
-    url.searchParams.append("all_columns[eq]", all_columns ? "1" : "0");
-    url.searchParams.append("broker_type[eq]", broker_type);
+    // url.searchParams.append("language[eq]", locale);
+    // url.searchParams.append("all_columns[eq]", all_columns ? "1" : "0");
+    // url.searchParams.append("broker_type[eq]", broker_type);
     
     if (zone_code) {
-        url.searchParams.append("zone_code[eq]", zone_code);
+        url.searchParams.append("zone_code", zone_code);
+    }
+    if(locale!==null && locale!=='en'){
+        url.searchParams.append("language_code", locale);
+    }
+    if(broker_type){
+        url.searchParams.append("broker_type", broker_type);
     }
    
     try {

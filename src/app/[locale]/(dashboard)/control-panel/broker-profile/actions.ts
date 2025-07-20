@@ -1,5 +1,6 @@
 'use server'
 
+import { BASE_URL } from "@/constants";
 import { OptionValue } from "@/types";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
@@ -81,7 +82,7 @@ function isValidJsonString(str:string) {
   return true;
 }
 
-export async function submitBrokerProfile(formData: FormData, is_admin: boolean,orginalOptionValues?: OptionValue[]) {
+export async function submitBrokerProfile(broker_id: number,formData: FormData, is_admin: boolean,orginalOptionValues?: OptionValue[],entity_id?: number,entity_type?: string) {
  
   console.log("server action formData received", formData);
 
@@ -187,16 +188,20 @@ export async function submitBrokerProfile(formData: FormData, is_admin: boolean,
    // .filter(option => option.id !== undefined); // Filter out entries without valid IDs
   
   const requestData = {
-    option_values: optionValues
+    option_values: optionValues,
+    entity_id: entity_id,
+    entity_type: entity_type,
+   
   };
   
-  // console.log("Formatted data for PHP:", JSON.stringify(requestData, null, 2));
+   console.log("Formatted data for PHP:==================s", JSON.stringify(requestData, null, 2));
   // console.log("Number of option values:", optionValues.length);
   // console.log("Original option values count:", orginalOptionValues.length);
   
   //Send to PHP server
   try {
-    const response = await fetch("http://localhost:8080/api/v1/brokers/200/option-values", {
+    let url=BASE_URL+`/brokers/${broker_id}/option-values`
+    const response = await fetch(url, {
       method: (orginalOptionValues && orginalOptionValues.length > 0) ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",

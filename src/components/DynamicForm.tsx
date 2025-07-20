@@ -49,20 +49,26 @@ import { Option, OptionValue } from "@/types";
 import { useRouter } from "next/navigation";
 
 interface DynamicFormProps {
+  broker_id: number;
   options: Option[];
-  action?: (formData: FormData,  is_admin: boolean,originalData?: OptionValue[]) => Promise<void>;
+  action?: (broker_id: number,formData: FormData,  is_admin: boolean,originalData?: OptionValue[],entity_id?: number,entity_type?: string) => Promise<void>;
   optionsValues: OptionValue[];
   is_admin: boolean;
+  entity_id?: number;
+  entity_type?: string;
 }
 
 export function DynamicForm({
+  broker_id,
   options,
   action,
   optionsValues,
   is_admin,
+  entity_id,
+  entity_type,
 }: DynamicFormProps) {
   const router = useRouter();
-  
+
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
     const optionValue = optionsValues.find(optionValue => optionValue.option_slug === optionSlug);
@@ -245,7 +251,7 @@ export function DynamicForm({
     // Call the Server Action
     if (action) {
       try {
-        await action(formDataObj, is_admin,optionsValues);
+        await action(broker_id,formDataObj, is_admin,optionsValues,entity_id,entity_type);
         toast.success("Form submitted successfully");
         // Refresh the page after successful submission using Next.js router
         router.refresh();
