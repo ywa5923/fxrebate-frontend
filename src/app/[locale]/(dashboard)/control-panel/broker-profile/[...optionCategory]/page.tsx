@@ -7,7 +7,8 @@ import { Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
 import { getCompanies } from "@/lib/getCompanies";
 import Companies from "./Companies";
-
+import { getAccountTypes } from "@/lib/getAccountType";
+import Accounts from "./Accounts";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -16,7 +17,7 @@ export default async function BrokerProfilePage({
 }) {
  
   let brokerId = 200;
-  let is_admin=false;
+  let is_admin=true;
   let broker_type = 'broker';
   //brokertype: broker, props, crypto
  
@@ -89,6 +90,12 @@ export default async function BrokerProfilePage({
       companies = await getCompanies(brokerId,null,null,'en');
       console.log("companies========================================",companies);
     }
+
+    let accountType = null;
+    if(categorySlug=='my-account-types'){
+      accountType = await getAccountTypes(brokerId,null,null,'en');
+      console.log("accountType========================================",accountType);
+    }
     
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
@@ -98,6 +105,16 @@ export default async function BrokerProfilePage({
         <Companies 
           broker_id={brokerId}
           companies={companies}
+          options={matchedCategory.options as Option[]}
+          is_admin={is_admin}
+        />
+      );
+    }
+    if(categorySlug=='my-account-types' && accountType){
+      return (
+        <Accounts 
+          broker_id={brokerId}
+          accounts={accountType}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
         />

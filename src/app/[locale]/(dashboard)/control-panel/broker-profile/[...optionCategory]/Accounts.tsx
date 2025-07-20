@@ -9,33 +9,31 @@ import { cn } from '@/lib/utils';
 import { Plus, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface CompaniesProps {
+interface AccountsProps {
   broker_id: number;
-  companies: Company[];
+  accounts: Company[];
   options: Option[];
   is_admin?: boolean;
 }
 
-export default function Companies({ broker_id, companies, options, is_admin = false }: CompaniesProps) {
-  const [activeTab, setActiveTab] = useState<string>(companies[0]?.id?.toString() || '');
-  const [showNewCompany, setShowNewCompany] = useState(false);
-
- 
+export default function Accounts({ broker_id, accounts, options, is_admin = false }: AccountsProps) {
+  const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
+  const [showNewAccount, setShowNewAccount] = useState(false);
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Companies</h1>
+        <h1 className="text-2xl font-bold">Accounts</h1>
         <Button 
-          onClick={() => setShowNewCompany(!showNewCompany)}
+          onClick={() => setShowNewAccount(!showNewAccount)}
           className={cn(
             "transition-all duration-200",
-            showNewCompany 
+            showNewAccount 
               ? "bg-red-600 hover:bg-red-700 text-white" 
               : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
           )}
         >
-          {showNewCompany ? (
+          {showNewAccount ? (
             <>
               <X className="w-4 h-4 mr-2" />
               Cancel
@@ -43,17 +41,17 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
           ) : (
             <>
               <Plus className="w-4 h-4 mr-2" />
-              Add New Company
+              Add New Account
             </>
           )}
         </Button>
       </div>
       
-      {/* New Company Form */}
+      {/* New Account Form */}
       <div 
         className={cn(
           "transition-all duration-500 ease-in-out",
-          showNewCompany 
+          showNewAccount 
             ? "opacity-100 max-h-[2000px] translate-y-0" 
             : "opacity-0 max-h-0 translate-y-[-20px] overflow-hidden"
         )}
@@ -61,11 +59,11 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
         <Card className="mb-6 border-2 border-dashed border-blue-200 bg-blue-50/50">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg text-blue-800">New Company</CardTitle>
+              <CardTitle className="text-lg text-blue-800">New Account</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowNewCompany(false)}
+                onClick={() => setShowNewAccount(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X className="w-4 h-4" />
@@ -79,72 +77,72 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
               optionsValues={[]}
               action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
                 await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
-                setShowNewCompany(false);
+                setShowNewAccount(false);
               }}
               is_admin={is_admin}
               entity_id={0}
-              entity_type="Company"
+              entity_type="AccountType"
             />
           </CardContent>
         </Card>
       </div>
       
       {/* Tab Navigation */}
-      {companies.length > 0 ? (
+      {accounts.length > 0 ? (
         <>
           <div className="flex flex-wrap gap-2 mb-6">
-            {companies.map((company, index) => (
+            {accounts.map((account, index) => (
               <Button
-                key={company.id}
-                variant={activeTab === company.id.toString() ? "default" : "outline"}
+                key={account.id}
+                variant={activeTab === account.id.toString() ? "default" : "outline"}
                 size="sm"
-                onClick={() => setActiveTab(company.id.toString())}
+                onClick={() => setActiveTab(account.id.toString())}
                 className="text-xs lg:text-sm"
               >
-                Company {index + 1}
+                Account {index + 1}
               </Button>
             ))}
           </div>
           
           {/* Tab Content */}
-          {companies.map((company) => (
+          {accounts.map((account) => (
             <div
-              key={company.id}
+              key={account.id}
               className={cn(
                 "space-y-4",
-                activeTab === company.id.toString() ? "block" : "hidden"
+                activeTab === account.id.toString() ? "block" : "hidden"
               )}
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Company {company.id}</h2>
+                <h2 className="text-xl font-semibold">Account {account.id}</h2>
                 <div className="text-sm text-muted-foreground">
-                  ID: {company.id}
+                  ID: {account.id}
                 </div>
               </div>
               
-              {company.option_values && company.option_values.length > 0 ? (
+              {account.option_values && account.option_values.length > 0 ? (
                 <DynamicForm
                   broker_id={broker_id}
                   options={options}
-                  optionsValues={company.option_values}
+                  optionsValues={account.option_values}
                   action={submitBrokerProfile}
                   is_admin={is_admin}
-                  entity_id={company.id}
-                  entity_type="Company"
-                />  
+                  entity_id={account.id}
+                  entity_type="AccountType"
+                />
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No option values available for this company.</p>
+                  <p className="text-muted-foreground">No option values available for this account.</p>
                 </div>
               )}
             </div>
           ))}
         </>
-      ) : !showNewCompany && (
+      ) : !showNewAccount && (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">No companies found. Click "Add New Company" to get started.</p>
+          <p className="text-muted-foreground">No accounts found. Click "Add New Account" to get started.</p>
         </div>
       )}
     </div>
   );
-}
+} 
