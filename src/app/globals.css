@@ -64,6 +64,13 @@
   .section-description {
     @apply text-center  text-base md:text-xl font-normal;
   }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 * {

@@ -93,21 +93,22 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
       {companies.length > 0 ? (
         <>
           <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <div className="flex space-x-1">
+            <div className="flex overflow-x-auto scrollbar-hide space-x-1 pb-2">
               {companies.map((company, index) => (
                 <button
                   key={company.id}
                   onClick={() => setActiveTab(company.id.toString())}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200",
+                    "px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap flex-shrink-0",
                     activeTab === company.id.toString()
                       ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span>Company {index + 1}</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-green-500"></div>
+                    <span className="hidden sm:inline">Company {index + 1}</span>
+                    <span className="sm:hidden">Comp {index + 1}</span>
                   </div>
                 </button>
               ))}
