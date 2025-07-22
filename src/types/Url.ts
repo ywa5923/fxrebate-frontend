@@ -1,0 +1,21 @@
+export type Url = {
+  id: number;
+  urlable_id?: number | null;
+  urlable_type?: string | null;
+  url_type: string;
+  url: string;
+  url_p?: string | null;
+  name: string;
+  name_p?: string | null;
+  slug: string;
+  is_invariant: boolean;
+  category_position?: number | null;
+  description?: string | null;
+  status?: "published" | "pending" | "rejected";
+  status_reason?: string | null;
+  option_category_id?: number | null;
+  broker_id: number;
+  zone_id?: number | null;
+  created_at: string;
+  updated_at: string;
+};

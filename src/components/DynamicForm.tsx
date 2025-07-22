@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -68,6 +69,7 @@ export function DynamicForm({
   entity_type,
 }: DynamicFormProps) {
   const router = useRouter();
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
@@ -216,6 +218,17 @@ export function DynamicForm({
     }, {}),
   });
 
+  // Watch form changes to enable/disable submit button
+  const formValues = form.watch();
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type === 'change') {
+        setIsFormDirty(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
     // console.log("Server action form data from client:", data);
 
@@ -253,6 +266,8 @@ export function DynamicForm({
       try {
         await action(broker_id,formDataObj, is_admin,optionsValues,entity_id,entity_type);
         toast.success("Form submitted successfully");
+        // Reset form dirty state after successful submission
+        setIsFormDirty(false);
         // Refresh the page after successful submission using Next.js router
         router.refresh();
       } catch (error) {
@@ -607,7 +622,18 @@ export function DynamicForm({
             )}
           />
         ))}
-        <Button type="submit">Submit</Button>
+        <Button 
+          type="submit" 
+          disabled={!isFormDirty}
+          className={cn(
+            "transition-all duration-300 font-medium",
+            isFormDirty 
+              ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl" 
+              : "bg-transparent border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-not-allowed"
+          )}
+        >
+          {isFormDirty ? "Save Changes" : "No Changes to Save"}
+        </Button>
       </form>
     </Form>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Company, Option, OptionValue } from '@/types';
+import { Company, Option, OptionValue, Url } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '../actions';
 import { useState } from 'react';
@@ -8,17 +8,36 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AccountLinks from './AccountLinks';
+import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
 
 interface AccountsProps {
   broker_id: number;
   accounts: Company[];
   options: Option[];
   is_admin?: boolean;
+  linksGroupedByAccountId: LinksGroupedByAccountId;
+  masterLinksGroupedByType: LinksGroupedByType;
+  linksGroups: Array<string>;
 }
 
-export default function Accounts({ broker_id, accounts, options, is_admin = false }: AccountsProps) {
+export default function Accounts({ broker_id, accounts, options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
   const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
   const [showNewAccount, setShowNewAccount] = useState(false);
+//example of accountTypeUrls, grouped by acount_type_ID and then by url type,  and urls_groups
+//it also contains master-links which is a group of urls that are not associated with any account type 
+//master links are shown in the section of every account type
+//    {
+//     '12': {
+//       mobile: [Array],
+//       webplatform: [Array],
+//       swap: [Array],
+//       commission: [Array]
+//     },
+//     'master-links': { mobile: [Array] }
+//   },
+//   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
+
 
   return (
     <div className="container mx-auto p-6">
@@ -30,7 +49,7 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
             "transition-all duration-200",
             showNewAccount 
               ? "bg-red-600 hover:bg-red-700 text-white" 
-              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
+              : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-lg hover:shadow-xl"
           )}
         >
           {showNewAccount ? (
@@ -90,32 +109,50 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
       {/* Tab Navigation */}
       {accounts.length > 0 ? (
         <>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {accounts.map((account, index) => (
-              <Button
-                key={account.id}
-                variant={activeTab === account.id.toString() ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab(account.id.toString())}
-                className="text-xs lg:text-sm"
-              >
-                Account {index + 1}
-              </Button>
-            ))}
+          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+            <div className="flex space-x-1">
+              {accounts.map((account, index) => (
+                <button
+                  key={account.id}
+                  onClick={() => setActiveTab(account.id.toString())}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200",
+                    activeTab === account.id.toString()
+                      ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span>Account {index + 1}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
           
           {/* Tab Content */}
-          {accounts.map((account) => (
+          {accounts.map((account, index) => (
             <div
               key={account.id}
               className={cn(
-                "space-y-4",
+                "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6",
                 activeTab === account.id.toString() ? "block" : "hidden"
               )}
             >
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Account {account.id}</h2>
-                <div className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Account {index + 1}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                   ID: {account.id}
                 </div>
               </div>
@@ -130,17 +167,32 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                   entity_id={account.id}
                   entity_type="AccountType"
                 />
+
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No option values available for this account.</p>
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
                 </div>
               )}
+              <AccountLinks 
+              account_type_id={account?.id} 
+               links={linksGroupedByAccountId[account.id]??{}}
+               master_links={masterLinksGroupedByType} 
+               links_groups={linksGroups} />
+
             </div>
           ))}
         </>
       ) : !showNewAccount && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No accounts found. Click "Add New Account" to get started.</p>
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No accounts found</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Account" to get started.</p>
         </div>
       )}
     </div>

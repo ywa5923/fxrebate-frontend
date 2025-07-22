@@ -7,8 +7,9 @@ import { Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
 import { getCompanies } from "@/lib/getCompanies";
 import Companies from "./Companies";
-import { getAccountTypes } from "@/lib/getAccountType";
+import { getAccountTypes } from "@/lib/getAccountTypes";
 import Accounts from "./Accounts";
+import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -17,8 +18,10 @@ export default async function BrokerProfilePage({
 }) {
  
   let brokerId = 200;
-  let is_admin=true;
+  let is_admin=false;
   let broker_type = 'broker';
+  let language_code='en';
+  let zone_code='eu';
   //brokertype: broker, props, crypto
  
 
@@ -93,7 +96,7 @@ export default async function BrokerProfilePage({
 
     let accountType = null;
     if(categorySlug=='my-account-types'){
-      accountType = await getAccountTypes(brokerId,null,null,'en');
+      accountType = await getAccountTypes(brokerId,null,'en');
       console.log("accountType========================================",accountType);
     }
     
@@ -111,12 +114,19 @@ export default async function BrokerProfilePage({
       );
     }
     if(categorySlug=='my-account-types' && accountType){
+      let accountTypesLinks=await getAccountTypeUrls(brokerId,null,zone_code,language_code);
+
+     // console.log("accountTypesUrls========================================",accountTypesLinks);
+     
       return (
         <Accounts 
           broker_id={brokerId}
           accounts={accountType}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
+          linksGroupedByAccountId={accountTypesLinks.links_grouped_by_account_id ?? {}}
+          masterLinksGroupedByType={accountTypesLinks.master_links_grouped_by_type ?? {}}
+          linksGroups={accountTypesLinks.links_groups ?? []}
         />
       );
     }

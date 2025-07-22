@@ -32,7 +32,7 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
             "transition-all duration-200",
             showNewCompany 
               ? "bg-red-600 hover:bg-red-700 text-white" 
-              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
+              : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-lg hover:shadow-xl"
           )}
         >
           {showNewCompany ? (
@@ -92,32 +92,50 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
       {/* Tab Navigation */}
       {companies.length > 0 ? (
         <>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {companies.map((company, index) => (
-              <Button
-                key={company.id}
-                variant={activeTab === company.id.toString() ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab(company.id.toString())}
-                className="text-xs lg:text-sm"
-              >
-                Company {index + 1}
-              </Button>
-            ))}
+          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+            <div className="flex space-x-1">
+              {companies.map((company, index) => (
+                <button
+                  key={company.id}
+                  onClick={() => setActiveTab(company.id.toString())}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200",
+                    activeTab === company.id.toString()
+                      ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span>Company {index + 1}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
           
           {/* Tab Content */}
-          {companies.map((company) => (
+          {companies.map((company, index) => (
             <div
               key={company.id}
               className={cn(
-                "space-y-4",
+                "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6",
                 activeTab === company.id.toString() ? "block" : "hidden"
               )}
             >
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Company {company.id}</h2>
-                <div className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Company {index + 1}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                   ID: {company.id}
                 </div>
               </div>
@@ -133,16 +151,24 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
                   entity_type="Company"
                 />  
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No option values available for this company.</p>
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This company has no option values to configure.</p>
                 </div>
               )}
             </div>
           ))}
         </>
       ) : !showNewCompany && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No companies found. Click "Add New Company" to get started.</p>
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No companies found</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Company" to get started.</p>
         </div>
       )}
     </div>
