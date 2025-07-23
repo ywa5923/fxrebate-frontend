@@ -50,44 +50,35 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
       </div>
       
       {/* New Company Form */}
-      <div 
-        className={cn(
-          "transition-all duration-500 ease-in-out",
-          showNewCompany 
-            ? "opacity-100 max-h-[2000px] translate-y-0" 
-            : "opacity-0 max-h-0 translate-y-[-20px] overflow-hidden"
-        )}
-      >
-        <Card className="mb-6 border-2 border-dashed border-blue-200 bg-blue-50/50">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg text-blue-800">New Company</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNewCompany(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+      {showNewCompany && (
+        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+          {/* Header with icon and text */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-          </CardHeader>
-          <CardContent>
-            <DynamicForm
-              broker_id={broker_id}
-              options={options}
-              optionsValues={[]}
-              action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
-                await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
-                setShowNewCompany(false);
-              }}
-              is_admin={is_admin}
-              entity_id={0}
-              entity_type="Company"
-            />
-          </CardContent>
-        </Card>
-      </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Company</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new company</p>
+            </div>
+          </div>
+          
+          <DynamicForm
+            broker_id={broker_id}
+            options={options}
+            optionsValues={[]}
+            action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
+              await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
+              setShowNewCompany(false);
+            }}
+            is_admin={is_admin}
+            entity_id={0}
+            entity_type="Company"
+          />
+        </div>
+      )}
       
       {/* Tab Navigation */}
       {companies.length > 0 ? (

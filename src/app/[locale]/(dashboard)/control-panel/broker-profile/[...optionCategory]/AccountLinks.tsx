@@ -10,6 +10,11 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Url } from "@/types/Url";
 import { LinksGroupedByType } from "@/types/AccountTypeLinks";
+import { saveAccountTypeLink ,deleteAccountTypeLink} from "./actions";
+import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+
 
 // Zod schema for link form
 const linkSchema = z.object({
@@ -19,14 +24,16 @@ const linkSchema = z.object({
   is_master: z.boolean().optional(),
 });
 
-type LinkFormValues = z.infer<typeof linkSchema>;
+export type LinkFormValues = z.infer<typeof linkSchema>;
 
 export default function AccountLinks({
+  broker_id,
   account_type_id,
   links,
   master_links,
   links_groups,
 }: {
+  broker_id: number;
   account_type_id: number;
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
@@ -35,6 +42,7 @@ export default function AccountLinks({
   const [editingLink, setEditingLink] = useState<Url | null>(null);
   const [addingType, setAddingType] = useState<string | null>(null);
   const [openAccordion, setOpenAccordion] = useState<string[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState<{id: number, account_type_id: number|null, broker_id: number} | null>(null);
 
   // Handle accordion state change - close form when accordion closes
   const handleAccordionChange = (value: string[]) => {
@@ -63,14 +71,32 @@ export default function AccountLinks({
       is_master: false,
     },
   });
+  const router = useRouter();
 
   // Simulated server action
   async function onSubmit(data: LinkFormValues) {
-    // TODO: call your server action here
-    alert(JSON.stringify(data, null, 2));
-    setEditingLink(null);
+    try {
+      // If editing, include the id
+      const payload = {
+        ...(editingLink ? { id: editingLink.id } : {id: null}),
+        broker_id,
+        urlable_id: data.is_master ? null :  account_type_id,
+        urlable_type: "account-type",
+        url_type: data.type,
+        name: data.name,
+        url: data.url
+      };
+    
+      const response = await saveAccountTypeLink(payload);
+      router.refresh();
+      toast.success(editingLink ? "Link updated successfully!" : "Link added successfully!");
+    } catch (error) {
+      toast.error("Failed to save link");
+      console.log("save link error",JSON.stringify(error, null, 2));
+    }
+    setEditingLink(null);  
     setAddingType(null);
-    form.reset();
+   // form.reset();
   }
 
   // Handle add button click
@@ -80,6 +106,17 @@ export default function AccountLinks({
     // Ensure the accordion is open for this type
     if (!openAccordion.includes(type)) {
       setOpenAccordion([...openAccordion, type]);
+    }
+  }
+
+  async function handleDeleteClick(link_id: number,account_type_id: number|null, broker_id: number) {
+    try{
+      const response = await deleteAccountTypeLink(link_id,account_type_id,broker_id);
+      router.refresh();
+      toast.success("Link deleted successfully!");
+    }catch(error){
+      toast.error("Failed to delete link");
+      console.log("DELETE link error",JSON.stringify(error, null, 2));
     }
   }
 
@@ -110,7 +147,7 @@ export default function AccountLinks({
                 </div>
               </div>
               <Button size="sm" variant="outline" onClick={() => { setEditingLink(link); form.reset({ ...link, type: link.url_type, is_master: isMaster }); }}>Edit</Button>
-              <Button size="sm" variant="destructive" onClick={() => {/* TODO: delete action */}}>Delete</Button>
+              <Button size="sm" variant="destructive" onClick={() => setConfirmDelete({ id: link.id, account_type_id, broker_id })}>Delete</Button>
             </div>
           );
         })}
@@ -237,7 +274,7 @@ export default function AccountLinks({
         {links_groups.map((type) => (
           <AccordionItem key={type} value={type}>
             <div className="flex items-center justify-between">
-                          <AccordionTrigger className="flex-1">
+            <AccordionTrigger className="flex-1">
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -273,6 +310,33 @@ export default function AccountLinks({
           </AccordionItem>
         ))}
       </Accordion>
+      {/* Confirmation Dialog for Delete */}
+      <Dialog open={!!confirmDelete} onOpenChange={open => { if (!open) setConfirmDelete(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to delete this link?</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            This action cannot be undone.
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (confirmDelete) {
+                  await handleDeleteClick(confirmDelete.id, confirmDelete.account_type_id, confirmDelete.broker_id);
+                  setConfirmDelete(null);
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

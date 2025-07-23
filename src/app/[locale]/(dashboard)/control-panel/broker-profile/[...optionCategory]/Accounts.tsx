@@ -6,10 +6,14 @@ import { submitBrokerProfile } from '../actions';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AccountLinks from './AccountLinks';
 import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { deleteAccountType } from './actions';
+import { useRouter } from 'next/navigation';
 
 interface AccountsProps {
   broker_id: number;
@@ -20,10 +24,6 @@ interface AccountsProps {
   masterLinksGroupedByType: LinksGroupedByType;
   linksGroups: Array<string>;
 }
-
-export default function Accounts({ broker_id, accounts, options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
-  const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
-  const [showNewAccount, setShowNewAccount] = useState(false);
 //example of accountTypeUrls, grouped by acount_type_ID and then by url type,  and urls_groups
 //it also contains master-links which is a group of urls that are not associated with any account type 
 //master links are shown in the section of every account type
@@ -38,6 +38,24 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
 //   },
 //   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
 
+export default function Accounts({ broker_id, accounts, options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
+  const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
+  const [showNewAccount, setShowNewAccount] = useState(false);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
+  const router = useRouter();
+
+
+  async function handleDeleteAccountType(accountId: number) {
+    
+    try{
+      const response = await deleteAccountType(accountId,broker_id);
+      toast.success("Account type deleted successfully!");
+      router.refresh();
+    }catch(error){
+      toast.error("Failed to delete account type");
+      console.log("DELETE ACCOUNT TYPE ERROR",error);
+    }
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -67,44 +85,35 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
       </div>
       
       {/* New Account Form */}
-      <div 
-        className={cn(
-          "transition-all duration-500 ease-in-out",
-          showNewAccount 
-            ? "opacity-100 max-h-[2000px] translate-y-0" 
-            : "opacity-0 max-h-0 translate-y-[-20px] overflow-hidden"
-        )}
-      >
-        <Card className="mb-6 border-2 border-dashed border-blue-200 bg-blue-50/50">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg text-blue-800">New Account</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNewAccount(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+      {showNewAccount && (
+        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+          {/* Header with icon and text */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
             </div>
-          </CardHeader>
-          <CardContent>
-            <DynamicForm
-              broker_id={broker_id}
-              options={options}
-              optionsValues={[]}
-              action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
-                await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
-                setShowNewAccount(false);
-              }}
-              is_admin={is_admin}
-              entity_id={0}
-              entity_type="AccountType"
-            />
-          </CardContent>
-        </Card>
-      </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Account</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new account type</p>
+            </div>
+          </div>
+          
+          <DynamicForm
+            broker_id={broker_id}
+            options={options}
+            optionsValues={[]}
+            action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
+              await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
+              setShowNewAccount(false);
+            }}
+            is_admin={is_admin}
+            entity_id={0}
+            entity_type="AccountType"
+          />
+        </div>
+      )}
       
       {/* Tab Navigation */}
       {accounts.length > 0 ? (
@@ -153,8 +162,19 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                     <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
                   </div>
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                  ID: {account.id}
+                <div className="flex items-center gap-2">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                    ID: {account.id}
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setConfirmDeleteAccount(account.id)}
+                  >
+                    <Trash className="w-4 h-4 mr-1" />
+                    Delete Account
+                  </Button>
                 </div>
               </div>
               
@@ -179,6 +199,7 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                 </div>
               )}
               <AccountLinks 
+              broker_id={broker_id}
               account_type_id={account?.id} 
                links={linksGroupedByAccountId[account.id]??{}}
                master_links={masterLinksGroupedByType} 
@@ -186,6 +207,33 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
 
             </div>
           ))}
+          {/* Confirmation Dialog for Account Delete */}
+          <Dialog open={!!confirmDeleteAccount} onOpenChange={open => { if (!open) setConfirmDeleteAccount(null); }}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure you want to delete this account type?</DialogTitle>
+              </DialogHeader>
+              <div className="py-2">
+                This action cannot be undone.
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmDeleteAccount(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirmDeleteAccount) {
+                      handleDeleteAccountType(confirmDeleteAccount);
+                      setConfirmDeleteAccount(null);
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       ) : !showNewAccount && (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">

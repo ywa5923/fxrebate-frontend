@@ -204,8 +204,9 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     const response = await fetch(url, {
       method: (orginalOptionValues && orginalOptionValues.length > 0) ? "PUT" : "POST",
       headers: {
-        "Content-Type": "application/json",
-      },
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
       body: JSON.stringify(requestData),
     });
 
