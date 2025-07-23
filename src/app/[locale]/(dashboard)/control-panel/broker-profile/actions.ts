@@ -84,6 +84,8 @@ function isValidJsonString(str:string) {
 
 export async function submitBrokerProfile(broker_id: number,formData: FormData, is_admin: boolean,orginalOptionValues?: OptionValue[],entity_id?: number,entity_type?: string) {
  
+  //if original option values are provided, then we are updating the broker profile
+  //if original option values are not provided, then we are creating a new broker profile
   console.log("server action formData received", formData);
 
  
@@ -129,12 +131,12 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     data = formData;
     
     // Check if any values are File objects
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value instanceof File) {
-        files[key] = value;
-        delete data[key];
-      }
-    });
+    // Object.entries(formData).forEach(([key, value]) => {
+    //   if (value instanceof File) {
+    //     files[key] = value;
+    //     delete data[key];
+    //   }
+    // });
   }
   
   console.log("Form data:", data);
@@ -161,6 +163,9 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       let meta_data_unit:string|null=null
       let valueToSave:string|null=null
          
+
+      //options of type numberWithUnit are sent as object with unit and value
+      //we need to save the value as string and the unit as meta 
       if (
         value &&
         typeof value === "object" &&

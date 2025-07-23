@@ -10,6 +10,7 @@ import Companies from "./Companies";
 import { getAccountTypes } from "@/lib/getAccountTypes";
 import Accounts from "./Accounts";
 import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
+import Company from "./Company";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -17,9 +18,9 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 200;
+  let brokerId = 201;
   let is_admin=false;
-  let broker_type = 'broker';
+  let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
@@ -60,15 +61,7 @@ export default async function BrokerProfilePage({
       notFound();
     }
     
-    // // Log each option's ID and type for debugging
-    // brokerOptionsWithCategories.forEach((option: any, index: number) => {
-    //   console.log(`Option ${index}:`, {
-    //     id: option.id,
-    //     idType: typeof option.id,
-    //     name: option.name,
-    //     matchesCategoryId: option.id == categoryId // Use loose equality for type conversion
-    //   });
-    // });
+    
 
     const matchedCategory = categoriesWithOptions.find(
       (category: OptionCategory) => {
@@ -85,13 +78,11 @@ export default async function BrokerProfilePage({
       notFound();
     }
 
-    //let modelType=matchedCategory.options[0]?.applicable_for
-    console.log("modelType========================================",categorySlug);
 
     let companies = null;
     if(categorySlug=='my-companies'){
       companies = await getCompanies(brokerId,null,null,'en');
-      console.log("companies========================================",companies);
+     
     }
 
     let accountType = null;
@@ -100,17 +91,29 @@ export default async function BrokerProfilePage({
       console.log("accountType========================================",accountType);
     }
     
+    //for broker and admin zone_code is null, get only options values without zone_code,
+    //there are the values submitted by the broker
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
     // If this is the companies category, render the Companies component
     if(categorySlug=='my-companies' && companies){
       return (
-        <Companies 
-          broker_id={brokerId}
-          companies={companies}
-          options={matchedCategory.options as Option[]}
-          is_admin={is_admin}
-        />
+        <>
+          <Company
+            broker_id={brokerId}
+            company={companies[0] ?? null}
+            options={matchedCategory.options as Option[]}
+            is_admin={is_admin}
+          />
+          {/*
+          <Companies 
+            broker_id={brokerId}
+            companies={companies}
+            options={matchedCategory.options as Option[]}
+            is_admin={is_admin}
+          />
+          */}
+        </>
       );
     }
     if(categorySlug=='my-account-types' && accountType){

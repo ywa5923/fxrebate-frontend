@@ -110,7 +110,7 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
             }}
             is_admin={is_admin}
             entity_id={0}
-            entity_type="AccountType"
+            entity_type="account-type"
           />
         </div>
       )}
