@@ -36,20 +36,9 @@ export default async function BrokerProfilePage({
       console.log("No category ID provided");
       notFound();
     }
-
-   // console.log("Looking for category ID:", categoryId);
-   // console.log("Category ID type:", typeof categoryId);
-    //locale is null for defualt langauge
-   
-
+  
     const categoriesWithOptions = await getCategoriesWithOptions('en',broker_type);
    
-
-  
-   
-   
-   // console.log("All broker options:", brokerOptionsWithCategories);
-    
     // Handle case where API returns empty data or different structure
     if (!categoriesWithOptions || !Array.isArray(categoriesWithOptions)) {
       console.log("Invalid broker options data:", categoriesWithOptions);
@@ -61,8 +50,6 @@ export default async function BrokerProfilePage({
       notFound();
     }
     
-    
-
     const matchedCategory = categoriesWithOptions.find(
       (category: OptionCategory) => {
         // Use loose equality to handle string vs number comparison
@@ -79,14 +66,13 @@ export default async function BrokerProfilePage({
     }
 
 
-    
     let accountType = null;
     if(categorySlug=='my-account-types'){
       accountType = await getAccountTypes(brokerId,null,'en');
-      console.log("accountType========================================",accountType);
+    
     }
     
-    //for broker and admin zone_code is null, get only options values without zone_code,
+    //zone_code is null, so get only original data that is submitted by the broker and have zone_code null
     //there are the values submitted by the broker
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 

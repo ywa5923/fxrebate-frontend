@@ -3,7 +3,7 @@
 import { Company, Option, OptionValue } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '../actions';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X } from 'lucide-react';
@@ -20,6 +20,22 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
   const [activeTab, setActiveTab] = useState<string>(companies[0]?.id?.toString() || '');
   const [showNewCompany, setShowNewCompany] = useState(false);
 
+  // Track previous companies length to detect new additions
+  const prevCompaniesLength = useRef(companies.length);
+
+  useEffect(() => {
+    // If a new company is added, set active tab to the latest company (last in the array)
+    if (companies.length > prevCompaniesLength.current) {
+      setActiveTab(companies[companies.length - 1].id.toString());
+    } else if (
+      companies.length > 0 &&
+      !companies.some(company => company.id.toString() === activeTab)
+    ) {
+      // If current activeTab is invalid, set to first company
+      setActiveTab(companies[0].id.toString());
+    }
+    prevCompaniesLength.current = companies.length;
+  }, [companies, activeTab]);
  
 
   return (

@@ -77,6 +77,7 @@ export function DynamicForm({
 }: DynamicFormProps) {
   const router = useRouter();
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
@@ -105,9 +106,9 @@ export function DynamicForm({
               unit: z.string(),
             })
           : z.object({
-            value: z.number(),
-            unit: z.string(),
-          }).nullable().optional();     
+              value: z.number(),
+              unit: z.string(),
+            }).nullable().optional();
       continue;
     }
 
@@ -317,11 +318,13 @@ export function DynamicForm({
         toast.success("Form submitted successfully");
         // Reset form dirty state after successful submission
         setIsFormDirty(false);
+        setIsSubmitting(false);
         // Refresh the page after successful submission using Next.js router
         router.refresh();
       } catch (error) {
         toast.error("Failed to submit form");
         console.error("Server action error:", error);
+        setIsSubmitting(false);
       }
     }
   }
@@ -329,18 +332,18 @@ export function DynamicForm({
   const renderFormField = (option: Option, formField: any) => {
     switch (option.form_type) {
       case "numberWithUnit":
+        const fieldError = form.formState.errors?.[option.slug];
+        const unitError = fieldError && typeof fieldError === 'object' && 'unit' in fieldError ? (fieldError as any).unit : undefined;
         return (
           <div>
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder={
-                  option.placeholder || `Enter ${option.name.toLowerCase()}`
-                }
+                placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
                 min={option.min_constraint}
                 max={option.max_constraint}
                 value={formField.value?.value || ""}
-                onChange={(e) =>
+                onChange={e =>
                   formField.onChange({
                     ...formField.value,
                     value: parseFloat(e.target.value),
@@ -349,11 +352,18 @@ export function DynamicForm({
               />
               <Select
                 value={formField.value?.unit || ""}
-                onValueChange={(unit) =>
+                onValueChange={unit =>
                   formField.onChange({ ...formField.value, unit })
                 }
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger
+                  className={cn(
+                    "w-[120px]",
+                    option.required === 1 &&
+                      unitError &&
+                      "border-red-500 focus:border-red-500"
+                  )}
+                >
                   <SelectValue placeholder="Unit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -367,6 +377,11 @@ export function DynamicForm({
                 </SelectContent>
               </Select>
             </div>
+            {option.required === 1 && unitError && (
+              <p className="text-sm text-red-500 mt-1">
+                {`Unit is required for ${option.name}`}
+              </p>
+            )}
             {is_admin && (
               <div className="text-sm text-muted-foreground mt-2">
                 Broker value: {getBrokerValue(option.slug)}

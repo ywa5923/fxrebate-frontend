@@ -3,6 +3,8 @@ import { Company } from "@/types";
 
 export async function getAccountTypes(broker_id:number,zone_code:string|null=null,language_code:string|null=null):Promise<Company[]>{
     const url = new URL(`${BASE_URL}/account-types`);
+
+    //if zone code is not send it recive account types with options values that have zone_code null and also zone_id null
     if(zone_code){
         url.searchParams.append("zone_code", zone_code);
     }

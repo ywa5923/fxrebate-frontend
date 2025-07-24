@@ -3,7 +3,7 @@
 import { Company, Option, OptionValue, Url } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '../actions';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash } from 'lucide-react';
@@ -43,6 +43,22 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
   const [showNewAccount, setShowNewAccount] = useState(false);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
   const router = useRouter();
+  const prevAccountsLength = useRef(accounts.length);
+
+  useEffect(() => {
+    // If a new account is added
+    if (accounts.length > prevAccountsLength.current) {
+      // Set active tab to the latest account (last in the array)
+      setActiveTab(accounts[accounts.length - 1].id.toString());
+    } else if (
+      accounts.length > 0 &&
+      !accounts.some(account => account.id.toString() === activeTab)
+    ) {
+      // If current activeTab is invalid, set to first account
+      setActiveTab(accounts[0].id.toString());
+    }
+    prevAccountsLength.current = accounts.length;
+  }, [accounts, activeTab]);
 
 
   async function handleDeleteAccountType(accountId: number) {
