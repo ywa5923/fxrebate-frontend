@@ -695,7 +695,7 @@ export function DynamicForm({
             render={({ field: formField }) => (
               <FormItem>
                 <div className="flex items-center gap-2">
-                  <FormLabel>{option.name}</FormLabel>
+                  <FormLabel>{option.name}{option.required === 1 && <span className="text-red-500 text-lg font-bold align-super" aria-label="required">*</span>}</FormLabel>
                   {option.tooltip && (
                     <TooltipProvider>
                       <Tooltip>
