@@ -86,12 +86,13 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
  
   //if original option values are provided, then we are updating the broker profile
   //if original option values are not provided, then we are creating a new broker profile
-  console.log("server action formData received", formData);
+  console.log("=============server action formData received", formData);
 
+  
  
  // console.log("formData type:", typeof formData);
   //console.log("formData constructor:", formData.constructor.name);
-  console.log("server original data",orginalOptionValues)
+  //console.log("server original data",orginalOptionValues)
   let data: Record<string, any> = {};
   let files: Record<string, File> = {};
   //console.log("Processing FormData=============",typeof formData);

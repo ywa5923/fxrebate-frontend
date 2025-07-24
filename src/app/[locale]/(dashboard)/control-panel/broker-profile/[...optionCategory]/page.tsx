@@ -18,7 +18,7 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 201;
+  let brokerId = 203;
   let is_admin=false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
@@ -79,12 +79,7 @@ export default async function BrokerProfilePage({
     }
 
 
-    let companies = null;
-    if(categorySlug=='my-companies'){
-      companies = await getCompanies(brokerId,null,null,'en');
-     
-    }
-
+    
     let accountType = null;
     if(categorySlug=='my-account-types'){
       accountType = await getAccountTypes(brokerId,null,'en');
@@ -96,7 +91,11 @@ export default async function BrokerProfilePage({
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
     // If this is the companies category, render the Companies component
-    if(categorySlug=='my-companies' && companies){
+    if(categorySlug=='my-companies'){
+      //get original companies option vlaues submitted by the broker which have zone_code null
+      //comanies also contains options values for the companies
+      let  companies = await getCompanies(brokerId,null,null,'en');
+    
       return (
         <>
           <Company

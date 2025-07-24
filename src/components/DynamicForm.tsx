@@ -52,7 +52,14 @@ import { useRouter } from "next/navigation";
 interface DynamicFormProps {
   broker_id: number;
   options: Option[];
-  action?: (broker_id: number,formData: FormData,  is_admin: boolean,originalData?: OptionValue[],entity_id?: number,entity_type?: string) => Promise<void>;
+  action?: (
+    broker_id: number,
+    formData: FormData,
+    is_admin: boolean,
+    originalData?: OptionValue[],
+    entity_id?: number,
+    entity_type?: string
+  ) => Promise<void>;
   optionsValues: OptionValue[];
   is_admin: boolean;
   entity_id?: number;
@@ -73,13 +80,17 @@ export function DynamicForm({
 
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
-    const optionValue = optionsValues.find(optionValue => optionValue.option_slug === optionSlug);
+    const optionValue = optionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug
+    );
     return optionValue?.value || "Not set";
   };
-  
+
   // Helper function to get broker metadata for admin display
   const getBrokerMetadata = (optionSlug: string, key: string) => {
-    const optionValue = optionsValues.find(optionValue => optionValue.option_slug === optionSlug);
+    const optionValue = optionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug
+    );
     return optionValue?.metadata?.[key] || "Not set";
   };
 
@@ -93,14 +104,14 @@ export function DynamicForm({
               value: z.number(),
               unit: z.string(),
             })
-          : z
-              .object({
-                value: z.number(),
-                unit: z.string(),
-              })
-              .optional();
+          : z.object({
+            value: z.number(),
+            unit: z.string(),
+          }).nullable().optional();     
       continue;
     }
+
+
 
     // Handle image fields
     if (option.form_type === "image") {
@@ -113,42 +124,62 @@ export function DynamicForm({
 
     let fieldSchema;
     switch (option.form_type) {
-      case "text":
-        fieldSchema = z.string();
-        break;
+     
       case "number":
         let numberSchema = z.number();
         if (option.min_constraint) {
-          numberSchema = numberSchema.min(option.min_constraint);
+          numberSchema = numberSchema.min(option.min_constraint, `${option.name} must be at least ${option.min_constraint}`);
         }
         if (option.max_constraint) {
-          numberSchema = numberSchema.max(option.max_constraint);
+          numberSchema = numberSchema.max(option.max_constraint, `${option.name} must be at most ${option.max_constraint}`);
         }
-        fieldSchema = z.preprocess(
-          (val) => (val === "" ? undefined : Number(val)),
-          numberSchema
-        );
+        if (option.required === 1) {
+          // Required: must be a number and meet min/max
+          fieldSchema = z.preprocess(
+            (val) => (val === "" ? null : Number(val)),
+            numberSchema
+          );
+        } else {
+          // Optional: null/undefined is allowed, but if filled, must meet min/max
+          fieldSchema = z.preprocess(
+            (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
+            numberSchema.nullable().optional()
+          );
+        }
         break;
       case "checkbox":
-        fieldSchema = z.preprocess((val) => {
-          if (val === null || val === undefined) return false;
-          // if (typeof val === 'string') return val === 'true';
-          return Boolean(val);
-        }, z.boolean());
+        if (option.required === 1) {
+          fieldSchema = z.preprocess(
+            (val) => (val === null || val === undefined ? false : Boolean(val)),
+            z.boolean()
+          );
+        } else {
+          fieldSchema = z.preprocess(
+            (val) => (val === null || val === undefined ? null : Boolean(val)),
+            z.boolean().nullable().optional()
+          );
+        }
         break;
-      case "switch":
-        fieldSchema = z.preprocess((val) => {
-          if (val === null || val === undefined) return false;
-          if (typeof val === "string") return val === "true";
-          return Boolean(val);
-        }, z.boolean());
-        break;
-      case "date":
-        fieldSchema = z.date();
-        break;
+     
       case "string":
-        fieldSchema = z.string();
-
+      case "textarea":
+        let baseString = z.string();
+        if (option.min_constraint) {
+          baseString = baseString.min(option.min_constraint, `${option.name} must be at least ${option.min_constraint} characters`);
+        }
+        if (option.max_constraint) {
+          baseString = baseString.max(option.max_constraint, `${option.name} must be at most ${option.max_constraint} characters`);
+        }
+        if (option.required === 1) {
+          const minValue = option.min_constraint ?? 1;
+          baseString = baseString.min(minValue, `${option.name} is required`);
+          fieldSchema = z.preprocess((val) => val === "" ? null : val, baseString);
+        } else {
+          fieldSchema = z.preprocess(
+            (val) => val === "" ? null : val,
+            baseString.nullable().optional()
+          );
+        }
         break;
       case "multi-select":
         // Use string validation with pipe delimiter format
@@ -160,23 +191,27 @@ export function DynamicForm({
             1,
             `Please select at least one ${option.name}`
           );
+        }else{
+          fieldSchema = fieldSchema.nullable().optional();
+        }
+        break;
+      case "notes":
+        if (option.required === 1) {
+          fieldSchema = z.array(z.string()).min(1, `Please select at least one ${option.name}`);
+        } else {
+          fieldSchema = z.array(z.string()).nullable().optional();
+        }
+        break;
+      case "url":
+        if (option.required === 1) {
+          fieldSchema = z.string().min(1, "URL is required").url({ message: "Invalid URL" });
+        } else {
+          fieldSchema = z.string().url({ message: "Invalid URL" }).nullable().optional();
         }
         break;
       default:
         fieldSchema = z.string();
     }
-
-    // Add validation based on field properties
-    // if (option.required == 1) {
-    //   if (option.data_type === "text" || option.data_type === "select") {
-    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
-    //   } else if (option.data_type === "number") {
-    //     fieldSchema = (fieldSchema as z.ZodNumber).min(1, `${option.name} is required`);
-    //   }else if (option.form_type === "select") {
-    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
-    //     fieldSchema = (fieldSchema as z.ZodString).min(1, `${option.name} is required`);
-    //   }
-    // }
 
     schemaObject[option.slug] = fieldSchema;
   }
@@ -191,20 +226,27 @@ export function DynamicForm({
       );
       if (optionValue !== null && optionValue !== undefined) {
         //if admin, populate form with public_value if it exists, otherwise use populate with optionValue.value
-        let fieldValue = (is_admin)?(optionValue?.public_value === null || optionValue?.public_value === 'undefined')? optionValue?.value : optionValue?.public_value:optionValue?.value;
+        let fieldValue = is_admin
+          ? optionValue?.public_value === null ||
+            optionValue?.public_value === "undefined"
+            ? optionValue?.value
+            : optionValue?.public_value
+          : optionValue?.value;
+
         switch (option.form_type) {
-          case "checkbox":   
+          case "checkbox":
             return { ...acc, [option.slug]: fieldValue === "true" };
           case "multi-select":
             return { ...acc, [option.slug]: fieldValue?.split("; ") };
+
+          case "notes":
+            return { ...acc, [option.slug]: fieldValue?.split("; ") || [""] };
 
           case "numberWithUnit":
             return {
               ...acc,
               [option.slug]: {
-                value: fieldValue
-                  ? parseFloat(fieldValue)
-                  : undefined,
+                value: fieldValue ? parseFloat(fieldValue) : undefined,
                 unit: optionValue?.metadata?.unit,
               },
             };
@@ -222,7 +264,7 @@ export function DynamicForm({
   const formValues = form.watch();
   React.useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      if (type === 'change') {
+      if (type === "change") {
         setIsFormDirty(true);
       }
     });
@@ -230,7 +272,7 @@ export function DynamicForm({
   }, [form.watch]);
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
-    // console.log("Server action form data from client:", data);
+     console.log("Server action form data from client:", data);
 
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
@@ -264,7 +306,14 @@ export function DynamicForm({
     // Call the Server Action
     if (action) {
       try {
-        await action(broker_id,formDataObj, is_admin,optionsValues,entity_id,entity_type);
+        await action(
+          broker_id,
+          formDataObj,
+          is_admin,
+          optionsValues,
+          entity_id,
+          entity_type
+        );
         toast.success("Form submitted successfully");
         // Reset form dirty state after successful submission
         setIsFormDirty(false);
@@ -282,306 +331,338 @@ export function DynamicForm({
       case "numberWithUnit":
         return (
           <div>
-          <div className="flex gap-2">
-            <Input
-              type="number"
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder={
+                  option.placeholder || `Enter ${option.name.toLowerCase()}`
+                }
+                min={option.min_constraint}
+                max={option.max_constraint}
+                value={formField.value?.value || ""}
+                onChange={(e) =>
+                  formField.onChange({
+                    ...formField.value,
+                    value: parseFloat(e.target.value),
+                  })
+                }
+              />
+              <Select
+                value={formField.value?.unit || ""}
+                onValueChange={(unit) =>
+                  formField.onChange({ ...formField.value, unit })
+                }
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {option.meta_data?.map(
+                    (metaData: { value: string; label: string }) => (
+                      <SelectItem key={metaData?.value} value={metaData?.value}>
+                        {metaData?.label}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value: {getBrokerValue(option.slug)}
+                &nbsp;Broker unit: {getBrokerMetadata(option.slug, "unit")}
+              </div>
+            )}
+          </div>
+        );
+      case "textarea":
+        return (
+          <div>
+            <Textarea
               placeholder={
                 option.placeholder || `Enter ${option.name.toLowerCase()}`
               }
-              min={option.min_constraint}
-              max={option.max_constraint}
-              value={formField.value?.value || ""}
-              onChange={(e) =>
-                formField.onChange({
-                  ...formField.value,
-                  value: parseFloat(e.target.value),
-                })
-              }
+              {...formField}
+              value={formField.value || ""} // Ensure value is never null
             />
-            <Select
-              value={formField.value?.unit || ""}
-              onValueChange={(unit) =>
-                formField.onChange({ ...formField.value, unit })
-              }
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Unit" />
-              </SelectTrigger>
-              <SelectContent>
-                {option.meta_data?.map(
-                  (metaData: { value: string; label: string }) => (
-                    <SelectItem key={metaData?.value} value={metaData?.value}>
-                      {metaData?.label}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-            </div>
-            {is_admin && <div className="text-sm text-muted-foreground mt-2">Broker value: {getBrokerValue(option.slug)}
-               &nbsp;Broker unit: {getBrokerMetadata(option.slug, 'unit')}</div>}
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value: {formField.value}
+              </div>
+            )}
           </div>
         );
-              case "textarea":
-          return (
-            <div>
-              <Textarea
-                placeholder={
-                  option.placeholder || `Enter ${option.name.toLowerCase()}`
-                }
-                {...formField}
-                value={formField.value || ""} // Ensure value is never null
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {formField.value}
-                </div>
-              )}
-            </div>
-          );
-              case "select":
-          return (
-            <div>
-              <Select
-                onValueChange={formField.onChange}
-                defaultValue={formField.value}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      option.placeholder || `Select ${option.name.toLowerCase()}`
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {option.meta_data &&
-                    Array.isArray(option.meta_data) &&
-                    option.meta_data.map((metaData: any) => (
-                      <SelectItem key={metaData?.id} value={metaData?.value}>
-                        {metaData?.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {formField.value}
-                </div>
-              )}
-            </div>
-          );
-              case "multi-select":
-          return (
-            <div>
-              <Multiselect
-                options={option.meta_data}
-                isMulti
-                classNamePrefix="react-select"
-                instanceId={option.slug} // Add stable instanceId to prevent hydration errors
-                onChange={(selected) => {
-                  // Store the actual array of selected values
-                  const values = selected
-                    ? selected.map((option: { value: string }) => option.value)
-                    : [];
-                  formField.onChange(values);
+      case "select":
+        return (
+          <div>
+            <Select
+              onValueChange={formField.onChange}
+              defaultValue={formField.value}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    option.placeholder || `Select ${option.name.toLowerCase()}`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {option.meta_data &&
+                  Array.isArray(option.meta_data) &&
+                  option.meta_data.map((metaData: any) => (
+                    <SelectItem key={metaData?.id} value={metaData?.value}>
+                      {metaData?.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value: {formField.value}
+              </div>
+            )}
+          </div>
+        );
+      case "multi-select":
+        return (
+          <div>
+            <Multiselect
+              options={option.meta_data}
+              isMulti
+              classNamePrefix="react-select"
+              instanceId={option.slug} // Add stable instanceId to prevent hydration errors
+              onChange={(selected) => {
+                // Store the actual array of selected values
+                const values = selected
+                  ? selected.map((option: { value: string }) => option.value)
+                  : [];
+                formField.onChange(values);
 
-                  // Trigger validation after selection changes
-                  // setTimeout(() => form.trigger(field.slug), 100);
-                }}
-                value={
-                  option.meta_data?.filter(
-                    (metaData) =>
-                      Array.isArray(formField.value) &&
-                      formField.value.includes(metaData.value)
-                  ) || []
-                }
-                placeholder={
-                  option.placeholder || `Select ${option.name.toLowerCase()}`
-                }
-                name={option.name}
-                id={option.slug}
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {Array.isArray(formField.value) ? getBrokerValue(option.slug).split('; ').join(', ') : getBrokerValue(option.slug)}
+                // Trigger validation after selection changes
+                // setTimeout(() => form.trigger(field.slug), 100);
+              }}
+              value={
+                option.meta_data?.filter(
+                  (metaData) =>
+                    Array.isArray(formField.value) &&
+                    formField.value.includes(metaData.value)
+                ) || []
+              }
+              placeholder={
+                option.placeholder || `Select ${option.name.toLowerCase()}`
+              }
+              name={option.name}
+              id={option.slug}
+            />
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value:{" "}
+                {Array.isArray(formField.value)
+                  ? getBrokerValue(option.slug).split("; ").join(", ")
+                  : getBrokerValue(option.slug)}
+              </div>
+            )}
+          </div>
+        );
+      case "checkbox":
+        return (
+          <div>
+            <Checkbox
+              checked={Boolean(formField.value)}
+              onCheckedChange={formField.onChange}
+            />
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value:{" "}
+                {getBrokerValue(option.slug) === "true" ? "true" : "false"}
+              </div>
+            )}
+          </div>
+        );
+      case "radio":
+        return (
+          <div>
+            <RadioGroup
+              onValueChange={formField.onChange}
+              defaultValue={formField.value}
+            >
+              {option.meta_data?.map((metaData: any) => (
+                <div
+                  key={metaData.value}
+                  className="flex items-center space-x-2"
+                >
+                  <RadioGroupItem
+                    value={metaData.value}
+                    id={`${option.slug}-${metaData.value}`}
+                  />
+                  <label htmlFor={`${option.slug}-${metaData.value}`}>
+                    {metaData.label}
+                  </label>
                 </div>
-              )}
-            </div>
-          );
-              case "checkbox":
-          return (
-            <div>
-              <Checkbox
-                checked={Boolean(formField.value)}
-                onCheckedChange={formField.onChange}
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {getBrokerValue(option.slug) === 'true' ? 'true' : 'false'}
-                </div>
-              )}
-            </div>
-          );
-              case "radio":
-          return (
-            <div>
-              <RadioGroup
-                onValueChange={formField.onChange}
-                defaultValue={formField.value}
-              >
-                {option.meta_data?.map((metaData: any) => (
-                  <div key={metaData.value} className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value={metaData.value}
-                      id={`${option.slug}-${metaData.value}`}
+              ))}
+            </RadioGroup>
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value: {getBrokerValue(option.slug)}
+              </div>
+            )}
+          </div>
+        );
+
+      case "notes":
+        return (
+          <div>
+            <div className="space-y-2">
+              {Array.isArray(formField.value) &&
+                formField.value.map((note: string, index: number) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder={`Enter ${option.name.toLowerCase()} ${
+                        index + 1
+                      }`}
+                      value={note || ""}
+                      onChange={(e) => {
+                        const newNotes = [...(formField.value || [])];
+                        newNotes[index] = e.target.value;
+                        formField.onChange(newNotes);
+                      }}
                     />
-                    <label htmlFor={`${option.slug}-${metaData.value}`}>
-                      {metaData.label}
-                    </label>
+                    {formField.value && formField.value.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newNotes = formField.value.filter(
+                            (_: string, i: number) => i !== index
+                          );
+                          formField.onChange(newNotes);
+                        }}
+                        className="px-3"
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </div>
                 ))}
-              </RadioGroup>
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {getBrokerValue(option.slug)}
-                </div>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newNotes = [...(formField.value || []), ""];
+                  formField.onChange(newNotes);
+                }}
+                className="w-fit px-4 py-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 transition-colors duration-200"
+              >
+                + Add Note
+              </Button>
             </div>
-          );
-              case "switch":
-          return (
-            <div>
-              <Switch
-                checked={Boolean(formField.value)}
-                onCheckedChange={formField.onChange}
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {getBrokerValue(option.slug) === 'true' ? 'true' : 'false'}
-                </div>
-              )}
-            </div>
-          );
-              case "date":
-          return (
-            <div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formField.value && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formField.value ? (
-                      format(formField.value, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formField.value}
-                    onSelect={formField.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {getBrokerValue(option.slug) !== 'Not set' ? format(new Date(getBrokerValue(option.slug)), 'yyyy-MM-dd') : 'Not set'}
-                </div>
-              )}
-            </div>
-          );
-              case "image":
-          return (
-            <div>
-              {formField.value && typeof formField.value === "string" && (
-                <div className="text-sm text-muted-foreground mb-2">
-                  Current file:{" "}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={formField.value}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline text-blue-600 hover:text-blue-800"
-                        >
-                          {formField.value.split("/").pop()}
-                        </a>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        align="center"
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value:{" "}
+                {Array.isArray(formField.value)
+                  ? getBrokerValue(option.slug).split("; ").join(", ")
+                  : getBrokerValue(option.slug)}
+              </div>
+            )}
+          </div>
+        );
+      case "image":
+        return (
+          <div>
+            {formField.value && typeof formField.value === "string" && (
+              <div className="text-sm text-muted-foreground mb-2">
+                Current file:{" "}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        href={formField.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-blue-600 hover:text-blue-800"
+                      >
+                        {formField.value.split("/").pop()}
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      align="center"
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        boxShadow: "none",
+                        padding: 0,
+                      }}
+                    >
+                      <img
+                        src={formField.value}
+                        alt="Current file"
                         style={{
+                          maxWidth: 200,
+                          maxHeight: 200,
+                          display: "block",
                           border: "none",
                           background: "transparent",
                           boxShadow: "none",
-                          padding: 0,
                         }}
-                      >
-                        <img
-                          src={formField.value}
-                          alt="Current file"
-                          style={{
-                            maxWidth: 200,
-                            maxHeight: 200,
-                            display: "block",
-                            border: "none",
-                            background: "transparent",
-                            boxShadow: "none",
-                          }}
-                        />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              )}
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    formField.onChange(file);
-                  }
-                }}
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {typeof getBrokerValue(option.slug) === 'string' ? (
-                    <a href={getBrokerValue(option.slug)} target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">
-                      {getBrokerValue(option.slug).split('/').pop()}
-                    </a>
-                  ) : getBrokerValue(option.slug)}
-                </div>
-              )}
-            </div>
-          );
-              default:
-          return (
-            <div>
-              <Input
-                type={option.form_type === "number" ? "text" : "text"}
-                placeholder={
-                  option.placeholder || `Enter ${option.name.toLowerCase()}`
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  formField.onChange(file);
                 }
-                {...formField}
-                value={formField.value || ""} // Ensure value is never null
-              />
-              {is_admin && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  Broker value: {getBrokerValue(option.slug)}
-                </div>
-              )}
-            </div>
-          );
+              }}
+            />
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value:{" "}
+                {typeof getBrokerValue(option.slug) === "string" ? (
+                  <a
+                    href={getBrokerValue(option.slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-600 hover:text-blue-800"
+                  >
+                    {getBrokerValue(option.slug).split("/").pop()}
+                  </a>
+                ) : (
+                  getBrokerValue(option.slug)
+                )}
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <Input
+              type={option.form_type === "number" ? "number" : "text"}
+              placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
+              {...formField}
+              value={
+                option.form_type === "number"
+                  ? (formField.value === null || formField.value === undefined ? "" : formField.value)
+                  : (formField.value || "")
+              }
+            />
+            {is_admin && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Broker value: {getBrokerValue(option.slug)}
+              </div>
+            )}
+          </div>
+        );
     }
   };
 
@@ -622,13 +703,13 @@ export function DynamicForm({
             )}
           />
         ))}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={!isFormDirty}
           className={cn(
             "transition-all duration-300 font-medium",
-            isFormDirty 
-              ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl" 
+            isFormDirty
+              ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl"
               : "bg-transparent border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-not-allowed"
           )}
         >
