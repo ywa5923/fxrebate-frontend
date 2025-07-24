@@ -18,7 +18,7 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 203;
+  let brokerId = 204;
   let is_admin=false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
@@ -142,6 +142,8 @@ export default async function BrokerProfilePage({
           optionsValues={optionsValues}
           action={submitBrokerProfile} 
           is_admin={is_admin}
+          entity_id={brokerId}
+          entity_type="Broker"
         />
       </div>
     );

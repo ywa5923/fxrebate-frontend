@@ -86,31 +86,21 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
  
   //if original option values are provided, then we are updating the broker profile
   //if original option values are not provided, then we are creating a new broker profile
-  console.log("=============server action formData received", formData);
-
+ // console.log("=============server action formData received", formData,entity_id,entity_type);
   
  
- // console.log("formData type:", typeof formData);
-  //console.log("formData constructor:", formData.constructor.name);
-  //console.log("server original data",orginalOptionValues)
   let data: Record<string, any> = {};
   let files: Record<string, File> = {};
-  //console.log("Processing FormData=============",typeof formData);
+ 
   // Handle both FormData and plain objects
   if (formData instanceof FormData) {
-    //console.log("Processing FormData=============");
-   // console.log("formData.entries available:", typeof formData.entries);
-    
+ 
     try {
       for (const [key, value] of formData.entries()) {
        // console.log(`Processing entry: ${key}`, value);
         if (value instanceof File) {
           files[key] = value as File;
-          // console.log(`File received: ${key}`, {
-          //   name: (value as File).name,
-          //   size: (value as File).size,
-          //   type: (value as File).type
-          // });
+          
         } else {
           // Check if this is an array field (contains semicolon-separated values)
           if(isValidJsonString(value as string)){
@@ -130,18 +120,11 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     console.log("Processing plain object");
     // Handle plain object (from onSubmit)
     data = formData;
-    
-    // Check if any values are File objects
-    // Object.entries(formData).forEach(([key, value]) => {
-    //   if (value instanceof File) {
-    //     files[key] = value;
-    //     delete data[key];
-    //   }
-    // });
+   
   }
   
-  console.log("Form data:", data);
-  console.log("Files:", files);
+  //console.log("Form data:", data);
+  //console.log("Files:", files);
   
   // Upload files to Cloudflare R2
   for (const [fieldName, file] of Object.entries(files)) {
@@ -164,7 +147,6 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       let meta_data_unit:string|null=null
       let valueToSave:string|null=null
          
-
       //options of type numberWithUnit are sent as object with unit and value
       //we need to save the value as string and the unit as meta 
       if (
@@ -184,14 +166,12 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       return {
         id: originalOption?.id,
         option_slug,
-        //value: valueToSave,
         ...(is_admin ? { public_value: valueToSave } : {value: valueToSave}),
-        //...(meta_data_unit !== null ? { metadata: { unit: meta_data_unit } } : {})
         metadata: meta_data_unit ? { unit: meta_data_unit } : null
       
       };
     })
-   // .filter(option => option.id !== undefined); // Filter out entries without valid IDs
+
   
   const requestData = {
     option_values: optionValues,
@@ -200,9 +180,8 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
    
   };
   
-   console.log("Formatted data for PHP:==================s", JSON.stringify(requestData, null, 2));
-  // console.log("Number of option values:", optionValues.length);
-  // console.log("Original option values count:", orginalOptionValues.length);
+  // console.log("Formatted data for PHP:==================s", JSON.stringify(requestData, null, 2));
+
   
   //Send to PHP server
   try {
@@ -229,10 +208,10 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     }
 
     const result = await response.json();
-    console.log("PHP server response:", result);
-    console.log("Form submitted successfully");
+   // console.log("PHP server response:", result);
+   // console.log("Form submitted successfully");
   } catch (error) {
-    console.error("Error submitting form:", error);
+  //  console.error("Error submitting form:", error);
     throw new Error("Failed to submit form");
   }
 } 
