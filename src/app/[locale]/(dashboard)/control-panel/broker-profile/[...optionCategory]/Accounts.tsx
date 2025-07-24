@@ -74,7 +74,7 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Accounts</h1>
         <Button 
@@ -115,19 +115,22 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
               <p className="text-sm text-gray-600 dark:text-gray-400">Add a new account type</p>
             </div>
           </div>
-          
-          <DynamicForm
-            broker_id={broker_id}
-            options={options}
-            optionsValues={[]}
-            action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
-              await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
-              setShowNewAccount(false);
-            }}
-            is_admin={is_admin}
-            entity_id={0}
-            entity_type="account-type"
-          />
+          <Card className="w-full sm:max-w-2xl sm:mx-auto">
+            <CardContent>
+              <DynamicForm
+                broker_id={broker_id}
+                options={options}
+                optionsValues={[]}
+                action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
+                  await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
+                  setShowNewAccount(false);
+                }}
+                is_admin={is_admin}
+                entity_id={0}
+                entity_type="account-type"
+              />
+            </CardContent>
+          </Card>
         </div>
       )}
       
@@ -148,7 +151,10 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                   )}
                 >
                   <div className="flex items-center gap-1 sm:gap-2">
-                    <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-green-500"></div>
+                    <div className={cn(
+                      "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full",
+                      activeTab === account.id.toString() ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                    )}></div>
                     <span className="hidden sm:inline">Account {index + 1}</span>
                     <span className="sm:hidden">Acc {index + 1}</span>
                   </div>
@@ -166,54 +172,58 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                 activeTab === account.id.toString() ? "block" : "hidden"
               )}
             >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Account {index + 1}</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                    ID: {account.id}
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="ml-2"
-                    onClick={() => setConfirmDeleteAccount(account.id)}
-                  >
-                    <Trash className="w-4 h-4 mr-1" />
-                    Delete Account
-                  </Button>
-                </div>
-              </div>
-              
               {account.option_values && account.option_values.length > 0 ? (
-                <DynamicForm
-                  broker_id={broker_id}
-                  options={options}
-                  optionsValues={account.option_values}
-                  action={submitBrokerProfile}
-                  is_admin={is_admin}
-                  entity_id={account.id}
-                  entity_type="AccountType"
-                />
-
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 sm:w-14 sm:h-14 bg-green-200 dark:bg-green-900/70 rounded-full flex items-center justify-center shadow-lg ring-2 ring-green-400 dark:ring-green-700">
+                        <svg className="w-4 h-4 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Account {index + 1}</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 sm:mt-0">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                        ID: {account.id}
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full sm:w-auto sm:ml-2"
+                        onClick={() => setConfirmDeleteAccount(account.id)}
+                      >
+                        <Trash className="w-4 h-4 mr-1" />
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                  <Card className="max-w-2xl mx-auto">
+                    <CardContent>
+                      <DynamicForm
+                        broker_id={broker_id}
+                        options={options}
+                        optionsValues={account.option_values}
+                        action={submitBrokerProfile}
+                        is_admin={is_admin}
+                        entity_id={account.id}
+                        entity_type="AccountType"
+                      />
+                    </CardContent>
+                  </Card>
+                </>
               ) : (
-                <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
-                </div>
-              )}
+                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                      <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
+                    </div>
+                  )}
               <AccountLinks 
               broker_id={broker_id}
               account_type_id={account?.id} 

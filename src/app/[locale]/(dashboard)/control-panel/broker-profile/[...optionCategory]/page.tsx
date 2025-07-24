@@ -11,6 +11,7 @@ import { getAccountTypes } from "@/lib/getAccountTypes";
 import Accounts from "./Accounts";
 import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 import Company from "./Company";
+import BrokerOptions from "./BrokerOptions";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -120,9 +121,9 @@ export default async function BrokerProfilePage({
     }
 
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">{matchedCategory.name}</h1>
-        <DynamicForm 
+    
+        
+        <BrokerOptions 
           broker_id={brokerId}
           options={matchedCategory.options as Option[]} 
           optionsValues={optionsValues}
@@ -130,8 +131,9 @@ export default async function BrokerProfilePage({
           is_admin={is_admin}
           entity_id={brokerId}
           entity_type="Broker"
+          category={categorySlug.replace('-',' ').toUpperCase()}
         />
-      </div>
+      
     );
   } catch (error) {
     console.error("Error loading broker profile page:", error);

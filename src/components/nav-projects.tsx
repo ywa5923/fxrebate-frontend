@@ -73,16 +73,29 @@ export function NavProjects({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      {/* FXREBATE Logo Full Width */}
+      <div
+        className="w-full rounded-lg mb-4 flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(90deg, #111827 0%, #22C55E 100%)',
+          minHeight: '36px',
+        }}
+      >
+        <span className="font-bold text-white text-xl tracking-wider" style={{fontFamily: 'Satoshi, Arial, sans-serif', letterSpacing: '0.08em'}}>FXREBATE</span>
+      </div>
+      <SidebarGroupLabel>Control Panel</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
-          const IconComponent = iconMap[item.icon] || Building2
+         // const IconComponent = iconMap[item.icon] || Building2
           return (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild>
-                <Link href={item.url} className="flex items-center gap-2">
-                  <IconComponent className="h-4 w-4" />
-                  <span>{item.name}</span>
+                <Link
+                  href={item.url}
+                  className="group flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-200 text-gray-800 hover:bg-green-50 hover:text-green-600"
+                >
+                  <div className="w-2 h-2 rounded-full bg-gray-300 transition-colors duration-200" />
+                  <span className="font-medium text-sm transition-colors duration-200">{item.name}</span>
                 </Link>
               </SidebarMenuButton>
             {/*<DropdownMenu>

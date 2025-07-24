@@ -481,15 +481,18 @@ export function DynamicForm({
         );
       case "checkbox":
         return (
-          <div>
+          <div className="flex items-center gap-2">
             <Checkbox
               checked={Boolean(formField.value)}
               onCheckedChange={formField.onChange}
+              id={option.slug}
             />
+            <FormLabel htmlFor={option.slug} className="text-sm font-medium cursor-pointer select-none">
+              {option.name}
+            </FormLabel>
             {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value:{" "}
-                {getBrokerValue(option.slug) === "true" ? "true" : "false"}
+              <div className="text-sm text-muted-foreground ml-2">
+                Broker value: {getBrokerValue(option.slug) === "true" ? "true" : "false"}
               </div>
             )}
           </div>
@@ -694,21 +697,23 @@ export function DynamicForm({
             name={option.slug}
             render={({ field: formField }) => (
               <FormItem>
-                <div className="flex items-center gap-2">
-                  <FormLabel>{option.name}{option.required === 1 && <span className="text-red-500 text-lg font-bold align-super" aria-label="required">*</span>}</FormLabel>
-                  {option.tooltip && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{option.tooltip}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
+                {option.form_type !== "checkbox" && (
+                  <div className="flex items-center gap-2">
+                    <FormLabel>{option.name}{option.required === 1 && <span className="text-red-500 text-lg font-bold align-super" aria-label="required">*</span>}</FormLabel>
+                    {option.tooltip && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{option.tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                )}
                 <FormControl>{renderFormField(option, formField)}</FormControl>
                 {option.description && (
                   <FormDescription>{option.description}</FormDescription>
