@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
 import { toast } from "sonner";
+import { ColumnHeader, MatrixData, RowHeader } from "@/types";
 
 interface MatrixCell {
   value: {
@@ -48,30 +49,33 @@ interface MatrixCell {
 // }
 
 interface DynamicMatrixProps {
-  rowHeaders: {
-    name: string;
-    slug: string;
-    options: { value: string; label: string }[];
-  }[];
-  columnHeaders: {
-    name: string;
-    slug: string;
-    form_type: {
-      name: string;
-      items: {
-        name: string;
-        type: "number" | "single-select" | "multi-select" | "text" | "textarea";
-        placeholder?: string;
-        required?: boolean;
-        options?: {
-          value: string;
-          label: string;
-        }[];
-      }[];
-    };
-  }[];
+  // rowHeaders: {
+  //   name: string;
+  //   slug: string;
+  //   options: { value: string; label: string }[];
+  // }[];
+  // columnHeaders: {
+  //   name: string;
+  //   slug: string;
+  //   form_type: {
+  //     name: string;
+  //     items: {
+  //       name: string;
+  //       type: "number" | "single-select" | "multi-select" | "text" | "textarea";
+  //       placeholder?: string;
+  //       required?: boolean;
+  //       options?: {
+  //         value: string;
+  //         label: string;
+  //       }[];
+  //     }[];
+  //   };
+  // }[];
+  rowHeaders: RowHeader[];
+  columnHeaders: ColumnHeader[];
   onChange?: (matrix: MatrixCell[][]) => void;
-  initialMatrix?: MatrixCell[][];
+ // initialMatrix?: MatrixCell[][];
+ initialMatrix?: MatrixData
   is_admin?: boolean;
 }
 

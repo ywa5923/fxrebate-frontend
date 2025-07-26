@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Trash2,
   type LucideIcon,
+  ChevronRight
 } from "lucide-react"
 import Link from "next/link"
 
@@ -74,14 +75,12 @@ export function NavProjects({
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       {/* FXREBATE Logo Full Width */}
-      <div
-        className="w-full rounded-lg mb-4 flex items-center justify-center"
-        style={{
-          background: 'linear-gradient(90deg, #111827 0%, #22C55E 100%)',
-          minHeight: '36px',
-        }}
-      >
-        <span className="font-bold text-white text-xl tracking-wider" style={{fontFamily: 'Satoshi, Arial, sans-serif', letterSpacing: '0.08em'}}>FXREBATE</span>
+      <div className="w-full mt-4 mb-4 flex items-center justify-center">
+        <img 
+          src="/assets/darkFxRebate-logo.svg" 
+          alt="FXREBATE Logo" 
+          className="h-10 w-auto"
+        />
       </div>
       <SidebarGroupLabel>Control Panel</SidebarGroupLabel>
       <SidebarMenu>
@@ -92,10 +91,9 @@ export function NavProjects({
               <SidebarMenuButton asChild>
                 <Link
                   href={item.url}
-                  className="group flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-200 text-gray-800 hover:bg-green-50 hover:text-green-600"
+                  className="flex items-center px-3 py-2 rounded-md transition-all duration-200 text-gray-800 hover:bg-green-50 hover:text-green-600 font-medium text-sm"
                 >
-                  <div className="w-2 h-2 rounded-full bg-gray-300 transition-colors duration-200" />
-                  <span className="font-medium text-sm transition-colors duration-200">{item.name}</span>
+                  {item.name}
                 </Link>
               </SidebarMenuButton>
             {/*<DropdownMenu>

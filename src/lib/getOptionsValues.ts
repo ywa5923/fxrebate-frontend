@@ -21,7 +21,7 @@ export const getOptionsValues = async (
     if (zone_code) url.searchParams.append("zone_code", zone_code);
     if (category_id) url.searchParams.append("category_id", category_id);
 
-    console.log("Fetching broker options with URL:", url.toString());
+  //  console.log("Fetching broker options with URL:", url.toString());
 
     try {
         const response = await fetch(url.toString(), { cache: "no-store" });

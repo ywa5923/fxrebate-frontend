@@ -12,6 +12,9 @@ import Accounts from "./Accounts";
 import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 import Company from "./Company";
 import BrokerOptions from "./BrokerOptions";
+import { getMatrixData, getMatrixHeaders } from "@/lib/matrix-requests";
+import { DynamicMatrix } from "@/components/ui/DynamicMatrix";
+import Rebates from "./Rebates";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -120,21 +123,32 @@ export default async function BrokerProfilePage({
       );
     }
 
-    return (
-    
-        
-        <BrokerOptions 
-          broker_id={brokerId}
-          options={matchedCategory.options as Option[]} 
-          optionsValues={optionsValues}
-          action={submitBrokerProfile} 
-          is_admin={is_admin}
-          entity_id={brokerId}
-          entity_type="Broker"
-          category={categorySlug.replace('-',' ').toUpperCase()}
-        />
+    if(categorySlug=='rebates-rates'){
+      const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
+     
+      const initialMatrixData = await getMatrixData(brokerId, 'Matrix-1', is_admin)
+     
+     // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
+
+      return <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin}/>
+    } else {
+
+      return (
       
-    );
+          
+          <BrokerOptions 
+            broker_id={brokerId}
+            options={matchedCategory.options as Option[]} 
+            optionsValues={optionsValues}
+            action={submitBrokerProfile} 
+            is_admin={is_admin}
+            entity_id={brokerId}
+            entity_type="Broker"
+            category={categorySlug.replace('-',' ').toUpperCase()}
+          />
+        
+      );
+    }
   } catch (error) {
     console.error("Error loading broker profile page:", error);
     throw error;

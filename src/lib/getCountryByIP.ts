@@ -10,7 +10,7 @@ export const getCountryByIP = async (ip: string): Promise<string | null> => {
     }
 
     try {
-        const response = await fetch(`https://api.ipregistry.co/${ip}?key=${apiKey}`);
+        const response = await fetch(`https://api.ipregistry.co/${ip}?key=${apiKey}`,{cache:"no-store"});
 
         if (!response.ok) {
             console.error(`Failed to fetch country code: ${response.status} ${response.statusText}`);

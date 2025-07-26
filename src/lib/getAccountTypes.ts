@@ -17,7 +17,7 @@ export async function getAccountTypes(broker_id:number,zone_code:string|null=nul
  
  
     try{
-        const response=await fetch(url.toString());
+        const response=await fetch(url.toString(),{cache:"no-store"});
         if(!response.ok){
             throw new Error(`HTTP error! status: ${response.status}`);
         }
