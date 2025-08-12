@@ -63,8 +63,12 @@ export default function LocalizedLink({
     );
   }
 
-  const _t = useTranslation() as Translations;
-  const localizedPath = getLocalizedPath(routeKey, _t['route-maps']);
+  const _t = useTranslation();
+  const localizedPath = getLocalizedPath(routeKey, _t['route-maps'] as Record<string, string>);
+
+  console.log("routeKey~~~~~~~~~~~~~~~~",routeKey);
+  console.log("localizedPath~~~~~~~~~~~~~~~~",localizedPath);
+  console.log("routes~~~~~~~~~~~~~~~~",_t['route-maps']);
   const href = `/${lang}${localizedPath.startsWith('/') ? localizedPath : `/${localizedPath}`}`;
 
   return (
