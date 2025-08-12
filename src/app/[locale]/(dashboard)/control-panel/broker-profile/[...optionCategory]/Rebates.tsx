@@ -63,7 +63,7 @@ export default function Rebates({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Classes Instruments</p>
+                  <p className="text-sm font-medium text-gray-600">Total Classes Of Instruments</p>
                   <p className="text-2xl font-bold text-gray-900">{columnHeaders.length}</p>
                 </div>
                 <div className="p-2 bg-green-100 rounded-lg">
