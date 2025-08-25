@@ -15,6 +15,9 @@ import BrokerOptions from "./BrokerOptions";
 import { getMatrixData, getMatrixHeaders } from "@/lib/matrix-requests";
 import { DynamicMatrix } from "@/components/ui/DynamicMatrix";
 import Rebates from "./Rebates";
+import { getDynamicTable } from "@/lib/getDynamicTable";
+import Promotions from "./Promotions";
+import Contests from "./Contests";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -22,7 +25,7 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 204;
+  let brokerId = 181;
   let is_admin=false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
@@ -70,11 +73,11 @@ export default async function BrokerProfilePage({
     }
 
 
-    let accountType = null;
-    if(categorySlug=='my-account-types'){
-      accountType = await getAccountTypes(brokerId,null,'en');
+    //let accountType = null;
+    // if(categorySlug=='my-account-types'){
+    //   accountType = await getAccountTypes(brokerId,null,'en');
     
-    }
+    // }
     
     //zone_code is null, so get only original data that is submitted by the broker and have zone_code null
     //there are the values submitted by the broker
@@ -105,8 +108,9 @@ export default async function BrokerProfilePage({
         </>
       );
     }
-    if(categorySlug=='my-account-types' && accountType){
+    if(categorySlug=='my-trading-accounts' ){
       let accountTypesLinks=await getAccountTypeUrls(brokerId,null,zone_code,language_code);
+      let accountType = await getAccountTypes(brokerId,null,'en');
 
      // console.log("accountTypesUrls========================================",accountTypesLinks);
      
@@ -123,6 +127,33 @@ export default async function BrokerProfilePage({
       );
     }
 
+    if(categorySlug=='promotions' ){
+      let promotions = await getDynamicTable('promotions',brokerId,null,'en');
+
+      return (
+        <Promotions 
+          broker_id={brokerId}
+          promotions={promotions}
+          options={matchedCategory.options as Option[]}
+          is_admin={is_admin}
+        />
+      );
+    }
+
+
+
+    if(categorySlug=='contests' ){
+      let contests = await getDynamicTable('contests',brokerId,null,'en');
+      
+      return (
+        <Contests 
+          broker_id={brokerId}
+          contests={contests}
+          options={matchedCategory.options as Option[]}
+          is_admin={is_admin}
+        />
+      );
+    }
     if(categorySlug=='rebates-rates'){
       const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
      

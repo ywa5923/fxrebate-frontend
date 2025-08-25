@@ -1,6 +1,6 @@
 "use client";
 
-import {  DynamicTable, Option, OptionValue, Url } from '@/types';
+import { Option, OptionValue } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '../actions';
 import { useState, useEffect, useRef } from 'react';
@@ -8,85 +8,68 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AccountLinks from './AccountLinks';
-import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { deleteAccountType } from './actions';
 import { useRouter } from 'next/navigation';
+import { DynamicTable } from '@/types';
+import { deleteDynamicTable } from '@/lib/deleteDynamicTable';
 
-interface AccountsProps {
+interface PromotionsProps {
   broker_id: number;
-  accounts?: DynamicTable[];
+  promotions?: DynamicTable[];
   options: Option[];
   is_admin?: boolean;
-  linksGroupedByAccountId: LinksGroupedByAccountId;
-  masterLinksGroupedByType: LinksGroupedByType;
-  linksGroups: Array<string>;
 }
-//example of accountTypeUrls, grouped by acount_type_ID and then by url type,  and urls_groups
-//it also contains master-links which is a group of urls that are not associated with any account type 
-//master links are shown in the section of every account type
-//    {
-//     '12': {
-//       mobile: [Array],
-//       webplatform: [Array],
-//       swap: [Array],
-//       commission: [Array]
-//     },
-//     'master-links': { mobile: [Array] }
-//   },
-//   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
 
-export default function Accounts({ broker_id, accounts, options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
-  const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
-  const [showNewAccount, setShowNewAccount] = useState(false);
-  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
+export default function Promotions({ broker_id, promotions, options, is_admin = false }: PromotionsProps) {
+  const [activeTab, setActiveTab] = useState<string>(promotions?.[0]?.id?.toString() || '');
+  const [showNewPromotion, setShowNewPromotion] = useState(false);
+  const [confirmDeletePromotion, setConfirmDeletePromotion] = useState<number|null>(null);
   const router = useRouter();
-  const prevAccountsLength = useRef(accounts.length);
+  const prevPromotionsLength = useRef(promotions?.length || 0);
 
   useEffect(() => {
-    // If a new account is added
-    if (accounts.length > prevAccountsLength.current) {
-      // Set active tab to the latest account (last in the array)
-      setActiveTab(accounts[accounts.length - 1].id.toString());
+    // If a new promotion is added
+    if (promotions && promotions.length > prevPromotionsLength.current) {
+      // Set active tab to the latest promotion (last in the array)
+      setActiveTab(promotions[promotions.length - 1].id.toString());
     } else if (
-      accounts.length > 0 &&
-      !accounts.some(account => account.id.toString() === activeTab)
+      promotions &&
+      promotions.length > 0 &&
+      !promotions.some(promotion => promotion.id.toString() === activeTab)
     ) {
-      // If current activeTab is invalid, set to first account
-      setActiveTab(accounts[0].id.toString());
+      // If current activeTab is invalid, set to first promotion
+      setActiveTab(promotions[0].id.toString());
     }
-    prevAccountsLength.current = accounts.length;
-  }, [accounts, activeTab]);
+    prevPromotionsLength.current = promotions?.length || 0;
+  }, [promotions, activeTab]);
 
-
-  async function handleDeleteAccountType(accountId: number) {
-    
-    try{
-      const response = await deleteAccountType(accountId,broker_id);
-      toast.success("Account type deleted successfully!");
+  async function handleDeletePromotion(promotionId: number) {
+    try {
+     
+      const response = await deleteDynamicTable('promotions',promotionId,broker_id);
+      toast.success("Promotion deleted successfully!");
       router.refresh();
-    }catch(error){
-      toast.error("Failed to delete account type");
-      console.log("DELETE ACCOUNT TYPE ERROR",error);
+    } catch (error) {
+      toast.error("Failed to delete promotion");
+      console.log("DELETE PROMOTION ERROR", error);
     }
   }
 
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Accounts</h1>
+        <h1 className="text-2xl font-bold">Promotions</h1>
         <Button 
-          onClick={() => setShowNewAccount(!showNewAccount)}
+          onClick={() => setShowNewPromotion(!showNewPromotion)}
           className={cn(
             "transition-all duration-200",
-            showNewAccount 
+            showNewPromotion 
               ? "bg-red-600 hover:bg-red-700 text-white" 
               : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-lg hover:shadow-xl"
           )}
         >
-          {showNewAccount ? (
+          {showNewPromotion ? (
             <>
               <X className="w-4 h-4 mr-2" />
               Cancel
@@ -94,25 +77,25 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
           ) : (
             <>
               <Plus className="w-4 h-4 mr-2" />
-              Add New Account
+              Add New Promotion
             </>
           )}
         </Button>
       </div>
       
-      {/* New Account Form */}
-      {showNewAccount && (
+      {/* New Promotion Form */}
+      {showNewPromotion && (
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Account</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new account type</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Promotion</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new promotion</p>
             </div>
           </div>
           <Card className="w-full sm:max-w-2xl sm:mx-auto">
@@ -123,11 +106,11 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                 optionsValues={[]}
                 action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
                   await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
-                  setShowNewAccount(false);
+                  setShowNewPromotion(false);
                 }}
                 is_admin={is_admin}
                 entity_id={0}
-                entity_type="account-type"
+                entity_type="promotion"
               />
             </CardContent>
           </Card>
@@ -135,17 +118,17 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
       )}
       
       {/* Tab Navigation */}
-      {accounts.length > 0 ? (
+      {promotions && promotions.length > 0 ? (
         <>
           <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
             <div className="flex overflow-x-auto scrollbar-hide space-x-1 pb-2">
-              {accounts.map((account, index) => (
+              {promotions.map((promotion, index) => (
                 <button
-                  key={account.id}
-                  onClick={() => setActiveTab(account.id.toString())}
+                  key={promotion.id}
+                  onClick={() => setActiveTab(promotion.id.toString())}
                   className={cn(
                     "px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap flex-shrink-0",
-                    activeTab === account.id.toString()
+                    activeTab === promotion.id.toString()
                       ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   )}
@@ -153,10 +136,10 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                   <div className="flex items-center gap-1 sm:gap-2">
                     <div className={cn(
                       "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full",
-                      activeTab === account.id.toString() ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                      activeTab === promotion.id.toString() ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
                     )}></div>
-                    <span className="hidden sm:inline">Account {index + 1}</span>
-                    <span className="sm:hidden">Acc {index + 1}</span>
+                    <span className="hidden sm:inline">Promotion {index + 1}</span>
+                    <span className="sm:hidden">Promo {index + 1}</span>
                   </div>
                 </button>
               ))}
@@ -164,40 +147,40 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
           </div>
           
           {/* Tab Content */}
-          {accounts.map((account, index) => (
+          {promotions.map((promotion, index) => (
             <div
-              key={account.id}
+              key={promotion.id}
               className={cn(
                 "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6",
-                activeTab === account.id.toString() ? "block" : "hidden"
+                activeTab === promotion.id.toString() ? "block" : "hidden"
               )}
             >
-              {account.option_values && account.option_values.length > 0 ? (
+              {promotion.option_values && promotion.option_values.length > 0 ? (
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 sm:w-14 sm:h-14 bg-green-200 dark:bg-green-900/70 rounded-full flex items-center justify-center shadow-lg ring-2 ring-green-400 dark:ring-green-700">
                         <svg className="w-4 h-4 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                         </svg>
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Account {index + 1}</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Promotion {index + 1}</h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 sm:mt-0">
                       <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                        ID: {account.id}
+                        ID: {promotion.id}
                       </div>
                       <Button
                         variant="destructive"
                         size="sm"
                         className="w-full sm:w-auto sm:ml-2"
-                        onClick={() => setConfirmDeleteAccount(account.id)}
+                        onClick={() => setConfirmDeletePromotion(promotion.id)}
                       >
                         <Trash className="w-4 h-4 mr-1" />
-                        Delete Account
+                        Delete Promotion
                       </Button>
                     </div>
                   </div>
@@ -206,52 +189,46 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
                       <DynamicForm
                         broker_id={broker_id}
                         options={options}
-                        optionsValues={account.option_values}
+                        optionsValues={promotion.option_values}
                         action={submitBrokerProfile}
                         is_admin={is_admin}
-                        entity_id={account.id}
-                        entity_type="AccountType"
+                        entity_id={promotion.id}
+                        entity_type="promotion"
                       />
                     </CardContent>
                   </Card>
                 </>
               ) : (
-                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-                      <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
-                    </div>
-                  )}
-              <AccountLinks 
-              broker_id={broker_id}
-              account_type_id={account?.id} 
-               links={linksGroupedByAccountId[account.id]??{}}
-               master_links={masterLinksGroupedByType} 
-               links_groups={linksGroups} />
-
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This promotion has no option values to configure.</p>
+                </div>
+              )}
             </div>
           ))}
-          {/* Confirmation Dialog for Account Delete */}
-          <Dialog open={!!confirmDeleteAccount} onOpenChange={open => { if (!open) setConfirmDeleteAccount(null); }}>
+          
+          {/* Confirmation Dialog for Promotion Delete */}
+          <Dialog open={!!confirmDeletePromotion} onOpenChange={open => { if (!open) setConfirmDeletePromotion(null); }}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Are you sure you want to delete this account type?</DialogTitle>
+                <DialogTitle>Are you sure you want to delete this promotion?</DialogTitle>
               </DialogHeader>
               <div className="py-2">
                 This action cannot be undone.
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmDeleteAccount(null)}>
+                <Button variant="outline" onClick={() => setConfirmDeletePromotion(null)}>
                   Cancel
                 </Button>
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    if (confirmDeleteAccount) {
-                      handleDeleteAccountType(confirmDeleteAccount);
-                      setConfirmDeleteAccount(null);
+                    if (confirmDeletePromotion) {
+                      handleDeletePromotion(confirmDeletePromotion);
+                      setConfirmDeletePromotion(null);
                     }
                   }}
                 >
@@ -261,13 +238,13 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
             </DialogContent>
           </Dialog>
         </>
-      ) : !showNewAccount && (
+      ) : !showNewPromotion && (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
           <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
           </svg>
-          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No accounts found</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Account" to get started.</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No promotions found</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Promotion" to get started.</p>
         </div>
       )}
     </div>

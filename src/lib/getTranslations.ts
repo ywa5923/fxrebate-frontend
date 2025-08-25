@@ -8,7 +8,7 @@ export const getTranslations = async (locale: string, zone: string,key:string,se
     url.searchParams.append("zone[eq]", zone);
     section.includes(",") ? url.searchParams.append("section[in]", section) : url.searchParams.append("section[eq]", section);
 
-    console.log("url~~~~~~~~~~~~~~~~",url.toString());
+    console.log("lib/getTransdlations(0->url~~~~~~~~~~~~~~~~",url.toString());
     const res = await fetch(url.toString(), { cache: "no-store" });
 
     //{ next: { revalidate: 7200 } }

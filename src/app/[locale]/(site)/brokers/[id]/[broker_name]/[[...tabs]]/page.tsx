@@ -24,6 +24,19 @@ export default async function TabPage({params}:{params:Promise<{id:string,broker
   const tabKeys = translations['tabs-keys'] as Record<string,string>;
   
   console.log(translations);
+//   {
+//     tabs: {
+//       'general-information': 'Informations générales',
+//       'users-reviews': 'Avis des utilisateurs',
+//       rebates: 'Ristournes',
+//       trading: 'Trading'
+//     },
+//     'tabs-keys': {
+//       'general-information': 'informations-generales',
+//       'users-reviews': 'avis-utilisateurs',
+//       rebates: 'ristournes',
+//       trading: 'trading'
+//     }
   const getOriginalTabKey = (translatedKey: string) => {
     return Object.entries(tabKeys).find(([_, value]) => value === translatedKey)?.[0] || translatedKey;
   };
@@ -31,7 +44,7 @@ export default async function TabPage({params}:{params:Promise<{id:string,broker
   const originalTabKey = getOriginalTabKey(brokerTab);
   
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-4 mt-10 max-w-[86rem] w-full">
             <div className="border-b border-gray-200">
                 <BrokerCard
                 logoUrl={"/images/admiral-markets-logo.svg"}
@@ -83,4 +96,4 @@ export default async function TabPage({params}:{params:Promise<{id:string,broker
         </div>
     );
 }
-
+         
