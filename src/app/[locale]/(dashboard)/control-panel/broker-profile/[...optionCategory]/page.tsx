@@ -18,6 +18,9 @@ import Rebates from "./Rebates";
 import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
+import { getChallengeCategories } from "@/lib/getChallengeCategories";
+import ChallengeCategories from "./ChallengeCategories";
+import { ChallengeType } from "@/types/ChallengeType";
 
 export default async function BrokerProfilePage({ 
   params 
@@ -154,7 +157,14 @@ export default async function BrokerProfilePage({
         />
       );
     }
-    if(categorySlug=='rebates-rates'){
+
+    if(categorySlug=='challenge-placeholders' ){
+      let categories:ChallengeType[] = await getChallengeCategories('en');
+    
+      return <ChallengeCategories categories={categories}/>
+    }
+    
+    if(categorySlug=='rebates'){
       const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
      
       const initialMatrixData = await getMatrixData(brokerId, 'Matrix-1', is_admin)
@@ -165,8 +175,6 @@ export default async function BrokerProfilePage({
     } else {
 
       return (
-      
-          
           <BrokerOptions 
             broker_id={brokerId}
             options={matchedCategory.options as Option[]} 
