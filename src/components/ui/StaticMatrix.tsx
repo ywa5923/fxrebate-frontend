@@ -27,6 +27,7 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
   const [matrixData, setMatrixData] = useState<MatrixData>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isPlaceholder, setIsPlaceholder] = useState(false);
 
   // Fetch headers and initial data when step changes
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
         setRowHeaders(rowHeaders);
 
         // Fetch initial data
-        const initialData = await getChallengeData(
+        const {initialData, is_placeholder} = await getChallengeData(
           type === "placeholder" ? "1" : "0", 
           categoryId.toString(), 
           stepId.toString(), 
@@ -54,9 +55,52 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
           language, 
           zoneId ? zoneId.toString() : null);
         console.log("Initial data:", initialData);
+        console.log("Type:", type, "is_admin:", is_admin, "is_placeholder:", is_placeholder);
+        
+        // Set the placeholder state
+        setIsPlaceholder(is_placeholder || false);
         
         if (initialData && Object.keys(initialData).length > 0) {
-          setMatrixData(initialData);
+          // If placeholder mode, preserve original values but clear display values
+          if (is_placeholder && type === "challenge") {
+            const placeholderData = { ...initialData };
+            Object.keys(placeholderData).forEach(rowKey => {
+              if (placeholderData[rowKey]) {
+                placeholderData[rowKey] = placeholderData[rowKey].map((cell: any) => ({
+                  ...cell,
+                  // Keep original value for placeholder display, but clear the display value
+                  value: { text: "" }, // Clear so it shows as placeholder
+                  public_value: { text: "" }, // Clear public_value too
+                  // Store original value in a separate field for placeholder
+                  originalValue: cell.value
+                }));
+              }
+            });
+            console.log("Processed data for placeholder mode:", placeholderData);
+            setMatrixData(placeholderData);
+          } else if (is_admin) {
+            // If admin mode, ensure public_value is populated from value if empty
+            const processedData = { ...initialData };
+            Object.keys(processedData).forEach(rowKey => {
+              if (processedData[rowKey]) {
+                processedData[rowKey] = processedData[rowKey].map((cell: any) => {
+                  // Check if public_value is empty or has null values
+                  const hasPublicValue = cell.public_value && 
+                    Object.keys(cell.public_value).length > 0 && 
+                    Object.values(cell.public_value).some(val => val !== null && val !== undefined && val !== "");
+                  
+                  return {
+                    ...cell,
+                    public_value: hasPublicValue ? cell.public_value : cell.value
+                  };
+                });
+              }
+            });
+            console.log("Processed data for admin:", processedData);
+            setMatrixData(processedData);
+          } else {
+            setMatrixData(initialData);
+          }
         } else {
           // Create empty matrix structure
           console.log("No initial data, creating empty matrix structure");
@@ -95,8 +139,14 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
       const next: MatrixData = { ...prev };
       const row = [...(next[rowIndex] || [])];
       const cell = { ...(row[colIndex] || {}) } as MatrixCell;
-      // Direct assignment - no need for separate cellValue variable
-      cell.value = { ...(cell.value || {}), [fieldName]: value };
+      
+      if (is_admin) {
+        // In admin mode, update public_value
+        cell.public_value = { ...(cell.public_value || {}), [fieldName]: value };
+      } else {
+        // In normal mode, update value
+        cell.value = { ...(cell.value || {}), [fieldName]: value };
+      }
     
       row[colIndex] = cell;
       next[rowIndex] = row;
@@ -104,27 +154,52 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
     });
   };
 
-  const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number) => {
+  const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number, isPlaceholder: boolean) => {
+    // In admin mode, use public_value for input, otherwise use value
+    const sourceValue = is_admin ? cell.public_value : cell.value;
+    
+
+    
     // Handle different value types from API
     let rawValue = "";
-    if (cell.value && typeof cell.value === "object") {
-      if ("text" in cell.value) {
-        rawValue = String(cell.value.text || "");
-      } else if (Array.isArray(cell.value) && cell.value.length > 0) {
+    let placeholderText = "Enter text";
+    
+    if (sourceValue && typeof sourceValue === "object") {
+      if ("text" in sourceValue) {
+        rawValue = String(sourceValue.text || "");
+      } else if (Array.isArray(sourceValue) && sourceValue.length > 0) {
         // Handle case where value is an array with text
-        rawValue = String(cell.value[0] || "");
+        rawValue = String(sourceValue[0] || "");
       }
+    }
+    
+    // If is_placeholder=true and type="challenge", use originalValue as placeholder
+    if (isPlaceholder && type === "challenge" && (cell as any).originalValue && typeof (cell as any).originalValue === "object" && "text" in (cell as any).originalValue) {
+      placeholderText = String((cell as any).originalValue.text || "Enter text");
+      // Don't clear rawValue here - let the user type normally
+      // rawValue = ""; // This was causing the issue!
     }
     
     const asString = (v: unknown) => (v === undefined || v === null ? "" : String(v));
 
     return (
-      <Input
-        value={asString(rawValue)}
-        onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
-        placeholder="Enter text"
-        className="w-full"
-      />
+      <div className="space-y-1">
+        <Input
+          value={asString(rawValue)}
+          onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
+          placeholder={placeholderText}
+          className="w-full"
+        />
+        {is_admin && (
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Broker value: {isPlaceholder && type === "challenge" 
+              ? "" // Show empty in admin placeholder mode
+              : (cell.value && typeof cell.value === "object" && "text" in cell.value 
+                ? String(cell.value.text || "") 
+                : "")}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -132,7 +207,7 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
     return (
       <div className="space-y-2">
         <div key={`${rowIndex}-${colIndex}-${cell.colHeader}`}>
-          {renderFormField(cell, rowIndex, colIndex)}
+          {renderFormField(cell, rowIndex, colIndex, isPlaceholder)}
         </div>
        
       </div>

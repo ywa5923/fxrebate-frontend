@@ -53,7 +53,7 @@ export async function getChallengeData(
         console.log("API response:", result);
         if (result.success && result.data && result.data.matrix) {
             console.log("Initial data loaded:", result.data.matrix);
-            return result.data.matrix;
+            return {"initialData": result.data.matrix,"is_placeholder": result.data.is_placeholder};
         } else {
             console.log("No initial data found, will create empty matrix");
             return {};

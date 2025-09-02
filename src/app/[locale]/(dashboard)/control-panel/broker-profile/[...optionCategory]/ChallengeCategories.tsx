@@ -110,8 +110,8 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
               amountId={activeAmount}
               zoneId={null}
               language="en"
-              type="placeholder"
-              is_admin={true}
+              type="challenge"
+              is_admin={false}
             />
           </div>
         )}
