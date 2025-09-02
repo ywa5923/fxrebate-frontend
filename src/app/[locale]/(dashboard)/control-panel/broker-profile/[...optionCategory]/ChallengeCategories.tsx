@@ -1,9 +1,8 @@
 "use client";
 
 import { ChallengeType } from "@/types/ChallengeType";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { getChallengeHeaders } from "@/lib/matrix-requests";
 import StaticMatrix from "@/components/ui/StaticMatrix";
 
 interface ChallengeCategoriesProps {
@@ -14,37 +13,11 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [activeAmount, setActiveAmount] = useState<number | null>(null);
-  const [columnHeaders, setColumnHeaders] = useState<any[]>([]);
-  const [rowHeaders, setRowHeaders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const selectedCategory = categories.find(cat => cat.id === activeCategory);
   
   // Filter out steps that start with "0-"
   const filteredSteps = selectedCategory?.steps.filter(step => !step.slug?.startsWith("0-")) || [];
-
-  // Fetch headers when step is selected
-  useEffect(() => {
-    const fetchHeaders = async () => {
-      if (activeStep) {
-        setLoading(true);
-        try {
-          const { columnHeaders, rowHeaders } = await getChallengeHeaders('en', activeStep, 'challenge');
-          setColumnHeaders(columnHeaders);
-          setRowHeaders(rowHeaders);
-        } catch (error) {
-          console.error('Error fetching headers:', error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setColumnHeaders([]);
-        setRowHeaders([]);
-      }
-    };
-
-    fetchHeaders();
-  }, [activeStep]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -127,60 +100,22 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
           </div>
         )}
 
-        {/* Loading indicator */}
-        {loading && (
-          <div className="text-center mb-6">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-800"></div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Loading headers...</p>
-          </div>
-        )}
-
-       
-        {activeStep && !loading && (columnHeaders.length > 0 || rowHeaders.length > 0) && (
+        {/* StaticMatrix - Show when step is selected */}
+        {activeStep && (
           <div className="mb-6">
-            <StaticMatrix 
-              rowHeaders={rowHeaders}
-              columnHeaders={columnHeaders}
-              initialMatrix={[]}
+            <StaticMatrix
+              categoryId={selectedCategory?.id ?? null}
+              stepId={filteredSteps.find(s => s.slug === activeStep)?.id ?? null}
+              stepSlug={activeStep}
+              amountId={activeAmount}
+              zoneId={null}
+              language="en"
+              type="placeholder"
               is_admin={true}
             />
           </div>
         )}
 
- {/* Headers Display */}
- {activeStep && !loading && (columnHeaders.length > 0 || rowHeaders.length > 0) && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
-              Challenge Headers
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {columnHeaders.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Column Headers</h4>
-                  <div className="space-y-1">
-                    {columnHeaders.map((header, index) => (
-                      <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
-                        {header.name || header.slug || `Header ${index + 1}`}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {rowHeaders.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Row Headers</h4>
-                  <div className="space-y-1">
-                    {rowHeaders.map((header, index) => (
-                      <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
-                        {header.name || header.slug || `Header ${index + 1}`}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
         {/* Selection Summary */}
         {(activeStep || activeAmount) && (
           <div className="mt-8 text-center">
@@ -207,4 +142,3 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
     </div>
   );
 }
-

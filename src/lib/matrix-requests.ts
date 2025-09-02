@@ -49,28 +49,4 @@ export async function getMatrixHeaders(
   }
 
 
-  export async function getChallengeHeaders(
-    language:string,
-    col_group: string, 
-    row_group: string,
-   ) :Promise<MatrixHeaders> {
-      const url =new URL(BASE_URL+"/matrix/headers")
-        url.searchParams.set("language[eq]", language)
-      url.searchParams.set("col_group[eq]", col_group)
-      url.searchParams.set("row_group[eq]", row_group)
-    
   
-      
-      try {
-        const response = await fetch(url.toString() ,  { cache: "no-store" } )
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const responseData = await response.json()
-        
-        return responseData
-      } catch (error) {
-        console.error('Error fetching matrix headers:', error)
-        throw error
-      }
-    }
