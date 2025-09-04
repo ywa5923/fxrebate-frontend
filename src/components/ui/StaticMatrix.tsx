@@ -11,17 +11,18 @@ import { toast } from "sonner";
 import { getChallengeData } from "@/lib/challenge-requests";
 
 interface StaticMatrixProps {
-  categoryId: number | null;
-  stepId: number | null;
-  stepSlug: string | null;
-  amountId: number | null;
+  brokerId: number ;
+  categoryId: number ;
+  stepId: number ;
+  stepSlug: string;
+  amountId: number ;
   zoneId: string | null;
-  language?: string;
+  language: string;
   type: "challenge" | "placeholder";
   is_admin: boolean;
 }
 
-export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
+export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
   const [columnHeaders, setColumnHeaders] = useState<ColumnHeader[]>([]);
   const [rowHeaders, setRowHeaders] = useState<RowHeader[]>([]);
   const [matrixData, setMatrixData] = useState<MatrixData>({});
@@ -33,9 +34,7 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
   useEffect(() => {
     const loadHeadersAndData = async () => {
       if (!stepSlug || !categoryId || !stepId) {
-        setColumnHeaders([]);
-        setRowHeaders([]);
-        setMatrixData({});
+       
         return;
       }
       setLoading(true);
@@ -47,11 +46,14 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
         setRowHeaders(rowHeaders);
 
         // Fetch initial data
+        //if the matrix is use to save placeholders data,the amountId will be null because placeholders differs only by step
+        const amountIdParam: string | null = type === "challenge" ? amountId.toString()  : null;
         const {initialData, is_placeholder} = await getChallengeData(
+          brokerId.toString(),
           type === "placeholder" ? "1" : "0", 
           categoryId.toString(), 
           stepId.toString(), 
-          amountId ? amountId.toString() : null,
+          amountIdParam,
           language, 
           zoneId ? zoneId.toString() : null);
         console.log("Initial data:", initialData);
@@ -130,7 +132,7 @@ export default function StaticMatrix({ categoryId, stepId, stepSlug, amountId, l
       }
     };
     loadHeadersAndData();
-  }, [language, stepSlug, categoryId, stepId, amountId, type]);
+  }, [language,  categoryId, stepId, amountId, zoneId]);
 
 
 

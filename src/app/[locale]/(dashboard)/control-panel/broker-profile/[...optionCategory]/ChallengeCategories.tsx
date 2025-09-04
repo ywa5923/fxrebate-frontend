@@ -1,23 +1,77 @@
 "use client";
 
 import { ChallengeType } from "@/types/ChallengeType";
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ui/StaticMatrix";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
+  brokerId: number;
+  type: "challenge" | "placeholder";
 }
-function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
-  const [isPending, startTransition] = useTransition();
-  const [challengeState,setChallengeState] = useState<{categoryId:number|null,stepId:number|null,amountId:number|null}>({categoryId:categories[0]?.id || 0,stepId:categories[0]?.steps[0]?.id || null,amountId:categories[0]?.amounts[0]?.id || null});
 
-  const selectedCategory = categories.find(cat => cat.id === challengeState.categoryId);
+function ChallengeCategories({ categories, brokerId, type }: ChallengeCategoriesProps) {
+  const [isPending, startTransition] = useTransition();
+  const [challengeState, setChallengeState] = useState<{
+    categoryId: number | null;
+    stepId: number | null;
+    amountId: number | null;
+  }>({
+    categoryId: categories[0]?.id || 0,
+    stepId: categories[0]?.steps[0]?.id || null,
+    amountId: categories[0]?.amounts[0]?.id || null,
+  });
+
   
-  // Filter out steps that start with "0-"
+
+
+  const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
   const steps = selectedCategory?.steps || [];
-  
-  //const filteredSteps = selectedCategory?.steps.filter(step => !step.slug?.startsWith("0-")) || [];
+  const amounts = selectedCategory?.amounts || [];
+  const stepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
+
+  if (!stepSlug) {
+    return <div>No step slug found</div>;
+  }
+
+  const handleCategoryClick = (category: ChallengeType, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('Category clicked:', category.name);
+    startTransition(() => {
+      setChallengeState({
+        categoryId: category.id,
+        stepId: category.steps[0]?.id || null,
+        amountId: category.amounts[0]?.id || null,
+      });
+    });
+  };
+
+  const handleStepClick = (step: any, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('Step clicked:', step.name);
+    startTransition(() => {
+      setChallengeState((prevState) => ({
+        ...prevState,
+        stepId: step.id,
+        amountId: selectedCategory?.amounts[0]?.id || null,
+      }));
+    });
+  };
+
+  const handleAmountClick = (amount: any, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('Amount clicked:', amount.amount);
+    startTransition(() => {
+      setChallengeState((prevState) => ({
+        ...prevState,
+        amountId: amount.id,
+      }));
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -35,13 +89,9 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           {categories.map((category) => (
             <button
-            type="button"
               key={category.id}
-              onClick={() => {
-                startTransition(() => {
-                  setChallengeState({categoryId:category.id,stepId:category.steps[0]?.id || null,amountId:category.amounts[0]?.id || null});
-                });
-              }}
+              type="button"
+              onClick={(e) => handleCategoryClick(category, e)}
               disabled={isPending}
               className={cn(
                 "px-8 py-4 text-lg font-medium rounded-lg border-2 transition-all duration-200 min-w-[200px] text-center",
@@ -56,19 +106,15 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
           ))}
         </div>
 
-        {/* Steps Row - Only show if there are filtered steps */}
+        {/* Steps Row */}
         {selectedCategory && steps.length > 0 && (
           <div className="mb-6">
             <div className="flex flex-wrap justify-center gap-2">
               {steps.map((step) => (
                 <button
-                  type="button"
                   key={step.id}
-                  onClick={() => {
-                    startTransition(() => {
-                      setChallengeState((prevState) => ({...prevState,stepId:step.id,amountId:selectedCategory?.amounts[0]?.id || null}));
-                    });
-                  }}
+                  type="button"
+                  onClick={(e) => handleStepClick(step, e)}
                   disabled={isPending}
                   className={cn(
                     "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[120px] text-center",
@@ -89,15 +135,11 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
         {selectedCategory && (
           <div className="mb-6">
             <div className="flex flex-wrap justify-center gap-2">
-              {selectedCategory.amounts.map((amount) => (
+              {amounts.map((amount) => (
                 <button
-                  type="button"
                   key={amount.id}
-                  onClick={() => {
-                    startTransition(() => {
-                      setChallengeState((prevState) => ({...prevState,amountId:amount.id}));
-                    });
-                  }}
+                  type="button"
+                  onClick={(e) => handleAmountClick(amount, e)}
                   disabled={isPending}
                   className={cn(
                     "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[80px] text-center",
@@ -115,22 +157,25 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
         )}
 
         {/* StaticMatrix - Show when step is selected */}
-        {challengeState.stepId && (
+        {challengeState.stepId && challengeState.amountId && challengeState.categoryId && stepSlug && (
           <div className="mb-6">
             {isPending ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-800"></div>
-                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading...</span>
+                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading matrix...</span>
               </div>
             ) : (
               <StaticMatrix
+                brokerId={brokerId}
                 categoryId={challengeState.categoryId}
                 stepId={challengeState.stepId}
-                stepSlug={selectedCategory?.steps.find(s => s.id === challengeState.stepId)?.slug || null}
+                stepSlug={
+                 stepSlug
+                }
                 amountId={challengeState.amountId}
                 zoneId={null}
                 language="en"
-                type="challenge"
+                type={type}
                 is_admin={false}
               />
             )}
@@ -142,18 +187,40 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
           <div className="mt-8 text-center">
             <div className="inline-block bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-2 border-green-200 dark:border-green-700">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Selected: <span className="font-semibold text-green-800 dark:text-green-400">
+                Selected:{" "}
+                <span className="font-semibold text-green-800 dark:text-green-400">
                   {selectedCategory?.name}
                 </span>
                 {challengeState.stepId && (
-                  <> • <span className="font-semibold text-green-800 dark:text-green-400">
-                    {selectedCategory?.steps.find(s => s.id === challengeState.stepId)?.name}
-                  </span></>
+                  <>
+                    {" "}
+                    •{" "}
+                    <span className="font-semibold text-green-800 dark:text-green-400">
+                      {
+                        selectedCategory?.steps.find(
+                          (s) => s.id === challengeState.stepId
+                        )?.name
+                      }
+                    </span>
+                  </>
                 )}
                 {challengeState.amountId && (
-                  <> • <span className="font-semibold text-green-800 dark:text-green-400">
-                    {selectedCategory?.amounts.find(a => a.id === challengeState.amountId)?.amount} {selectedCategory?.amounts.find(a => a.id === challengeState.amountId)?.currency}
-                  </span></>
+                  <>
+                    {" "}
+                    •{" "}
+                    <span className="font-semibold text-green-800 dark:text-green-400">
+                      {
+                        selectedCategory?.amounts.find(
+                          (a) => a.id === challengeState.amountId
+                        )?.amount
+                      }{" "}
+                      {
+                        selectedCategory?.amounts.find(
+                          (a) => a.id === challengeState.amountId
+                        )?.currency
+                      }
+                    </span>
+                  </>
                 )}
               </p>
             </div>
@@ -163,4 +230,5 @@ function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
     </div>
   );
 }
+
 export default React.memo(ChallengeCategories);

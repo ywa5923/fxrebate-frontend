@@ -29,7 +29,7 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 181;
+  let brokerId = 1;//181
   let is_admin=false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
@@ -162,7 +162,12 @@ export default async function BrokerProfilePage({
     if(categorySlug=='challenge-placeholders' ){
       const categories:ChallengeType[] = await getChallengeCategories('en');
     
-      return <ChallengeCategories categories={categories}/>
+      return <ChallengeCategories key={brokerId} categories={categories} brokerId={brokerId} type="placeholder"/>
+    }
+    if(categorySlug=='challenge-matrix' ){
+      const categories:ChallengeType[] = await getChallengeCategories('en');
+    
+      return <ChallengeCategories key={brokerId} categories={categories} brokerId={brokerId} type="challenge"/>
     }
     
     if(categorySlug=='rebates'){

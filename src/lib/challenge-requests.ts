@@ -29,6 +29,7 @@ export async function getChallengeHeaders(
     }
 
 export async function getChallengeData(
+    broker_id:string,
     is_placeholder:string,
     category_id:string,
     step_id:string,
@@ -37,6 +38,7 @@ export async function getChallengeData(
     zone_id:string|null,
    ) :Promise<any> {
     const params = new URLSearchParams({
+        broker_id: broker_id,
         is_placeholder: is_placeholder,
         category_id: category_id,
         step_id: step_id,
