@@ -1,23 +1,23 @@
 "use client";
 
 import { ChallengeType } from "@/types/ChallengeType";
-import { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ui/StaticMatrix";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
 }
+function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
+  const [isPending, startTransition] = useTransition();
+  const [challengeState,setChallengeState] = useState<{categoryId:number|null,stepId:number|null,amountId:number|null}>({categoryId:categories[0]?.id || 0,stepId:categories[0]?.steps[0]?.id || null,amountId:categories[0]?.amounts[0]?.id || null});
 
-export default function ChallengeCategories({ categories }: ChallengeCategoriesProps) {
-  const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
-  const [activeStep, setActiveStep] = useState<string | null>(null);
-  const [activeAmount, setActiveAmount] = useState<number | null>(null);
-
-  const selectedCategory = categories.find(cat => cat.id === activeCategory);
+  const selectedCategory = categories.find(cat => cat.id === challengeState.categoryId);
   
   // Filter out steps that start with "0-"
-  const filteredSteps = selectedCategory?.steps.filter(step => !step.slug?.startsWith("0-")) || [];
+  const steps = selectedCategory?.steps || [];
+  
+  //const filteredSteps = selectedCategory?.steps.filter(step => !step.slug?.startsWith("0-")) || [];
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -35,17 +35,20 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           {categories.map((category) => (
             <button
+            type="button"
               key={category.id}
               onClick={() => {
-                setActiveCategory(category.id);
-                setActiveStep(null);
-                setActiveAmount(null);
+                startTransition(() => {
+                  setChallengeState({categoryId:category.id,stepId:category.steps[0]?.id || null,amountId:category.amounts[0]?.id || null});
+                });
               }}
+              disabled={isPending}
               className={cn(
                 "px-8 py-4 text-lg font-medium rounded-lg border-2 transition-all duration-200 min-w-[200px] text-center",
-                activeCategory === category.id
+                challengeState.categoryId === category.id
                   ? "bg-green-800 text-white border-green-800 shadow-lg"
-                  : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
+                isPending && "opacity-50 cursor-not-allowed"
               )}
             >
               {category.name}
@@ -54,21 +57,25 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
         </div>
 
         {/* Steps Row - Only show if there are filtered steps */}
-        {selectedCategory && filteredSteps.length > 0 && (
+        {selectedCategory && steps.length > 0 && (
           <div className="mb-6">
             <div className="flex flex-wrap justify-center gap-2">
-              {filteredSteps.map((step) => (
+              {steps.map((step) => (
                 <button
+                  type="button"
                   key={step.id}
                   onClick={() => {
-                    setActiveStep(activeStep === step.slug ? null : step.slug);
-                    setActiveAmount(null);
+                    startTransition(() => {
+                      setChallengeState((prevState) => ({...prevState,stepId:step.id,amountId:selectedCategory?.amounts[0]?.id || null}));
+                    });
                   }}
+                  disabled={isPending}
                   className={cn(
                     "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[120px] text-center",
-                    activeStep === step.slug
+                    challengeState.stepId === step.id
                       ? "bg-green-800 text-white border-green-800 shadow-md"
-                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
+                    isPending && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {step.name}
@@ -84,13 +91,20 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
             <div className="flex flex-wrap justify-center gap-2">
               {selectedCategory.amounts.map((amount) => (
                 <button
+                  type="button"
                   key={amount.id}
-                  onClick={() => setActiveAmount(activeAmount === amount.id ? null : amount.id)}
+                  onClick={() => {
+                    startTransition(() => {
+                      setChallengeState((prevState) => ({...prevState,amountId:amount.id}));
+                    });
+                  }}
+                  disabled={isPending}
                   className={cn(
                     "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[80px] text-center",
-                    activeAmount === amount.id
+                    challengeState.amountId === amount.id
                       ? "bg-green-800 text-white border-green-800 shadow-md"
-                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
+                    isPending && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {amount.amount} {amount.currency}
@@ -101,37 +115,44 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
         )}
 
         {/* StaticMatrix - Show when step is selected */}
-        {activeStep && (
+        {challengeState.stepId && (
           <div className="mb-6">
-            <StaticMatrix
-              categoryId={selectedCategory?.id ?? null}
-              stepId={filteredSteps.find(s => s.slug === activeStep)?.id ?? null}
-              stepSlug={activeStep}
-              amountId={activeAmount}
-              zoneId={null}
-              language="en"
-              type="challenge"
-              is_admin={false}
-            />
+            {isPending ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-800"></div>
+                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading...</span>
+              </div>
+            ) : (
+              <StaticMatrix
+                categoryId={challengeState.categoryId}
+                stepId={challengeState.stepId}
+                stepSlug={selectedCategory?.steps.find(s => s.id === challengeState.stepId)?.slug || null}
+                amountId={challengeState.amountId}
+                zoneId={null}
+                language="en"
+                type="challenge"
+                is_admin={false}
+              />
+            )}
           </div>
         )}
 
         {/* Selection Summary */}
-        {(activeStep || activeAmount) && (
+        {(challengeState.stepId || challengeState.amountId) && (
           <div className="mt-8 text-center">
             <div className="inline-block bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-2 border-green-200 dark:border-green-700">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Selected: <span className="font-semibold text-green-800 dark:text-green-400">
                   {selectedCategory?.name}
                 </span>
-                {activeStep && (
+                {challengeState.stepId && (
                   <> • <span className="font-semibold text-green-800 dark:text-green-400">
-                    {filteredSteps.find(s => s.slug === activeStep)?.name}
+                    {selectedCategory?.steps.find(s => s.id === challengeState.stepId)?.name}
                   </span></>
                 )}
-                {activeAmount && (
+                {challengeState.amountId && (
                   <> • <span className="font-semibold text-green-800 dark:text-green-400">
-                    {selectedCategory?.amounts.find(a => a.id === activeAmount)?.amount} {selectedCategory?.amounts.find(a => a.id === activeAmount)?.currency}
+                    {selectedCategory?.amounts.find(a => a.id === challengeState.amountId)?.amount} {selectedCategory?.amounts.find(a => a.id === challengeState.amountId)?.currency}
                   </span></>
                 )}
               </p>
@@ -142,3 +163,4 @@ export default function ChallengeCategories({ categories }: ChallengeCategoriesP
     </div>
   );
 }
+export default React.memo(ChallengeCategories);

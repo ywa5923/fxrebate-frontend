@@ -22,6 +22,7 @@ import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "./ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 
+
 export default async function BrokerProfilePage({ 
   params 
 }: { 
@@ -159,7 +160,7 @@ export default async function BrokerProfilePage({
     }
 
     if(categorySlug=='challenge-placeholders' ){
-      let categories:ChallengeType[] = await getChallengeCategories('en');
+      const categories:ChallengeType[] = await getChallengeCategories('en');
     
       return <ChallengeCategories categories={categories}/>
     }
