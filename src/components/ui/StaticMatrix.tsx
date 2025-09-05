@@ -34,7 +34,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   useEffect(() => {
     const loadHeadersAndData = async () => {
       if (!stepSlug || !categoryId || !stepId) {
-       
+        setColumnHeaders([]);
+        setRowHeaders([]);
+        setMatrixData({});
         return;
       }
       setLoading(true);
@@ -42,6 +44,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         // Fetch headers
         const { columnHeaders, rowHeaders } = await getChallengeHeaders(language, stepSlug, "challenge");
         console.log("Headers:", columnHeaders, rowHeaders);
+        
+        // Set headers immediately to prevent layout shift
         setColumnHeaders(columnHeaders);
         setRowHeaders(rowHeaders);
 
@@ -185,15 +189,15 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     const asString = (v: unknown) => (v === undefined || v === null ? "" : String(v));
 
     return (
-      <div className="space-y-1">
+      <div className="space-y-1 w-full h-full flex flex-col">
         <Input
           value={asString(rawValue)}
           onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
           placeholder={placeholderText}
-          className="w-full"
+          className="w-full h-full min-h-[2.5rem] flex-1"
         />
         {is_admin && (
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-gray-500 dark:text-gray-400 min-h-[1rem] flex-shrink-0">
             Broker value: {isPlaceholder && type === "challenge" 
               ? "" // Show empty in admin placeholder mode
               : (cell.value && typeof cell.value === "object" && "text" in cell.value 
@@ -207,11 +211,10 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
 
   const renderCell = (cell: MatrixCell, rowIndex: number, colIndex: number) => {
     return (
-      <div className="space-y-2">
-        <div key={`${rowIndex}-${colIndex}-${cell.colHeader}`}>
+      <div className="w-full h-full">
+        <div key={`${rowIndex}-${colIndex}-${cell.colHeader}`} className="w-full h-full">
           {renderFormField(cell, rowIndex, colIndex, isPlaceholder)}
         </div>
-       
       </div>
     );
   };
@@ -223,6 +226,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         category_id: categoryId,
         step_id: stepId,
         step_slug: stepSlug,
+        broker_id: brokerId,
         is_placeholder: type === "placeholder",
         ...(type === "challenge") ? {
           amount_id: amountId,
@@ -248,50 +252,103 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     }
   };
 
-  if (loading) {
+  // Show loading overlay instead of replacing entire layout
+  const renderLoadingOverlay = () => {
+    if (!loading) return null;
     return (
-      <div className="text-center mb-6">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-800"></div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Loading matrix...</p>
+      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Loading matrix...</span>
+        </div>
+      </div>
+    );
+  };
+
+
+
+  // Show empty state if no headers
+  if (columnHeaders.length === 0 || rowHeaders.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4 flex justify-end">
+          <Button disabled={saving || !stepSlug} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg">
+            {saving ? "Saving..." : "Save Table"}
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              No matrix data available
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-
-
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full">
       <div className="mb-4 flex justify-end">
         <Button disabled={saving || !stepSlug} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg">
           {saving ? "Saving..." : "Save Table"}
         </Button>
       </div>
-      <Card>
-        <CardContent className="p-6">
-          <div className="grid gap-4" style={{ gridTemplateColumns: `200px repeat(${columnHeaders.length}, 1fr)` }}>
-            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b">Row / Column</div>
-            {columnHeaders.map((header, index) => (
-              <div key={index} className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b text-center">
-                {header.name}
-              </div>
-            ))}
-            {rowHeaders.map((rowHeader, rowIndex) => (
-              <div key={`row-${rowIndex}`} className="contents">
-                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r">{rowHeader.name}</div>
-                {columnHeaders.map((colHeader, colIndex) => {
-                  const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
-                  return (
-                    <div key={`cell-${rowIndex}-${colIndex}`} className="p-2 border">
-                      {cellData
-                        ? renderCell(cellData, rowIndex, colIndex)
-                        : <div className="text-gray-400 text-sm">No data</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+      <Card className="relative">
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <div 
+              className="grid gap-4 min-w-max" 
+              style={{ 
+                gridTemplateColumns: columnHeaders.length > 0 
+                  ? `200px repeat(${columnHeaders.length}, minmax(150px, 1fr))` 
+                  : `200px repeat(3, minmax(150px, 1fr))` 
+              }}
+            >
+            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b min-h-[2.5rem] flex items-center">Row / Column</div>
+            {columnHeaders.length > 0 ? (
+              columnHeaders.map((header, index) => (
+                <div key={index} className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b text-center min-h-[2.5rem] flex items-center justify-center">
+                  {header.name}
+                </div>
+              ))
+            ) : (
+              // Show skeleton headers when loading
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ))
+            )}
+            {rowHeaders.length > 0 ? (
+              rowHeaders.map((rowHeader, rowIndex) => (
+                <div key={`row-${rowIndex}`} className="contents">
+                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">{rowHeader.name}</div>
+                  {columnHeaders.map((colHeader, colIndex) => {
+                    const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
+                    return (
+                      <div key={`cell-${rowIndex}-${colIndex}`} className="p-2 border min-h-[4rem] flex items-center">
+                        {cellData
+                          ? renderCell(cellData, rowIndex, colIndex)
+                          : <div className="text-gray-400 text-sm w-full">No data</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))
+            ) : (
+              // Show skeleton rows when loading
+              [1, 2, 3, 4].map((row) => (
+                <div key={`skeleton-row-${row}`} className="contents">
+                  <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  {[1, 2, 3].map((col) => (
+                    <div key={`skeleton-cell-${row}-${col}`} className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              ))
+            )}
+            </div>
           </div>
         </CardContent>
+        {renderLoadingOverlay()}
       </Card>
     </div>
   );

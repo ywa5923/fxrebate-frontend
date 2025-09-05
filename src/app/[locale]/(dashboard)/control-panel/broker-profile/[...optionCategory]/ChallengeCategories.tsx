@@ -1,7 +1,7 @@
 "use client";
 
 import { ChallengeType } from "@/types/ChallengeType";
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ui/StaticMatrix";
 
@@ -9,226 +9,225 @@ interface ChallengeCategoriesProps {
   categories: ChallengeType[];
   brokerId: number;
   type: "challenge" | "placeholder";
+  is_admin: boolean;
 }
 
-function ChallengeCategories({ categories, brokerId, type }: ChallengeCategoriesProps) {
-  const [isPending, startTransition] = useTransition();
-  const [challengeState, setChallengeState] = useState<{
-    categoryId: number | null;
-    stepId: number | null;
-    amountId: number | null;
-  }>({
-    categoryId: categories[0]?.id || 0,
-    stepId: categories[0]?.steps[0]?.id || null,
-    amountId: categories[0]?.amounts[0]?.id || null,
+type ChallengeState = {
+  categoryId: number | null;
+  stepId: number | null;
+  amountId: number | null;
+};
+
+function ChallengeCategories({ categories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
+  const [challengeState, setChallengeState] = useState<ChallengeState>(() => {
+    const firstCategory = categories[0];
+    if (!firstCategory) {
+      return { categoryId: null, stepId: null, amountId: null };
+    }
+    return {
+      categoryId: firstCategory.id,
+      stepId: firstCategory.steps[0]?.id || null,
+      amountId: firstCategory.amounts[0]?.id || null,
+    };
   });
 
+
+  const derivedState = useMemo(() => {
   
+    const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
+    const steps = selectedCategory?.steps || [];
+    const amounts = selectedCategory?.amounts || [];
+    const stepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
+    
+    return {
+      selectedCategory,
+      steps,
+      amounts,
+      stepSlug,
+      canShowMatrix: Boolean(stepSlug && challengeState.stepId && challengeState.amountId && challengeState.categoryId)
+    };
+  }, [categories, challengeState]);
 
+  const handleCategoryClick = useCallback((category: ChallengeType) => {
+    if (category.id === challengeState.categoryId) return;
+    
+   
+    setChallengeState({
+      categoryId: category.id,
+      stepId: category.steps[0]?.id || null,
+      amountId: category.amounts[0]?.id || null,
+    });
+  }, [challengeState.categoryId]);
 
-  const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
-  const steps = selectedCategory?.steps || [];
-  const amounts = selectedCategory?.amounts || [];
-  const stepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
+  const handleStepClick = useCallback((step: any) => {
+    if (step.id === challengeState.stepId) return;
+    
+    setChallengeState(prev => ({
+      ...prev,
+      stepId: step.id,
+      amountId: derivedState.selectedCategory?.amounts[0]?.id || null,
+    }));
+  }, [challengeState.stepId, derivedState.selectedCategory]);
 
-  if (!stepSlug) {
-    return <div>No step slug found</div>;
+  const handleAmountClick = useCallback((amount: any) => {
+    if (amount.id === challengeState.amountId) return;
+    
+   
+    setChallengeState(prev => ({ ...prev, amountId: amount.id }));
+  }, [challengeState.amountId]);
+
+  if (!categories.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-gray-500 dark:text-gray-400">No categories</div>
+      </div>
+    );
   }
 
-  const handleCategoryClick = (category: ChallengeType, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    console.log('Category clicked:', category.name);
-    startTransition(() => {
-      setChallengeState({
-        categoryId: category.id,
-        stepId: category.steps[0]?.id || null,
-        amountId: category.amounts[0]?.id || null,
-      });
-    });
-  };
-
-  const handleStepClick = (step: any, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    console.log('Step clicked:', step.name);
-    startTransition(() => {
-      setChallengeState((prevState) => ({
-        ...prevState,
-        stepId: step.id,
-        amountId: selectedCategory?.amounts[0]?.id || null,
-      }));
-    });
-  };
-
-  const handleAmountClick = (amount: any, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    console.log('Amount clicked:', amount.amount);
-    startTransition(() => {
-      setChallengeState((prevState) => ({
-        ...prevState,
-        amountId: amount.id,
-      }));
-    });
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-6xl">
+        
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Challenge Categories
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
             Select a challenge category to get started
           </p>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              onClick={(e) => handleCategoryClick(category, e)}
-              disabled={isPending}
-              className={cn(
-                "px-8 py-4 text-lg font-medium rounded-lg border-2 transition-all duration-200 min-w-[200px] text-center",
-                challengeState.categoryId === category.id
-                  ? "bg-green-800 text-white border-green-800 shadow-lg"
-                  : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
-                isPending && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Steps Row */}
-        {selectedCategory && steps.length > 0 && (
-          <div className="mb-6">
-            <div className="flex flex-wrap justify-center gap-2">
-              {steps.map((step) => (
+        <div className="space-y-4 md:space-y-6">
+          
+          {/* STEP 1: Category Tabs */}
+          <div className="min-h-[60px] md:min-h-[72px] flex items-center">
+            <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full">
+              {categories.map((category) => (
                 <button
-                  key={step.id}
+                  key={category.id}
                   type="button"
-                  onClick={(e) => handleStepClick(step, e)}
-                  disabled={isPending}
+                  onClick={() => handleCategoryClick(category)}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[120px] text-center",
-                    challengeState.stepId === step.id
-                      ? "bg-green-800 text-white border-green-800 shadow-md"
-                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
-                    isPending && "opacity-50 cursor-not-allowed"
+                    "px-4 md:px-8 py-3 md:py-4",
+                    "text-sm md:text-lg font-medium",
+                    "rounded-lg border-2 border-green-800",
+                    "min-w-[140px] md:min-w-[200px]",
+                    "text-center transition-all duration-200",
+                    "hover:shadow-md active:scale-95",
+                    challengeState.categoryId === category.id
+                      ? "bg-green-800 text-white shadow-lg"
+                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
                   )}
                 >
-                  {step.name}
+                  {category.name}
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Amounts Row */}
-        {selectedCategory && (
-          <div className="mb-6">
-            <div className="flex flex-wrap justify-center gap-2">
-              {amounts.map((amount) => (
-                <button
-                  key={amount.id}
-                  type="button"
-                  onClick={(e) => handleAmountClick(amount, e)}
-                  disabled={isPending}
-                  className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 min-w-[80px] text-center",
-                    challengeState.amountId === amount.id
-                      ? "bg-green-800 text-white border-green-800 shadow-md"
-                      : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20",
-                    isPending && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  {amount.amount} {amount.currency}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* StaticMatrix - Show when step is selected */}
-        {challengeState.stepId && challengeState.amountId && challengeState.categoryId && stepSlug && (
-          <div className="mb-6">
-            {isPending ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-800"></div>
-                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading matrix...</span>
+          {/* STEP 2: Steps */}
+          <div className="min-h-[48px] md:min-h-[56px] flex items-center">
+            {derivedState.selectedCategory && derivedState.steps.length > 0 ? (
+              <div className="flex flex-wrap justify-center gap-2 w-full">
+                {derivedState.steps.map((step) => (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => handleStepClick(step)}
+                    className={cn(
+                      "px-3 md:px-4 py-2",
+                      "text-xs md:text-sm font-medium",
+                      "rounded-lg border-2 border-green-800",
+                      "min-w-[100px] md:min-w-[120px]",
+                      "text-center transition-all duration-200",
+                      "hover:shadow-sm active:scale-95",
+                      challengeState.stepId === step.id
+                        ? "bg-green-800 text-white shadow-md"
+                        : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    )}
+                  >
+                    {step.name}
+                  </button>
+                ))}
               </div>
             ) : (
-              <StaticMatrix
-                brokerId={brokerId}
-                categoryId={challengeState.categoryId}
-                stepId={challengeState.stepId}
-                stepSlug={
-                 stepSlug
-                }
-                amountId={challengeState.amountId}
-                zoneId={null}
-                language="en"
-                type={type}
-                is_admin={false}
-              />
+              <div className="w-full flex justify-center">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                  {derivedState.selectedCategory ? "No steps available" : "Select a category first"}
+                </div>
+              </div>
             )}
           </div>
-        )}
 
-        {/* Selection Summary */}
-        {(challengeState.stepId || challengeState.amountId) && (
-          <div className="mt-8 text-center">
-            <div className="inline-block bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-2 border-green-200 dark:border-green-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Selected:{" "}
-                <span className="font-semibold text-green-800 dark:text-green-400">
-                  {selectedCategory?.name}
-                </span>
-                {challengeState.stepId && (
-                  <>
-                    {" "}
-                    •{" "}
-                    <span className="font-semibold text-green-800 dark:text-green-400">
-                      {
-                        selectedCategory?.steps.find(
-                          (s) => s.id === challengeState.stepId
-                        )?.name
-                      }
-                    </span>
-                  </>
-                )}
-                {challengeState.amountId && (
-                  <>
-                    {" "}
-                    •{" "}
-                    <span className="font-semibold text-green-800 dark:text-green-400">
-                      {
-                        selectedCategory?.amounts.find(
-                          (a) => a.id === challengeState.amountId
-                        )?.amount
-                      }{" "}
-                      {
-                        selectedCategory?.amounts.find(
-                          (a) => a.id === challengeState.amountId
-                        )?.currency
-                      }
-                    </span>
-                  </>
-                )}
-              </p>
-            </div>
+          {/* STEP 3: Amounts */}
+          <div className="min-h-[40px] md:min-h-[48px] flex items-center">
+            {derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
+              <div className="flex flex-wrap justify-center gap-2 w-full">
+                {derivedState.amounts.map((amount) => (
+                  <button
+                    key={amount.id}
+                    type="button"
+                    onClick={() => handleAmountClick(amount)}
+                    className={cn(
+                      "px-3 md:px-4 py-2",
+                      "text-xs md:text-sm font-medium",
+                      "rounded-lg border-2 border-green-800",
+                      "min-w-[70px] md:min-w-[80px]",
+                      "text-center transition-all duration-200",
+                      "hover:shadow-sm active:scale-95",
+                      challengeState.amountId === amount.id
+                        ? "bg-green-800 text-white shadow-md"
+                        : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    )}
+                  >
+                    <span className="block md:inline">{amount.amount}</span>
+                    <span className="block md:inline md:ml-1">{amount.currency}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="w-full flex justify-center">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                  {derivedState.selectedCategory ? "No amounts available" : "Select a category first"}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* STEP 4: Matrix area */}
+          <div className="min-h-[250px] md:min-h-[300px] flex items-center justify-center">
+            {derivedState.canShowMatrix ? (
+              <div className="w-full min-h-[300px]">
+                <StaticMatrix
+                  brokerId={brokerId}
+                  categoryId={challengeState.categoryId!}
+                  stepId={challengeState.stepId!}
+                  stepSlug={derivedState.stepSlug!}
+                  amountId={challengeState.amountId!}
+                  zoneId={null}
+                  language="en"
+                  type={type}
+                  is_admin={is_admin}
+                />
+              </div>
+            ) : (
+              <div className="w-full flex justify-center px-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600 rounded-lg p-4 max-w-md">
+                  <div className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                    {!challengeState.stepId && "Please select a step"}
+                    {challengeState.stepId && !challengeState.amountId && "Please select an amount"}
+                    {challengeState.stepId && challengeState.amountId && !derivedState.stepSlug && "Step configuration incomplete"}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
     </div>
   );
 }
 
-export default React.memo(ChallengeCategories);
+export default ChallengeCategories;
