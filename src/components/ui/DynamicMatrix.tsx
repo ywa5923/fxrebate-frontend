@@ -77,6 +77,7 @@ interface DynamicMatrixProps {
  // initialMatrix?: MatrixCell[][];
  initialMatrix?: MatrixData
   is_admin?: boolean;
+  brokerId: number;
 }
 
 export function DynamicMatrix({
@@ -85,6 +86,7 @@ export function DynamicMatrix({
   onChange,
   initialMatrix,
   is_admin,
+  brokerId
 }: DynamicMatrixProps) {
 
   const [status, setStatus] = React.useState<string>("");
@@ -338,7 +340,7 @@ export function DynamicMatrix({
           },
           body: JSON.stringify({
             matrix,
-            broker_id: 1,
+            broker_id: brokerId,
             matrix_id: "Matrix-1",
           }),
         }

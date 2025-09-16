@@ -26,17 +26,20 @@ export async function getMatrixHeaders(
     }
   }
 
-  export async function getMatrixData(brokerId: number, matrixId: string, $isAdmin: boolean):Promise<MatrixData> {
+  export async function getMatrixData(brokerId: number, matrixId: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixData> {
     const url =new URL(BASE_URL+"/matrix")
     url.searchParams.set("broker_id", brokerId.toString())
     url.searchParams.set("matrix_id", matrixId)
     url.searchParams.set("is_admin", $isAdmin.toString())
-    
+    if(zoneId){
+      url.searchParams.set("zone_id", zoneId)
+    }
     try {
       const response = await fetch(
         url.toString(),
         { cache: "no-store" }  
       )
+     
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

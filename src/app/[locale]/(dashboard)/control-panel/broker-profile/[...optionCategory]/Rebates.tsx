@@ -7,12 +7,14 @@ export default function Rebates({
   rowHeaders, 
   columnHeaders, 
   initialMatrixData, 
-  is_admin
+  is_admin,
+  brokerId
 }: {
   rowHeaders: RowHeader[], 
   columnHeaders: ColumnHeader[], 
   initialMatrixData: MatrixData, 
-  is_admin: boolean
+  is_admin: boolean,
+  brokerId: number
 }) {
   
   return (
@@ -101,6 +103,7 @@ export default function Rebates({
           </CardHeader>
           <CardContent className="p-6">
             <DynamicMatrix 
+              brokerId={brokerId}
               rowHeaders={rowHeaders}
               columnHeaders={columnHeaders}
               initialMatrix={initialMatrixData}

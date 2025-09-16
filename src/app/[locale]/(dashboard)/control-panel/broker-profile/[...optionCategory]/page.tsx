@@ -171,13 +171,15 @@ export default async function BrokerProfilePage({
     }
     
     if(categorySlug=='rebates'){
+      
       const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
-     
+      
+
       const initialMatrixData = await getMatrixData(brokerId, 'Matrix-1', is_admin)
      
      // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
 
-      return <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin}/>
+      return <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin} brokerId={brokerId}/>
     } else {
 
       return (
