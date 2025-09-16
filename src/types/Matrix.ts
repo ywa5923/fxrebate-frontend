@@ -43,13 +43,30 @@ export interface MatrixCellValue {
 }
 
 export interface MatrixCell {
+  previous_value?: MatrixCellValue;
   value: MatrixCellValue;
   public_value?: MatrixCellValue;
   rowHeader: string;
   colHeader: string;
-  type: string;
+  type: string|undefined;
   selectedRowHeaderSubOptions?: RowHeaderOption[];
 }
+
+// interface MatrixCell {
+//   previous_value?: {
+//     [key: string]: string | number | boolean | undefined;
+//   };
+//   value: {
+//     [key: string]: string | number | undefined;
+//   };
+//   public_value: {
+//     [key: string]: string | number | undefined;
+//   };
+//   rowHeader: string;
+//   colHeader: string;
+//   type?: string;
+//   selectedRowHeaderSubOptions?: { value: string; label: string }[];
+// }
 
 export interface MatrixData {
   [rowIndex: number]: MatrixCell[];

@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/constants"
-import { MatrixData, MatrixHeaders } from "@/types"
+import { MatrixCell, MatrixData, MatrixHeaders } from "@/types"
 
 export async function getMatrixHeaders(
   language:string,brokerId: number, 
@@ -26,10 +26,10 @@ export async function getMatrixHeaders(
     }
   }
 
-  export async function getMatrixData(brokerId: number, matrixId: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixData> {
+  export async function getMatrixData(brokerId: number, matrixName: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixData> {
     const url =new URL(BASE_URL+"/matrix")
     url.searchParams.set("broker_id", brokerId.toString())
-    url.searchParams.set("matrix_id", matrixId)
+    url.searchParams.set("matrix_name", matrixName)
     url.searchParams.set("is_admin", $isAdmin.toString())
     if(zoneId){
       url.searchParams.set("zone_id", zoneId)
@@ -49,6 +49,31 @@ export async function getMatrixHeaders(
       console.error('Error fetching matrix data:', error)
       throw error
     }
+  }
+
+  export async function saveMatrixData(brokerId: number, matrixName: string, matrixData: MatrixCell[][],zoneId: string|null=null):Promise<void> {
+    const url =new URL(BASE_URL+"/matrix/store")
+   const response = await fetch(
+        url.toString(),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            matrix: matrixData,
+            broker_id: brokerId,
+            matrix_name: matrixName,
+            zone_id: zoneId,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const responseData = await response.json()
+      return responseData
   }
 
 

@@ -22,20 +22,10 @@ import {
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
 import { toast } from "sonner";
-import { ColumnHeader, MatrixData, RowHeader } from "@/types";
+import { ColumnHeader, MatrixData, MatrixCell, RowHeader } from "@/types";
+import { saveMatrixData } from "@/lib/matrix-requests";
 
-interface MatrixCell {
-  value: {
-    [key: string]: string | number | undefined;
-  };
-  public_value: {
-    [key: string]: string | number | undefined;
-  };
-  rowHeader: string;
-  colHeader: string;
-  type?: string;
-  selectedRowHeaderSubOptions?: { value: string; label: string }[];
-}
+
 
 // interface DynamicMatrixProps {
 //   rowHeaders: string[]
@@ -74,8 +64,8 @@ interface DynamicMatrixProps {
   rowHeaders: RowHeader[];
   columnHeaders: ColumnHeader[];
   onChange?: (matrix: MatrixCell[][]) => void;
- // initialMatrix?: MatrixCell[][];
- initialMatrix?: MatrixData
+  initialMatrix?: MatrixCell[][];
+ //initialMatrix: MatrixData
   is_admin?: boolean;
   brokerId: number;
 }
@@ -91,7 +81,7 @@ export function DynamicMatrix({
 
   const [status, setStatus] = React.useState<string>("");
   const [matrix, saveMatrix] = React.useState<MatrixCell[][]>(
-    initialMatrix || [[]]
+    initialMatrix || [[]] as MatrixCell[][]
   );
   const [validationErrors, setValidationErrors] = React.useState<{[key: string]: string[]}>({});
 
@@ -330,27 +320,28 @@ export function DynamicMatrix({
     setValidationErrors({});
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/matrix/store",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            matrix,
-            broker_id: brokerId,
-            matrix_id: "Matrix-1",
-          }),
-        }
-      );
+      // const response = await fetch(
+      //   "http://localhost:8080/api/v1/matrix/store",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Accept: "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       matrix,
+      //       broker_id: brokerId,
+      //       matrix_name: "Matrix-1",
+      //     }),
+      //   }
+      // );
 
-      if (!response.ok) {
-        throw new Error("Failed to save matrix data");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to save matrix data");
+      // }
 
-      const data = await response.json();
+     // const data = await response.json();
+      const data = await saveMatrixData(brokerId, "Matrix-1", matrix as MatrixCell[][]);
       setStatus("success");
       toast.success("Matrix data saved successfully");
       console.log("Matrix data saved successfully:", data);
