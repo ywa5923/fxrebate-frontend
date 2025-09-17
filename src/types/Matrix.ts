@@ -43,6 +43,7 @@ export interface MatrixCellValue {
 }
 
 export interface MatrixCell {
+  is_updated_entry?: boolean;
   previous_value?: MatrixCellValue;
   value: MatrixCellValue;
   public_value?: MatrixCellValue;

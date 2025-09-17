@@ -34,6 +34,8 @@ export async function getMatrixHeaders(
     if(zoneId){
       url.searchParams.set("zone_id", zoneId)
     }
+
+    
     try {
       const response = await fetch(
         url.toString(),
@@ -51,7 +53,7 @@ export async function getMatrixHeaders(
     }
   }
 
-  export async function saveMatrixData(brokerId: number, matrixName: string, matrixData: MatrixCell[][],zoneId: string|null=null):Promise<void> {
+  export async function saveMatrixData(is_admin: boolean,brokerId: number, matrixName: string, matrixData: MatrixCell[][],zoneId: string|null=null):Promise<void> {
     const url =new URL(BASE_URL+"/matrix/store")
    const response = await fetch(
         url.toString(),
@@ -66,6 +68,7 @@ export async function getMatrixHeaders(
             broker_id: brokerId,
             matrix_name: matrixName,
             zone_id: zoneId,
+            is_admin: is_admin,
           }),
         }
       );

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Minus, X, Save } from "lucide-react";
 import { CreateSelect } from "@/components/CreateSelect";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -66,7 +67,7 @@ interface DynamicMatrixProps {
   onChange?: (matrix: MatrixCell[][]) => void;
   initialMatrix?: MatrixCell[][];
  //initialMatrix: MatrixData
-  is_admin?: boolean;
+  is_admin: boolean;
   brokerId: number;
 }
 
@@ -94,6 +95,8 @@ export function DynamicMatrix({
     setStatus("");
     setValidationErrors({});
   };
+
+ 
 
   const validateMatrix = () => {
     const errors: {[key: string]: string[]} = {};
@@ -341,7 +344,7 @@ export function DynamicMatrix({
       // }
 
      // const data = await response.json();
-      const data = await saveMatrixData(brokerId, "Matrix-1", matrix as MatrixCell[][]);
+      const data = await saveMatrixData(is_admin,brokerId, "Matrix-1", matrix as MatrixCell[][]);
       setStatus("success");
       toast.success("Matrix data saved successfully");
       console.log("Matrix data saved successfully:", data);
@@ -513,6 +516,7 @@ export function DynamicMatrix({
                     const cellKey = `${rowIndex}-${colIndex}`;
                     const cellErrors = validationErrors[cellKey] || [];
                     const hasError = cellErrors.length > 0;
+                    const isUpdatedCell = cell.is_updated_entry;
 
                    return(
                     <td key={colIndex} className="border p-1 w-[250px]">
@@ -524,7 +528,8 @@ export function DynamicMatrix({
                               let public_value =
                                 cell.public_value?.[item.name] || "";
                               let broker_value = cell.value?.[item.name] || "";
-                              
+                              //let previous_value = cell.previous_value?.[item.name] || "";
+                              let previous_value = JSON.stringify(cell.previous_value);
                               let value = is_admin
                                 ? public_value
                                 : broker_value;
@@ -543,6 +548,17 @@ export function DynamicMatrix({
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         <p>{broker_value}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip key={`${item.name}-previous-value`}>
+                                      <TooltipTrigger asChild>
+                                        <div className="flex items-center gap-1" key={`${item.name}-previous-value`}>
+                                          <span className={cn("text-xs text-muted-foreground", isUpdatedCell ? 'text-amber-700 font-bold' : '')}>PreviousValue</span>
+                                        <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{previous_value}</p>
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
