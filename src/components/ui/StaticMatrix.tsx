@@ -30,6 +30,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
 
   const formatText = (value: any): string => {
     if (value == null) return "";
@@ -38,6 +39,27 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       try { return JSON.stringify(value); } catch { return String(value); }
     }
     return String(value);
+  };
+
+  // Validation helpers (applies only when is_admin is false)
+  const isValueEmpty = (value: any): boolean => {
+    if (value == null) return true;
+    if (typeof value === "string") return value.trim() === "";
+    if (typeof value === "number") return false;
+    if (typeof value === "boolean") return false;
+    if (Array.isArray(value)) return value.length === 0 || value.every(isValueEmpty);
+    if (typeof value === "object") {
+      // Common API shape: { text: string }
+      if ("text" in value) return isValueEmpty((value as any).text);
+      const vals = Object.values(value as Record<string, unknown>);
+      return vals.length === 0 || vals.every(isValueEmpty);
+    }
+    return false;
+  };
+
+  const isCellEmpty = (cell: MatrixCell): boolean => {
+    // Validate broker value only (public_value is for admin)
+    return isValueEmpty(cell?.value);
   };
 
   // Fetch headers and initial data when step changes
@@ -170,7 +192,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     });
   };
 
-  const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number, isPlaceholder: boolean) => {
+  const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number, isPlaceholder: boolean, showError: boolean) => {
     // In admin mode, use public_value for input, otherwise use value
     const sourceValue = is_admin ? cell.public_value : cell.value;
     
@@ -204,8 +226,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           value={asString(rawValue)}
           onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
           placeholder={placeholderText}
-          className="w-full h-full min-h-[2.5rem] flex-1"
+          className={cn("w-full h-full min-h-[2.5rem] flex-1", !is_admin && showError && "border-red-500")}
         />
+        {!is_admin && showError && (
+          <div className="text-xs text-red-600 dark:text-red-400 min-h-[1rem]">This field is required</div>
+        )}
         {is_admin && (
           
           <div className={cn("flex flex-row gap-1 items-center",{
@@ -235,10 +260,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   };
 
   const renderCell = (cell: MatrixCell, rowIndex: number, colIndex: number) => {
+    const showError = !is_admin && showValidation && isCellEmpty(cell);
     return (
       <div className="w-full h-full">
         <div key={`${rowIndex}-${colIndex}-${cell.colHeader}`} className="w-full h-full">
-          {renderFormField(cell, rowIndex, colIndex, isPlaceholder)}
+          {renderFormField(cell, rowIndex, colIndex, isPlaceholder, showError)}
         </div>
       </div>
     );
@@ -247,6 +273,20 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const handleSave = async () => {
     try {
       setSaving(true);
+      
+      // Check for empty cells if not admin
+      if (!is_admin) {
+        const hasEmptyCells = Object.values(matrixData).some(row => 
+          row.some((cell: MatrixCell) => isCellEmpty(cell))
+        );
+        
+        if (hasEmptyCells) {
+          setShowValidation(true);
+          toast.error("Please fill in all required fields before saving");
+          return;
+        }
+      }
+      
       const payload = {
         category_id: categoryId,
         step_id: stepId,
@@ -274,6 +314,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       toast.error("Error saving matrix data");
     } finally {
       setSaving(false);
+      setShowValidation(true);
     }
   };
 
