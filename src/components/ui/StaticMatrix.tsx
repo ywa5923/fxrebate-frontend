@@ -9,6 +9,7 @@ import { ColumnHeader, RowHeader, MatrixCellValue, MatrixCell, MatrixData } from
 import { BASE_URL } from "@/constants";
 import { toast } from "sonner";
 import { getChallengeData } from "@/lib/challenge-requests";
+import { cn } from "@/lib/utils";
 
 interface StaticMatrixProps {
   brokerId: number ;
@@ -29,6 +30,15 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
+
+  const formatText = (value: any): string => {
+    if (value == null) return "";
+    if (typeof value === "object") {
+      if ("text" in value) return String(value.text ?? "");
+      try { return JSON.stringify(value); } catch { return String(value); }
+    }
+    return String(value);
+  };
 
   // Fetch headers and initial data when step changes
   useEffect(() => {
@@ -197,13 +207,28 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           className="w-full h-full min-h-[2.5rem] flex-1"
         />
         {is_admin && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 min-h-[1rem] flex-shrink-0">
+          
+          <div className={cn("flex flex-row gap-1 items-center",{
+            "text-red-500 dark:text-red-400": cell.is_updated_entry,
+            "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
+          })}>
+            
+          <div className="text-xs min-h-[1rem] flex-shrink-0" key={`${rowIndex}-${colIndex}-broker-value`}>
             Broker value: {isPlaceholder && type === "challenge" 
-              ? "" // Show empty in admin placeholder mode
-              : (cell.value && typeof cell.value === "object" && "text" in cell.value 
-                ? String(cell.value.text || "") 
-                : "")}
+              ? "" 
+              : formatText(cell.value)}
           </div>
+          {!!cell.is_updated_entry && (
+          <div className="text-xs min-h-[1rem] flex-shrink-0" key={`${rowIndex}-${colIndex}-previous-value`}>
+           Previous value: {isPlaceholder && type === "challenge" 
+            ? "" 
+            : formatText(cell.previous_value)}
+         </div>
+         )}
+         
+        </div>
+          
+
         )}
       </div>
     );

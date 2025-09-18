@@ -195,6 +195,8 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       body: JSON.stringify(requestData),
     });
 
+    console.log("**********aserver url=======",url);
+    console.log("**********aserver body=======",requestData);
     if (!response.ok) {
       // Try to get error details from response
       let errorDetails = '';
