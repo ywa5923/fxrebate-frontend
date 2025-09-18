@@ -1,8 +1,10 @@
 export interface OptionValue {
   id?: number;
   option_slug: string;
+  previous_value: string | null;
   value: string;
   public_value: string | null;
+  is_updated_entry: boolean;
   status?: boolean;
   status_message?: string | null;
   default_loading?: boolean;

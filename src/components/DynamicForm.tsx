@@ -87,6 +87,16 @@ export function DynamicForm({
     return optionValue?.value || "Not set";
   };
 
+  const getBrokerPreviousValue = (optionSlug: string): string | null => {
+    const optionValue = optionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug && optionValue.is_updated_entry
+    );
+    if(optionValue?.previous_value && optionValue.is_updated_entry){
+      return optionValue?.previous_value + " "+(optionValue?.metadata?.unit || '') || null;
+    }
+    return null;
+  };
+
   // Helper function to get broker metadata for admin display
   const getBrokerMetadata = (optionSlug: string, key: string) => {
     const optionValue = optionsValues.find(
@@ -403,6 +413,7 @@ export function DynamicForm({
             {is_admin && (
               <div className="text-sm text-muted-foreground mt-2">
                 Broker value: {formField.value}
+                
               </div>
             )}
           </div>
@@ -676,7 +687,10 @@ export function DynamicForm({
             />
             {is_admin && (
               <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {getBrokerValue(option.slug)}
+                Broker value: {getBrokerValue(option.slug)}&nbsp;
+                {getBrokerPreviousValue(option.slug) && (
+                  <span className="text-red-500">Prev Value: {getBrokerPreviousValue(option.slug)}</span>
+                )}
               </div>
             )}
           </div>
