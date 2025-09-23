@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getChallengeHeaders } from "@/lib/challenge-requests";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColumnHeader, RowHeader, MatrixCellValue, MatrixCell, MatrixData } from "@/types/Matrix";
 import { BASE_URL } from "@/constants";
 import { toast } from "sonner";
@@ -23,6 +24,12 @@ interface StaticMatrixProps {
   is_admin: boolean;
 }
 
+interface MatrixExtraData {
+  affiliateLink: string;
+  evaluationCostDiscount: string;
+  masterAffiliateLink: string;
+}
+
 export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
   const [columnHeaders, setColumnHeaders] = useState<ColumnHeader[]>([]);
   const [rowHeaders, setRowHeaders] = useState<RowHeader[]>([]);
@@ -31,12 +38,18 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
+  const [matrixExtraData, setMatrixExtraData] = useState<MatrixExtraData>({
+    affiliateLink: "",
+    evaluationCostDiscount: "",
+    masterAffiliateLink: "",
+  });
 
   const formatText = (value: any): string => {
     if (value == null) return "";
     if (typeof value === "object") {
       if ("text" in value) return String(value.text ?? "");
-      try { return JSON.stringify(value); } catch { return String(value); }
+
+     // try { return JSON.stringify(value); } catch { return String(value); }
     }
     return String(value);
   };
@@ -231,29 +244,16 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         {!is_admin && showError && (
           <div className="text-xs text-red-600 dark:text-red-400 min-h-[1rem]">This field is required</div>
         )}
-        {is_admin && (
-          
-          <div className={cn("flex flex-row gap-1 items-center",{
-            "text-red-500 dark:text-red-400": cell.is_updated_entry,
-            "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
-          })}>
-            
-          <div className="text-xs min-h-[1rem] flex-shrink-0" key={`${rowIndex}-${colIndex}-broker-value`}>
-            Broker value: {isPlaceholder && type === "challenge" 
-              ? "" 
-              : formatText(cell.value)}
+        {is_admin && !isPlaceholder && (
+          <div className="flex flex-row gap-1 items-center">
+            <div className={cn("text-xs min-h-[1rem] flex-shrink-0 flex items-center gap-2", {
+              "text-red-500 dark:text-red-400": cell.is_updated_entry,
+              "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
+            })}>
+              <span>Broker Value: {formatText(cell.value)}</span>
+              <span>Previous Value: {formatText(cell.previous_value)}</span>
+            </div>
           </div>
-          {!!cell.is_updated_entry && (
-          <div className="text-xs min-h-[1rem] flex-shrink-0" key={`${rowIndex}-${colIndex}-previous-value`}>
-           Previous value: {isPlaceholder && type === "challenge" 
-            ? "" 
-            : formatText(cell.previous_value)}
-         </div>
-         )}
-         
-        </div>
-          
-
         )}
       </div>
     );
@@ -297,6 +297,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           amount_id: amountId,
         } : {},
         matrix: matrixData,
+        ...(type === "challenge") ? {
+          affiliate_link: matrixExtraData.affiliateLink,
+          evaluation_cost_discount: matrixExtraData.evaluationCostDiscount,
+          master_affiliate_link: matrixExtraData.masterAffiliateLink,
+        } : {},
       };
       console.log("Saving payload:", payload);
       const res = await fetch(BASE_URL+"/challenges", {
@@ -411,6 +416,54 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 </div>
               ))
             )}
+            {/* Affiliate link row (separate from matrix data) */}
+            <div className="contents">
+            <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
+              <div
+                className="p-2 border min-h-[4rem] flex items-center"
+                style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
+              >
+                <Input
+                  value={matrixExtraData.affiliateLink}
+                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, affiliateLink: e.target.value })}
+                  placeholder="Enter evaluation cost discount"
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Affiliate Link</div>
+              <div
+                className="p-2 border min-h-[4rem] flex items-center"
+                style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
+              >
+                <Input
+                  value={matrixExtraData.evaluationCostDiscount}
+                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, evaluationCostDiscount: e.target.value })}
+                  placeholder="Enter affiliate link"
+                  className="w-full"
+                />
+              </div>
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center gap-2">
+                <span>Master Affiliate Link</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs cursor-help text-green-800 dark:text-gray-400">(info)</span>
+                  </TooltipTrigger>
+                  <TooltipContent>Available for all challenges</TooltipContent>
+                </Tooltip>
+              </div>
+              <div
+                className="p-2 border min-h-[4rem] flex items-center"
+                style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
+              >
+                <Input
+                  value={matrixExtraData.masterAffiliateLink}
+                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, masterAffiliateLink: e.target.value })}
+                  placeholder="Enter affiliate link"
+                  className="w-full"
+                />
+              </div>
+            </div>
             </div>
           </div>
         </CardContent>

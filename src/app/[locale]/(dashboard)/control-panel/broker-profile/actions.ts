@@ -196,7 +196,7 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     });
 
     console.log("**********aserver url=======",url);
-    console.log("**********aserver body=======",requestData);
+    console.log("**********server body=======",requestData);
     if (!response.ok) {
       // Try to get error details from response
       let errorDetails = '';
@@ -214,6 +214,6 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
    // console.log("Form submitted successfully");
   } catch (error) {
   //  console.error("Error submitting form:", error);
-    throw new Error("Failed to submit form");
+    throw new Error("Failed to submit form" + (error instanceof Error ? error.message : String(error)));
   }
 } 

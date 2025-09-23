@@ -20,13 +20,11 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { InfoIcon } from "lucide-react"
+} from "@/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 import { toast } from "sonner";
 import { ColumnHeader, MatrixData, MatrixCell, RowHeader } from "@/types";
 import { saveMatrixData } from "@/lib/matrix-requests";
-
-
 
 // interface DynamicMatrixProps {
 //   rowHeaders: string[]
@@ -66,7 +64,7 @@ interface DynamicMatrixProps {
   columnHeaders: ColumnHeader[];
   onChange?: (matrix: MatrixCell[][]) => void;
   initialMatrix?: MatrixCell[][];
- //initialMatrix: MatrixData
+  //initialMatrix: MatrixData
   is_admin: boolean;
   brokerId: number;
 }
@@ -77,14 +75,15 @@ export function DynamicMatrix({
   onChange,
   initialMatrix,
   is_admin,
-  brokerId
+  brokerId,
 }: DynamicMatrixProps) {
-
   const [status, setStatus] = React.useState<string>("");
   const [matrix, saveMatrix] = React.useState<MatrixCell[][]>(
-    initialMatrix || [[]] as MatrixCell[][]
+    initialMatrix || ([[]] as MatrixCell[][])
   );
-  const [validationErrors, setValidationErrors] = React.useState<{[key: string]: string[]}>({});
+  const [validationErrors, setValidationErrors] = React.useState<{
+    [key: string]: string[];
+  }>({});
 
   const [existingColumnHeaders, setExistingColumnHeaders] = React.useState<
     string[]
@@ -96,40 +95,40 @@ export function DynamicMatrix({
     setValidationErrors({});
   };
 
- 
-
   const validateMatrix = () => {
-    const errors: {[key: string]: string[]} = {};
-    
+    const errors: { [key: string]: string[] } = {};
+
     matrix.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell.colHeader) {
-          const columnHeader = columnHeaders.find(h => h.slug === cell.colHeader);
+          const columnHeader = columnHeaders.find(
+            (h) => h.slug === cell.colHeader
+          );
           const cellErrors: string[] = [];
-          
+
           // Check if row header is selected
           if (!cell.rowHeader) {
             cellErrors.push("Row header is required");
           }
-          
+
           // Check if required fields are filled
-          columnHeader?.form_type.items.forEach(item => {
-            const value = is_admin 
-              ? (cell.public_value?.[item.name] || '')
-              : (cell.value?.[item.name] || '');
-            
+          columnHeader?.form_type.items.forEach((item) => {
+            const value = is_admin
+              ? cell.public_value?.[item.name] || ""
+              : cell.value?.[item.name] || "";
+
             if (!value && item.required !== false) {
               cellErrors.push(`${item.name} is required`);
             }
           });
-          
+
           if (cellErrors.length > 0) {
             errors[`${rowIndex}-${colIndex}`] = cellErrors;
           }
         }
       });
     });
-    
+
     return errors;
   };
 
@@ -201,21 +200,23 @@ export function DynamicMatrix({
     onChange?.(newMatrix);
   };
 
-
   const loadDefaultPublicValues = (initialMatrix: MatrixCell[][]) => {
     const newMatrix = initialMatrix.map((row) =>
       row.map((cell) => {
-        if(is_admin && (!cell.public_value || Object.keys(cell.public_value).length === 0)){
+        if (
+          is_admin &&
+          (!cell.public_value || Object.keys(cell.public_value).length === 0)
+        ) {
           return {
             ...cell,
             public_value: cell.value,
-          }
+          };
         }
-        return cell
+        return cell;
       })
-    )
-    setMatrix(newMatrix)
-  }
+    );
+    setMatrix(newMatrix);
+  };
 
   const updateCell = (
     rowIndex: number,
@@ -311,14 +312,14 @@ export function DynamicMatrix({
 
   const handleSave = async () => {
     const errors = validateMatrix();
-    
+
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setStatus("error");
       toast.error("Validation errors");
       return;
     }
-    
+
     setStatus("loading");
     setValidationErrors({});
 
@@ -343,8 +344,13 @@ export function DynamicMatrix({
       //   throw new Error("Failed to save matrix data");
       // }
 
-     // const data = await response.json();
-      const data = await saveMatrixData(is_admin,brokerId, "Matrix-1", matrix as MatrixCell[][]);
+      // const data = await response.json();
+      const data = await saveMatrixData(
+        is_admin,
+        brokerId,
+        "Matrix-1",
+        matrix as MatrixCell[][]
+      );
       setStatus("success");
       toast.success("Matrix data saved successfully");
       console.log("Matrix data saved successfully:", data);
@@ -385,22 +391,22 @@ export function DynamicMatrix({
           <Plus className="h-3 w-3 mr-1" />
           Add Column
         </Button>
-        <Button 
-          onClick={handleSave} 
-          variant="outline" 
-          size="default" 
+        <Button
+          onClick={handleSave}
+          variant="outline"
+          size="default"
           disabled={status === "loading"}
           className={`h-9 ml-auto ${
-            status === "error" 
-              ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200" 
+            status === "error"
+              ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200"
               : "bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
           }`}
         >
           <Save className="h-4 w-4 mr-2" />
-          {status === "loading" 
-            ? "Saving..." 
-            : status === "success" 
-            ? "Saved" 
+          {status === "loading"
+            ? "Saving..."
+            : status === "success"
+            ? "Saved"
             : status === "error"
             ? "Validation Errors"
             : "Save Matrix"}
@@ -518,170 +524,187 @@ export function DynamicMatrix({
                     const hasError = cellErrors.length > 0;
                     const isUpdatedCell = cell.is_updated_entry;
 
-                   return(
-                    <td key={colIndex} className="border p-1 w-[250px]">
-                      {cell.colHeader ? (
-                        <div className="flex flex-wrap gap-2 items-center">
-                          {columnHeaders
-                            .find((h) => h.slug === cell.colHeader)
-                            ?.form_type.items.map((item, itemIndex) => {
-                              let public_value =
-                                cell.public_value?.[item.name] || "";
-                              let broker_value = cell.value?.[item.name] || "";
-                              //let previous_value = cell.previous_value?.[item.name] || "";
-                              let previous_value = JSON.stringify(cell.previous_value);
-                              let value = is_admin
-                                ? public_value
-                                : broker_value;
-                              
-                              
-                              
-                              return (
-                                <React.Fragment key={item.name}>
-                                 {is_admin && <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-xs text-muted-foreground">Broker Value</span>
-                                        <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{broker_value}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip key={`${item.name}-previous-value`}>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex items-center gap-1" key={`${item.name}-previous-value`}>
-                                          <span className={cn("text-xs text-muted-foreground", isUpdatedCell ? 'text-amber-700 font-bold' : '')}>PreviousValue</span>
-                                        <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{previous_value}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                  }
-                                  {item.type === "number" && (
-                                    <div className="w-full">
-                                      <Input
-                                        type="text"
-                                        value={value}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          updateCell(
-                                            rowIndex,
-                                            colIndex,
-                                            value,
-                                            item.name,
-                                            is_admin || false
-                                          );
-                                        }}
-                                        placeholder={item.placeholder || "Value"}
-                                        className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}
-                                      />
-                                      
-                                    </div>
-                                  )}
-                                  {item.type === "single-select" && (
-                                    <div className="w-full">
-                                      <Select
-                                        value={String(value)}
-                                        onValueChange={(value: string) =>
-                                          updateCell(
-                                            rowIndex,
-                                            colIndex,
-                                            value,
-                                            item.name,
-                                            is_admin || false
-                                          )
-                                        }
-                                      >
-                                        <SelectTrigger className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}>
-                                          <SelectValue
-                                            placeholder={
-                                              item.placeholder || "Select"
-                                            }
-                                          />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[100]">
-                                          {item.options?.map((option) => (
-                                            <SelectItem
-                                              key={option.value}
-                                              value={option.value}
-                                              className="text-sm"
+                    return (
+                      <td key={colIndex} className="border p-1 w-[250px]">
+                        {cell.colHeader ? (
+                          <div className="flex flex-wrap gap-2 items-center">
+                            {columnHeaders
+                              .find((h) => h.slug === cell.colHeader)
+                              ?.form_type.items.map((item, itemIndex) => {
+                                let public_value =
+                                  cell.public_value?.[item.name] || "";
+                                let broker_value =
+                                  cell.value?.[item.name] || "";
+                                //let previous_value = cell.previous_value?.[item.name] || "";
+                                let previous_value = JSON.stringify(
+                                  cell.previous_value
+                                );
+                                let value = is_admin
+                                  ? public_value
+                                  : broker_value;
+
+                                return (
+                                  <React.Fragment key={item.name}>
+                                    {is_admin && (
+                                      <div className="flex flex-row gap-1 items-center">
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div
+                                              className={cn(
+                                                "text-xs min-h-[1rem] flex-shrink-0 cursor-help",
+                                                {
+                                                  "text-red-500 dark:text-red-400": isUpdatedCell,
+                                                  "text-gray-500 dark:text-gray-400": !isUpdatedCell,
+                                                }
+                                              )}
                                             >
-                                              {option.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                     
-                                    </div>
-                                  )}
-                                  {item.type === "text" && (
-                                    <div className="w-full">
-                                      <Input
-                                        type="text"
-                                        value={value}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          updateCell(
-                                            rowIndex,
-                                            colIndex,
-                                            value,
-                                            item.name,
-                                            is_admin || false
-                                          );
-                                        }}
-                                        placeholder={
-                                          item.placeholder || "Enter text"
-                                        }
-                                        className={`h-9 text-sm w-full ${hasError ? 'border-red-500' : ''}`}
-                                      />
-                                      
-                                    </div>
-                                  )}
-                                  {item.type === "textarea" && (
-                                    <div className="w-full">
-                                      <textarea
-                                        value={value}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          updateCell(
-                                            rowIndex,
-                                            colIndex,
-                                            value,
-                                            item.name,
-                                            is_admin || false
-                                          );
-                                        }}
-                                        placeholder={
-                                          item.placeholder || "Enter text"
-                                        }
-                                        className={`h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background ${hasError ? 'border-red-500' : ''}`}
-                                      />
-                                      
-                                    </div>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })}
-                        </div>
-                      ) : (
-                        <div className="h-9 w-full text-sm text-muted-foreground flex items-center">
-                          Select column type
-                        </div>
-                      )}
-                      {hasError && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {cellErrors.join(', ')}
-                        </div>
-                      )}
-                    </td>
-                  )
-                })}
+                                              Broker value
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <div className="space-y-1">
+                                              <div>
+                                                <strong>Previous value:</strong>{" "}
+                                                {previous_value}
+                                              </div>
+
+                                              <div>
+                                                <strong>Broker value:</strong>{" "}
+                                                {broker_value}
+                                              </div>
+                                            </div>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </div>
+                                    )}
+
+                                    {item.type === "number" && (
+                                      <div className="w-full">
+                                        <Input
+                                          type="text"
+                                          value={value}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            updateCell(
+                                              rowIndex,
+                                              colIndex,
+                                              value,
+                                              item.name,
+                                              is_admin || false
+                                            );
+                                          }}
+                                          placeholder={
+                                            item.placeholder || "Value"
+                                          }
+                                          className={`h-9 text-sm w-full ${
+                                            hasError ? "border-red-500" : ""
+                                          }`}
+                                        />
+                                      </div>
+                                    )}
+                                    {item.type === "single-select" && (
+                                      <div className="w-full">
+                                        <Select
+                                          value={String(value)}
+                                          onValueChange={(value: string) =>
+                                            updateCell(
+                                              rowIndex,
+                                              colIndex,
+                                              value,
+                                              item.name,
+                                              is_admin || false
+                                            )
+                                          }
+                                        >
+                                          <SelectTrigger
+                                            className={`h-9 text-sm w-full ${
+                                              hasError ? "border-red-500" : ""
+                                            }`}
+                                          >
+                                            <SelectValue
+                                              placeholder={
+                                                item.placeholder || "Select"
+                                              }
+                                            />
+                                          </SelectTrigger>
+                                          <SelectContent className="z-[100]">
+                                            {item.options?.map((option) => (
+                                              <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                                className="text-sm"
+                                              >
+                                                {option.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    )}
+                                    {item.type === "text" && (
+                                      <div className="w-full">
+                                        <Input
+                                          type="text"
+                                          value={value}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            updateCell(
+                                              rowIndex,
+                                              colIndex,
+                                              value,
+                                              item.name,
+                                              is_admin || false
+                                            );
+                                          }}
+                                          placeholder={
+                                            item.placeholder || "Enter text"
+                                          }
+                                          className={`h-9 text-sm w-full ${
+                                            hasError ? "border-red-500" : ""
+                                          }`}
+                                        />
+                                      </div>
+                                    )}
+                                    {item.type === "textarea" && (
+                                      <div className="w-full">
+                                        <textarea
+                                          value={value}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            updateCell(
+                                              rowIndex,
+                                              colIndex,
+                                              value,
+                                              item.name,
+                                              is_admin || false
+                                            );
+                                          }}
+                                          placeholder={
+                                            item.placeholder || "Enter text"
+                                          }
+                                          className={`h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background ${
+                                            hasError ? "border-red-500" : ""
+                                          }`}
+                                        />
+                                      </div>
+                                    )}
+                                  </React.Fragment>
+                                );
+                              })}
+                          </div>
+                        ) : (
+                          <div className="h-9 w-full text-sm text-muted-foreground flex items-center">
+                            Select column type
+                          </div>
+                        )}
+                        {hasError && (
+                          <div className="text-red-500 text-xs mt-1">
+                            {cellErrors.join(", ")}
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

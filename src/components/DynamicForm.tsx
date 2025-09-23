@@ -449,7 +449,7 @@ export function DynamicForm({
             )}
           </div>
         );
-      case "multi-select":
+      case "multiple_select":
         return (
           <div>
             <Multiselect
