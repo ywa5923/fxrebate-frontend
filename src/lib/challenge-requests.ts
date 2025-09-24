@@ -55,7 +55,13 @@ export async function getChallengeData(
         console.log("API response:", result);
         if (result.success && result.data && result.data.matrix) {
             console.log("Initial data loaded:", result.data.matrix);
-            return {"initialData": result.data.matrix,"is_placeholder": result.data.is_placeholder};
+            return {
+              "initialData": result.data.matrix,
+              "is_placeholder": result.data.is_placeholder,
+              "affiliate_master_link": result.data.affiliate_master_link,
+              "affiliate_link": result.data.affiliate_link,
+              "evaluation_cost_discount": result.data.evaluation_cost_discount
+            };
         } else {
             console.log("No initial data found, will create empty matrix");
             return {};

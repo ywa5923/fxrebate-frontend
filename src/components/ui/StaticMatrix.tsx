@@ -25,9 +25,29 @@ interface StaticMatrixProps {
 }
 
 interface MatrixExtraData {
-  affiliateLink: string;
-  evaluationCostDiscount: string;
-  masterAffiliateLink: string;
+  affiliateLink: AffiliateLink;
+  evaluationCostDiscount: EvaluationCostDiscount;
+  masterAffiliateLink: AffiliateLink;
+}
+
+interface AffiliateLink {
+  id?: number;
+  url: string;
+  public_url: string | null;
+  old_url: string | null;
+  is_updated_entry: number; // 1 or 0
+  name: string;
+  slug: string;
+  zone_id?: number | null;
+}
+
+interface EvaluationCostDiscount {
+  id?: number;
+  public_value: string;
+  broker_value: string;
+  old_value: string;
+  is_updated_entry: number; // 1 or 0
+  zone_id?: number | null;
 }
 
 export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
@@ -38,11 +58,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
-  const [matrixExtraData, setMatrixExtraData] = useState<MatrixExtraData>({
-    affiliateLink: "",
-    evaluationCostDiscount: "",
-    masterAffiliateLink: "",
-  });
+  const [initialMatrixExtraData, setInitialMatrixExtraData] = useState<MatrixExtraData|null>(null);
+  const [matrixExtraData, setMatrixExtraData] = useState<any|null>(null);
 
   const formatText = (value: any): string => {
     if (value == null) return "";
@@ -75,6 +92,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     return isValueEmpty(cell?.value);
   };
 
+
   // Fetch headers and initial data when step changes
   useEffect(() => {
     const loadHeadersAndData = async () => {
@@ -97,7 +115,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         // Fetch initial data
         //if the matrix is use to save placeholders data,the amountId will be null because placeholders differs only by step
         const amountIdParam: string | null = type === "challenge" ? amountId.toString()  : null;
-        const {initialData, is_placeholder} = await getChallengeData(
+       let {initialData, is_placeholder, affiliate_master_link, affiliate_link, evaluation_cost_discount} = await getChallengeData(
           brokerId.toString(),
           type === "placeholder" ? "1" : "0", 
           categoryId.toString(), 
@@ -105,12 +123,29 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           amountIdParam,
           language, 
           zoneId ? zoneId.toString() : null);
-        console.log("Initial data:", initialData);
-        console.log("Type:", type, "is_admin:", is_admin, "is_placeholder:", is_placeholder);
         
         // Set the placeholder state
         setIsPlaceholder(is_placeholder || false);
-        
+
+        let affiliateLink = is_admin ? (affiliate_link?.is_updated_entry ? affiliate_link?.url : affiliate_link?.public_url) : affiliate_link?.url;
+        let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.is_updated_entry ? evaluation_cost_discount?.broker_value : evaluation_cost_discount?.public_value) : evaluation_cost_discount?.broker_value;
+        let masterAffiliateLink = is_admin ? (affiliate_master_link?.is_updated_entry ? affiliate_master_link?.url : affiliate_master_link?.public_url) : affiliate_master_link?.url;
+       
+        //console.log("--------------------Affiliate link:", affiliateLink, "Evaluation cost discount:", evaluationCostDiscount, "Master affiliate link:", masterAffiliateLink);
+
+        setInitialMatrixExtraData({
+          affiliateLink: affiliate_link,
+          evaluationCostDiscount: evaluation_cost_discount,
+          masterAffiliateLink: affiliate_master_link,
+        });
+
+        setMatrixExtraData({
+          affiliateLink: affiliateLink,
+          evaluationCostDiscount: evaluationCostDiscount,
+          masterAffiliateLink: masterAffiliateLink,
+        });
+
+       
         if (initialData && Object.keys(initialData).length > 0) {
           // If placeholder mode, preserve original values but clear display values
           if (is_placeholder && type === "challenge") {
@@ -183,11 +218,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     loadHeadersAndData();
   }, [language,  categoryId, stepId, amountId, zoneId]);
 
-
+  useEffect(() => {
+    console.log("Matrix extra data:", matrixExtraData);
+  }, [matrixExtraData]);
 
   const updateCellValue = (rowIndex: number, colIndex: number, fieldName: string, value: any) => {
     setMatrixData(prev => {
       const next: MatrixData = { ...prev };
+      
       const row = [...(next[rowIndex] || [])];
       const cell = { ...(row[colIndex] || {}) } as MatrixCell;
       
@@ -207,9 +245,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
 
   const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number, isPlaceholder: boolean, showError: boolean) => {
     // In admin mode, use public_value for input, otherwise use value
-    const sourceValue = is_admin ? cell.public_value : cell.value;
-    
-
+    const sourceValue = is_admin ? (cell.is_updated_entry ? cell.value : cell.public_value) : cell.value;
     
     // Handle different value types from API
     let rawValue = "";
@@ -250,8 +286,17 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               "text-red-500 dark:text-red-400": cell.is_updated_entry,
               "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
             })}>
-              <span>Broker Value: {formatText(cell.value)}</span>
-              <span>Previous Value: {formatText(cell.previous_value)}</span>
+              
+              {!!cell.is_updated_entry && (
+                <span>Public Value: {formatText(cell.public_value)}</span>
+              )}
+              {!!!cell.is_updated_entry && (
+                <span>Broker Value: {formatText(cell.value)}</span>
+              )}
+
+              {formatText(cell.previous_value)?.trim() ? (
+                <span>Previous Value: {formatText(cell.previous_value)}</span>
+              ) : <span>&nbsp;</span>}
             </div>
           </div>
         )}
@@ -297,11 +342,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           amount_id: amountId,
         } : {},
         matrix: matrixData,
-        ...(type === "challenge") ? {
-          affiliate_link: matrixExtraData.affiliateLink,
-          evaluation_cost_discount: matrixExtraData.evaluationCostDiscount,
-          master_affiliate_link: matrixExtraData.masterAffiliateLink,
-        } : {},
+        ...(type === "challenge") && {
+          'affiliate_link': matrixExtraData?.affiliateLink,
+          'evaluation_cost_discount': matrixExtraData?.evaluationCostDiscount,
+          'affiliate_master_link': matrixExtraData?.masterAffiliateLink,
+        }
       };
       console.log("Saving payload:", payload);
       const res = await fetch(BASE_URL+"/challenges", {
@@ -418,30 +463,64 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             )}
             {/* Affiliate link row (separate from matrix data) */}
             <div className="contents">
-            <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
               <div
-                className="p-2 border min-h-[4rem] flex items-center"
+                className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <Input
-                  value={matrixExtraData.affiliateLink}
-                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, affiliateLink: e.target.value })}
+                  value={matrixExtraData?.evaluationCostDiscount ?? ""}
+                  
+                  onChange={(e) =>
+                    setMatrixExtraData((prev:any) => ({
+                      ...prev,
+                      evaluationCostDiscount: e.target.value,
+                    }))
+                  }
                   placeholder="Enter evaluation cost discount"
                   className="w-full"
                 />
+               {is_admin && (
+                 <div className={cn("text-xs", {
+                  "text-red-500 dark:text-red-400": initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                  "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                })}>
+                   {initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry ? "Public Value" : "Broker Value"}
+                   {initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry ? initialMatrixExtraData?.evaluationCostDiscount?.public_value ?? "" : initialMatrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
+                    Previous Value: {initialMatrixExtraData?.evaluationCostDiscount?.old_value ?? ""}
+                 </div>
+               )}
               </div>
               
               <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Affiliate Link</div>
               <div
-                className="p-2 border min-h-[4rem] flex items-center"
+                className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <Input
-                  value={matrixExtraData.evaluationCostDiscount}
-                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, evaluationCostDiscount: e.target.value })}
+                  value={matrixExtraData?.affiliateLink ?? ""}
+                  onChange={(e) =>
+                    setMatrixExtraData((prev:any) => ({
+                      ...prev,
+                      affiliateLink: e.target.value,
+                    }))
+                  }
+                        
                   placeholder="Enter affiliate link"
                   className="w-full"
                 />
+                {is_admin && (
+                  <div className={cn("text-xs mt-1", {
+                    "text-red-500 dark:text-red-400": initialMatrixExtraData?.affiliateLink?.is_updated_entry,
+                    "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.affiliateLink?.is_updated_entry,
+                  })}>
+                    {initialMatrixExtraData?.affiliateLink?.is_updated_entry ? "Public Value" : "Broker Value"}
+                    {initialMatrixExtraData?.affiliateLink?.is_updated_entry
+                      ? initialMatrixExtraData?.affiliateLink?.public_url ?? ""
+                      : initialMatrixExtraData?.affiliateLink?.url ?? ""}
+                     Previous Value: {initialMatrixExtraData?.affiliateLink?.old_url ?? ""}
+                  </div>
+                )}
               </div>
               <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center gap-2">
                 <span>Master Affiliate Link</span>
@@ -453,15 +532,33 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 </Tooltip>
               </div>
               <div
-                className="p-2 border min-h-[4rem] flex items-center"
+                className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <Input
-                  value={matrixExtraData.masterAffiliateLink}
-                  onChange={(e) => setMatrixExtraData({ ...matrixExtraData, masterAffiliateLink: e.target.value })}
+                  value={ matrixExtraData?.masterAffiliateLink ?? ""}
+                  onChange={(e) =>
+                    setMatrixExtraData((prev:any) => ({
+                      ...prev,
+                      masterAffiliateLink: e.target.value,
+                    }))
+                  }
+                  
                   placeholder="Enter affiliate link"
                   className="w-full"
                 />
+                {is_admin && (
+                  <div className={cn("text-xs mt-1", {
+                    "text-red-500 dark:text-red-400": initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                    "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                  })}>
+                    {initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry ? "Public Value" : "Broker Value"}
+                    {initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry
+                      ? initialMatrixExtraData?.masterAffiliateLink?.public_url ?? ""
+                      : initialMatrixExtraData?.masterAffiliateLink?.url ?? ""}
+                     Previous Value: {initialMatrixExtraData?.masterAffiliateLink?.old_url ?? ""}
+                  </div>
+                )}
               </div>
             </div>
             </div>
