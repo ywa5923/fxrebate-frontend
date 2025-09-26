@@ -127,11 +127,17 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         // Set the placeholder state
         setIsPlaceholder(is_placeholder || false);
 
-        let affiliateLink = is_admin ? (affiliate_link?.is_updated_entry ? affiliate_link?.url : (affiliate_link?.public_url ?? affiliate_link?.url)) : affiliate_link?.url;
-        let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.is_updated_entry ? evaluation_cost_discount?.broker_value : (evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value)) : evaluation_cost_discount?.broker_value;
-        let masterAffiliateLink = is_admin ? (affiliate_master_link?.is_updated_entry ? affiliate_master_link?.url : (affiliate_master_link?.public_url ?? affiliate_master_link?.url)) : affiliate_master_link?.url;
+        // let affiliateLink = is_admin ? (affiliate_link?.is_updated_entry ? affiliate_link?.url : (affiliate_link?.public_url ?? affiliate_link?.url)) : affiliate_link?.url;
+        // let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.is_updated_entry ? evaluation_cost_discount?.broker_value : (evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value)) : evaluation_cost_discount?.broker_value;
+        // let masterAffiliateLink = is_admin ? (affiliate_master_link?.is_updated_entry ? affiliate_master_link?.url : (affiliate_master_link?.public_url ?? affiliate_master_link?.url)) : affiliate_master_link?.url;
        
-        console.log("-------Initial matrix data:", initialData);
+       let affiliateLink = is_admin ? (affiliate_link?.public_url ?? affiliate_link?.url) : affiliate_link?.url;
+       let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value) : evaluation_cost_discount?.broker_value;
+       let masterAffiliateLink = is_admin ? (affiliate_master_link?.public_url ?? affiliate_master_link?.url) : affiliate_master_link?.url;
+      
+        //console.log("-------Initial matrix data:", initialData);
+
+       
 
         setInitialMatrixExtraData({
           affiliateLink: affiliate_link,
@@ -164,6 +170,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             });
             console.log("Processed data for placeholder mode:", placeholderData);
             setMatrixData(placeholderData);
+
           } else if (is_admin && type === "challenge") {
             // If admin mode, ensure public_value is populated from value if empty
             const processedData = { ...initialData };
@@ -178,10 +185,10 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   
                   return {
                     ...cell,
-                    //public_value: hasPublicValue ? cell.public_value : cell.value
+                    public_value: hasPublicValue ? cell.public_value : cell.value
                     //public_value: hasPublicValue ? (isNewEntry ? cell.value : cell.public_value) : cell.value
-                    public_value: isNewEntry ? cell.value : (hasPublicValue ? cell.public_value : cell.value),
-                    ...(isNewEntry ? { old_public_value: cell.public_value } : {})
+                    //public_value: isNewEntry ? cell.value : (hasPublicValue ? cell.public_value : cell.value),
+                    //...(isNewEntry ? { old_public_value: cell.public_value } : {})
                   };
                 });
               }
@@ -291,12 +298,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
             })}>
               
-              {!!cell.is_updated_entry && (
-                <span>Public Value: {formatText(cell.old_public_value)}</span>
-              )}
-              {!!!cell.is_updated_entry && (
-                <span>Broker Value: {formatText(cell.value)}</span>
-              )}
+             
+              <span>Broker Value: {formatText(cell.value)}</span>&nbsp;
 
               {formatText(cell.previous_value)?.trim() ? (
                 <span>Previous Value: {formatText(cell.previous_value)}</span>
@@ -491,8 +494,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   "text-red-500 dark:text-red-400": initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                   "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                 })}>
-                   {initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry ? "Public Value: " : "Broker Value: "}
-                   {initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry ? initialMatrixExtraData?.evaluationCostDiscount?.public_value ?? "" : initialMatrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
+                   
+                    &nbsp;Broker Value: {initialMatrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
                     &nbsp;Previous Value: {initialMatrixExtraData?.evaluationCostDiscount?.old_value ?? ""}
                  </div>
                )}
@@ -520,10 +523,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     "text-red-500 dark:text-red-400": initialMatrixExtraData?.affiliateLink?.is_updated_entry,
                     "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.affiliateLink?.is_updated_entry,
                   })}>
-                    {initialMatrixExtraData?.affiliateLink?.is_updated_entry ? "Public Value: " : "Broker Value: "}
-                    {initialMatrixExtraData?.affiliateLink?.is_updated_entry
-                      ? initialMatrixExtraData?.affiliateLink?.public_url ?? ""
-                      : initialMatrixExtraData?.affiliateLink?.url ?? ""}
+                   
+                    &nbsp;Broker Value: {initialMatrixExtraData?.affiliateLink?.url ?? ""}
                      &nbsp;Previous Value: {initialMatrixExtraData?.affiliateLink?.old_url ?? ""}
                   </div>
                 )}
@@ -558,10 +559,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     "text-red-500 dark:text-red-400": initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
                     "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
                   })}>
-                    {initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry ? "Public Value: " : "Broker Value: "}
-                    {initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry
-                      ? initialMatrixExtraData?.masterAffiliateLink?.public_url ?? ""
-                      : initialMatrixExtraData?.masterAffiliateLink?.url ?? ""}
+                    
+                    &nbsp;Broker Value: {initialMatrixExtraData?.masterAffiliateLink?.url ?? ""}
                      &nbsp;Previous Value: {initialMatrixExtraData?.masterAffiliateLink?.old_url ?? ""}
                   </div>
                 )}
