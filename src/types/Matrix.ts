@@ -51,6 +51,7 @@ export interface MatrixCell {
   colHeader: string;
   type: string|undefined;
   selectedRowHeaderSubOptions?: RowHeaderOption[];
+  old_public_value?: MatrixCellValue;
 }
 
 // interface MatrixCell {
