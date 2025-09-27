@@ -53,19 +53,19 @@ export async function getChallengeData(
       if (response.ok) {
         const result = await response.json();
         console.log("API response:", result);
-        if (result.success && result.data && result.data.matrix) {
-            console.log("Initial data loaded:", result.data.matrix);
+        if (result.success && result.data ) {
+          
             return {
-              "initialData": result.data.matrix,
-              "matrix":result.data?.matrix,
-              "is_placeholder": result.data.is_placeholder,
+              "initialData": result.data?.matrix,
+              //"matrix":result.data?.matrix,
+              "is_placeholder": result.data?.is_placeholder,
               "affiliate_master_link": result.data?.affiliate_master_link,
               "affiliate_link": result.data?.affiliate_link,
               "evaluation_cost_discount": result.data?.evaluation_cost_discount,
               "matrix_placeholders_array": result.data?.matrix_placeholders_array,
               "affiliate_master_link_placeholder": result.data?.affiliate_master_link_placeholder,
               "affiliate_link_placeholder": result.data?.affiliate_link_placeholder,
-              "evaluation_cost_discount_placeholder": result.data.evaluation_cost_discount_placeholder
+              "evaluation_cost_discount_placeholder": result.data?.evaluation_cost_discount_placeholder
             };
         } else {
             console.log("No initial data found, will create empty matrix");

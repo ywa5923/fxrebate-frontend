@@ -35,7 +35,7 @@ interface AffiliateLink {
   id?: number;
   url: string;
   public_url: string | null;
-  old_url: string | null;
+  previous_url: string | null;
   is_updated_entry: number; // 1 or 0
   name: string;
   slug: string;
@@ -46,8 +46,8 @@ interface AffiliateLink {
 interface EvaluationCostDiscount {
   id?: number;
   public_value: string;
-  broker_value: string;
-  old_value: string;
+  value: string;
+  previous_value: string;
   is_updated_entry: number; // 1 or 0
   zone_id?: number | null;
   placeholder?: string | null;
@@ -145,7 +145,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           //the admin see only public data, user see only user data
 
        let publicAffiliateLink = affiliate_link?.public_url ?? affiliate_link?.url;
-       let publicEvaluationCostDiscount = evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value;
+       let publicEvaluationCostDiscount = evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.value;
        let publicMasterAffiliateLink = affiliate_master_link?.public_url ?? affiliate_master_link?.url;
       
         setMatrixExtraData({
@@ -159,6 +159,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         
       }else{
          //for user and in placeholder mode, the data is the same as received from the API
+         //TO DO need to remove placeholder?
         setMatrixExtraData({
           affiliateLink: {...affiliate_link,placeholder: affiliate_link_placeholder},
           evaluationCostDiscount: {...evaluation_cost_discount,placeholder: evaluation_cost_discount_placeholder},
@@ -187,7 +188,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   return {
                     ...cell,
                     public_value: publicValue,
-                    placeholder: matrix_placeholders_array[cell.rowHeader+'-'+cell.colHeader]??null
+                    placeholder: matrix_placeholders_array?.[cell.rowHeader+'-'+cell.colHeader]??null
                     //public_value: hasPublicValue ? (isNewEntry ? cell.value : cell.public_value) : cell.value
                     //public_value: isNewEntry ? cell.value : (hasPublicValue ? cell.public_value : cell.value),
                     //...(isNewEntry ? { old_public_value: cell.public_value } : {})
@@ -202,7 +203,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           }
         } else {
           // Create empty matrix structure
-          console.log("No initial data, creating empty matrix structure");
+          console.log("No initial data, creating empty matrix structure",matrix_placeholders_array);
           const newMatrix: MatrixData = {};
           rowHeaders.forEach((r, rIdx) => {
             newMatrix[rIdx] = [];
@@ -210,14 +211,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               newMatrix[rIdx].push({
                 value: {"text": ""},
                 public_value: {"text": ""},
-                placeholder: matrix_placeholders_array[r.slug+'-'+c.slug]??null,
+                ...(type!="placeholder"?{placeholder: matrix_placeholders_array?.[r.slug+'-'+c.slug]??null}:{}),
                 rowHeader: r.slug,
                 colHeader: c.slug,
                 type: c.form_type?.name || "text"
               });
             });
           });
-          console.log("Created matrix in first useEffect:", newMatrix);
+          console.log("8***************************************:",matrix_placeholders_array);
           setMatrixData(newMatrix);
         }
         
@@ -274,7 +275,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     const sourceValue = is_admin ? cell.public_value : cell.value;
     // Handle different value types from API
     let rawValue = "";
-    let placeholderText = (type === "placeholder")?"Enter placeholder value": cell?.placeholder?? "Enter text";
+    let placeholderText = (type === "placeholder") ? "Enter placeholder value" : String(cell?.placeholder ?? "Enter text");
   
     
     if (sourceValue && typeof sourceValue === "object") {
@@ -380,12 +381,12 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         matrix: matrixData,
         ...(type === "challenge" && !isPlaceholder) && {
           'affiliate_link': (is_admin)?matrixExtraData?.affiliateLink?.public_url:matrixExtraData?.affiliateLink?.url,
-          'evaluation_cost_discount': (is_admin)?matrixExtraData?.evaluationCostDiscount?.public_value:matrixExtraData?.evaluationCostDiscount?.broker_value,
+          'evaluation_cost_discount': (is_admin)?matrixExtraData?.evaluationCostDiscount?.public_value:matrixExtraData?.evaluationCostDiscount?.value,
           'affiliate_master_link': (is_admin)?matrixExtraData?.masterAffiliateLink?.public_url:matrixExtraData?.masterAffiliateLink?.url,
         },
         ...(type === "placeholder") && {
           'affiliate_link': matrixExtraData?.affiliateLink?.url,
-          'evaluation_cost_discount': matrixExtraData?.evaluationCostDiscount?.broker_value,
+          'evaluation_cost_discount': matrixExtraData?.evaluationCostDiscount?.value,
           'affiliate_master_link': matrixExtraData?.masterAffiliateLink?.url,
         }
       };
@@ -510,15 +511,16 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <div className="flex items-center gap-2">
-                  <Input
-                    value={ is_admin ? matrixExtraData?.evaluationCostDiscount?.public_value ?? "" : matrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
+                  {/*If is_admin=true and if publi_value is empty,then the value is copy in public value when the matrix extradata is set at the begining*/}
+                    <Input
+                     value={ is_admin ? (matrixExtraData?.evaluationCostDiscount?.public_value ?? "") : (matrixExtraData?.evaluationCostDiscount?.value ?? "")}
                     placeholder={matrixExtraData?.evaluationCostDiscount?.placeholder ?? "Enter evaluation cost discount"}      
                     onChange={(e) =>
                       setMatrixExtraData((prev:any) => ({
                         ...prev,
                         evaluationCostDiscount: {
                           ...prev.evaluationCostDiscount,
-                          [(is_admin && type === "challenge") ? "public_value" : "broker_value"]: e.target.value
+                          [(is_admin && type === "challenge") ? "public_value" : "value"]: e.target.value
 
                         },
                       }))
@@ -528,14 +530,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   />
                   {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
                   {is_admin && type === "challenge" && !!matrixExtraData?.evaluationCostDiscount?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
-                   matrixExtraData?.evaluationCostDiscount?.broker_value && setMatrixExtraData((prev:any) => ({
+                   matrixExtraData?.evaluationCostDiscount?.value && setMatrixExtraData((prev:any) => ({
                      ...prev,
                      evaluationCostDiscount: {
                        ...prev.evaluationCostDiscount,
-                       public_value: prev.evaluationCostDiscount.broker_value
+                       public_value: prev.evaluationCostDiscount.value
                      },
                    }));
-                   matrixExtraData?.evaluationCostDiscount?.broker_value && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                   matrixExtraData?.evaluationCostDiscount?.value && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
                    
                  }} className="p-2">
                    <FiCopy className="w-4 h-4" />
@@ -547,8 +549,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                 })}>
                    
-                    &nbsp;Broker Value: {matrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
-                    &nbsp;Previous Value: {matrixExtraData?.evaluationCostDiscount?.old_value ?? ""}
+                    &nbsp;Broker Value: {matrixExtraData?.evaluationCostDiscount?.value ?? ""}
+                    &nbsp;Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}
                  </div>
                )}
               </div>
@@ -599,7 +601,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   })}>
                    
                     &nbsp;Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {matrixExtraData?.affiliateLink?.old_url ?? ""}
+                     &nbsp;Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}
                   </div>
                 )}
               </div>
@@ -656,7 +658,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   })}>
                      
                      &nbsp;Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {matrixExtraData?.masterAffiliateLink?.old_url ?? ""}
+                     &nbsp;Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}
                   </div>
                 )}
               </div>
