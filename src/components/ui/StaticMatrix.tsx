@@ -304,8 +304,13 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             placeholder={placeholderText}
             className={cn("flex-1 h-full min-h-[2.5rem]", !is_admin && showError && "border-red-500")}
           />
-          {is_admin && !isPlaceholder && (
-            <Button variant="outline" size="sm" onClick={() => CopyValueToPublicValue(rowIndex, colIndex, "text")} className="p-2">
+          {/*If is_admin=true show button to copy cell's value to public value*/}
+          {is_admin && !isPlaceholder && !!cell.is_updated_entry && (
+            <Button variant="outline" size="sm" onClick={(e) => {
+              cell.value?.text && CopyValueToPublicValue(rowIndex, colIndex, "text");
+              cell.value?.text && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+              
+            }} className="p-2">
               <FiCopy className="w-4 h-4" />
             </Button>
           )}
@@ -521,14 +526,17 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   
                     className="flex-1"
                   />
-                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
-                   setMatrixExtraData((prev:any) => ({
+                  {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
+                  {is_admin && type === "challenge" && !!matrixExtraData?.evaluationCostDiscount?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
+                   matrixExtraData?.evaluationCostDiscount?.broker_value && setMatrixExtraData((prev:any) => ({
                      ...prev,
                      evaluationCostDiscount: {
                        ...prev.evaluationCostDiscount,
                        public_value: prev.evaluationCostDiscount.broker_value
                      },
-                   }))
+                   }));
+                   matrixExtraData?.evaluationCostDiscount?.broker_value && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                   
                  }} className="p-2">
                    <FiCopy className="w-4 h-4" />
                  </Button>}
@@ -567,14 +575,19 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   
                     className="flex-1"
                   />
-                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
-                   setMatrixExtraData((prev:any) => ({
+
+                   {/*If admin show button to copy affiliate link's url to public url*/}
+                  {is_admin && type === "challenge" && !!matrixExtraData?.affiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
+                  
+                  matrixExtraData?.affiliateLink.url && setMatrixExtraData((prev:any) => ({
                      ...prev,
                      affiliateLink: {
                        ...prev.affiliateLink,
                        public_url: prev.affiliateLink.url
                      },
-                   }))
+                   }));
+                   matrixExtraData?.affiliateLink.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                  
                  }} className="p-2">
                    <FiCopy className="w-4 h-4" />
                  </Button>}
@@ -620,14 +633,17 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                  
                     className="flex-1"
                   />
-                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
-                   setMatrixExtraData((prev:any) => ({
+                  {/*If admin show button to copy master affiliate link's url to public url*/}
+                  {is_admin && type === "challenge" && !!matrixExtraData?.masterAffiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
+                   matrixExtraData?.masterAffiliateLink?.url && setMatrixExtraData((prev:any) => ({
                      ...prev,
                      masterAffiliateLink: {
                        ...prev.masterAffiliateLink,
                        public_url: prev.masterAffiliateLink.url
                      },
-                   }))
+                   }));
+                   matrixExtraData?.masterAffiliateLink?.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                  
                  }} className="p-2">
                    <FiCopy className="w-4 h-4" />
                  </Button>}
