@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getChallengeHeaders } from "@/lib/challenge-requests";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { FiCopy } from "react-icons/fi";
 import { ColumnHeader, RowHeader, MatrixCellValue, MatrixCell, MatrixData } from "@/types/Matrix";
 import { BASE_URL } from "@/constants";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ interface AffiliateLink {
   name: string;
   slug: string;
   zone_id?: number | null;
+  placeholder?: string | null;
 }
 
 interface EvaluationCostDiscount {
@@ -48,6 +50,7 @@ interface EvaluationCostDiscount {
   old_value: string;
   is_updated_entry: number; // 1 or 0
   zone_id?: number | null;
+  placeholder?: string | null;
 }
 
 export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
@@ -58,8 +61,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
-  const [initialMatrixExtraData, setInitialMatrixExtraData] = useState<MatrixExtraData|null>(null);
-  const [matrixExtraData, setMatrixExtraData] = useState<any|null>(null);
+  const [matrixExtraData, setMatrixExtraData] = useState<MatrixExtraData|null>(null);
+
 
   const formatText = (value: any): string => {
     if (value == null) return "";
@@ -115,7 +118,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         // Fetch initial data
         //if the matrix is use to save placeholders data,the amountId will be null because placeholders differs only by step
         const amountIdParam: string | null = type === "challenge" ? amountId.toString()  : null;
-       let {initialData, is_placeholder, affiliate_master_link, affiliate_link, evaluation_cost_discount} = await getChallengeData(
+       let {initialData,
+        affiliate_master_link, 
+        affiliate_link, 
+        evaluation_cost_discount,
+        matrix_placeholders_array,
+        affiliate_master_link_placeholder,
+        affiliate_link_placeholder,
+        evaluation_cost_discount_placeholder} = await getChallengeData(
           brokerId.toString(),
           type === "placeholder" ? "1" : "0", 
           categoryId.toString(), 
@@ -125,53 +135,41 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           zoneId ? zoneId.toString() : null);
         
         // Set the placeholder state
-        setIsPlaceholder(is_placeholder || false);
+        setIsPlaceholder(type === "placeholder" || false);
 
-        // let affiliateLink = is_admin ? (affiliate_link?.is_updated_entry ? affiliate_link?.url : (affiliate_link?.public_url ?? affiliate_link?.url)) : affiliate_link?.url;
-        // let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.is_updated_entry ? evaluation_cost_discount?.broker_value : (evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value)) : evaluation_cost_discount?.broker_value;
-        // let masterAffiliateLink = is_admin ? (affiliate_master_link?.is_updated_entry ? affiliate_master_link?.url : (affiliate_master_link?.public_url ?? affiliate_master_link?.url)) : affiliate_master_link?.url;
        
-       let affiliateLink = is_admin ? (affiliate_link?.public_url ?? affiliate_link?.url) : affiliate_link?.url;
-       let evaluationCostDiscount = is_admin ? (evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value) : evaluation_cost_discount?.broker_value;
-       let masterAffiliateLink = is_admin ? (affiliate_master_link?.public_url ?? affiliate_master_link?.url) : affiliate_master_link?.url;
+        if(is_admin && type === "challenge"){
+
+          //if is admin and type is challenge and not placeholder, then:
+          //if public data is empty, then  user data is transferred to public data
+          //the admin see only public data, user see only user data
+
+       let publicAffiliateLink = affiliate_link?.public_url ?? affiliate_link?.url;
+       let publicEvaluationCostDiscount = evaluation_cost_discount?.public_value ?? evaluation_cost_discount?.broker_value;
+       let publicMasterAffiliateLink = affiliate_master_link?.public_url ?? affiliate_master_link?.url;
       
-        //console.log("-------Initial matrix data:", initialData);
-
-       
-
-        setInitialMatrixExtraData({
-          affiliateLink: affiliate_link,
-          evaluationCostDiscount: evaluation_cost_discount,
-          masterAffiliateLink: affiliate_master_link,
-        });
-
         setMatrixExtraData({
-          affiliateLink: affiliateLink,
-          evaluationCostDiscount: evaluationCostDiscount,
-          masterAffiliateLink: masterAffiliateLink,
+          affiliateLink: {...affiliate_link,public_url: publicAffiliateLink,placeholder: affiliate_link_placeholder},
+          evaluationCostDiscount: {...evaluation_cost_discount,public_value: publicEvaluationCostDiscount,placeholder: evaluation_cost_discount_placeholder},
+          masterAffiliateLink: {...affiliate_master_link,public_url: publicMasterAffiliateLink,placeholder: affiliate_master_link_placeholder},
         });
 
-       
-        if (initialData && Object.keys(initialData).length > 0) {
-          // If placeholder mode, preserve original values but clear display values
-          if (is_placeholder && type === "challenge") {
-            const placeholderData = { ...initialData };
-            Object.keys(placeholderData).forEach(rowKey => {
-              if (placeholderData[rowKey]) {
-                placeholderData[rowKey] = placeholderData[rowKey].map((cell: any) => ({
-                  ...cell,
-                  // Keep original value for placeholder display, but clear the display value
-                  value: { text: "" }, // Clear so it shows as placeholder
-                  public_value: { text: "" }, // Clear public_value too
-                  // Store original value in a separate field for placeholder
-                  originalValue: cell.value
-                }));
-              }
-            });
-            console.log("Processed data for placeholder mode:", placeholderData);
-            setMatrixData(placeholderData);
+        
 
-          } else if (is_admin && type === "challenge") {
+        
+      }else{
+         //for user and in placeholder mode, the data is the same as received from the API
+        setMatrixExtraData({
+          affiliateLink: {...affiliate_link,placeholder: affiliate_link_placeholder},
+          evaluationCostDiscount: {...evaluation_cost_discount,placeholder: evaluation_cost_discount_placeholder},
+          masterAffiliateLink: {...affiliate_master_link,placeholder: affiliate_master_link_placeholder},
+        });
+      }
+
+      
+        if (initialData && Object.keys(initialData).length > 0) {
+          
+           if ( type === "challenge") {
             // If admin mode, ensure public_value is populated from value if empty
             const processedData = { ...initialData };
             Object.keys(processedData).forEach(rowKey => {
@@ -183,9 +181,13 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     Object.keys(cell.public_value).length > 0 && 
                     Object.values(cell.public_value).some(val => val !== null && val !== undefined && val !== "");
                   
+                    let publicValue = is_admin ? (hasPublicValue ? cell.public_value : cell.value) : cell.public_value;
+
+                   // console.log("------------plaxeholder:", matrix_placeholders_array[cell.rowHeader+'-'+cell.colHeader]);
                   return {
                     ...cell,
-                    public_value: hasPublicValue ? cell.public_value : cell.value
+                    public_value: publicValue,
+                    placeholder: matrix_placeholders_array[cell.rowHeader+'-'+cell.colHeader]??null
                     //public_value: hasPublicValue ? (isNewEntry ? cell.value : cell.public_value) : cell.value
                     //public_value: isNewEntry ? cell.value : (hasPublicValue ? cell.public_value : cell.value),
                     //...(isNewEntry ? { old_public_value: cell.public_value } : {})
@@ -193,7 +195,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 });
               }
             });
-            console.log("Processed data for admin:", processedData);
+            console.log("------------Processed data for admin:", processedData);
             setMatrixData(processedData);
           } else {
             setMatrixData(initialData);
@@ -208,6 +210,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               newMatrix[rIdx].push({
                 value: {"text": ""},
                 public_value: {"text": ""},
+                placeholder: matrix_placeholders_array[r.slug+'-'+c.slug]??null,
                 rowHeader: r.slug,
                 colHeader: c.slug,
                 type: c.form_type?.name || "text"
@@ -229,9 +232,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     loadHeadersAndData();
   }, [language,  categoryId, stepId, amountId, zoneId]);
 
-  useEffect(() => {
-    console.log("Matrix extra data:", matrixExtraData);
-  }, [matrixExtraData]);
+
 
   const updateCellValue = (rowIndex: number, colIndex: number, fieldName: string, value: any) => {
     setMatrixData(prev => {
@@ -240,7 +241,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       const row = [...(next[rowIndex] || [])];
       const cell = { ...(row[colIndex] || {}) } as MatrixCell;
       
-      if (is_admin) {
+      if (is_admin && type === "challenge" && !isPlaceholder) {
         // In admin mode, update public_value
         cell.public_value = { ...(cell.public_value || {}), [fieldName]: value };
       } else {
@@ -254,13 +255,27 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     });
   };
 
+  const CopyValueToPublicValue = (rowIndex: number, colIndex: number, fieldName: string) => {
+    setMatrixData((prev)=>{
+      const next: MatrixData = { ...prev };
+      const row = [...(next[rowIndex] || [])];
+      const cell = { ...(row[colIndex] || {}) } as MatrixCell;
+      cell.public_value = { ...(cell.public_value || {}), [fieldName]: cell.value[fieldName] };
+      row[colIndex] = cell;
+      next[rowIndex] = row;
+      return next;
+    });
+  
+  }
+
   const renderFormField = (cell: MatrixCell, rowIndex: number, colIndex: number, isPlaceholder: boolean, showError: boolean) => {
     // In admin mode, use public_value for input, otherwise use value
     //const sourceValue = is_admin ? (cell.is_updated_entry ? cell.value : cell.public_value) : cell.value;
     const sourceValue = is_admin ? cell.public_value : cell.value;
     // Handle different value types from API
     let rawValue = "";
-    let placeholderText = "Enter text";
+    let placeholderText = (type === "placeholder")?"Enter placeholder value": cell?.placeholder?? "Enter text";
+  
     
     if (sourceValue && typeof sourceValue === "object") {
       if ("text" in sourceValue) {
@@ -272,22 +287,29 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     }
     
     // If is_placeholder=true and type="challenge", use originalValue as placeholder
-    if (isPlaceholder && type === "challenge" && (cell as any).originalValue && typeof (cell as any).originalValue === "object" && "text" in (cell as any).originalValue) {
-      placeholderText = String((cell as any).originalValue.text || "Enter text");
-      // Don't clear rawValue here - let the user type normally
-      // rawValue = ""; // This was causing the issue!
-    }
+    // if (isPlaceholder && type === "challenge" && (cell as any).originalValue && typeof (cell as any).originalValue === "object" && "text" in (cell as any).originalValue) {
+    //   placeholderText = String((cell as any).originalValue.text || "Enter text");
+    //   // Don't clear rawValue here - let the user type normally
+    //   // rawValue = ""; // This was causing the issue!
+    // }
     
     const asString = (v: unknown) => (v === undefined || v === null ? "" : String(v));
 
     return (
       <div className="space-y-1 w-full h-full flex flex-col">
-        <Input
-          value={asString(rawValue)}
-          onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
-          placeholder={placeholderText}
-          className={cn("w-full h-full min-h-[2.5rem] flex-1", !is_admin && showError && "border-red-500")}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            value={asString(rawValue)}
+            onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
+            placeholder={placeholderText}
+            className={cn("flex-1 h-full min-h-[2.5rem]", !is_admin && showError && "border-red-500")}
+          />
+          {is_admin && !isPlaceholder && (
+            <Button variant="outline" size="sm" onClick={() => CopyValueToPublicValue(rowIndex, colIndex, "text")} className="p-2">
+              <FiCopy className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
         {!is_admin && showError && (
           <div className="text-xs text-red-600 dark:text-red-400 min-h-[1rem]">This field is required</div>
         )}
@@ -351,10 +373,15 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           amount_id: amountId,
         } : {},
         matrix: matrixData,
-        ...(type === "challenge") && {
-          'affiliate_link': matrixExtraData?.affiliateLink,
-          'evaluation_cost_discount': matrixExtraData?.evaluationCostDiscount,
-          'affiliate_master_link': matrixExtraData?.masterAffiliateLink,
+        ...(type === "challenge" && !isPlaceholder) && {
+          'affiliate_link': (is_admin)?matrixExtraData?.affiliateLink?.public_url:matrixExtraData?.affiliateLink?.url,
+          'evaluation_cost_discount': (is_admin)?matrixExtraData?.evaluationCostDiscount?.public_value:matrixExtraData?.evaluationCostDiscount?.broker_value,
+          'affiliate_master_link': (is_admin)?matrixExtraData?.masterAffiliateLink?.public_url:matrixExtraData?.masterAffiliateLink?.url,
+        },
+        ...(type === "placeholder") && {
+          'affiliate_link': matrixExtraData?.affiliateLink?.url,
+          'evaluation_cost_discount': matrixExtraData?.evaluationCostDiscount?.broker_value,
+          'affiliate_master_link': matrixExtraData?.masterAffiliateLink?.url,
         }
       };
       console.log("Saving payload:", payload);
@@ -471,32 +498,49 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               ))
             )}
             {/* Affiliate link row (separate from matrix data) */}
-           {type === "challenge" && <div className="contents">
+           {(type === "challenge" || type === "placeholder" )&& <div className="contents">
               <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
               <div
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <Input
-                  value={matrixExtraData?.evaluationCostDiscount ?? ""}
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={ is_admin ? matrixExtraData?.evaluationCostDiscount?.public_value ?? "" : matrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
+                    placeholder={matrixExtraData?.evaluationCostDiscount?.placeholder ?? "Enter evaluation cost discount"}      
+                    onChange={(e) =>
+                      setMatrixExtraData((prev:any) => ({
+                        ...prev,
+                        evaluationCostDiscount: {
+                          ...prev.evaluationCostDiscount,
+                          [(is_admin && type === "challenge") ? "public_value" : "broker_value"]: e.target.value
+
+                        },
+                      }))
+                    }
                   
-                  onChange={(e) =>
-                    setMatrixExtraData((prev:any) => ({
-                      ...prev,
-                      evaluationCostDiscount: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter evaluation cost discount"
-                  className="w-full"
-                />
+                    className="flex-1"
+                  />
+                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
+                   setMatrixExtraData((prev:any) => ({
+                     ...prev,
+                     evaluationCostDiscount: {
+                       ...prev.evaluationCostDiscount,
+                       public_value: prev.evaluationCostDiscount.broker_value
+                     },
+                   }))
+                 }} className="p-2">
+                   <FiCopy className="w-4 h-4" />
+                 </Button>}
+                </div>
                {is_admin && (
                  <div className={cn("text-xs", {
-                  "text-red-500 dark:text-red-400": initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
-                  "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                  "text-red-500 dark:text-red-400": matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                  "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                 })}>
                    
-                    &nbsp;Broker Value: {initialMatrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
-                    &nbsp;Previous Value: {initialMatrixExtraData?.evaluationCostDiscount?.old_value ?? ""}
+                    &nbsp;Broker Value: {matrixExtraData?.evaluationCostDiscount?.broker_value ?? ""}
+                    &nbsp;Previous Value: {matrixExtraData?.evaluationCostDiscount?.old_value ?? ""}
                  </div>
                )}
               </div>
@@ -506,26 +550,43 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <Input
-                  value={matrixExtraData?.affiliateLink ?? ""}
-                  onChange={(e) =>
-                    setMatrixExtraData((prev:any) => ({
-                      ...prev,
-                      affiliateLink: e.target.value,
-                    }))
-                  }
-                        
-                  placeholder="Enter affiliate link"
-                  className="w-full"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={ is_admin ? matrixExtraData?.affiliateLink?.public_url ?? "" : matrixExtraData?.affiliateLink?.url ?? ""}
+                    placeholder={matrixExtraData?.affiliateLink?.placeholder ?? "Enter affiliate link"}
+                    onChange={(e) =>
+                      setMatrixExtraData((prev:any) => ({
+                        ...prev,
+                        affiliateLink: {
+                          ...prev.affiliateLink,
+                          [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                        },
+                      }))
+                    }
+                          
+                  
+                    className="flex-1"
+                  />
+                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
+                   setMatrixExtraData((prev:any) => ({
+                     ...prev,
+                     affiliateLink: {
+                       ...prev.affiliateLink,
+                       public_url: prev.affiliateLink.url
+                     },
+                   }))
+                 }} className="p-2">
+                   <FiCopy className="w-4 h-4" />
+                 </Button>}
+                </div>
                 {is_admin && (
                   <div className={cn("text-xs mt-1", {
-                    "text-red-500 dark:text-red-400": initialMatrixExtraData?.affiliateLink?.is_updated_entry,
-                    "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.affiliateLink?.is_updated_entry,
+                    "text-red-500 dark:text-red-400": matrixExtraData?.affiliateLink?.is_updated_entry,
+                    "text-gray-500 dark:text-gray-400": !matrixExtraData?.affiliateLink?.is_updated_entry,
                   })}>
                    
-                    &nbsp;Broker Value: {initialMatrixExtraData?.affiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {initialMatrixExtraData?.affiliateLink?.old_url ?? ""}
+                    &nbsp;Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}
+                     &nbsp;Previous Value: {matrixExtraData?.affiliateLink?.old_url ?? ""}
                   </div>
                 )}
               </div>
@@ -542,26 +603,44 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <Input
-                  value={ matrixExtraData?.masterAffiliateLink ?? ""}
-                  onChange={(e) =>
-                    setMatrixExtraData((prev:any) => ({
-                      ...prev,
-                      masterAffiliateLink: e.target.value,
-                    }))
-                  }
-                  
-                  placeholder="Enter affiliate link"
-                  className="w-full"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={ is_admin ? matrixExtraData?.masterAffiliateLink?.public_url ?? "" : matrixExtraData?.masterAffiliateLink?.url ?? ""}
+                    placeholder={matrixExtraData?.masterAffiliateLink?.placeholder ?? "Enter affiliate link"}
+                    onChange={(e) =>
+                      setMatrixExtraData((prev:any) => ({
+                        ...prev,
+                        masterAffiliateLink: {
+                          ...prev.masterAffiliateLink,
+                          [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                        },
+                      }))
+                    }
+                    
+                 
+                    className="flex-1"
+                  />
+                  {is_admin && type === "challenge" && !isPlaceholder && <Button variant="outline" size="sm" onClick={() => {
+                   setMatrixExtraData((prev:any) => ({
+                     ...prev,
+                     masterAffiliateLink: {
+                       ...prev.masterAffiliateLink,
+                       public_url: prev.masterAffiliateLink.url
+                     },
+                   }))
+                 }} className="p-2">
+                   <FiCopy className="w-4 h-4" />
+                 </Button>}
+                </div>
+                
                 {is_admin && (
                   <div className={cn("text-xs mt-1", {
-                    "text-red-500 dark:text-red-400": initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
-                    "text-gray-500 dark:text-gray-400": !initialMatrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                    "text-red-500 dark:text-red-400": matrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                    "text-gray-500 dark:text-gray-400": !matrixExtraData?.masterAffiliateLink?.is_updated_entry,
                   })}>
-                    
-                    &nbsp;Broker Value: {initialMatrixExtraData?.masterAffiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {initialMatrixExtraData?.masterAffiliateLink?.old_url ?? ""}
+                     
+                     &nbsp;Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}
+                     &nbsp;Previous Value: {matrixExtraData?.masterAffiliateLink?.old_url ?? ""}
                   </div>
                 )}
               </div>
