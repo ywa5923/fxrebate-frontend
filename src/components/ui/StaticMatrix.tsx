@@ -303,7 +303,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             value={asString(rawValue)}
             onChange={(e) => updateCellValue(rowIndex, colIndex, "text", e.target.value)}
             placeholder={placeholderText}
-            className={cn("flex-1 h-full min-h-[2.5rem]", !is_admin && showError && "border-red-500")}
+            className={cn("flex-1 h-full min-h-[2.5rem] min-w-0", !is_admin && showError && "border-red-500")}
           />
           {/*If is_admin=true show button to copy cell's value to public value*/}
           {is_admin && !isPlaceholder && !!cell.is_updated_entry && (
@@ -311,7 +311,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               cell.value?.text && CopyValueToPublicValue(rowIndex, colIndex, "text");
               cell.value?.text && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
               
-            }} className="p-2">
+            }} className="p-2 flex-shrink-0">
               <FiCopy className="w-4 h-4" />
             </Button>
           )}
@@ -320,18 +320,15 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           <div className="text-xs text-red-600 dark:text-red-400 min-h-[1rem]">This field is required</div>
         )}
         {is_admin && !isPlaceholder && (
-          <div className="flex flex-row gap-1 items-center">
-            <div className={cn("text-xs min-h-[1rem] flex-shrink-0 flex items-center gap-2", {
+          <div className="space-y-1">
+            <div className={cn("text-xs min-h-[1rem]", {
               "text-red-500 dark:text-red-400": cell.is_updated_entry,
               "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
             })}>
-              
-             
-              <span>Broker Value: {formatText(cell.value)}</span>&nbsp;
-
+              <div>Broker Value: {formatText(cell.value)}</div>
               {formatText(cell.previous_value)?.trim() ? (
-                <span>Previous Value: {formatText(cell.previous_value)}</span>
-              ) : <span>&nbsp;</span>}
+                <div>Previous Value: {formatText(cell.previous_value)}</div>
+              ) : null}
             </div>
           </div>
         )}
@@ -510,8 +507,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <div className="flex items-center gap-2">
-                  {/*If is_admin=true and if publi_value is empty,then the value is copy in public value when the matrix extradata is set at the begining*/}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    {/*If is_admin=true and if publi_value is empty,then the value is copy in public value when the matrix extradata is set at the begining*/}
                     <Input
                      value={ is_admin ? (matrixExtraData?.evaluationCostDiscount?.public_value ?? "") : (matrixExtraData?.evaluationCostDiscount?.value ?? "")}
                     placeholder={matrixExtraData?.evaluationCostDiscount?.placeholder ?? "Enter evaluation cost discount"}      
@@ -525,8 +523,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                         },
                       }))
                     }
-                  
-                    className="flex-1"
+                      
+                    className="flex-1 min-w-0"
                   />
                   {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
                   {is_admin && type === "challenge" && !!matrixExtraData?.evaluationCostDiscount?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
@@ -539,20 +537,20 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                    }));
                    matrixExtraData?.evaluationCostDiscount?.value && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
                    
-                 }} className="p-2">
+                 }} className="p-2 flex-shrink-0">
                    <FiCopy className="w-4 h-4" />
                  </Button>}
+                  </div>
+                 {is_admin && (
+                   <div className={cn("text-xs space-y-1", {
+                    "text-red-500 dark:text-red-400": matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                    "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
+                  })}>
+                     <div>Broker Value: {matrixExtraData?.evaluationCostDiscount?.value ?? ""}</div>
+                     <div>Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}</div>
+                   </div>
+                 )}
                 </div>
-               {is_admin && (
-                 <div className={cn("text-xs", {
-                  "text-red-500 dark:text-red-400": matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
-                  "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
-                })}>
-                   
-                    &nbsp;Broker Value: {matrixExtraData?.evaluationCostDiscount?.value ?? ""}
-                    &nbsp;Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}
-                 </div>
-               )}
               </div>
               
               <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Affiliate Link</div>
@@ -560,50 +558,49 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={ is_admin ? matrixExtraData?.affiliateLink?.public_url ?? "" : matrixExtraData?.affiliateLink?.url ?? ""}
-                    placeholder={matrixExtraData?.affiliateLink?.placeholder ?? "Enter affiliate link"}
-                    onChange={(e) =>
-                      setMatrixExtraData((prev:any) => ({
-                        ...prev,
-                        affiliateLink: {
-                          ...prev.affiliateLink,
-                          [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
-                        },
-                      }))
-                    }
-                          
-                  
-                    className="flex-1"
-                  />
-
-                   {/*If admin show button to copy affiliate link's url to public url*/}
-                  {is_admin && type === "challenge" && !!matrixExtraData?.affiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
-                  
-                  matrixExtraData?.affiliateLink.url && setMatrixExtraData((prev:any) => ({
-                     ...prev,
-                     affiliateLink: {
-                       ...prev.affiliateLink,
-                       public_url: prev.affiliateLink.url
-                     },
-                   }));
-                   matrixExtraData?.affiliateLink.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-                  
-                 }} className="p-2">
-                   <FiCopy className="w-4 h-4" />
-                 </Button>}
-                </div>
-                {is_admin && (
-                  <div className={cn("text-xs mt-1", {
-                    "text-red-500 dark:text-red-400": matrixExtraData?.affiliateLink?.is_updated_entry,
-                    "text-gray-500 dark:text-gray-400": !matrixExtraData?.affiliateLink?.is_updated_entry,
-                  })}>
-                   
-                    &nbsp;Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={ is_admin ? matrixExtraData?.affiliateLink?.public_url ?? "" : matrixExtraData?.affiliateLink?.url ?? ""}
+                      placeholder={matrixExtraData?.affiliateLink?.placeholder ?? "Enter affiliate link"}
+                      onChange={(e) =>
+                        setMatrixExtraData((prev:any) => ({
+                          ...prev,
+                          affiliateLink: {
+                            ...prev.affiliateLink,
+                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                          },
+                        }))
+                      }
+                      className="flex-1 min-w-0"
+                    />
+   
+                      {/*If admin show button to copy affiliate link's url to public url*/}
+                    {is_admin && type === "challenge" && !!matrixExtraData?.affiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
+                     
+                     matrixExtraData?.affiliateLink.url && setMatrixExtraData((prev:any) => ({
+                       ...prev,
+                       affiliateLink: {
+                         ...prev.affiliateLink,
+                         public_url: prev.affiliateLink.url
+                       },
+                     }));
+                     matrixExtraData?.affiliateLink.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                     
+                   }} className="p-2 flex-shrink-0">
+                     <FiCopy className="w-4 h-4" />
+                   </Button>}
                   </div>
-                )}
+                  {is_admin && (
+                    <div className={cn("text-xs space-y-1", {
+                      "text-red-500 dark:text-red-400": matrixExtraData?.affiliateLink?.is_updated_entry,
+                      "text-gray-500 dark:text-gray-400": !matrixExtraData?.affiliateLink?.is_updated_entry,
+                    })}>
+                       <div>Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}</div>
+                       <div>Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}</div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center gap-2">
                 <span>Master Affiliate Link</span>
@@ -618,49 +615,48 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 className="p-2 border min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={ is_admin ? matrixExtraData?.masterAffiliateLink?.public_url ?? "" : matrixExtraData?.masterAffiliateLink?.url ?? ""}
-                    placeholder={matrixExtraData?.masterAffiliateLink?.placeholder ?? "Enter affiliate link"}
-                    onChange={(e) =>
-                      setMatrixExtraData((prev:any) => ({
-                        ...prev,
-                        masterAffiliateLink: {
-                          ...prev.masterAffiliateLink,
-                          [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
-                        },
-                      }))
-                    }
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={ is_admin ? matrixExtraData?.masterAffiliateLink?.public_url ?? "" : matrixExtraData?.masterAffiliateLink?.url ?? ""}
+                      placeholder={matrixExtraData?.masterAffiliateLink?.placeholder ?? "Enter affiliate link"}
+                      onChange={(e) =>
+                        setMatrixExtraData((prev:any) => ({
+                          ...prev,
+                          masterAffiliateLink: {
+                            ...prev.masterAffiliateLink,
+                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                          },
+                        }))
+                      }
+                      className="flex-1 min-w-0"
+                    />
+                    {/*If admin show button to copy master affiliate link's url to public url*/}
+                    {is_admin && type === "challenge" && !!matrixExtraData?.masterAffiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
+                     matrixExtraData?.masterAffiliateLink?.url && setMatrixExtraData((prev:any) => ({
+                       ...prev,
+                       masterAffiliateLink: {
+                         ...prev.masterAffiliateLink,
+                         public_url: prev.masterAffiliateLink.url
+                       },
+                     }));
+                     matrixExtraData?.masterAffiliateLink?.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
                     
-                 
-                    className="flex-1"
-                  />
-                  {/*If admin show button to copy master affiliate link's url to public url*/}
-                  {is_admin && type === "challenge" && !!matrixExtraData?.masterAffiliateLink?.is_updated_entry && <Button variant="outline" size="sm" onClick={(e) => {
-                   matrixExtraData?.masterAffiliateLink?.url && setMatrixExtraData((prev:any) => ({
-                     ...prev,
-                     masterAffiliateLink: {
-                       ...prev.masterAffiliateLink,
-                       public_url: prev.masterAffiliateLink.url
-                     },
-                   }));
-                   matrixExtraData?.masterAffiliateLink?.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-                  
-                 }} className="p-2">
-                   <FiCopy className="w-4 h-4" />
-                 </Button>}
-                </div>
-                
-                {is_admin && (
-                  <div className={cn("text-xs mt-1", {
-                    "text-red-500 dark:text-red-400": matrixExtraData?.masterAffiliateLink?.is_updated_entry,
-                    "text-gray-500 dark:text-gray-400": !matrixExtraData?.masterAffiliateLink?.is_updated_entry,
-                  })}>
-                     
-                     &nbsp;Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}
-                     &nbsp;Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}
+                   }} className="p-2 flex-shrink-0">
+                     <FiCopy className="w-4 h-4" />
+                   </Button>}
                   </div>
-                )}
+                  
+                  {is_admin && (
+                    <div className={cn("text-xs space-y-1", {
+                      "text-red-500 dark:text-red-400": matrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                      "text-gray-500 dark:text-gray-400": !matrixExtraData?.masterAffiliateLink?.is_updated_entry,
+                    })}>
+                       <div>Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}</div>
+                       <div>Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>}
             </div>
