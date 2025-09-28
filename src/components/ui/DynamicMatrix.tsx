@@ -535,48 +535,17 @@ export function DynamicMatrix({
                                   cell.public_value?.[item.name] || "";
                                 let broker_value =
                                   cell.value?.[item.name] || "";
-                                //let previous_value = cell.previous_value?.[item.name] || "";
-                                let previous_value = JSON.stringify(
-                                  cell.previous_value
-                                );
+                                let previous_value = cell.previous_value?.[item.name] || "";
+                                // let previous_value = JSON.stringify(
+                                //   cell.previous_value
+                                // );
                                 let value = is_admin
                                   ? public_value
                                   : broker_value;
 
                                 return (
                                   <React.Fragment key={item.name}>
-                                    {is_admin && (
-                                      <div className="flex flex-row gap-1 items-center">
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <div
-                                              className={cn(
-                                                "text-xs min-h-[1rem] flex-shrink-0 cursor-help",
-                                                {
-                                                  "text-red-500 dark:text-red-400": isUpdatedCell,
-                                                  "text-gray-500 dark:text-gray-400": !isUpdatedCell,
-                                                }
-                                              )}
-                                            >
-                                              Broker value
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <div className="space-y-1">
-                                              <div>
-                                                <strong>Previous value:</strong>{" "}
-                                                {previous_value}
-                                              </div>
-
-                                              <div>
-                                                <strong>Broker value:</strong>{" "}
-                                                {broker_value}
-                                              </div>
-                                            </div>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </div>
-                                    )}
+                                    
 
                                     {item.type === "number" && (
                                       <div className="w-full">
@@ -686,6 +655,22 @@ export function DynamicMatrix({
                                             hasError ? "border-red-500" : ""
                                           }`}
                                         />
+                                      </div>
+                                    )}
+                                    {is_admin && (
+                                      <div className="flex flex-row gap-1 items-center">
+                                        <div
+                                          className={cn(
+                                            "text-xs min-h-[1rem] flex-shrink-0",
+                                            {
+                                              "text-red-500 dark:text-red-400": isUpdatedCell,
+                                              "text-gray-500 dark:text-gray-400": !isUpdatedCell,
+                                            }
+                                          )}
+                                        >
+                                          <div>Broker Value: {broker_value}</div>
+                                          <div>Previous Value: {previous_value}</div>
+                                        </div>
                                       </div>
                                     )}
                                   </React.Fragment>
