@@ -156,7 +156,7 @@ export default function Companies({ broker_id, companies, options, is_admin = fa
                   action={submitBrokerProfile}
                   is_admin={is_admin}
                   entity_id={company.id}
-                  entity_type="Company"
+                  entity_type="company"
                 />  
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">

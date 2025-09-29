@@ -33,12 +33,14 @@ export default function AccountLinks({
   links,
   master_links,
   links_groups,
+  is_admin,
 }: {
   broker_id: number;
   account_type_id: number;
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
   links_groups: string[];
+  is_admin: boolean;
 }) {
   const [editingLink, setEditingLink] = useState<Url | null>(null);
   const [addingType, setAddingType] = useState<string | null>(null);

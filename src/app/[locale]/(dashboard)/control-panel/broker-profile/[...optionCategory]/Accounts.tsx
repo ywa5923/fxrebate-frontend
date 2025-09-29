@@ -38,7 +38,7 @@ interface AccountsProps {
 //   },
 //   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
 
-export default function Accounts({ broker_id, accounts, options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
+export default function Accounts({ broker_id, accounts = [], options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
   const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
   const [showNewAccount, setShowNewAccount] = useState(false);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
@@ -229,7 +229,9 @@ export default function Accounts({ broker_id, accounts, options, is_admin = fals
               account_type_id={account?.id} 
                links={linksGroupedByAccountId[account.id]??{}}
                master_links={masterLinksGroupedByType} 
-               links_groups={linksGroups} />
+               links_groups={linksGroups} 
+               is_admin={is_admin}
+               />
 
             </div>
           ))}

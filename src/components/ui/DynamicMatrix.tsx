@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Minus, X, Save } from "lucide-react";
+import { Plus, Minus, X, Save, Copy } from "lucide-react";
 import { CreateSelect } from "@/components/CreateSelect";
 import { cn } from "@/lib/utils";
 import {
@@ -236,6 +236,9 @@ export function DynamicMatrix({
                     ...cell.public_value,
                     [fieldName]: value,
                   },
+                  //reset the is_updated_entry to false
+                  //if admin updates the value, then the is_updated_entry is false in case it was true 
+                  is_updated_entry: false,
                 }
               : cIndex === colIndex && !is_admin
               ? {
@@ -244,6 +247,28 @@ export function DynamicMatrix({
                     ...cell.value,
                     [fieldName]: value,
                   },
+                }
+              : cell
+          )
+        : row
+    );
+    setMatrix(newMatrix);
+    onChange?.(newMatrix);
+  };
+
+  const copyBrokerToPublic = (rowIndex: number, colIndex: number) => {
+    const newMatrix = matrix.map((row, rIndex) =>
+      rIndex === rowIndex
+        ? row.map((cell, cIndex) =>
+            cIndex === colIndex
+              ? {
+                  ...cell,
+                  public_value: {
+                    ...cell.public_value,
+                    ...cell.value,
+                  },
+                  //reset the is_updated_entry to false
+                  is_updated_entry: false,
                 }
               : cell
           )
@@ -527,141 +552,136 @@ export function DynamicMatrix({
                     return (
                       <td key={colIndex} className="border p-1 w-[250px]">
                         {cell.colHeader ? (
-                          <div className="flex flex-wrap gap-2 items-center">
-                            {columnHeaders
-                              .find((h) => h.slug === cell.colHeader)
-                              ?.form_type.items.map((item, itemIndex) => {
-                                let public_value =
-                                  cell.public_value?.[item.name] || "";
-                                let broker_value =
-                                  cell.value?.[item.name] || "";
-                                let previous_value = cell.previous_value?.[item.name] || "";
-                                // let previous_value = JSON.stringify(
-                                //   cell.previous_value
-                                // );
-                                let value = is_admin
-                                  ? public_value
-                                  : broker_value;
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-wrap gap-2 items-center">
+                              {columnHeaders
+                                .find((h) => h.slug === cell.colHeader)
+                                ?.form_type.items.map((item, itemIndex) => {
+                                  let public_value =
+                                    cell.public_value?.[item.name] || "";
+                                  let broker_value =
+                                    cell.value?.[item.name] || "";
+                                  let previous_value = cell.previous_value?.[item.name] || "";
+                                  let value = is_admin
+                                    ? public_value
+                                    : broker_value;
 
-                                return (
-                                  <React.Fragment key={item.name}>
-                                    
-
-                                    {item.type === "number" && (
-                                      <div className="w-full">
-                                        <Input
-                                          type="text"
-                                          value={value}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            updateCell(
-                                              rowIndex,
-                                              colIndex,
-                                              value,
-                                              item.name,
-                                              is_admin || false
-                                            );
-                                          }}
-                                          placeholder={
-                                            item.placeholder || "Value"
-                                          }
-                                          className={`h-9 text-sm w-full ${
-                                            hasError ? "border-red-500" : ""
-                                          }`}
-                                        />
-                                      </div>
-                                    )}
-                                    {item.type === "single-select" && (
-                                      <div className="w-full">
-                                        <Select
-                                          value={String(value)}
-                                          onValueChange={(value: string) =>
-                                            updateCell(
-                                              rowIndex,
-                                              colIndex,
-                                              value,
-                                              item.name,
-                                              is_admin || false
-                                            )
-                                          }
-                                        >
-                                          <SelectTrigger
+                                  return (
+                                    <React.Fragment key={item.name}>
+                                      {item.type === "number" && (
+                                        <div className="w-full">
+                                          <Input
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              updateCell(
+                                                rowIndex,
+                                                colIndex,
+                                                value,
+                                                item.name,
+                                                is_admin || false
+                                              );
+                                            }}
+                                            placeholder={
+                                              item.placeholder || "Value"
+                                            }
                                             className={`h-9 text-sm w-full ${
                                               hasError ? "border-red-500" : ""
                                             }`}
+                                          />
+                                        </div>
+                                      )}
+                                      {item.type === "single-select" && (
+                                        <div className="w-full">
+                                          <Select
+                                            value={String(value)}
+                                            onValueChange={(value: string) =>
+                                              updateCell(
+                                                rowIndex,
+                                                colIndex,
+                                                value,
+                                                item.name,
+                                                is_admin || false
+                                              )
+                                            }
                                           >
-                                            <SelectValue
-                                              placeholder={
-                                                item.placeholder || "Select"
-                                              }
-                                            />
-                                          </SelectTrigger>
-                                          <SelectContent className="z-[100]">
-                                            {item.options?.map((option) => (
-                                              <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                                className="text-sm"
-                                              >
-                                                {option.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    )}
-                                    {item.type === "text" && (
-                                      <div className="w-full">
-                                        <Input
-                                          type="text"
-                                          value={value}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            updateCell(
-                                              rowIndex,
-                                              colIndex,
-                                              value,
-                                              item.name,
-                                              is_admin || false
-                                            );
-                                          }}
-                                          placeholder={
-                                            item.placeholder || "Enter text"
-                                          }
-                                          className={`h-9 text-sm w-full ${
-                                            hasError ? "border-red-500" : ""
-                                          }`}
-                                        />
-                                      </div>
-                                    )}
-                                    {item.type === "textarea" && (
-                                      <div className="w-full">
-                                        <textarea
-                                          value={value}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            updateCell(
-                                              rowIndex,
-                                              colIndex,
-                                              value,
-                                              item.name,
-                                              is_admin || false
-                                            );
-                                          }}
-                                          placeholder={
-                                            item.placeholder || "Enter text"
-                                          }
-                                          className={`h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background ${
-                                            hasError ? "border-red-500" : ""
-                                          }`}
-                                        />
-                                      </div>
-                                    )}
-                                    {is_admin && (
-                                      <div className="flex flex-row gap-1 items-center">
+                                            <SelectTrigger
+                                              className={`h-9 text-sm w-full ${
+                                                hasError ? "border-red-500" : ""
+                                              }`}
+                                            >
+                                              <SelectValue
+                                                placeholder={
+                                                  item.placeholder || "Select"
+                                                }
+                                              />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-[100]">
+                                              {item.options?.map((option) => (
+                                                <SelectItem
+                                                  key={option.value}
+                                                  value={option.value}
+                                                  className="text-sm"
+                                                >
+                                                  {option.label}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      )}
+                                      {item.type === "text" && (
+                                        <div className="w-full">
+                                          <Input
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              updateCell(
+                                                rowIndex,
+                                                colIndex,
+                                                value,
+                                                item.name,
+                                                is_admin || false
+                                              );
+                                            }}
+                                            placeholder={
+                                              item.placeholder || "Enter text"
+                                            }
+                                            className={`h-9 text-sm w-full ${
+                                              hasError ? "border-red-500" : ""
+                                            }`}
+                                          />
+                                        </div>
+                                      )}
+                                      {item.type === "textarea" && (
+                                        <div className="w-full">
+                                          <textarea
+                                            value={value}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              updateCell(
+                                                rowIndex,
+                                                colIndex,
+                                                value,
+                                                item.name,
+                                                is_admin || false
+                                              );
+                                            }}
+                                            placeholder={
+                                              item.placeholder || "Enter text"
+                                            }
+                                            className={`h-9 text-sm w-full min-h-[80px] p-2 rounded-md border border-input bg-background ${
+                                              hasError ? "border-red-500" : ""
+                                            }`}
+                                          />
+                                        </div>
+                                      )}
+                                      {is_admin && (
                                         <div
                                           className={cn(
-                                            "text-xs min-h-[1rem] flex-shrink-0",
+                                            "text-xs min-h-[1rem] flex-shrink-0 w-full",
                                             {
                                               "text-red-500 dark:text-red-400": isUpdatedCell,
                                               "text-gray-500 dark:text-gray-400": !isUpdatedCell,
@@ -671,11 +691,27 @@ export function DynamicMatrix({
                                           <div>Broker Value: {broker_value}</div>
                                           <div>Previous Value: {previous_value}</div>
                                         </div>
-                                      </div>
-                                    )}
-                                  </React.Fragment>
-                                );
-                              })}
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                            </div>
+                            {is_admin && !!isUpdatedCell && (
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    copyBrokerToPublic(rowIndex, colIndex);
+                                    e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                                  }}
+                                  className="p-1 h-6 w-6 flex-shrink-0"
+                                  title="Copy broker values to public values"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="h-9 w-full text-sm text-muted-foreground flex items-center">

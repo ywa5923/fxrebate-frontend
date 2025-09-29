@@ -190,7 +190,7 @@ export default async function BrokerProfilePage({
             action={submitBrokerProfile} 
             is_admin={is_admin}
             entity_id={brokerId}
-            entity_type="Broker"
+            entity_type="broker"
             category={categorySlug.replace('-',' ').toUpperCase()}
           />
         

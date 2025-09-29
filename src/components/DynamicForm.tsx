@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Copy } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -87,6 +87,13 @@ export function DynamicForm({
     return optionValue?.value || "Not set";
   };
 
+  const IsUpdatedEntry = (optionSlug: string): boolean => {
+    const optionValue = optionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug
+    );
+    return optionValue?.is_updated_entry || false;
+  };
+
   const getBrokerPreviousValue = (optionSlug: string): string | null => {
     const optionValue = optionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug && optionValue.is_updated_entry
@@ -103,6 +110,60 @@ export function DynamicForm({
       (optionValue) => optionValue.option_slug === optionSlug
     );
     return optionValue?.metadata?.[key] || "Not set";
+  };
+
+  // Helper function to copy broker value to public value
+  const copyBrokerToPublic = (optionSlug: string) => {
+    const optionValue = optionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug
+    );
+    if (optionValue) {
+
+      // Update the form field with the broker value
+      form.setValue(optionSlug, optionValue.value);
+      // Mark form as dirty to enable submit button
+      setIsFormDirty(true);
+    }
+  };
+
+  // Helper function to render option history (broker value and previous value)
+  const renderOptionHistory = (option: Option) => {
+    if (!is_admin) return null;
+    
+    return (
+      <div className={cn("text-sm text-muted-foreground mt-2", {
+        "text-red-500": IsUpdatedEntry(option.slug)
+      })}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div>
+              Broker value: {getBrokerValue(option.slug)}&nbsp;
+            </div>
+            {IsUpdatedEntry(option.slug) && (
+              <div>
+                Prev Value: {getBrokerPreviousValue(option.slug)}
+              </div>
+            )}
+          </div>
+          {IsUpdatedEntry(option.slug) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                copyBrokerToPublic(option.slug);
+                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+              }}
+              className="p-1 h-6 w-6 flex-shrink-0 text-gray-600 hover:text-gray-800"
+              title="Copy broker value to public value"
+            >
+              <Copy className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
   };
 
   // Create a dynamic schema based on the fields
@@ -283,7 +344,7 @@ export function DynamicForm({
   }, [form.watch]);
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
-     console.log("Server action form data from client:", data);
+     //console.log("Server action form data from client:", data);
 
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
@@ -304,13 +365,14 @@ export function DynamicForm({
         } else {
           formDataObj.append(key, value);
         }
-        console.log(
-          "Array field:",
-          key,
-          value,
-          Array.isArray(value),
-          typeof value === "object"
-        );
+
+        // console.log(
+        //   "Array field:",
+        //   key,
+        //   value,
+        //   Array.isArray(value),
+        //   typeof value === "object"
+        // );
       }
     });
 
@@ -392,12 +454,7 @@ export function DynamicForm({
                 {`Unit is required for ${option.name}`}
               </p>
             )}
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {getBrokerValue(option.slug)}
-                &nbsp;Broker unit: {getBrokerMetadata(option.slug, "unit")}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "textarea":
@@ -410,12 +467,7 @@ export function DynamicForm({
               {...formField}
               value={formField.value || ""} // Ensure value is never null
             />
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {formField.value}
-                
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "select":
@@ -442,11 +494,7 @@ export function DynamicForm({
                   ))}
               </SelectContent>
             </Select>
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {formField.value}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "multiple_select":
@@ -480,14 +528,7 @@ export function DynamicForm({
               name={option.name}
               id={option.slug}
             />
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value:{" "}
-                {Array.isArray(formField.value)
-                  ? getBrokerValue(option.slug).split("; ").join(", ")
-                  : getBrokerValue(option.slug)}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "checkbox":
@@ -501,11 +542,7 @@ export function DynamicForm({
             <FormLabel htmlFor={option.slug} className="text-sm font-medium cursor-pointer select-none">
               {option.name}
             </FormLabel>
-            {is_admin && (
-              <div className="text-sm text-muted-foreground ml-2">
-                Broker value: {getBrokerValue(option.slug) === "true" ? "true" : "false"}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "radio":
@@ -530,11 +567,7 @@ export function DynamicForm({
                 </div>
               ))}
             </RadioGroup>
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {getBrokerValue(option.slug)}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
 
@@ -588,14 +621,7 @@ export function DynamicForm({
                 + Add Note
               </Button>
             </div>
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value:{" "}
-                {Array.isArray(formField.value)
-                  ? getBrokerValue(option.slug).split("; ").join(", ")
-                  : getBrokerValue(option.slug)}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       case "image":
@@ -653,23 +679,7 @@ export function DynamicForm({
                 }
               }}
             />
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value:{" "}
-                {typeof getBrokerValue(option.slug) === "string" ? (
-                  <a
-                    href={getBrokerValue(option.slug)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline text-blue-600 hover:text-blue-800"
-                  >
-                    {getBrokerValue(option.slug).split("/").pop()}
-                  </a>
-                ) : (
-                  getBrokerValue(option.slug)
-                )}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
       default:
@@ -685,14 +695,7 @@ export function DynamicForm({
                   : (formField.value || "")
               }
             />
-            {is_admin && (
-              <div className="text-sm text-muted-foreground mt-2">
-                Broker value: {getBrokerValue(option.slug)}&nbsp;
-                {getBrokerPreviousValue(option.slug) && (
-                  <span className="text-red-500">Prev Value: {getBrokerPreviousValue(option.slug)}</span>
-                )}
-              </div>
-            )}
+            {renderOptionHistory(option)}
           </div>
         );
     }

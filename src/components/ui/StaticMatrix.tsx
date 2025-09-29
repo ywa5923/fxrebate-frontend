@@ -62,6 +62,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [matrixExtraData, setMatrixExtraData] = useState<MatrixExtraData|null>(null);
+  // Track which cells were copied so the copy button remains visible and green
+  // Key format: `${rowIndex}-${colIndex}`
+  const [copiedCells, setCopiedCells] = useState<Set<string>>(new Set());
 
 
   const formatText = (value: any): string => {
@@ -245,6 +248,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       if (is_admin && type === "challenge" && !isPlaceholder) {
         // In admin mode, update public_value
         cell.public_value = { ...(cell.public_value || {}), [fieldName]: value };
+        cell.is_updated_entry = false;
       } else {
         // In normal mode, update value
         cell.value = { ...(cell.value || {}), [fieldName]: value };
@@ -262,6 +266,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       const row = [...(next[rowIndex] || [])];
       const cell = { ...(row[colIndex] || {}) } as MatrixCell;
       cell.public_value = { ...(cell.public_value || {}), [fieldName]: cell.value[fieldName] };
+      cell.is_updated_entry = false;
       row[colIndex] = cell;
       next[rowIndex] = row;
       return next;
@@ -305,16 +310,40 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             placeholder={placeholderText}
             className={cn("flex-1 h-full min-h-[2.5rem] min-w-0", !is_admin && showError && "border-red-500")}
           />
-          {/*If is_admin=true show button to copy cell's value to public value*/}
-          {is_admin && !isPlaceholder && !!cell.is_updated_entry && (
-            <Button variant="outline" size="sm" onClick={(e) => {
-              cell.value?.text && CopyValueToPublicValue(rowIndex, colIndex, "text");
-              cell.value?.text && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-              
-            }} className="p-2 flex-shrink-0">
-              <FiCopy className="w-4 h-4" />
-            </Button>
-          )}
+          {/* Admin-only: show copy button when cell is updated OR already copied.
+              After click, keep it visible and green for subsequent clicks. */}
+          {(() => {
+            const cellKey = `${rowIndex}-${colIndex}`;
+            const shouldShowCopy = is_admin && !isPlaceholder && (!!cell.is_updated_entry || copiedCells.has(cellKey));
+            if (!shouldShowCopy) return null;
+            const isAlreadyGreen = copiedCells.has(cellKey);
+            return (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  if (!cell?.value?.text) return;
+                  // Copy broker value -> public value
+                  CopyValueToPublicValue(rowIndex, colIndex, "text");
+                  // Mark as copied so the button persists and stays green
+                  setCopiedCells((prev) => {
+                    const next = new Set(prev);
+                    next.add(cellKey);
+                    return next;
+                  });
+                  // Ensure green feedback
+                  e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                }}
+                className={cn(
+                  "p-2 flex-shrink-0",
+                  isAlreadyGreen && "bg-green-100 border-green-500 text-green-700"
+                )}
+                title="Copy broker value to public value"
+              >
+                <FiCopy className="w-4 h-4" />
+              </Button>
+            );
+          })()}
         </div>
         {!is_admin && showError && (
           <div className="text-xs text-red-600 dark:text-red-400 min-h-[1rem]">This field is required</div>
@@ -326,7 +355,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
             })}>
               <div>Broker Value: {formatText(cell.value)}</div>
-              {formatText(cell.previous_value)?.trim() ? (
+              {formatText(cell.previous_value)?.trim() && cell.is_updated_entry ? (
                 <div>Previous Value: {formatText(cell.previous_value)}</div>
               ) : null}
             </div>
@@ -547,7 +576,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                   })}>
                      <div>Broker Value: {matrixExtraData?.evaluationCostDiscount?.value ?? ""}</div>
-                     <div>Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}</div>
+                    {!!matrixExtraData?.evaluationCostDiscount?.is_updated_entry && <div>Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}</div>}
                    </div>
                  )}
                 </div>
@@ -597,7 +626,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                       "text-gray-500 dark:text-gray-400": !matrixExtraData?.affiliateLink?.is_updated_entry,
                     })}>
                        <div>Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}</div>
-                       <div>Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}</div>
+                       {!!matrixExtraData?.affiliateLink?.is_updated_entry && <div>Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}</div>}
                     </div>
                   )}
                 </div>
@@ -653,7 +682,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                       "text-gray-500 dark:text-gray-400": !matrixExtraData?.masterAffiliateLink?.is_updated_entry,
                     })}>
                        <div>Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}</div>
-                       <div>Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}</div>
+                       {!!matrixExtraData?.masterAffiliateLink?.is_updated_entry && <div>Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}</div>}
                     </div>
                   )}
                 </div>

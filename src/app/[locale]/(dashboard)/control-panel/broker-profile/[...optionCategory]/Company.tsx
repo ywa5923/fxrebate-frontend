@@ -1,6 +1,6 @@
 "use client";
 
-import type { Company, Option, OptionValue } from '@/types';
+import type { DynamicTable, Option, OptionValue } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '../actions';
 import { useState } from 'react';
@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface CompanyProps {
   broker_id: number;
-  company: Company | null;
+  company: DynamicTable | null;
   options: Option[];
   is_admin?: boolean;
 }
@@ -74,7 +74,7 @@ export default function Company({ broker_id, company, options, is_admin = false 
                 }}
                 is_admin={is_admin}
                 entity_id={0}
-                entity_type="Company"
+                entity_type="company"
               />
             </CardContent>
           </Card>
@@ -111,7 +111,7 @@ export default function Company({ broker_id, company, options, is_admin = false 
                 action={submitBrokerProfile}
                 is_admin={is_admin}
                 entity_id={company.id}
-                entity_type="Company"
+                entity_type="company"
               />
             </CardContent>
           </Card>

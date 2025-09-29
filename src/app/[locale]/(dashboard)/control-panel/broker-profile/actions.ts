@@ -162,12 +162,20 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       } else {
         valueToSave = String(value);
       }
-      
+
+      let is_updated_entry = 0;
+      //if admin does't update the broekr value, then the is_updated_entry is true,like it was in the previous request,so next time when admin 
+      //connect to dashboard, he will se the form value in red color,
+      if(is_admin && originalOption?.is_updated_entry && valueToSave == originalOption?.public_value){
+        is_updated_entry = 1;
+      }
+
       return {
         id: originalOption?.id,
         option_slug,
         ...(is_admin ? { public_value: valueToSave } : {value: valueToSave}),
-        metadata: meta_data_unit ? { unit: meta_data_unit } : null
+        metadata: meta_data_unit ? { unit: meta_data_unit } : null,
+        ...(is_admin ? { is_updated_entry: is_updated_entry } : {}),
       
       };
     })
@@ -180,7 +188,9 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
    
   };
   
-  // console.log("Formatted data for PHP:==================s", JSON.stringify(requestData, null, 2));
+    //console.log("Formatted data for PHP2:==================s", JSON.stringify(requestData, null, 2));
+
+   // return;
 
   
   //Send to PHP server
@@ -195,8 +205,8 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
       body: JSON.stringify(requestData),
     });
 
-    console.log("**********aserver url=======",url);
-    console.log("**********server body=======",requestData);
+   // console.log("**********aserver url=======",url);
+   // console.log("**********server body=======",requestData);
     if (!response.ok) {
       // Try to get error details from response
       let errorDetails = '';
