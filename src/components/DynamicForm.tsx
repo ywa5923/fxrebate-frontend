@@ -78,6 +78,7 @@ export function DynamicForm({
   const router = useRouter();
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalOptionsValues, setOriginalOptionsValues] = useState(optionsValues);
 
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
@@ -88,17 +89,27 @@ export function DynamicForm({
   };
 
   const IsUpdatedEntry = (optionSlug: string): boolean => {
-    const optionValue = optionsValues.find(
+    const optionValue = originalOptionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug
     );
     return optionValue?.is_updated_entry || false;
   };
 
+  // const getBrokerPreviousValue = (optionSlug: string): string | null => {
+  //   const optionValue = optionsValues.find(
+  //     (optionValue) => optionValue.option_slug === optionSlug && optionValue.is_updated_entry
+  //   );
+  //   if(optionValue?.previous_value && optionValue.is_updated_entry){
+  //     return optionValue?.previous_value + " "+(optionValue?.metadata?.unit || '') || null;
+  //   }
+  //   return null;
+  // };
   const getBrokerPreviousValue = (optionSlug: string): string | null => {
-    const optionValue = optionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug && optionValue.is_updated_entry
+    const optionValue = originalOptionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug 
     );
-    if(optionValue?.previous_value && optionValue.is_updated_entry){
+
+    if(optionValue?.previous_value){
       return optionValue?.previous_value + " "+(optionValue?.metadata?.unit || '') || null;
     }
     return null;
@@ -106,7 +117,7 @@ export function DynamicForm({
 
   // Helper function to get broker metadata for admin display
   const getBrokerMetadata = (optionSlug: string, key: string) => {
-    const optionValue = optionsValues.find(
+    const optionValue = originalOptionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug
     );
     return optionValue?.metadata?.[key] || "Not set";
@@ -114,13 +125,23 @@ export function DynamicForm({
 
   // Helper function to copy broker value to public value
   const copyBrokerToPublic = (optionSlug: string) => {
-    const optionValue = optionsValues.find(
+    const optionValue = originalOptionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug
     );
     if (optionValue) {
 
       // Update the form field with the broker value
       form.setValue(optionSlug, optionValue.value);
+
+      //reset the is_updated_entry to false
+      setOriginalOptionsValues((prev)=>{
+        const next = [...prev];
+        const found = next.find(ov => ov.option_slug === optionSlug);
+        if (found) {
+          found.is_updated_entry = false;
+        }
+        return next;
+      });
       // Mark form as dirty to enable submit button
       setIsFormDirty(true);
     }
@@ -146,7 +167,7 @@ export function DynamicForm({
         <div className="flex items-center justify-between">
           <div>
             <div>Broker value: {brokerValue}&nbsp;</div>
-            {isUpdatedEntry && showPrev && (
+            { showPrev && (
               <div>Prev Value: {previousValue}</div>
             )}
           </div>
@@ -298,7 +319,7 @@ export function DynamicForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: options.reduce((acc, option) => {
-      let optionValue = optionsValues?.find(
+      let optionValue = originalOptionsValues?.find(
         (optionValue: OptionValue) => optionValue.option_slug === option.slug
       );
       if (optionValue !== null && optionValue !== undefined) {
@@ -343,7 +364,18 @@ export function DynamicForm({
     const subscription = form.watch((value, { name, type }) => {
       if (type === "change") {
         setIsFormDirty(true);
+        if (is_admin && name) {
+          setOriginalOptionsValues((prev) => {
+            const next = [...prev];
+            const found = next.find((ov) => ov.option_slug === String(name));
+            if (found) {
+              found.is_updated_entry = false;
+            }
+            return next;
+          });
+        }
       }
+      
     });
     return () => subscription.unsubscribe();
   }, [form.watch]);
