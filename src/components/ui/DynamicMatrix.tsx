@@ -78,6 +78,9 @@ export function DynamicMatrix({
   brokerId,
 }: DynamicMatrixProps) {
   const [status, setStatus] = React.useState<string>("");
+  // Track copied cells so the copy button persists and stays green
+  // Key format: `${rowIndex}-${colIndex}`
+  const [copiedCells, setCopiedCells] = React.useState<Set<string>>(new Set());
   const [matrix, saveMatrix] = React.useState<MatrixCell[][]>(
     initialMatrix || ([[]] as MatrixCell[][])
   );
@@ -683,35 +686,51 @@ export function DynamicMatrix({
                                           className={cn(
                                             "text-xs min-h-[1rem] flex-shrink-0 w-full",
                                             {
-                                              "text-red-500 dark:text-red-400": isUpdatedCell,
+                                              "text-red-500 dark:text-red-400": isUpdatedCell && broker_value != previous_value,
                                               "text-gray-500 dark:text-gray-400": !isUpdatedCell,
                                             }
                                           )}
                                         >
                                           <div>Broker Value: {broker_value}</div>
-                                          <div>Previous Value: {previous_value}</div>
+                                          {broker_value != previous_value && <div>Previous Value: {previous_value}</div>}
+
                                         </div>
                                       )}
                                     </React.Fragment>
                                   );
                                 })}
                             </div>
-                            {is_admin && !!isUpdatedCell && (
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    copyBrokerToPublic(rowIndex, colIndex);
-                                    e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-                                  }}
-                                  className="p-1 h-6 w-6 flex-shrink-0"
-                                  title="Copy broker values to public values"
-                                >
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
+                            {(() => {
+                              const cellKey = `${rowIndex}-${colIndex}`;
+                              const shouldShowCopy = is_admin && (!!isUpdatedCell || copiedCells.has(cellKey));
+                              if (!shouldShowCopy) return null;
+                              const isAlreadyGreen = copiedCells.has(cellKey);
+                              return (
+                                <div className="flex justify-end">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      copyBrokerToPublic(rowIndex, colIndex);
+                                      setCopiedCells((prev) => {
+                                        const next = new Set(prev);
+                                        next.add(cellKey);
+                                        return next;
+                                      });
+                                      e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                                    }}
+                                    className={cn(
+                                      "p-1 h-6 w-6 flex-shrink-0",
+                                      isAlreadyGreen && "bg-green-100 border-green-500 text-green-700"
+                                    )}
+                                    title="Copy broker values to public values"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           <div className="h-9 w-full text-sm text-muted-foreground flex items-center">

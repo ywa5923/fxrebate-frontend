@@ -129,23 +129,28 @@ export function DynamicForm({
   // Helper function to render option history (broker value and previous value)
   const renderOptionHistory = (option: Option) => {
     if (!is_admin) return null;
-    
+
+    // Precompute current and previous for safe comparison
+    const isUpdatedEntry = IsUpdatedEntry(option.slug);
+    const brokerValue = getBrokerValue(option.slug);
+    const previousValue = getBrokerPreviousValue(option.slug);
+    const showPrev = previousValue !== null && String(previousValue) !== String(brokerValue);
+
     return (
-      <div className={cn("text-sm text-muted-foreground mt-2", {
-        "text-red-500": IsUpdatedEntry(option.slug)
-      })}>
+      <div
+        className={cn("text-sm text-muted-foreground mt-2", {
+          // Highlight only when a meaningful previous value exists and differs in show updated entry
+          "text-red-500": isUpdatedEntry,
+        })}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <div>
-              Broker value: {getBrokerValue(option.slug)}&nbsp;
-            </div>
-            {IsUpdatedEntry(option.slug) && (
-              <div>
-                Prev Value: {getBrokerPreviousValue(option.slug)}
-              </div>
+            <div>Broker value: {brokerValue}&nbsp;</div>
+            {isUpdatedEntry && showPrev && (
+              <div>Prev Value: {previousValue}</div>
             )}
           </div>
-          {IsUpdatedEntry(option.slug) && (
+          {isUpdatedEntry && (
             <Button
               type="button"
               variant="outline"

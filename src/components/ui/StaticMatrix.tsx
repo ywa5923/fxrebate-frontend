@@ -355,9 +355,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
             })}>
               <div>Broker Value: {formatText(cell.value)}</div>
-              {formatText(cell.previous_value)?.trim() && cell.is_updated_entry ? (
-                <div>Previous Value: {formatText(cell.previous_value)}</div>
-              ) : null}
+              {cell.value != cell.previous_value && <div>Previous Value: {formatText(cell.previous_value)}</div>}
+             
             </div>
           </div>
         )}
@@ -576,7 +575,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     "text-gray-500 dark:text-gray-400": !matrixExtraData?.evaluationCostDiscount?.is_updated_entry,
                   })}>
                      <div>Broker Value: {matrixExtraData?.evaluationCostDiscount?.value ?? ""}</div>
-                    {!!matrixExtraData?.evaluationCostDiscount?.is_updated_entry && <div>Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}</div>}
+                    {matrixExtraData?.evaluationCostDiscount?.value != matrixExtraData?.evaluationCostDiscount?.previous_value && <div>Previous Value: {matrixExtraData?.evaluationCostDiscount?.previous_value ?? ""}</div>}
                    </div>
                  )}
                 </div>
@@ -626,7 +625,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                       "text-gray-500 dark:text-gray-400": !matrixExtraData?.affiliateLink?.is_updated_entry,
                     })}>
                        <div>Broker Value: {matrixExtraData?.affiliateLink?.url ?? ""}</div>
-                       {!!matrixExtraData?.affiliateLink?.is_updated_entry && <div>Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}</div>}
+                       {matrixExtraData?.affiliateLink?.url != matrixExtraData?.affiliateLink?.previous_url && <div>Previous Value: {matrixExtraData?.affiliateLink?.previous_url ?? ""}</div>}
                     </div>
                   )}
                 </div>
@@ -682,7 +681,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                       "text-gray-500 dark:text-gray-400": !matrixExtraData?.masterAffiliateLink?.is_updated_entry,
                     })}>
                        <div>Broker Value: {matrixExtraData?.masterAffiliateLink?.url ?? ""}</div>
-                       {!!matrixExtraData?.masterAffiliateLink?.is_updated_entry && <div>Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}</div>}
+                       {matrixExtraData?.masterAffiliateLink?.url != matrixExtraData?.masterAffiliateLink?.previous_url && <div>Previous Value: {matrixExtraData?.masterAffiliateLink?.previous_url ?? ""}</div>}
                     </div>
                   )}
                 </div>
