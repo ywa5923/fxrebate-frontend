@@ -4,9 +4,12 @@ export type Url = {
   urlable_type?: string | null;
   url_type: string;
   url: string;
-  url_p?: string | null;
+  previous_url: string | null;
+  is_updated_entry: number; // 1 or 0
+  public_url: string | null;
   name: string;
-  name_p?: string | null;
+  previous_name: string | null;
+  public_name: string | null;
   slug: string;
   is_invariant: boolean;
   category_position?: number | null;

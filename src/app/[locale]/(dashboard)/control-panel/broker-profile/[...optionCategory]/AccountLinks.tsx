@@ -15,14 +15,21 @@ import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from "@/lib/utils";
 
 
 // Zod schema for link form
 const linkSchema = z.object({
-  url: z.string().url(),
+  // Admins edit public_url; non-admins edit url
+  url: z.string().url().optional(),
+  public_url: z.string().url().optional(),
   name: z.string().min(1),
+  public_name: z.string().optional(),
   type: z.string().min(1),
   is_master: z.boolean().optional(),
+  is_updated_entry: z.boolean().optional(),
+  previous_url: z.string().optional(),
+  previous_name: z.string().optional(),
 });
 
 export type LinkFormValues = z.infer<typeof linkSchema>;
@@ -69,9 +76,16 @@ export default function AccountLinks({
     resolver: zodResolver(linkSchema),
     defaultValues: {
       url: "",
+      public_url: "",
+      previous_url: "", 
       name: "",
+      previous_name: "",
+      public_name: "",
       type: "",
       is_master: false,
+      is_updated_entry: false,
+     
+     
     },
   });
   const router = useRouter();
@@ -105,7 +119,7 @@ export default function AccountLinks({
   // Handle add button click
   function handleAddClick(type: string) {
     setAddingType(type);
-    form.reset({ url: "", name: "", type, is_master: false });
+    form.reset({ url: "", public_url: "", name: "", type, is_master: false });
     // Ensure the accordion is open for this type
     if (!openAccordion.includes(type)) {
       setOpenAccordion([...openAccordion, type]);
@@ -135,11 +149,14 @@ export default function AccountLinks({
       <div>
         {allLinks.map((link, index) => {
           const isMaster = link.urlable_id === null;
+          const isUpdatedEntry = link.is_updated_entry === 1;
           return (
             <div key={link.id} className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-3 flex-1">
                 <div className="w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
-                  {index + 1}
+                   <span className={cn("", {
+                    "text-red-500 dark:text-red-400 font-bold": isUpdatedEntry,
+                   })}>{index + 1}</span> 
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -149,7 +166,20 @@ export default function AccountLinks({
                   <span className="text-xs text-muted-foreground">{link.url_type}</span>
                 </div>
               </div>
-              <Button size="sm" variant="outline" onClick={() => { setEditingLink(link); form.reset({ ...link, type: link.url_type, is_master: isMaster }); }}>Edit</Button>
+              <Button size="sm" variant="outline" onClick={() => { setEditingLink(link); form.reset({
+                ...link,
+                // Admin-editable fields fallback to broker values when public is null
+                public_url: (link.public_url ?? link.url ?? "") || "",
+                public_name: (link.public_name ?? link.name ?? "") || "",
+                // Always keep broker values present too
+                url: link.url || "",
+                name: link.name || "",
+                type: link.url_type,
+                is_master: isMaster,
+                is_updated_entry: Boolean(isUpdatedEntry),
+                previous_url: link.previous_url ?? undefined,
+                previous_name: link.previous_name ?? undefined,
+              }); }}>Edit</Button>
               <Button size="sm" variant="destructive" onClick={() => setConfirmDelete({ id: link.id, account_type_id, broker_id })}>Delete</Button>
             </div>
           );
@@ -176,23 +206,37 @@ export default function AccountLinks({
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                 <FormField
                   control={form.control}
-                  name="url"
+                  name={is_admin ? "public_url" : "url"}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>URL</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
+                      
+                      {!is_admin && form.watch("previous_url") && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Broker Value: {form.watch("url")}
+                          Previous URL: {form.watch("previous_url")}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name="name"
+                  name={is_admin ? "public_name" : "name"}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
+                      {is_admin  && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Broker Value: {form.watch("name")}
+                          {form.watch("previous_name") && <div>Previous Name: {form.watch("previous_name")}</div>}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />

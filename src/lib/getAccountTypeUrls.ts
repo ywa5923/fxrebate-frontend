@@ -27,9 +27,14 @@ export async function getAccountTypeUrls(
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const responseData=await response.json();
+        console.log("ghrt-----------------------------------------------------",
+            responseData.master_links_grouped_by_type);
+       
         return {'links_grouped_by_account_id':responseData.links_grouped_by_account_id,
             'master_links_grouped_by_type':responseData.master_links_grouped_by_type,
             'links_groups':responseData.links_groups};
+
+          
     }catch(error){
         console.error('Error fetching account type urls:', error);
         throw error;
