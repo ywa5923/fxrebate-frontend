@@ -1,15 +1,20 @@
 "use server";
 import { BASE_URL } from "@/constants";
+import logger from "@/lib/logger";
+import { UrlPayload } from "@/types/Url";
+import { validateId } from "@/lib/validateId";
 
-export async function saveAccountTypeLink(data: {id: number | null,broker_id: number,urlable_id: number|null;urlable_type: string,
-    url_type: string, name: string, url: string})
+export async function saveAccountTypeLink(data:UrlPayload)
 {
-    const {broker_id, urlable_id, urlable_type, ...rest} = data;
-    const url = new URL(BASE_URL + `/account-types/${urlable_id||0}/urls`);
-   // url.searchParams.set('broker_id', broker_id.toString());
-    console.log("data===server=======",JSON.stringify(data));
-    console.log("url===server=======",url.toString());
+    let {urlable_id} = data;
+    let url: URL | undefined;
+   
     try{
+        let validatedUrlableId = validateId(urlable_id,{nullable:true});
+        url = new URL(BASE_URL + `/account-types/${validatedUrlableId}/urls`);
+        logger.info('=>=>=>broker-profile[...optionCategory]/actions.ts/saveAccountTypeLink(): server payload', 
+                    { context: {validatedUrlableId,url,data,payload:JSON.stringify(data)} });
+
     const response = await fetch(url.toString(), {
         method: data.id ? "PUT" : "POST",
         headers: {
@@ -18,15 +23,18 @@ export async function saveAccountTypeLink(data: {id: number | null,broker_id: nu
         },
         body: JSON.stringify(data),
     });
-    return response.json();
+       return response.json();
     }catch(error){
-        console.error("error===server=======",error);
+       logger.error('=>=>=>broker-profile[...optionCategory]/actions.ts/saveAccountTypeLink(): error', { error, context: {url,data} });
         throw new Error("Failed to save link");
     }
 }
 
 export async function deleteAccountTypeLink(link_id: number,account_type_id: number|null, broker_id: number) {
 
+    // account_type_id = validateId(account_type_id,{nullable:true});
+    // link_id = validateId(link_id);
+    // broker_id = validateId(broker_id);
     const url = new URL(BASE_URL + `/account-types/${account_type_id}/urls/${link_id}`);
    
     try{
@@ -43,6 +51,7 @@ export async function deleteAccountTypeLink(link_id: number,account_type_id: num
         throw new Error("Failed to delete link");
     }
 }
+
 
 export async function deleteAccountType(account_type_id: number, broker_id: number) {
 

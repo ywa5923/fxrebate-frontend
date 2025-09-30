@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/constants";
 import { LinksGroupedByAccountId, LinksGroupedByType } from "@/types/AccountTypeLinks";
+import logger from "./logger";
 
 
 export async function getAccountTypeUrls(
@@ -19,24 +20,22 @@ export async function getAccountTypeUrls(
         url.searchParams.append("language_code", language_code);
     }
     
-  
-   
     try{
         const response=await fetch(url.toString(),{cache:"no-store"});
         if(!response.ok){
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const responseData=await response.json();
-        console.log("ghrt-----------------------------------------------------",
-            responseData.master_links_grouped_by_type);
-       
+
+        //logger.info('=>=>=>lib/getAccountTypeUrls(): responseData', { context: {responseData} });
+      
         return {'links_grouped_by_account_id':responseData.links_grouped_by_account_id,
             'master_links_grouped_by_type':responseData.master_links_grouped_by_type,
             'links_groups':responseData.links_groups};
 
           
     }catch(error){
-        console.error('Error fetching account type urls:', error);
+        logger.error('Failed to fetch account type urls', { error, context: {url, broker_id,accountType } });   
         throw error;
     }
 }

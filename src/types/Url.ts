@@ -22,3 +22,10 @@ export type Url = {
   created_at: string;
   updated_at: string;
 };
+
+export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
+  id: number | null;
+  urlable_id: number | null;
+  url?: string;
+  name?: string;
+};
