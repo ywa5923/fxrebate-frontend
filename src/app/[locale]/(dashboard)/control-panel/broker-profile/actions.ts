@@ -188,7 +188,7 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
    
   };
   
-    //console.log("Formatted data for PHP2:==================s", JSON.stringify(requestData, null, 2));
+    console.log("Formatted data for PHP2:==================s", JSON.stringify(requestData, null, 2));
 
    // return;
 

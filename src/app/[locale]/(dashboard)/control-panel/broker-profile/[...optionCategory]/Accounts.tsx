@@ -210,7 +210,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                         action={submitBrokerProfile}
                         is_admin={is_admin}
                         entity_id={account.id}
-                        entity_type="AccountType"
+                        entity_type="account-type"
                       />
                     </CardContent>
                   </Card>

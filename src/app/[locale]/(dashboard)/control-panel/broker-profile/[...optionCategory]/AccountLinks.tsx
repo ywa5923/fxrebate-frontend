@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { FiCopy } from "react-icons/fi";
 
 // Function to create schema based on admin status
 const createLinkSchema = (isAdmin: boolean) => {
@@ -343,9 +344,30 @@ export default function AccountLinks({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>URL</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
+                      <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input {...field} className="flex-1" />
+                        </FormControl>
+                        {/* Copy button for admins with updated entries */}
+                        {is_admin && form.watch("is_updated_entry") && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              const brokerUrl = form.watch("url");
+                              if (brokerUrl) {
+                                form.setValue("public_url", brokerUrl);
+                                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                              }
+                            }}
+                            className="p-2 flex-shrink-0"
+                            title="Copy broker URL to public URL"
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
 
                       {is_admin && (
@@ -370,9 +392,30 @@ export default function AccountLinks({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
+                      <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input {...field} className="flex-1" />
+                        </FormControl>
+                        {/* Copy button for admins with updated entries */}
+                        {is_admin && form.watch("is_updated_entry") && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              const brokerName = form.watch("name");
+                              if (brokerName) {
+                                form.setValue("public_name", brokerName);
+                                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
+                              }
+                            }}
+                            className="p-2 flex-shrink-0"
+                            title="Copy broker name to public name"
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                       {is_admin && (
                         <div className={cn("text-sm text-gray-500 dark:text-gray-400", {
@@ -415,7 +458,7 @@ export default function AccountLinks({
                   )}
                 /> */}
                 {/* Show "Is Master Link" only for admins when adding new link (not editing) */}
-                {is_admin && !editingLink && (
+                {is_admin  && (
                   <FormField
                     control={form.control}
                     name="is_master"
