@@ -10,6 +10,9 @@ export async function getAccountTypeUrls(
     language_code:string|null=null
 ):Promise<{ links_grouped_by_account_id: LinksGroupedByAccountId; master_links_grouped_by_type: LinksGroupedByType; links_groups: Array<string>}>{
    
+    
+    const urlLogger = logger.child('lib/getAccountTypeUrls');
+    
     const accountType = account_type_id == null ? 'all' : account_type_id.toString();
 
     const url = new URL(`${BASE_URL}/urls/${broker_id}/account-type/${accountType}`);
@@ -27,7 +30,7 @@ export async function getAccountTypeUrls(
         }
         const responseData=await response.json();
 
-        //logger.info('=>=>=>lib/getAccountTypeUrls(): responseData', { context: {responseData} });
+        urlLogger.info('Successfully fetched account type urls', { context: {responseData} });
       
         return {'links_grouped_by_account_id':responseData.links_grouped_by_account_id,
             'master_links_grouped_by_type':responseData.master_links_grouped_by_type,
@@ -35,7 +38,7 @@ export async function getAccountTypeUrls(
 
           
     }catch(error){
-        logger.error('Failed to fetch account type urls', { error, context: {url, broker_id,accountType } });   
+        urlLogger.error('Failed to fetch account type urls', { error, context: {url, broker_id,accountType } });   
         throw error;
     }
 }

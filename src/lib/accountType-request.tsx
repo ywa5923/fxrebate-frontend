@@ -8,14 +8,14 @@ export async function saveAccountTypeLink(data:UrlPayload)
 {
     let {urlable_id} = data;
     let url: URL | undefined;
-   
+    const linkLogger = logger.child('lib/accountType-request/saveAccountTypeLink');
+    
     try{
         let validatedUrlableId = validateId(urlable_id,{nullable:true});
         url = new URL(BASE_URL + `/account-types/${validatedUrlableId}/urls`);
-        logger.info('=>=>=>broker-profile[...optionCategory]/actions.ts/saveAccountTypeLink(): server payload', 
-                    { context: {validatedUrlableId,url,data,payload:JSON.stringify(data)} });
-
-    const response = await fetch(url.toString(), {
+        linkLogger.debug('Data received from client in server action:', { context: {validatedUrlableId,url,data,payload:JSON.stringify(data)} });
+   
+        const response = await fetch(url.toString(), {
         method: data.id ? "PUT" : "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export async function saveAccountTypeLink(data:UrlPayload)
     });
        return response.json();
     }catch(error){
-       logger.error('=>=>=>broker-profile[...optionCategory]/actions.ts/saveAccountTypeLink(): error', { error, context: {url,data} });
+        linkLogger.error('Failed to save link', { error, context: {url,data} });
         throw new Error("Failed to save link");
     }
 }

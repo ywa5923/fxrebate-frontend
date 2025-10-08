@@ -2,7 +2,7 @@
 
 import { Option, OptionValue } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
-import { submitBrokerProfile } from '../actions';
+import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

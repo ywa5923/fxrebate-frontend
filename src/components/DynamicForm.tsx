@@ -48,6 +48,7 @@ import { InfoIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Option, OptionValue } from "@/types";
 import { useRouter } from "next/navigation";
+import logger from "@/lib/logger";
 
 interface DynamicFormProps {
   broker_id: number;
@@ -80,6 +81,13 @@ export function DynamicForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalOptionsValues, setOriginalOptionsValues] = useState(optionsValues);
 
+  //NOTE:
+  //===Form initialization with optionsValues:===
+  //If admin is true, the form field value is set to the optionValue.public_value if it exists, otherwise it is set to the optionValue.value
+  //this is used to auto populate the public values with the broker value if public_value is not set
+  //The data submitted to server action by admin is considered as public_value, 
+  //===Form initialization with optionsValues:===s
+
   // Helper function to get broker value for admin display
   const getBrokerValue = (optionSlug: string) => {
     const optionValue = optionsValues.find(
@@ -95,15 +103,7 @@ export function DynamicForm({
     return optionValue?.is_updated_entry || false;
   };
 
-  // const getBrokerPreviousValue = (optionSlug: string): string | null => {
-  //   const optionValue = optionsValues.find(
-  //     (optionValue) => optionValue.option_slug === optionSlug && optionValue.is_updated_entry
-  //   );
-  //   if(optionValue?.previous_value && optionValue.is_updated_entry){
-  //     return optionValue?.previous_value + " "+(optionValue?.metadata?.unit || '') || null;
-  //   }
-  //   return null;
-  // };
+  
   const getBrokerPreviousValue = (optionSlug: string): string | null => {
     const optionValue = originalOptionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug 
@@ -130,6 +130,9 @@ export function DynamicForm({
     );
     if (optionValue) {
 
+      //if admin =true, the form value is public_value, otherwise it is value
+      //so for admin set the form field with the optionValue's value 
+
       // Update the form field with the broker value
       form.setValue(optionSlug, optionValue.value);
 
@@ -151,25 +154,19 @@ export function DynamicForm({
   const renderOptionHistory = (option: Option) => {
     if (!is_admin) return null;
 
-    // Precompute current and previous for safe comparison
     const isUpdatedEntry = IsUpdatedEntry(option.slug);
     const brokerValue = getBrokerValue(option.slug);
     const previousValue = getBrokerPreviousValue(option.slug);
-    const showPrev = previousValue !== null && String(previousValue) !== String(brokerValue);
+    const showPrev = previousValue && previousValue !== brokerValue;
 
     return (
-      <div
-        className={cn("text-sm text-muted-foreground mt-2", {
-          // Highlight only when a meaningful previous value exists and differs in show updated entry
-          "text-red-500": isUpdatedEntry,
-        })}
-      >
+      <div className={cn("text-sm text-muted-foreground mt-2", {
+        "text-red-500": isUpdatedEntry,
+      })}>
         <div className="flex items-center justify-between">
-          <div>
-            <div>Broker value: {brokerValue}&nbsp;</div>
-            { showPrev && (
-              <div>Prev Value: {previousValue}</div>
-            )}
+          <div className="space-y-1">
+            <div>Broker value: {brokerValue}</div>
+            {showPrev && <div>Prev Value: {previousValue}</div>}
           </div>
           {isUpdatedEntry && (
             <Button
@@ -208,9 +205,6 @@ export function DynamicForm({
             }).nullable().optional();
       continue;
     }
-
-
-
     // Handle image fields
     if (option.form_type === "image") {
       schemaObject[option.slug] =
@@ -323,6 +317,7 @@ export function DynamicForm({
         (optionValue: OptionValue) => optionValue.option_slug === option.slug
       );
       if (optionValue !== null && optionValue !== undefined) {
+
         //if admin, populate form with public_value if it exists, otherwise use populate with optionValue.value
         let fieldValue = is_admin
           ? optionValue?.public_value === null ||
@@ -382,36 +377,36 @@ export function DynamicForm({
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
      //console.log("Server action form data from client:", data);
-
+     const dynamicFormLogger = logger.child('DynamicForm/handleServerActionSubmit');
+     dynamicFormLogger.debug("Form data before sending to server", { context: { data } });
+    // dynamicFormLogger.debug("Detailed form data", { context: { data, fieldCount: Object.keys(data).length } });
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+     // if (value !== undefined && value !== null) {
         if (value instanceof File) {
           // Handle file uploads
           formDataObj.append(key, value);
         } else if (Array.isArray(value)) {
           // Handle arrays by joining with semicolon
+          //this is used for multi-select and notes
           formDataObj.append(key, value.join("; "));
         } else if (
           typeof value === "object" &&
           !Array.isArray(value) &&
           value !== null
         ) {
+          //this is used for numberWithUnit that are sent as object with unit and value
           formDataObj.append(key, JSON.stringify(value));
         } else {
+          //this is used for other fields that are sent as string
           formDataObj.append(key, value);
         }
 
-        // console.log(
-        //   "Array field:",
-        //   key,
-        //   value,
-        //   Array.isArray(value),
-        //   typeof value === "object"
-        // );
-      }
+     // }
     });
+
+    dynamicFormLogger.debug("Form data before sending to server", { context: { formDataObj } });
 
     // Call the Server Action
     if (action) {
@@ -432,7 +427,17 @@ export function DynamicForm({
         router.refresh();
       } catch (error) {
         toast.error("Failed to submit form");
-        console.error("Server action error:", error);
+
+        dynamicFormLogger.error("Form error message received in client after server action failed", { 
+          error, 
+          context: { 
+            broker_id, 
+            is_admin, 
+            entity_id, 
+            entity_type,
+            fieldCount: Object.keys(data).length 
+          } 
+        });
         setIsSubmitting(false);
       }
     }
@@ -570,15 +575,17 @@ export function DynamicForm({
         );
       case "checkbox":
         return (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={Boolean(formField.value)}
-              onCheckedChange={formField.onChange}
-              id={option.slug}
-            />
-            <FormLabel htmlFor={option.slug} className="text-sm font-medium cursor-pointer select-none">
-              {option.name}
-            </FormLabel>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={Boolean(formField.value)}
+                onCheckedChange={formField.onChange}
+                id={option.slug}
+              />
+              <FormLabel htmlFor={option.slug} className="text-sm font-medium cursor-pointer select-none">
+                {option.name}
+              </FormLabel>
+            </div>
             {renderOptionHistory(option)}
           </div>
         );

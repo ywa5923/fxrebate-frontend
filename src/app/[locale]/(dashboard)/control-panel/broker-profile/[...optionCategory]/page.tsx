@@ -1,6 +1,6 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 import { getOptionsValues } from "@/lib/getOptionsValues";
-import { submitBrokerProfile } from "../actions";
+
 import { notFound } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
 import { Option, OptionCategory } from "@/types";
@@ -30,7 +30,7 @@ export default async function BrokerProfilePage({
 }) {
  
   let brokerId = 181;//181
-  let is_admin=false;
+  let is_admin=true;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
@@ -86,6 +86,8 @@ export default async function BrokerProfilePage({
     //zone_code is null, so get only original data that is submitted by the broker and have zone_code null
     //there are the values submitted by the broker
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
+
+    
 
     // If this is the companies category, render the Companies component
     if(categorySlug=='my-companies'){
@@ -187,7 +189,7 @@ export default async function BrokerProfilePage({
             broker_id={brokerId}
             options={matchedCategory.options as Option[]} 
             optionsValues={optionsValues}
-            action={submitBrokerProfile} 
+           // action={submitBrokerProfile} 
             is_admin={is_admin}
             entity_id={brokerId}
             entity_type="broker"

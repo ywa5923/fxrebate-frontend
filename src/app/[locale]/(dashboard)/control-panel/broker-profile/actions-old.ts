@@ -1,6 +1,7 @@
 'use server'
 
 import { BASE_URL } from "@/constants";
+import logger from "@/lib/logger";
 import { OptionValue } from "@/types";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
@@ -87,6 +88,8 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
   //if original option values are provided, then we are updating the broker profile
   //if original option values are not provided, then we are creating a new broker profile
  // console.log("=============server action formData received", formData,entity_id,entity_type);
+ 
+ logger.info("submitBrokerProfile: formData received from client:", {formData,entity_id,entity_type});
   
  
   let data: Record<string, any> = {};
@@ -123,8 +126,6 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
    
   }
   
-  //console.log("Form data:", data);
-  //console.log("Files:", files);
   
   // Upload files to Cloudflare R2
   for (const [fieldName, file] of Object.entries(files)) {
@@ -187,6 +188,22 @@ export async function submitBrokerProfile(broker_id: number,formData: FormData, 
     entity_type: entity_type,
    
   };
+  
+  // Log optionValues with actual values (not [Object])
+  logger.debug("Formatted data for SENDING TO PHP API", {
+    context: {
+      option_values: optionValues.map(ov => ({
+        id: ov.id,
+        option_slug: ov.option_slug,
+        value: ov.value,
+        public_value: ov.public_value,
+        is_updated_entry: ov.is_updated_entry,
+        metadata: ov.metadata
+      })),
+      entity_id: entity_id,
+      entity_type: entity_type
+    }
+  });
   
     console.log("Formatted data for PHP2:==================s", JSON.stringify(requestData, null, 2));
 

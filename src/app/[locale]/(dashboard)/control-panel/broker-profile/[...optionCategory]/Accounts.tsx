@@ -2,7 +2,7 @@
 
 import {  DynamicTable, Option, OptionValue, Url } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
-import { submitBrokerProfile } from '../actions';
+import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import AccountLinks from './AccountLinks';
 import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { deleteAccountType } from './actions';
+import { deleteAccountType } from '@/lib/accountType-request';
 import { useRouter } from 'next/navigation';
 
 interface AccountsProps {

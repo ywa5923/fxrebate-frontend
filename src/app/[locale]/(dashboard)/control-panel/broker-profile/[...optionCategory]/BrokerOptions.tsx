@@ -4,6 +4,7 @@ import { DynamicForm } from '@/components/DynamicForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Option, OptionValue } from '@/types';
 import { DollarSign } from 'lucide-react';
+import { submitBrokerProfile } from "@/lib/optionValues-requests";
 
 interface BrokerOptionsProps {
   broker_id: number;
@@ -13,14 +14,14 @@ interface BrokerOptionsProps {
   entity_id: number;
   entity_type: string;
   category: string;
-  action?: (
-    broker_id: number,
-    formData: FormData,
-    is_admin: boolean,
-    originalData?: OptionValue[],
-    entity_id?: number,
-    entity_type?: string
-  ) => Promise<void>;
+  // action?: (
+  //   broker_id: number,
+  //   formData: FormData,
+  //   is_admin: boolean,
+  //   originalData?: OptionValue[],
+  //   entity_id?: number,
+  //   entity_type?: string
+  // ) => Promise<void>;
 }
 
 export default function BrokerOptions({
@@ -30,7 +31,7 @@ export default function BrokerOptions({
   is_admin = false,
   entity_id,
   entity_type,
-  action,
+ // action,
   category
 }: BrokerOptionsProps) {
   return (
@@ -61,7 +62,7 @@ export default function BrokerOptions({
               is_admin={is_admin}
               entity_id={entity_id}
               entity_type={entity_type}
-              action={action}
+              action={submitBrokerProfile}
             />
           </CardContent>
         </Card>

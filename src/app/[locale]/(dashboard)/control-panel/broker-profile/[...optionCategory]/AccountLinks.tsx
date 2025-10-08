@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Url,UrlPayload } from "@/types/Url";
 import { LinksGroupedByType } from "@/types/AccountTypeLinks";
-import { saveAccountTypeLink, deleteAccountTypeLink } from "./actions";
+import { saveAccountTypeLink, deleteAccountTypeLink } from "@/lib/accountType-request";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
