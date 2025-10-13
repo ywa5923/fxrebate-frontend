@@ -109,6 +109,7 @@ export function DynamicForm({
       // Update the form field with the broker value
       let option = options.find(option => option.slug === optionSlug);
       let isMultiSelect = option?.form_type === "multiple_select";
+      let isCheckbox = option?.form_type === "checkbox";
       let isNotes = option?.form_type === "notes";
      // let isNumberWithUnit = options.find(option => option.slug === optionSlug)?.form_type === "numberWithUnit";
       let isNumberWithUnit = option?.form_type === "numberWithUnit";
@@ -122,7 +123,11 @@ export function DynamicForm({
         form.setValue(optionSlug, optionValue.value?.split("; "));
       } else if (isNotes) {
         form.setValue(optionSlug, optionValue.value?.split("; "));
-      } else {
+      } else if (isCheckbox) {
+        form.setValue(optionSlug, optionValue.value === "1");
+      }
+      
+      else {
      
         // For other field types, set the string value
         form.setValue(optionSlug, optionValue.value);

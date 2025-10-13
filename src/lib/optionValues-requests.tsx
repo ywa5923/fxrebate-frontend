@@ -168,7 +168,7 @@ export async function submitBrokerProfile(
       (option) => option.option_slug === option_slug
     );
     let meta_data_unit: string | null = null;
-    let valueToSave: string | null = null;
+    let valueToSave: string | number | null = null;
 
     //options of type numberWithUnit are sent as object with unit and value
     //we need to save the value as string and the unit as meta
@@ -182,7 +182,14 @@ export async function submitBrokerProfile(
       meta_data_unit = value.unit;
       valueToSave = value.value;
     } else {
-      valueToSave = value;
+      //checkboxes are sent with values 'true' or 'false'
+      //we need to save the value as string
+      if (typeof value === "boolean") {
+        valueToSave = value ? '1' : '0';
+      } else {
+        valueToSave = value;
+      }
+     
     }
 
     let is_updated_entry = 0;
