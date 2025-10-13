@@ -283,8 +283,10 @@ export default function AccountLinks({
                   form.reset({
                     ...link,
                     // Admin-editable fields fallback to broker values when public is null
-                    public_url: (link.public_url ?? link.url ?? "") || "",
-                    public_name: (link.public_name ?? link.name ?? "") || "",
+                   // public_url: (link.public_url ?? link.url ?? "") || "",
+                  //  public_name: (link.public_name ?? link.name ?? "") || "",
+                  public_url: link.public_url || "",
+                  public_name: link.public_name || "",
                     // Always keep broker values present too
                     url: link.url || "",
                     name: link.name || "",
@@ -578,7 +580,7 @@ export default function AccountLinks({
                   </span>
                   {is_admin && countUpdatedLinks(type) > 0 && (
                     <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium px-2 py-0.5 rounded-full">
-                      {countUpdatedLinks(type)} updated
+                      {countUpdatedLinks(type)} 
                     </span>
                   )}
                 </div>
