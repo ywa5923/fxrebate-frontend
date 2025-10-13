@@ -80,6 +80,7 @@ export function DynamicForm({
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalOptionsValues, setOriginalOptionsValues] = useState(optionsValues);
+  const [clickedCopyButtons, setClickedCopyButtons] = useState<Set<string>>(new Set());
 
   //NOTE:
   //===Form initialization with optionsValues:===
@@ -106,14 +107,23 @@ export function DynamicForm({
       //so for admin set the form field with the optionValue's value 
 
       // Update the form field with the broker value
-      let isNumberWithUnit = options.find(option => option.slug === optionSlug)?.form_type === "numberWithUnit";
+      let option = options.find(option => option.slug === optionSlug);
+      let isMultiSelect = option?.form_type === "multiple_select";
+      let isNotes = option?.form_type === "notes";
+     // let isNumberWithUnit = options.find(option => option.slug === optionSlug)?.form_type === "numberWithUnit";
+      let isNumberWithUnit = option?.form_type === "numberWithUnit";
       if (isNumberWithUnit) {
         // For numberWithUnit, set both value and unit
         form.setValue(optionSlug, {
           value: parseFloat(optionValue.value) || 0,
           unit: optionValue.metadata?.value?.unit || "",
         });
+      } else if (isMultiSelect) {
+        form.setValue(optionSlug, optionValue.value?.split("; "));
+      } else if (isNotes) {
+        form.setValue(optionSlug, optionValue.value?.split("; "));
       } else {
+     
         // For other field types, set the string value
         form.setValue(optionSlug, optionValue.value);
       }
@@ -156,7 +166,7 @@ export function DynamicForm({
             <div>Broker value: {brokerValue + " " + metadataUnit}</div>
             {!!showPrev && <div>Prev Value: {previousValue}</div>}
           </div>
-          {!!isUpdatedEntry && (
+          {(!!isUpdatedEntry || clickedCopyButtons.has(option.slug)) && (
             <Button
               type="button"
               variant="outline"
@@ -164,9 +174,16 @@ export function DynamicForm({
               onClick={(e) => {
                 e.preventDefault();
                 copyBrokerToPublic(option.slug);
+                // Add to clicked buttons set
+                setClickedCopyButtons(prev => new Set(prev).add(option.slug));
                 e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
               }}
-              className="p-1 h-6 w-6 flex-shrink-0 text-gray-600 hover:text-gray-800"
+              className={cn(
+                "p-1 h-6 w-6 flex-shrink-0",
+                clickedCopyButtons.has(option.slug)
+                  ? "bg-green-100 border-green-500 text-green-700"
+                  : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
+              )}
               title="Copy broker value to public value"
             >
               <Copy className="h-3 w-3" />
@@ -198,7 +215,7 @@ export function DynamicForm({
       schemaObject[option.slug] =
         option.required === 1
           ? z.instanceof(File).or(z.string())
-          : z.instanceof(File).or(z.string()).optional();
+          : z.instanceof(File).or(z.string()).nullable().optional();
       continue;
     }
 
@@ -261,25 +278,48 @@ export function DynamicForm({
           );
         }
         break;
-      case "multi-select":
+      case "multiple_select":
         // Use string validation with pipe delimiter format
-        // Create the array schema
-        fieldSchema = z.array(z.string());
-        // Apply validation immediately if required
+        // Create the array schema with preprocessing
         if (option.required === 1) {
-          fieldSchema = fieldSchema.min(
-            1,
-            `Please select at least one ${option.name}`
+          fieldSchema = z.preprocess(
+            (val) => {
+              if (val === null || val === undefined) return [];
+              if (Array.isArray(val)) return val;
+              return [];
+            },
+            z.array(z.string()).min(1, `Please select at least one ${option.name}`)
           );
-        }else{
-          fieldSchema = fieldSchema.nullable().optional();
+        } else {
+          fieldSchema = z.preprocess(
+            (val) => {
+              if (val === null || val === undefined) return [];
+              if (Array.isArray(val)) return val;
+              return [];
+            },
+            z.array(z.string()).optional()
+          );
         }
         break;
       case "notes":
         if (option.required === 1) {
-          fieldSchema = z.array(z.string()).min(1, `Please select at least one ${option.name}`);
+          fieldSchema = z.preprocess(
+            (val) => {
+              if (val === null || val === undefined) return [];
+              if (Array.isArray(val)) return val;
+              return [];
+            },
+            z.array(z.string().min(1, "Note cannot be empty")).min(1, `Please enter at least one ${option.name}`)
+          );
         } else {
-          fieldSchema = z.array(z.string()).nullable().optional();
+          fieldSchema = z.preprocess(
+            (val) => {
+              if (val === null || val === undefined) return [];
+              if (Array.isArray(val)) return val;
+              return [];
+            },
+            z.array(z.string()).optional()
+          );
         }
         break;
       case "url":
@@ -307,22 +347,26 @@ export function DynamicForm({
       if (optionValue !== null && optionValue !== undefined) {
 
         //if admin, populate form with public_value if it exists, otherwise use populate with optionValue.value
-        let fieldValue = is_admin
-          ? optionValue?.public_value === null ||
-            optionValue?.public_value === "undefined"
-            ? optionValue?.value
-            : optionValue?.public_value
-          : optionValue?.value;
+        // let fieldValue = is_admin
+        //   ? optionValue?.public_value === null ||
+        //     optionValue?.public_value === "undefined"
+        //     ? optionValue?.value
+        //     : optionValue?.public_value
+        //   : optionValue?.value;
+
+        
+        let fieldValue = is_admin ? optionValue?.public_value : optionValue?.value;
+
         let metadata=is_admin ? optionValue?.metadata?.public_value : optionValue?.metadata?.value;
 
         switch (option.form_type) {
           case "checkbox":
             return { ...acc, [option.slug]: fieldValue ==="1" };
-          case "multi-select":
-            return { ...acc, [option.slug]: fieldValue?.split("; ") };
+          case "multiple_select":
+            return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
 
           case "notes":
-            return { ...acc, [option.slug]: fieldValue?.split("; ") || [""] };
+            return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [""] };
 
           case "numberWithUnit":
             return {
@@ -368,6 +412,13 @@ export function DynamicForm({
      //console.log("Server action form data from client:", data);
      const dynamicFormLogger = logger.child('DynamicForm/handleServerActionSubmit');
      dynamicFormLogger.debug("Form data before sending to server", { context: { data } });
+     
+     // Trigger validation for all fields
+     const isValid = await form.trigger();
+     if (!isValid) {
+       dynamicFormLogger.debug("Form validation failed", { context: { errors: form.formState.errors } });
+       return;
+     }
     // dynamicFormLogger.debug("Detailed form data", { context: { data, fieldCount: Object.keys(data).length } });
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
@@ -621,6 +672,8 @@ export function DynamicForm({
                         const newNotes = [...(formField.value || [])];
                         newNotes[index] = e.target.value;
                         formField.onChange(newNotes);
+                        // Trigger validation for this field
+                        setTimeout(() => form.trigger(option.slug), 100);
                       }}
                     />
                     {formField.value && formField.value.length > 1 && (
@@ -648,6 +701,8 @@ export function DynamicForm({
                 onClick={() => {
                   const newNotes = [...(formField.value || []), ""];
                   formField.onChange(newNotes);
+                  // Trigger validation for this field
+                  setTimeout(() => form.trigger(option.slug), 100);
                 }}
                 className="w-fit px-4 py-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 transition-colors duration-200"
               >
@@ -768,7 +823,19 @@ export function DynamicForm({
                 {option.description && (
                   <FormDescription>{option.description}</FormDescription>
                 )}
-                <FormMessage />
+                {/* Custom error display for notes fields */}
+                {form.formState.errors[option.slug] && option.form_type === "notes" ? (
+                  <div className="text-sm text-red-500 mt-1">
+                    {Array.isArray(form.formState.errors[option.slug]) 
+                      ? (form.formState.errors[option.slug] as unknown as any[]).map((error: any, index: number) => (
+                          <div key={index}>{error.message}</div>
+                        ))
+                      : (form.formState.errors[option.slug] as any)?.message
+                    }
+                  </div>
+                ) : (
+                  <FormMessage />
+                )}
               </FormItem>
             )}
           />
