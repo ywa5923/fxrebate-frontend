@@ -88,40 +88,12 @@ export function DynamicForm({
   //The data submitted to server action by admin is considered as public_value, 
   //===Form initialization with optionsValues:===s
 
-  // Helper function to get broker value for admin display
-  const getBrokerValue = (optionSlug: string) => {
-    const optionValue = optionsValues.find(
+  const getOptionValue = (optionSlug: string) => {
+    return optionsValues.find(
       (optionValue) => optionValue.option_slug === optionSlug
     );
-    return optionValue?.value || "Not set";
   };
-
-  const IsUpdatedEntry = (optionSlug: string): boolean => {
-    const optionValue = originalOptionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug
-    );
-    return optionValue?.is_updated_entry || false;
-  };
-
   
-  const getBrokerPreviousValue = (optionSlug: string): string | null => {
-    const optionValue = originalOptionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug 
-    );
-
-    if(optionValue?.previous_value){
-      return optionValue?.previous_value + " "+(optionValue?.metadata?.unit || '') || null;
-    }
-    return null;
-  };
-
-  // Helper function to get broker metadata for admin display
-  const getBrokerMetadata = (optionSlug: string, key: string) => {
-    const optionValue = originalOptionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug
-    );
-    return optionValue?.metadata?.[key] || "Not set";
-  };
 
   // Helper function to copy broker value to public value
   const copyBrokerToPublic = (optionSlug: string) => {
@@ -134,7 +106,17 @@ export function DynamicForm({
       //so for admin set the form field with the optionValue's value 
 
       // Update the form field with the broker value
-      form.setValue(optionSlug, optionValue.value);
+      let isNumberWithUnit = options.find(option => option.slug === optionSlug)?.form_type === "numberWithUnit";
+      if (isNumberWithUnit) {
+        // For numberWithUnit, set both value and unit
+        form.setValue(optionSlug, {
+          value: parseFloat(optionValue.value) || 0,
+          unit: optionValue.metadata?.value?.unit || "",
+        });
+      } else {
+        // For other field types, set the string value
+        form.setValue(optionSlug, optionValue.value);
+      }
 
       //reset the is_updated_entry to false
       setOriginalOptionsValues((prev)=>{
@@ -153,11 +135,17 @@ export function DynamicForm({
   // Helper function to render option history (broker value and previous value)
   const renderOptionHistory = (option: Option) => {
     if (!is_admin) return null;
+    const optionValue = getOptionValue(option.slug);
 
-    const isUpdatedEntry = IsUpdatedEntry(option.slug);
-    const brokerValue = getBrokerValue(option.slug);
-    const previousValue = getBrokerPreviousValue(option.slug);
-    const showPrev = previousValue && previousValue !== brokerValue;
+    const isUpdatedEntry = optionValue?.is_updated_entry;
+
+    const brokerValue = optionValue?.value;
+
+    const previousValue = optionValue?.previous_value;
+    
+    const showPrev = previousValue !== null;
+   
+    const metadataUnit = optionValue?.metadata?.value?.unit ?? "";
 
     return (
       <div className={cn("text-sm text-muted-foreground mt-2", {
@@ -165,10 +153,10 @@ export function DynamicForm({
       })}>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <div>Broker value: {brokerValue}</div>
-            {showPrev && <div>Prev Value: {previousValue}</div>}
+            <div>Broker value: {brokerValue + " " + metadataUnit}</div>
+            {!!showPrev && <div>Prev Value: {previousValue}</div>}
           </div>
-          {isUpdatedEntry && (
+          {!!isUpdatedEntry && (
             <Button
               type="button"
               variant="outline"
@@ -325,10 +313,11 @@ export function DynamicForm({
             ? optionValue?.value
             : optionValue?.public_value
           : optionValue?.value;
+        let metadata=is_admin ? optionValue?.metadata?.public_value : optionValue?.metadata?.value;
 
         switch (option.form_type) {
           case "checkbox":
-            return { ...acc, [option.slug]: fieldValue === "true" };
+            return { ...acc, [option.slug]: fieldValue ==="1" };
           case "multi-select":
             return { ...acc, [option.slug]: fieldValue?.split("; ") };
 
@@ -340,7 +329,7 @@ export function DynamicForm({
               ...acc,
               [option.slug]: {
                 value: fieldValue ? parseFloat(fieldValue) : undefined,
-                unit: optionValue?.metadata?.unit,
+                unit: metadata?.unit,
               },
             };
           case "image":

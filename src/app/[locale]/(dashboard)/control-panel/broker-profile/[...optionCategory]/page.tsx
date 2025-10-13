@@ -21,6 +21,7 @@ import Contests from "./Contests";
 import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "./ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
+import logger from "@/lib/logger";
 
 
 export default async function BrokerProfilePage({ 
@@ -35,7 +36,7 @@ export default async function BrokerProfilePage({
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
- 
+ let pageLogger = logger.child('Broker profilepage');
 
   try {
     const resolvedParams = await params;
@@ -87,7 +88,7 @@ export default async function BrokerProfilePage({
     //there are the values submitted by the broker
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
-    
+    pageLogger.info('Options values fetched', { context: {json:JSON.stringify(optionsValues,null,2)} });
 
     // If this is the companies category, render the Companies component
     if(categorySlug=='my-companies'){

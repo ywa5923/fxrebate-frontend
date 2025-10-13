@@ -1,8 +1,11 @@
 import { BASE_URL } from "@/constants";
 import { DynamicTable } from "@/types";
+import logger from "./logger";
+import { error } from "console";
 
 export async function getAccountTypes(broker_id:number,zone_code:string|null=null,language_code:string|null=null):Promise<DynamicTable[]>{
     const url = new URL(`${BASE_URL}/account-types`);
+    const urlLogger = logger.child('lib/getAccountTypes');
 
     //if zone code is not send it recive account types with options values that have zone_code null and also zone_id null
     if(zone_code){
@@ -15,17 +18,18 @@ export async function getAccountTypes(broker_id:number,zone_code:string|null=nul
     url.searchParams.append("broker_id", broker_id.toString());
     
  
- 
     try{
         const response=await fetch(url.toString(),{cache:"no-store"});
         if(!response.ok){
+           urlLogger.error('Failed to fetch account types', { error:response.status, context: {url:url.toString(), broker_id,zone_code,language_code} });
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const responseData=await response.json();
+       
         return responseData.data as DynamicTable[];
 
     }catch(error){
-        console.error('Error fetching companies:', error);
+        urlLogger.error('Error fetching companies:', { error, context: {url:url.toString(), broker_id,zone_code,language_code} });
         throw error;
     }
 }

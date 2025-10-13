@@ -16,9 +16,12 @@ export async function getAccountTypeUrls(
     const accountType = account_type_id == null ? 'all' : account_type_id.toString();
 
     const url = new URL(`${BASE_URL}/urls/${broker_id}/account-type/${accountType}`);
+    urlLogger.info('Fetching account type urls', { context: {url:url.toString(), broker_id,accountType,zone_code,language_code} });
+  
     if(zone_code){
         url.searchParams.append("zone_code", zone_code);
     }
+  
     if(language_code){
         url.searchParams.append("language_code", language_code);
     }
@@ -26,6 +29,7 @@ export async function getAccountTypeUrls(
     try{
         const response=await fetch(url.toString(),{cache:"no-store"});
         if(!response.ok){
+            urlLogger.error('Failed to fetch account type urls', { error:response.status, context: {url:url.toString(), broker_id,accountType,zone_code,language_code} });
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const responseData=await response.json();
@@ -38,7 +42,7 @@ export async function getAccountTypeUrls(
 
           
     }catch(error){
-        urlLogger.error('Failed to fetch account type urls', { error, context: {url, broker_id,accountType } });   
+       // urlLogger.error('Failed to fetch account type urls', { error, context: {url: url.toString(), broker_id, accountType } });   
         throw error;
     }
 }

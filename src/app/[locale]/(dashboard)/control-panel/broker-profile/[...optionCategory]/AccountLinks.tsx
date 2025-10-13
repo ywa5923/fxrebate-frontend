@@ -403,9 +403,9 @@ export default function AccountLinks({
                             variant="outline"
                             size="sm"
                             onClick={(e) => {
-                              const brokerName = form.watch("name");
-                              if (brokerName) {
-                                form.setValue("public_name", brokerName);
+                              const linkName = form.watch("name");
+                              if (linkName) {
+                                form.setValue("public_name", linkName);
                                 e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
                               }
                             }}
@@ -458,7 +458,7 @@ export default function AccountLinks({
                   )}
                 /> */}
                 {/* Show "Is Master Link" only for admins when adding new link (not editing) */}
-                {is_admin  && (
+                {(is_admin  || addingType ) && (
                   <FormField
                     control={form.control}
                     name="is_master"
