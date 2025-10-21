@@ -170,18 +170,40 @@ class Logger {
 
     const formattedMessage = this.formatMessage(level, message, meta);
     
+    // Handle meta object properly - only log if it has meaningful content
+    const hasMetaContent = meta && Object.keys(meta).length > 0;
+    
+    // Additional check for empty objects
+    const isEmptyObject = meta && typeof meta === 'object' && Object.keys(meta).length === 0;
+    
     switch (level) {
       case 'error':
-        console.error(formattedMessage, meta || '');
+        if (hasMetaContent && !isEmptyObject) {
+          console.log(formattedMessage, meta);
+        } else {
+          console.log(formattedMessage);
+        }
         break;
       case 'warn':
-        console.warn(formattedMessage, meta || '');
+        if (hasMetaContent && !isEmptyObject) {
+          console.warn(formattedMessage, meta);
+        } else {
+          console.warn(formattedMessage);
+        }
         break;
       case 'info':
-        console.info(formattedMessage, meta || '');
+        if (hasMetaContent && !isEmptyObject) {
+          console.info(formattedMessage, meta);
+        } else {
+          console.info(formattedMessage);
+        }
         break;
       case 'debug':
-        console.log(formattedMessage, meta || '');
+        if (hasMetaContent && !isEmptyObject) {
+          console.log(formattedMessage, meta);
+        } else {
+          console.log(formattedMessage);
+        }
         break;
     }
   }

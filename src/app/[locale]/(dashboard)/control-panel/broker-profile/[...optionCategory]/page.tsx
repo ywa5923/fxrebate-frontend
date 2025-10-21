@@ -1,7 +1,7 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 import { getOptionsValues } from "@/lib/getOptionsValues";
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
 import { Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
@@ -22,7 +22,9 @@ import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "./ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
+import { getUserFromCookieServer, isAuthenticatedServer, getBrokerContextServer, isAdminServer } from "@/lib/secure-auth";
 
+//http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
 export default async function BrokerProfilePage({ 
   params 
@@ -30,13 +32,33 @@ export default async function BrokerProfilePage({
   params: Promise<{ optionCategory: string[] }> 
 }) {
  
-  let brokerId = 181;//181
-  let is_admin=true;
+  // Check authentication server-side
+  const isAuthenticated = await isAuthenticatedServer();
+  if (!isAuthenticated) {
+    logger.warn('User not authenticated, redirecting to login');
+    //redirect('/en');
+  }
+  
+  // Get user data from cookies server-side
+  const user = await getUserFromCookieServer();
+  const brokerContext = await getBrokerContextServer();
+  const is_admin = await isAdminServer();
+  
+  if (!user || !brokerContext) {
+    logger.error('User or broker context not found in cookies');
+    redirect('/en');
+  }
+  
+  console.log("user========================================", user);
+  let brokerId = brokerContext.broker_id;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
  let pageLogger = logger.child('Broker profilepage');
+ 
+ // Add a small delay to ensure cookies are available after redirect
+ await new Promise(resolve => setTimeout(resolve, 100));
 
   try {
     const resolvedParams = await params;
@@ -88,7 +110,7 @@ export default async function BrokerProfilePage({
     //there are the values submitted by the broker
     const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
-    pageLogger.info('Options values fetched', { context: {json:JSON.stringify(optionsValues,null,2)} });
+    //pageLogger.info('Options values fetched', { context: {json:JSON.stringify(optionsValues,null,2)} });
 
     // If this is the companies category, render the Companies component
     if(categorySlug=='my-companies'){
