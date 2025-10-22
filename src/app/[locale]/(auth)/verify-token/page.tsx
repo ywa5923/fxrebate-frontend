@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 // import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
-interface AuthResult {
+interface VerifyMagicLinkTokenResult {
   success: boolean;
   message: string;
   redirectTo?: string;
@@ -49,7 +49,7 @@ export default function MagicLinkAuthPage() {
           } 
         });
 
-        const result: AuthResult = await authenticateWithMagicLink(token);
+        const result: VerifyMagicLinkTokenResult = await authenticateWithMagicLink(token);
 
         if (!result.success) {
           throw new Error(result.message);
