@@ -156,14 +156,14 @@ const data = {
   ],
 }
 
-export function AppSidebar({ brokerOptionsLinks, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any }) {
+export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null,isBrokerManager = false, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any, teamManagementLink?: { name: string; url: string; icon: string } | null, isBrokerManager?: boolean }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
      
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
-        <NavProjects projects={brokerOptionsLinks} />
+        <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} />
       </SidebarContent>
       <SidebarFooter>
         {/* <NavUser user={data.user} /> */}

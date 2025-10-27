@@ -63,16 +63,21 @@ const iconMap: Record<string, LucideIcon> = {
 
 export function NavProjects({
   projects,
+  teamManagementLink = null,
+  isBrokerManager = false,
 }: {
   projects: {
     name: string
     url: string
     icon: string
   }[]
+  teamManagementLink?: { name: string; url: string; icon: string } | null,
+  isBrokerManager?: boolean,
 }) {
   const { isMobile } = useSidebar()
 
   return (
+    <>
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       {/* FXREBATE Logo Full Width */}
       <div className="w-full mt-4 mb-4 flex items-center justify-center">
@@ -93,6 +98,7 @@ export function NavProjects({
                   href={item.url}
                   className="flex items-center px-3 py-2 rounded-md transition-all duration-200 text-gray-800 hover:bg-green-50 hover:text-green-600 font-medium text-sm"
                 >
+                  <ChevronRight className="mr-3 h-4 w-4" />
                   {item.name}
                 </Link>
               </SidebarMenuButton>
@@ -134,5 +140,23 @@ export function NavProjects({
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
+
+    {/* Settings Section */}
+    {isBrokerManager && teamManagementLink && (
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+        <SidebarGroupLabel>Settings</SidebarGroupLabel>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href={teamManagementLink?.url || '#'} className="flex items-center px-4 py-3 rounded-lg transition-all duration-300 bg-gray-800 hover:bg-green-800 border border-gray-600 hover:border-green-600 text-gray-200 hover:text-green-100 font-medium text-sm shadow-md hover:-translate-y-1 group">
+                <Settings className="mr-3 h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+                {teamManagementLink?.name || 'Settings'}
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
+    )}
+    </>
   )
 }

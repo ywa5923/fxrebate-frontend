@@ -12,7 +12,7 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 interface VerifyMagicLinkTokenResult {
   success: boolean;
   message: string;
-  redirectTo?: string;
+  redirectTo: string;
 }
 
 export default function MagicLinkAuthPage() {
@@ -61,9 +61,9 @@ export default function MagicLinkAuthPage() {
         setMessage('You will be redirected to dashboard');
 
         // Wait 2 seconds to show the success message, then redirect
-        const redirectUrl = result.redirectTo || '/en/control-panel/broker-profile/1/general-information';
+      
         setTimeout(() => {
-          router.push(redirectUrl);
+          router.push(result.redirectTo);
         }, 2000);
 
       } catch (error) {

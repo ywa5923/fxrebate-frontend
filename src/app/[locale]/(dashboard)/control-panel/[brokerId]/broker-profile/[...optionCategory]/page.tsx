@@ -3,7 +3,7 @@ import { getOptionsValues } from "@/lib/getOptionsValues";
 
 import { notFound, redirect } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
-import { Option, OptionCategory } from "@/types";
+import { AuthUser, Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
 import { getCompanies } from "@/lib/getCompanies";
 import Companies from "./Companies";
@@ -22,35 +22,33 @@ import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "./ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
-import { getUserFromCookieServer, isAuthenticatedServer, getBrokerContextServer, isAdminServer } from "@/lib/secure-auth";
+import {  isAuthenticated} from "@/lib/auth-actions";
+import { hasPermission } from "@/lib/permissions";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
 export default async function BrokerProfilePage({ 
   params 
 }: { 
-  params: Promise<{ optionCategory: string[] }> 
+  params: Promise<{ optionCategory: string[], brokerId: string }> 
 }) {
  
   // Check authentication server-side
-  const isAuthenticated = await isAuthenticatedServer();
-  if (!isAuthenticated) {
-    logger.warn('User not authenticated, redirecting to login');
-    //redirect('/en');
-  }
   
-  // Get user data from cookies server-side
-  const user = await getUserFromCookieServer();
-  const brokerContext = await getBrokerContextServer();
-  const is_admin = await isAdminServer();
   
-  if (!user || !brokerContext) {
-    logger.error('User or broker context not found in cookies');
-    redirect('/en');
-  }
+  // // Get user permissions and broker context
+  // const is_admin = await isAdmin();
+  // const brokerContext = await getBrokerContext();
   
-  console.log("user========================================", user);
-  let brokerId = brokerContext.broker_id;
+  // if (!brokerContext) {
+  //   logger.error('Broker context not found for user');
+  //   redirect('/en');
+  // }
+  
+  // console.log("user========================================", user);
+  // let brokerId = brokerContext.broker_id;
+  //let brokerId = 181;
+  let is_admin = false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
@@ -61,10 +59,20 @@ export default async function BrokerProfilePage({
  await new Promise(resolve => setTimeout(resolve, 100));
 
   try {
+   // const user: AuthUser | null = await isAuthenticated();
+    //if (!user) {
+    //  pageLogger.info('User not authenticated, redirecting to login');
+   // redirect('/en');
+   // }
+
+   // pageLogger.info('User authenticated', { user: user,permissions: user?.permissions?.[0]?.type });
+
     const resolvedParams = await params;
+    const brokerId = parseInt(resolvedParams.brokerId);
     const categoryId = resolvedParams.optionCategory[0];
     const categorySlug = resolvedParams.optionCategory[1];
 
+   // let is_admin=hasPermission(user, 'manage', 'broker', brokerId);
     
     if (!categoryId) {
       console.log("No category ID provided");
