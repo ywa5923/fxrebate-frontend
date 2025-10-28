@@ -1,5 +1,6 @@
 import { getBrokerDefaultTeam } from '@/lib/team-management';
-import { isAuthenticated, canAdministerBroker, getBrokerInfo, canAdminBroker, } from '@/lib/auth-actions';
+import { isAuthenticated,  getBrokerInfo } from '@/lib/auth-actions';
+import { canManageBroker } from '@/lib/permissions';
 import { redirect } from 'next/navigation';
 import logger from '@/lib/logger';
 import { TeamUser, BrokerTeam } from '@/types';
@@ -27,27 +28,28 @@ interface TeamManagementPageProps {
   params: Promise<{ brokerId: string }>;
 }
 
+//http://localhost:3000/en/control-panel/185/broker-profile/team-management
 export default async function TeamManagementPage({ params }: TeamManagementPageProps) {
   const pageLogger = logger.child('control-panel/[brokerId]/broker-profile/team-management/page.tsx');
   
   // Check authentication
-  const user = await isAuthenticated();
-  if (!user) {
-    pageLogger.info('User not authenticated, redirecting to login');
-    //redirect('/en');
+  const loggedUser = await isAuthenticated();
+  if (!loggedUser) {
+    pageLogger.warn('User not authenticated, redirecting to login',{user_id: loggedUser?.id,user_email: loggedUser?.email,user_name: loggedUser?.name});
+    redirect('/en');
   }
+ 
 
   const resolvedParams = await params;
   const brokerId = parseInt(resolvedParams.brokerId);
+  const brokerInfo = await getBrokerInfo(brokerId);
 
-  // Check if user can administer this broker
-  //const canAdmin = hasPermission(user, 'manage', 'broker', brokerId);
-  //const canAdmin = await canAdministerBroker(brokerId);
-  //const canAdministerBroker(brokerId);
-  const canAdmin= await canAdminBroker(brokerId)
+
+  const canAdmin= canManageBroker(brokerId,loggedUser,brokerInfo)
+
   if (!canAdmin) {
     pageLogger.warn('!!!!!!!!User does not have permission to access team management', {
-      userId: user.id,
+      userId: loggedUser.id,
       brokerId
     });
     redirect(`/en/control-panel/${brokerId}/broker-profile/1/general-information`);
@@ -130,7 +132,11 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                       </div>
                     </div>
                   </div>
-                  <UserActions user={user} />
+                  {/* Only show edit/delete actions for other users,not for logged in team user */}
+                  {/*If the logged in user has same id as team user,he is a team user */}
+                  {/*This page is shown only for permision.action === 'manage' */}
+                  {/*So if the ids are same,logged in user is a team user with permission.action === 'manage' */}
+                  {loggedUser.id != user.id && <UserActions user={user} />}
                 </div>
 
                 {/* User Status */}

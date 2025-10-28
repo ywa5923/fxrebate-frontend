@@ -1,0 +1,247 @@
+"use client"
+
+import * as React from "react"
+import { 
+  Settings2, 
+  ChevronRight,
+  Building,
+  Users,
+  Globe,
+  Globe2,
+  Search,
+  Map,
+  List,
+  Sliders,
+  MapPin,
+  Compass,
+  Languages,
+  FileText,
+  MessageSquare,
+  Flag,
+  Shield,
+  Crown,
+  LogOut,
+  MoreVertical,
+  Eye,
+  UserPlus,
+  type LucideIcon
+} from "lucide-react"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { logoutUser } from "@/lib/auth-actions"
+
+interface SidebarLink {
+  name: string;
+  url: string;
+  icon: string;
+}
+
+interface AppSidebarSuperProps extends React.ComponentProps<typeof Sidebar> {
+  userLinks?: SidebarLink[];
+  settingsLinks?: SidebarLink[];
+  userName?: string;
+  userEmail?: string;
+}
+
+const iconMap: Record<string, LucideIcon> = {
+  Building,
+  Users,
+  Globe,
+  Globe2,
+  Languages,
+  FileText,
+  MessageSquare,
+  Flag,
+  Search,
+  Map,
+  MapPin,
+  Compass,
+  List,
+  Sliders,
+  Settings: Settings2,
+  Options: Sliders,
+  Cog: Settings2,
+  Translate: Languages,
+}
+
+export function AppSidebarSuper({ 
+  userLinks = [], 
+  settingsLinks = [], 
+  userName = "Admin",
+  userEmail = "",
+  ...props 
+}: AppSidebarSuperProps) {
+  const pathname = usePathname();
+  
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarContent>
+        {/* Logo */}
+        <div className="w-full mt-4 mb-4 flex items-center justify-center group-data-[collapsible=icon]:hidden">
+          <img 
+            src="/assets/darkFxRebate-logo.svg" 
+            alt="FXREBATE Logo" 
+            className="h-10 w-auto"
+          />
+        </div>
+
+        {/* Main Navigation Links */}
+        {userLinks.length > 0 && (
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel>Management</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {userLinks.map((link) => {
+                  const IconComponent = iconMap[link.icon] || Building;
+                  // Check if current path matches or starts with the link URL (for sub-routes)
+                  const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
+                  const isManageBrokers = link.name === 'Manage Brokers';
+                  
+                  return (
+                    <SidebarMenuItem key={link.name}>
+                      <div className="flex items-center w-full">
+                        <SidebarMenuButton asChild className="flex-1">
+                          <Link
+                            href={link.url}
+                            className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                              isActive 
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                            }`}
+                          >
+                            <IconComponent className="mr-3 h-4 w-4" />
+                            {link.name}
+                          </Link>
+                        </SidebarMenuButton>
+                        
+                        {isManageBrokers && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/brokers" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Brokers List
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/brokers/register" className="flex items-center cursor-pointer">
+                                  <UserPlus className="mr-2 h-4 w-4" />
+                                  Register New Broker
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Settings Section */}
+        {settingsLinks.length > 0 && (
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel>
+              <Settings2 className="h-4 w-4 mr-2 inline" />
+              Settings
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {settingsLinks.map((link) => {
+                  const IconComponent = iconMap[link.icon] || Settings2;
+                  // Check if current path matches or starts with the link URL (for sub-routes)
+                  const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
+                  return (
+                    <SidebarMenuItem key={link.name}>
+                      <SidebarMenuButton asChild>
+                        <Link
+                          href={link.url}
+                          className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                            isActive 
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                          }`}
+                        >
+                          <IconComponent className="mr-3 h-4 w-4" />
+                          {link.name}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+      <SidebarFooter className="border-t group-data-[collapsible=icon]:hidden">
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+              <Crown className="h-4 w-4 text-yellow-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                {userName}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                Super Admin
+              </p>
+            </div>
+          </div>
+          <div className="text-center py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              Full System Access
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={async () => {
+              await logoutUser();
+              window.location.href = '/en';
+            }}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  )
+}
+

@@ -3,8 +3,8 @@
 
 import { BASE_URL } from '@/constants';
 import logger from './logger';
-import { AuthUser, MagicLinkAuthResponse, AuthUserResponse, BrokerInfoResponse } from '@/types';
-import { BrokerInfoSchema,BrokerInfo, AuthUserSchema } from '@/app/schemas/auth-schema';
+import { MagicLinkAuthResponse, AuthUserResponse, BrokerInfoResponse } from '@/types';
+import { BrokerInfoSchema,BrokerInfo,AuthUser, AuthUserSchema } from '@/app/schemas/auth-schema';
 
 
 
@@ -132,7 +132,7 @@ export async function logoutUser(): Promise<void> {
  * Set authentication cookie on the server side
  * This should be called from a Server Action or API route
  */
-export async function setAuthCookie(token: string, user: AuthUser) {
+export async function setAuthCookie(token: string, user: Omit<AuthUser, 'permissions'|'broker_context'>) {
 
   const setAuthCookieLogger = logger.child('AuthActions/setAuthCookie');
   setAuthCookieLogger.debug('setAuthCookie called with:', { token: token.substring(0, 20) + '...', user: user.email });

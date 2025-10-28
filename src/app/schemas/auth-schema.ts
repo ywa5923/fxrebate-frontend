@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const BrokerInfoSchema = z.object({
     broker_id: z.number(),
+    broker_type: z.string(),
     broker_trading_name: z.string().nullable(),
     country_id: z.number(),
     country_code: z.string(),
