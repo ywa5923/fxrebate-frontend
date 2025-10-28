@@ -1,3 +1,5 @@
+'use server';
+
 import { BASE_URL } from '@/constants';
 import { BrokerDefaultTeamResponse } from '@/types';
 import { getBearerToken } from './auth-actions';
@@ -7,7 +9,7 @@ import logger from './logger';
  * Fetch broker's default team with users
  */
 export async function getBrokerDefaultTeam(brokerId: number): Promise<BrokerDefaultTeamResponse> {
-  const teamLogger = logger.child('TeamManagement/getBrokerDefaultTeam');
+  const teamLogger = logger.child('team-requests/getBrokerDefaultTeam');
   
   try {
     // Get bearer token for authentication
@@ -64,3 +66,4 @@ export async function getBrokerDefaultTeam(brokerId: number): Promise<BrokerDefa
     throw error;
   }
 }
+

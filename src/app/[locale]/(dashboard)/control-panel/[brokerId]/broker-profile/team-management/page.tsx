@@ -1,4 +1,4 @@
-import { getBrokerDefaultTeam } from '@/lib/team-management';
+import { getBrokerDefaultTeam } from '@/lib/team-requests';
 import { isAuthenticated,  getBrokerInfo } from '@/lib/auth-actions';
 import { canManageBroker } from '@/lib/permissions';
 import { redirect } from 'next/navigation';

@@ -8,7 +8,7 @@ import logger from './logger';
  * Add a new user to the broker team (Client-side function)
  */
 export async function addUserToBroker(brokerId: number, email: string, name: string, permissionAction: string): Promise<{ success: boolean; message: string }> {
-  const teamLogger = logger.child('TeamManagement/addUserToBroker');
+  const teamLogger = logger.child('team-requests-client/addUserToBroker');
   
   try {
     // Get bearer token for authentication

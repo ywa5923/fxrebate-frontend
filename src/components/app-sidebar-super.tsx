@@ -24,6 +24,7 @@ import {
   MoreVertical,
   Eye,
   UserPlus,
+  Plus,
   type LucideIcon
 } from "lucide-react"
 
@@ -183,21 +184,53 @@ export function AppSidebarSuper({
                   const IconComponent = iconMap[link.icon] || Settings2;
                   // Check if current path matches or starts with the link URL (for sub-routes)
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
+                  const isZones = link.name === 'Zones';
+                  
                   return (
                     <SidebarMenuItem key={link.name}>
-                      <SidebarMenuButton asChild>
-                        <Link
-                          href={link.url}
-                          className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
-                            isActive 
-                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
-                          }`}
-                        >
-                          <IconComponent className="mr-3 h-4 w-4" />
-                          {link.name}
-                        </Link>
-                      </SidebarMenuButton>
+                      <div className="flex items-center w-full">
+                        <SidebarMenuButton asChild className="flex-1">
+                          <Link
+                            href={link.url}
+                            className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                              isActive 
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                            }`}
+                          >
+                            <IconComponent className="mr-3 h-4 w-4" />
+                            {link.name}
+                          </Link>
+                        </SidebarMenuButton>
+                        
+                        {isZones && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/zones" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Zones List
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/zones/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Add New Zone
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </SidebarMenuItem>
                   );
                 })}
