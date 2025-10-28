@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -50,7 +50,7 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function RegisterBrokerPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -63,38 +63,45 @@ export default function RegisterBrokerPage() {
     },
   })
 
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true)
-    
-    try {
-      const response = await fetch(`${BASE_URL}/register-broker`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(values),
-      })
+  function onSubmit(values: FormValues) {
+    startTransition(async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/register-broker`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(values),
+        })
 
-      const data = await response.json()
+        const data = await response.json()
 
-      if (response.ok) {
-        toast.success('Broker registered successfully!')
-        form.reset()
-        router.push('/en/control-panel/super-manager/brokers')
-      } else {
-        toast.error(data.message || 'Failed to register broker')
+        if (response.ok) {
+          toast.success('Broker registered successfully!')
+          form.reset()
+          router.push('/en/control-panel/super-manager/brokers')
+          router.refresh()
+        } else {
+          toast.error(data.message || 'Failed to register broker')
+        }
+      } catch (error) {
+        toast.error('An error occurred while registering the broker')
+        console.error('Error:', error)
       }
-    } catch (error) {
-      toast.error('An error occurred while registering the broker')
-      console.error('Error:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    })
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 sm:p-0">
+    <div className="flex-1 space-y-4 p-4 sm:p-0 relative">
+      {isPending && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+            <p className="text-lg font-medium">Registering Broker...</p>
+          </div>
+        </div>
+      )}
       <Card className="max-w-2xl mx-auto shadow-lg">
         <CardHeader className="space-y-2 pb-6">
           <CardTitle className="text-xl sm:text-2xl">Register New Broker</CardTitle>
@@ -226,17 +233,17 @@ export default function RegisterBrokerPage() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                 <Button 
                   type="submit" 
-                  disabled={isSubmitting} 
+                  disabled={isPending} 
                   className="bg-green-700 hover:bg-green-800 w-full sm:w-auto h-11 text-base font-medium"
                 >
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isSubmitting ? 'Registering...' : 'Register Broker'}
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isPending ? 'Registering...' : 'Register Broker'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => router.push('/en/control-panel/super-manager/brokers')}
-                  disabled={isSubmitting}
+                  disabled={isPending}
                   className="w-full sm:w-auto h-11 text-base"
                 >
                   Cancel

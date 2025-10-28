@@ -394,6 +394,15 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
 
   return (
     <>
+      {isPending && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+            <p className="text-lg font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
+      
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

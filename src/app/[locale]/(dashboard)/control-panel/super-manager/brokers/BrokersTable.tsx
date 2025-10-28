@@ -36,39 +36,48 @@ interface BrokersTableProps {
 }
 
 function ToggleActiveButton({ broker }: { broker: Broker }) {
-  const [isToggling, setIsToggling] = useState(false);
+  const [isPending, startTransition] = useTransition();
   
-  const handleToggle = async () => {
-    setIsToggling(true);
-    try {
-      const result = await toggleBrokerStatus(broker.id);
-      if (result.success) {
-        toast.success('Broker status updated successfully');
-      } else {
-        toast.error(result.message || 'Failed to update broker status');
+  const handleToggle = () => {
+    startTransition(async () => {
+      try {
+        const result = await toggleBrokerStatus(broker.id);
+        if (result.success) {
+          toast.success('Broker status updated successfully');
+        } else {
+          toast.error(result.message || 'Failed to update broker status');
+        }
+      } catch (error) {
+        toast.error('An error occurred while updating broker status');
       }
-    } catch (error) {
-      toast.error('An error occurred while updating broker status');
-    } finally {
-      setIsToggling(false);
-    }
+    });
   };
   
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className={`${
-        broker.is_active 
-          ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700' 
-          : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-400 hover:border-gray-500'
-      }`}
-      onClick={handleToggle}
-      disabled={isToggling}
-      title={broker.is_active ? 'Deactivate broker' : 'Activate broker'}
-    >
-      <Power className="h-4 w-4" />
-    </Button>
+    <>
+      {isPending && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+            <p className="text-lg font-medium">Updating Broker Status...</p>
+          </div>
+        </div>
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        className={`${
+          broker.is_active 
+            ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700' 
+            : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-400 hover:border-gray-500'
+        }`}
+        onClick={handleToggle}
+        disabled={isPending}
+        title={broker.is_active ? 'Deactivate broker' : 'Activate broker'}
+      >
+        <Power className="h-4 w-4" />
+      </Button>
+    </>
   );
 }
 
@@ -496,6 +505,15 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
 
   return (
     <div className="space-y-4">
+      {isPending && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+            <p className="text-lg font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
+      
       {/* Filter Panel */}
       <div className="flex items-center justify-between">
         <Button
