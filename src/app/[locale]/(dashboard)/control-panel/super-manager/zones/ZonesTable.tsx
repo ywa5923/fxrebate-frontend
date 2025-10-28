@@ -184,20 +184,21 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
     },
     {
-      accessorKey: 'countries_count',
-      header: ({ column }) => {
+      accessorKey: 'countries',
+      header: 'Countries',
+      cell: ({ row }) => {
+        const countries = row.getValue('countries') as string | null;
+        if (!countries) return <span className="text-gray-400 italic">N/A</span>;
         return (
-          <Button
-            variant="ghost"
-            onClick={() => handleSort('countries_count')}
-            disabled={isPending}
-            className="hover:bg-transparent p-0 font-semibold"
-          >
-            Countries
-            {getSortIcon('countries_count')}
-          </Button>
+          <span className="uppercase font-medium text-purple-600">
+            {countries}
+          </span>
         );
       },
+    },
+    {
+      accessorKey: 'countries_count',
+      header: 'Country #',
       cell: ({ row }) => {
         return (
           <div className="text-center">
@@ -210,19 +211,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
     },
     {
       accessorKey: 'brokers_count',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => handleSort('brokers_count')}
-            disabled={isPending}
-            className="hover:bg-transparent p-0 font-semibold"
-          >
-            Brokers
-            {getSortIcon('brokers_count')}
-          </Button>
-        );
-      },
+      header: 'Brokers',
       cell: ({ row }) => {
         return (
           <div className="text-center">

@@ -16,6 +16,7 @@ export const ZoneDataSchema = z.object({
   name: z.string(),
   zone_code: z.string(),
   description: z.string().nullable(),
+  countries: z.string().nullable(),
   countries_count: z.number(),
   brokers_count: z.number(),
   created_at: z.string().nullable(),
