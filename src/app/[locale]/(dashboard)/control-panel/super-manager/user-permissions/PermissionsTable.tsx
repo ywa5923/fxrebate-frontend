@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -20,7 +20,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Power, Edit } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Power, Edit, Columns3, Eraser, Sliders } from 'lucide-react';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { UserPermission, UserPermissionPagination } from '@/types/UserPermission';
 import { toast } from 'sonner';
 import {
@@ -53,6 +54,21 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
   const [permissionToDelete, setPermissionToDelete] = useState<{ id: number; label: string } | null>(null);
+  const defaultColumnVisibility = useMemo(() => {
+    // Hide all columns ending with 'id' (case-insensitive) and created_at/updated_at by default
+    const hidden: Record<string, boolean> = {};
+    const toHide = new Set(['created_at', 'updated_at']);
+    const columnKeys: string[] = [
+      'index','id','subject_type','subject_id','user_data','permission_type','action','resource_id','resource_value','is_active','created_at','updated_at','actions'
+    ];
+    columnKeys.forEach((key) => {
+      if (toHide.has(key) || /id$/i.test(key)) {
+        hidden[key] = false; // false means hidden in columnVisibility map? (react-table expects true=visible). We'll set after table created.
+      }
+    });
+    return hidden;
+  }, []);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -229,9 +245,9 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               <Trash2 className="h-4 w-4" />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className={`${perm.is_active ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700' : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-400 hover:border-gray-500'}`}
+              className={`${perm.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
               onClick={() => handleToggle(perm.id)}
               disabled={isBusy}
               title={perm.is_active ? 'Deactivate' : 'Activate'}
@@ -244,7 +260,29 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
     },
   ];
 
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel(), manualPagination: true, pageCount: totalPages });
+  const table = useReactTable({ 
+    data, 
+    columns, 
+    getCoreRowModel: getCoreRowModel(), 
+    manualPagination: true, 
+    pageCount: totalPages,
+    state: { columnVisibility },
+    onColumnVisibilityChange: setColumnVisibility,
+  });
+
+  useEffect(() => {
+    // Initialize defaults only once on mount
+    if (Object.keys(columnVisibility).length === 0) {
+      const current: Record<string, boolean> = {};
+      table.getAllLeafColumns().forEach((col) => {
+        const id = col.id;
+        const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
+        current[id] = !shouldHide; // true = visible
+      });
+      setColumnVisibility(current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => {
@@ -359,7 +397,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="gap-2">
           <Filter className="h-4 w-4" />
           {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -370,11 +408,59 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
           )}
         </Button>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearFilters} className="gap-2 text-red-600 hover:text-red-700">
-            <X className="h-4 w-4" />
-            Clear All Filters
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="ml-2 gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+          >
+            <Eraser className="h-4 w-4" />
+            <span>Clear all filters</span>
           </Button>
         )}
+        {!showFilters && (
+        <div className="ml-auto flex items-center gap-2 flex-nowrap whitespace-nowrap">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table.getAllLeafColumns().map((column) => {
+                const columnLabelMap: Record<string, string> = {
+                  index: '#',
+                  id: 'ID',
+                  subject_type: 'User Type',
+                  subject_id: 'User ID',
+                  user_data: 'User Data',
+                  permission_type: 'Permission Type',
+                  action: 'Action',
+                  resource_id: 'Resource ID',
+                  resource_value: 'Resource Value',
+                  is_active: 'Status',
+                  created_at: 'Created At',
+                  updated_at: 'Updated At',
+                  actions: 'Actions',
+                };
+                const label = columnLabelMap[column.id] ?? column.id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+        </div>
+        )}
+        {showFilters && (<div className="ml-auto" />)}
       </div>
 
       {showFilters && (
@@ -395,13 +481,13 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject_id">User ID</Label>
-              <Input id="subject_id" placeholder="1" value={subject_id} onChange={(e) => setSubjectId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="subject_id" value={subject_id} onChange={(e) => setSubjectId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="permission_type">Permission Type</Label>
               <Select onValueChange={(v) => setPermissionType(v)} defaultValue={permission_type || undefined}>
                 <SelectTrigger id="permission_type">
-                  <SelectValue placeholder="Any" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">ANY</SelectItem>
@@ -415,17 +501,17 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="resource_id">Resource ID</Label>
-              <Input id="resource_id" placeholder="182" value={resource_id} onChange={(e) => setResourceId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="resource_id" value={resource_id} onChange={(e) => setResourceId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="resource_value">Resource Value</Label>
-              <Input id="resource_value" placeholder="some value" value={resource_value} onChange={(e) => setResourceValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="resource_value" value={resource_value} onChange={(e) => setResourceValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="action">Action</Label>
               <Select onValueChange={(v) => setAction(v)} defaultValue={action || undefined}>
                 <SelectTrigger id="action">
-                  <SelectValue placeholder="Any" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">ANY</SelectItem>
@@ -436,14 +522,14 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" placeholder="Filter user" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Label htmlFor="subject">User name or email</Label>
+              <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="is_active">Status</Label>
               <Select onValueChange={(v) => setIsActive(v)} defaultValue={isActive || undefined}>
                 <SelectTrigger id="is_active">
-                  <SelectValue placeholder="Any" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">ANY</SelectItem>
@@ -457,6 +543,48 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             <Button onClick={handleApplyFilters} size="sm" className="bg-green-900 hover:bg-green-950 text-white">Apply Filters</Button>
             <Button onClick={handleClearFilters} variant="outline" size="sm">Clear</Button>
           </div>
+        </div>
+      )}
+
+      {showFilters && (
+        <div className="flex items-center justify-end mt-2 gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table.getAllLeafColumns().map((column) => {
+                const columnLabelMap: Record<string, string> = {
+                  index: '#',
+                  id: 'ID',
+                  subject_type: 'User Type',
+                  subject_id: 'User ID',
+                  user_data: 'User Data',
+                  permission_type: 'Permission Type',
+                  action: 'Action',
+                  resource_id: 'Resource ID',
+                  resource_value: 'Resource Value',
+                  is_active: 'Status',
+                  created_at: 'Created At',
+                  updated_at: 'Updated At',
+                  actions: 'Actions',
+                };
+                const label = columnLabelMap[column.id] ?? column.id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
 
