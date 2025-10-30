@@ -124,6 +124,7 @@ export function AppSidebarSuper({
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
                   const isManageBrokers = link.name === 'Manage Brokers';
                   const isPlatformUsers = link.name === 'Manage Platform Users' || link.name === 'Platform Users';
+                  const isUserPermissions = link.name === 'Manage User Permissions' || link.name === 'User Permissions';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -192,6 +193,34 @@ export function AppSidebarSuper({
                                 <Link href="/en/control-panel/super-manager/platform-users/add" className="flex items-center cursor-pointer">
                                   <UserPlus className="mr-2 h-4 w-4" />
                                   Add Platform User
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+
+                        {isUserPermissions && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Permissions
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions/broker-permission/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create Broker Type Permission
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>

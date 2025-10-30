@@ -38,6 +38,7 @@ export async function getPlatformUserList(
     if (filters?.order_by) params.set('order_by', filters.order_by);
     if (filters?.order_direction) params.set('order_direction', filters.order_direction);
 
+    log.debug('111111111Fetching platform users', { url: `${BASE_URL}/platform-users?${params.toString()}` });
     const response = await fetch(`${BASE_URL}/platform-users?${params.toString()}`, {
       method: 'GET',
       headers: {

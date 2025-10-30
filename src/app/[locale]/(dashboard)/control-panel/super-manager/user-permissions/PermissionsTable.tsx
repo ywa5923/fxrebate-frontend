@@ -20,7 +20,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Power } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Power, Edit } from 'lucide-react';
 import type { UserPermission, UserPermissionPagination } from '@/types/UserPermission';
 import { toast } from 'sonner';
 import {
@@ -195,6 +195,17 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
         const label = `${perm.permission_type}:${perm.action}`;
         return (
           <div className="flex items-center gap-2">
+            {perm.permission_type === 'broker' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/${locale}/control-panel/super-manager/user-permissions/broker-permission/edit/${perm.id}`)}
+                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                title="Edit permission"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -417,7 +428,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" placeholder="Default User" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="subject" placeholder="Filter user" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="is_active">Status</Label>
@@ -480,6 +491,18 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                       onKeyDown={(e) => { if (e.key === 'Enter') setFilter('subject_id', (e.target as HTMLInputElement).value); }}
                       className="h-8 text-xs"
                       placeholder="Filter ID"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'user_data') {
+                  control = (
+                    <Input
+                      id="hdr_subject"
+                      defaultValue={(searchParams.get('subject') as string) || ''}
+                      key={`rst-${filtersResetKey}-subject`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('subject', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter user"
                       style={{ backgroundColor: '#ffffff' }}
                     />
                   );

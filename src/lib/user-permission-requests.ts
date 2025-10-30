@@ -94,4 +94,80 @@ export async function toggleUserPermission(id: number): Promise<{ success: boole
   }
 }
 
+export interface CreateUserPermissionPayload {
+  subject_type: string;
+  subject_id: number;
+  permission_type: 'broker' | 'country' | 'zone' | 'seo-country' | 'translator-country';
+  resource_id?: number | null;
+  resource_value?: string | null;
+  action: 'view' | 'edit' | 'delete' | 'manage';
+  metadata?: Record<string, unknown> | unknown[] | null;
+  is_active?: boolean;
+}
+
+export async function createUserPermission(payload: CreateUserPermissionPayload): Promise<{ success: boolean; message?: string; data?: any }> {
+  const log = logger.child('lib/user-permission-requests/createUserPermission');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) return { success: false, message: 'Authentication token not found' };
+
+   
+    const response = await fetch(`${BASE_URL}/user-permissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      log.error('Error creating permission', { status: response.status, message: data?.message });
+      return { success: false, message: data?.message || `HTTP error: ${response.status}` };
+    }
+    return { success: true, message: data?.message || 'Permission created successfully', data: data?.data };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
+  }
+}
+
+export async function getUserPermissionById(id: number): Promise<{ success: boolean; data?: any; message?: string }> {
+  const log = logger.child('lib/user-permission-requests/getUserPermissionById');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) return { success: false, message: 'Authentication token not found' };
+    const response = await fetch(`${BASE_URL}/user-permissions/${id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+      next: { revalidate: 0 },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      log.error('Error fetching permission by id', { status: response.status, message: data?.message });
+      return { success: false, message: data?.message || `HTTP error: ${response.status}` };
+    }
+    return { success: true, data: data?.data };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
+  }
+}
+
+export async function updateUserPermission(id: number, payload: CreateUserPermissionPayload): Promise<{ success: boolean; message?: string; data?: any }> {
+  const log = logger.child('lib/user-permission-requests/updateUserPermission');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) return { success: false, message: 'Authentication token not found' };
+    const response = await fetch(`${BASE_URL}/user-permissions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      log.error('Error updating permission', { status: response.status, message: data?.message });
+      return { success: false, message: data?.message || `HTTP error: ${response.status}` };
+    }
+    return { success: true, message: data?.message || 'Permission updated successfully', data: data?.data };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
+  }
+}
+
 

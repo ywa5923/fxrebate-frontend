@@ -2,8 +2,9 @@ import { getPlatformUserList } from '@/lib/platform-user-requests';
 import { PlatformUsersTable } from './PlatformUsersTable';
 
 export async function PlatformUsersTableWrapper({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
-  const sp = await searchParams;
 
+
+  const sp = await searchParams;
   const pageParam = Number((sp?.page as string) || 1);
   const perPageParam = Number((sp?.per_page as string) || 15);
   const name = (sp?.name as string) || undefined;

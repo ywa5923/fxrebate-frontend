@@ -16,7 +16,6 @@ export async function PermissionsTableWrapper({ searchParams }: { searchParams?:
     order_by: searchParams?.order_by as string | undefined,
     order_direction: searchParams?.order_direction as 'asc' | 'desc' | undefined,
   });
-
   return <PermissionsTable data={data.data || []} meta={data.pagination} />;
 }
 

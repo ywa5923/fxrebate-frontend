@@ -77,32 +77,14 @@ export async function getCountryList(
     );
 
     if (!response.ok) {
-      let errorMessage = `HTTP error: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
-        log.error('Error fetching country list', { 
-          status: response.status,
-          error: errorMessage,
-          errorData 
-        });
-      } catch {
-        const errorText = await response.text();
-        log.error('Error fetching country list', { 
-          status: response.status,
-          error: errorMessage,
-          errorText 
-        });
-      }
-      throw new Error(errorMessage);
+      log.error('Error fetching country list', { 
+        status: response.status,
+        error: response.statusText
+      });
+      throw new Error(response.statusText);
     }
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      log.error('Non-JSON response received', { contentType, text });
-      throw new Error('Invalid response format from server');
-    }
+    
 
     const data: CountryListResponse = await response.json();
 
