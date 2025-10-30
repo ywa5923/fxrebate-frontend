@@ -20,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, Power, Filter, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, ToggleLeft, ToggleRight, Filter, X, Sliders, Eraser } from 'lucide-react';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { PlatformUser, PlatformUserPagination } from '@/types/PlatformUser';
 import { toast } from 'sonner';
 import {
@@ -60,6 +61,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -221,14 +223,14 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
               <Trash2 className="h-4 w-4" />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className={`${user.is_active ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700' : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-400 hover:border-gray-500'}`}
+              className={`${user.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
               onClick={() => handleToggleStatus(user)}
               disabled={isBusy}
               title={user.is_active ? 'Deactivate user' : 'Activate user'}
             >
-              <Power className="h-4 w-4" />
+              {user.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </Button>
           </div>
         );
@@ -236,7 +238,28 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
     },
   ];
 
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel(), manualPagination: true, pageCount: totalPages });
+  const table = useReactTable({ 
+    data, 
+    columns, 
+    getCoreRowModel: getCoreRowModel(), 
+    manualPagination: true, 
+    pageCount: totalPages,
+    state: { columnVisibility },
+    onColumnVisibilityChange: setColumnVisibility,
+  });
+
+  useEffect(() => {
+    if (Object.keys(columnVisibility).length === 0) {
+      const current: Record<string, boolean> = {};
+      table.getAllLeafColumns().forEach((col) => {
+        const id = col.id as string;
+        const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
+        current[id] = !shouldHide;
+      });
+      setColumnVisibility(current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => {
@@ -334,7 +357,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="gap-2">
           <Filter className="h-4 w-4" />
           {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -345,11 +368,12 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
           )}
         </Button>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearFilters} className="gap-2 text-red-600 hover:text-red-700">
-            <X className="h-4 w-4" />
-            Clear All Filters
+          <Button variant="outline" size="sm" onClick={handleClearFilters} className="ml-2 gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800">
+            <Eraser className="h-4 w-4" />
+            <span>Clear all filters</span>
           </Button>
         )}
+        <div className="ml-auto" />
       </div>
 
       {showFilters && (
@@ -387,6 +411,43 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
           </div>
         </div>
       )}
+
+      <div className="flex items-center justify-end mt-2 gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+              <Sliders className="h-4 w-4" />
+              <span className="hidden sm:inline">Select Columns</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {table.getAllLeafColumns().map((column) => {
+              const columnLabelMap: Record<string, string> = {
+                index: '#',
+                id: 'ID',
+                name: 'Name',
+                email: 'Email',
+                role: 'Role',
+                is_active: 'Status',
+                last_login_at: 'Last Login',
+                created_at: 'Created At',
+                updated_at: 'Updated At',
+                actions: 'Actions',
+              };
+              const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                >
+                  {label}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       <div className="rounded-md border overflow-hidden">
         <div className="overflow-x-auto">

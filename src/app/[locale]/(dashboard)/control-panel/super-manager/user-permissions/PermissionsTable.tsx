@@ -20,7 +20,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Power, Edit, Columns3, Eraser, Sliders } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Trash2, Edit, Columns3, Eraser, Sliders, ToggleLeft, ToggleRight } from 'lucide-react';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { UserPermission, UserPermissionPagination } from '@/types/UserPermission';
 import { toast } from 'sonner';
@@ -252,7 +252,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               disabled={isBusy}
               title={perm.is_active ? 'Deactivate' : 'Activate'}
             >
-              <Power className="h-4 w-4" />
+              {perm.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </Button>
           </div>
         );
@@ -418,49 +418,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             <span>Clear all filters</span>
           </Button>
         )}
-        {!showFilters && (
-        <div className="ml-auto flex items-center gap-2 flex-nowrap whitespace-nowrap">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
-                <Sliders className="h-4 w-4" />
-                <span className="hidden sm:inline">Select Columns</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table.getAllLeafColumns().map((column) => {
-                const columnLabelMap: Record<string, string> = {
-                  index: '#',
-                  id: 'ID',
-                  subject_type: 'User Type',
-                  subject_id: 'User ID',
-                  user_data: 'User Data',
-                  permission_type: 'Permission Type',
-                  action: 'Action',
-                  resource_id: 'Resource ID',
-                  resource_value: 'Resource Value',
-                  is_active: 'Status',
-                  created_at: 'Created At',
-                  updated_at: 'Updated At',
-                  actions: 'Actions',
-                };
-                const label = columnLabelMap[column.id] ?? column.id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
-                  >
-                    {label}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-        </div>
-        )}
-        {showFilters && (<div className="ml-auto" />)}
+        <div className="ml-auto" />
       </div>
 
       {showFilters && (
@@ -546,8 +504,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
         </div>
       )}
 
-      {showFilters && (
-        <div className="flex items-center justify-end mt-2 gap-2">
+      <div className="flex items-center justify-end mt-2 gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
@@ -585,8 +542,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      )}
+      </div>
 
       <div className="rounded-md border overflow-hidden">
         <div className="overflow-x-auto">
