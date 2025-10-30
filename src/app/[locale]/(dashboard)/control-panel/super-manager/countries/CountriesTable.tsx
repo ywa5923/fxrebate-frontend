@@ -39,20 +39,20 @@ import {
   ArrowUp,
   ArrowDown,
   Filter,
-  Edit,
   Trash2,
-  X
+  X,
+  Edit
 } from 'lucide-react';
-import { deleteZone } from '@/lib/zone-requests';
-import type { Zone, ZonePagination } from '@/types/Zone';
 import { toast } from 'sonner';
+import { deleteCountry } from '@/lib/country-requests';
+import type { Country, CountryPagination } from '@/types/Country';
 
-interface ZonesTableProps {
-  data?: Zone[];
-  meta?: ZonePagination;
+interface CountriesTableProps {
+  data?: Country[];
+  meta?: CountryPagination;
 }
 
-export function ZonesTable({ data, meta }: ZonesTableProps) {
+export function CountriesTable({ data, meta }: CountriesTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -62,12 +62,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [name, setName] = useState(searchParams.get('name') || '');
+  const [countryCode, setCountryCode] = useState(searchParams.get('country_code') || '');
   const [zoneCode, setZoneCode] = useState(searchParams.get('zone_code') || '');
-  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [zoneToDelete, setZoneToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [countryToDelete, setCountryToDelete] = useState<{ id: number; name: string } | null>(null);
 
-  const hasActiveFilters = searchParams.get('name') || searchParams.get('zone_code');
+  const hasActiveFilters = searchParams.get('name') || searchParams.get('country_code') || searchParams.get('zone_code');
 
   // Safety checks for meta
   const currentPage = meta?.current_page || 1;
@@ -85,6 +85,14 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
 
   const handleSort = (columnId: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    
+    // API supports: id, name, country_code, zone_code, created_at, updated_at
+    const allowedColumns = ['id', 'name', 'country_code', 'zone_code', 'created_at', 'updated_at'];
+    
+    if (!allowedColumns.includes(columnId)) {
+      // Column not sortable by API
+      return;
+    }
     
     if (orderBy === columnId) {
       if (orderDirection === 'asc') {
@@ -105,6 +113,36 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
     });
   };
 
+  const handleDelete = async () => {
+    if (!countryToDelete) return;
+
+    setIsDeleting(true);
+    startTransition(async () => {
+      try {
+        const result = await deleteCountry(countryToDelete.id);
+        if (result.success) {
+          toast.success('Country Deleted Successfully', {
+            description: `Country "${countryToDelete.name}" has been deleted.`,
+          });
+          setDeleteDialogOpen(false);
+          setCountryToDelete(null);
+          router.refresh();
+        } else {
+          toast.error('Error Deleting Country', {
+            description: result.message || 'Unknown error occurred.',
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting country:', error);
+        toast.error('Error Deleting Country', {
+          description: 'An unexpected error occurred while deleting the country.',
+        });
+      } finally {
+        setIsDeleting(false);
+      }
+    });
+  };
+
   const getSortIcon = (columnId: string) => {
     if (orderBy !== columnId) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
@@ -114,7 +152,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       : <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
-  const columns: ColumnDef<Zone>[] = [
+  const columns: ColumnDef<Country>[] = [
     {
       id: 'row_number',
       header: '#',
@@ -154,6 +192,36 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
     },
     {
+      accessorKey: 'country_code',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('country_code')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Country Code
+            {getSortIcon('country_code')}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <span className="uppercase font-medium text-blue-600">
+            {row.getValue('country_code')}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'zone_name',
+      header: 'Zone Name',
+      cell: ({ row }) => {
+        const zoneName = row.original.zone_name;
+        return zoneName || <span className="text-gray-400 italic">N/A</span>;
+      },
+    },
+    {
       accessorKey: 'zone_code',
       header: ({ column }) => {
         return (
@@ -169,43 +237,9 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
       cell: ({ row }) => {
         return (
-          <span className="uppercase font-medium text-blue-600">
+          <span className="uppercase font-medium text-purple-600">
             {row.getValue('zone_code')}
           </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'description',
-      header: 'Description',
-      cell: ({ row }) => {
-        const description = row.getValue('description') as string | null;
-        return description || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'countries',
-      header: 'Countries',
-      cell: ({ row }) => {
-        const countries = row.getValue('countries') as string | null;
-        if (!countries) return <span className="text-gray-400 italic">N/A</span>;
-        return (
-          <span className="uppercase font-medium text-purple-600">
-            {countries}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'countries_count',
-      header: 'Country #',
-      cell: ({ row }) => {
-        return (
-          <div className="text-center">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm">
-              {row.getValue('countries_count')}
-            </span>
-          </div>
         );
       },
     },
@@ -274,16 +308,17 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
-        const zone = row.original;
-        
+        const country = row.original;
         return (
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/${locale}/control-panel/super-manager/zones/edit/${zone.id}`)}
+              onClick={() => {
+                router.push(`/${locale}/control-panel/super-manager/countries/edit/${country.id}`);
+              }}
               className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              title="Edit zone"
+              title="Edit country"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -291,12 +326,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
               variant="ghost"
               size="sm"
               onClick={() => {
-                setZoneToDelete({ id: zone.id, name: zone.name });
+                setCountryToDelete({ id: country.id, name: country.name });
                 setDeleteDialogOpen(true);
               }}
               disabled={isDeleting}
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-              title="Delete zone"
+              title="Delete country"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -305,37 +340,6 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
     },
   ];
-
-  const handleDelete = async () => {
-    if (!zoneToDelete) return;
-
-    setIsDeleting(true);
-    startTransition(async () => {
-      try {
-        const result = await deleteZone(zoneToDelete.id);
-        
-        if (result.success) {
-          toast.success('Zone Deleted Successfully', {
-            description: `Zone "${zoneToDelete.name}" has been deleted.`,
-          });
-          setDeleteDialogOpen(false);
-          setZoneToDelete(null);
-          router.refresh();
-        } else {
-          toast.error('Error Deleting Zone', {
-            description: result.message || 'Unknown error occurred.',
-          });
-        }
-      } catch (error) {
-        console.error('Error deleting zone:', error);
-        toast.error('Error Deleting Zone', {
-          description: 'An unexpected error occurred while deleting the zone.',
-        });
-      } finally {
-        setIsDeleting(false);
-      }
-    });
-  };
 
   const table = useReactTable({
     data: safeData,
@@ -366,6 +370,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       params.delete('name');
     }
     
+    if (countryCode) {
+      params.set('country_code', countryCode);
+    } else {
+      params.delete('country_code');
+    }
+    
     if (zoneCode) {
       params.set('zone_code', zoneCode);
     } else {
@@ -381,10 +391,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
 
   const handleClearFilters = () => {
     setName('');
+    setCountryCode('');
     setZoneCode('');
     
     const params = new URLSearchParams(searchParams.toString());
     params.delete('name');
+    params.delete('country_code');
     params.delete('zone_code');
     params.set('page', '1');
     
@@ -394,7 +406,29 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
   };
 
   return (
-    <>
+    <div className="space-y-4">
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the country <strong>&quot;{countryToDelete?.name}&quot;</strong>.
+              This action cannot be undone and may affect associated brokers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCountryToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete Country
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {isDeleting && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
@@ -403,70 +437,57 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
           </div>
         </div>
       )}
-      
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the zone <strong>&quot;{zoneToDelete?.name}&quot;</strong>.
-              This action cannot be undone and may affect associated countries and brokers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setZoneToDelete(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              Delete Zone
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-            {hasActiveFilters && (
-              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-blue-600 rounded-full">
-                {[searchParams.get('name'), searchParams.get('zone_code')].filter(Boolean).length}
-              </span>
-            )}
-          </Button>
-          
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="gap-2"
+        >
+          <Filter className="h-4 w-4" />
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
           {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="gap-2 text-red-600 hover:text-red-700"
-            >
-              <X className="h-4 w-4" />
-              Clear All Filters
-            </Button>
+            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-blue-600 rounded-full">
+              {[searchParams.get('name'), searchParams.get('country_code'), searchParams.get('zone_code')].filter(Boolean).length}
+            </span>
           )}
-        </div>
+        </Button>
+        
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearFilters}
+            className="gap-2 text-red-600 hover:text-red-700"
+          >
+            <X className="h-4 w-4" />
+            Clear All Filters
+          </Button>
+        )}
+      </div>
 
       {showFilters && (
         <div className="bg-gray-50 border-2 border-dashed border-green-700 rounded-lg p-4 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Zone Name</Label>
+              <Label htmlFor="name">Country Name</Label>
               <Input
                 id="name"
-                placeholder="e.g., Europe"
+                placeholder="e.g., Romania"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+                style={{ backgroundColor: '#ffffff' }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="country_code">Country Code</Label>
+              <Input
+                id="country_code"
+                placeholder="e.g., ro"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -506,7 +527,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-gray-600">
         <div>
-          Showing {from} to {to} of {total} zones
+          Showing {from} to {to} of {total} countries
         </div>
       </div>
 
@@ -551,7 +572,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No zones found.
+                  No countries found.
                 </TableCell>
               </TableRow>
             )}
@@ -600,7 +621,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
           </Button>
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }
+

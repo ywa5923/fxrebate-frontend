@@ -117,6 +117,7 @@ export function AppSidebarSuper({
                   // Check if current path matches or starts with the link URL (for sub-routes)
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
                   const isManageBrokers = link.name === 'Manage Brokers';
+                  const isPlatformUsers = link.name === 'Manage Platform Users' || link.name === 'Platform Users';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -162,6 +163,34 @@ export function AppSidebarSuper({
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
+
+                        {isPlatformUsers && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/platform-users" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Platform Users
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/platform-users/add" className="flex items-center cursor-pointer">
+                                  <UserPlus className="mr-2 h-4 w-4" />
+                                  Add Platform User
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </SidebarMenuItem>
                   );
@@ -185,6 +214,7 @@ export function AppSidebarSuper({
                   // Check if current path matches or starts with the link URL (for sub-routes)
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
                   const isZones = link.name === 'Zones';
+                  const isCountries = link.name === 'Countries';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -225,6 +255,34 @@ export function AppSidebarSuper({
                                 <Link href="/en/control-panel/super-manager/zones/add" className="flex items-center cursor-pointer">
                                   <Plus className="mr-2 h-4 w-4" />
                                   Add New Zone
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                        
+                        {isCountries && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/countries" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Countries List
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/countries/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Add New Country
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ExternalLink, Power, ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { Broker } from '@/lib/broker-management';
 import Image from 'next/image';
 import { toggleBrokerStatus } from './actions';
@@ -355,7 +355,11 @@ const createColumns = ({ currentPage, perPage, orderBy, orderDirection, onSort }
     header: 'Actions',
     cell: ({ row }) => {
       const broker = row.original;
-      const dashboardUrl = `/en/control-panel/${broker.id}/broker-profile/1/general-information`;
+      // Get locale from URL or default to 'en'
+      const currentLocale = typeof window !== 'undefined' 
+        ? window.location.pathname.split('/')[1] || 'en'
+        : 'en';
+      const dashboardUrl = `/${currentLocale}/control-panel/${broker.id}/broker-profile/1/general-information`;
       
       return (
         <div className="flex gap-2">
@@ -380,6 +384,8 @@ const createColumns = ({ currentPage, perPage, orderBy, orderDirection, onSort }
 export function BrokersTable({ data, meta }: BrokersTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
   const [isPending, startTransition] = useTransition();
   const [showFilters, setShowFilters] = useState(false);
 
@@ -422,7 +428,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
       // Reset to page 1 when sorting changes
       params.set('page', '1');
       
-      router.push(`/en/control-panel/super-manager/brokers?${params.toString()}`);
+      router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
   };
 
@@ -446,7 +452,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
     startTransition(() => {
       const params = new URLSearchParams(searchParams.toString());
       params.set('page', newPage.toString());
-      router.push(`/en/control-panel/super-manager/brokers?${params.toString()}`);
+      router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
   };
 
@@ -482,7 +488,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
         params.delete('trading_name');
       }
       
-      router.push(`/en/control-panel/super-manager/brokers?${params.toString()}`);
+      router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
   };
 
@@ -499,21 +505,12 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
       params.delete('zone');
       params.delete('trading_name');
       params.set('page', '1');
-      router.push(`/en/control-panel/super-manager/brokers?${params.toString()}`);
+      router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
   };
 
   return (
     <div className="space-y-4">
-      {isPending && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
-            <p className="text-lg font-medium">Loading...</p>
-          </div>
-        </div>
-      )}
-      
       {/* Filter Panel */}
       <div className="flex items-center justify-between">
         <Button
@@ -600,7 +597,6 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             <Button
               onClick={handleApplyFilters}
               size="sm"
-              disabled={isPending}
               className="bg-green-900 hover:bg-green-950 text-white"
             >
               Apply Filters
@@ -609,7 +605,6 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
               onClick={handleClearFilters}
               variant="outline"
               size="sm"
-              disabled={isPending}
             >
               Clear
             </Button>
@@ -683,7 +678,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(1)}
-            disabled={currentPage <= 1 || isPending}
+            disabled={currentPage <= 1}
             className="h-8 px-2 sm:px-3"
             title="First page"
           >
@@ -694,7 +689,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage <= 1 || isPending}
+            disabled={currentPage <= 1}
             className="h-8 px-2 sm:px-3"
             title="Previous page"
           >
@@ -702,13 +697,13 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             <span className="hidden sm:inline ml-1">Previous</span>
           </Button>
           <div className="text-xs sm:text-sm font-medium px-2">
-            {isPending ? '...' : `${currentPage} / ${totalPages}`}
+            {currentPage} / {totalPages}
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages || isPending}
+            disabled={currentPage >= totalPages}
             className="h-8 px-2 sm:px-3"
             title="Next page"
           >
@@ -719,7 +714,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(totalPages)}
-            disabled={currentPage >= totalPages || isPending}
+            disabled={currentPage >= totalPages}
             className="h-8 px-2 sm:px-3"
             title="Last page"
           >
