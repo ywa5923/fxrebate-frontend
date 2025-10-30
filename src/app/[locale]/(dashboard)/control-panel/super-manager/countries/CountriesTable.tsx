@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import {
   ColumnDef,
@@ -61,6 +61,7 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
   
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [filtersResetKey, setFiltersResetKey] = useState(0);
   const [name, setName] = useState(searchParams.get('name') || '');
   const [countryCode, setCountryCode] = useState(searchParams.get('country_code') || '');
   const [zoneCode, setZoneCode] = useState(searchParams.get('zone_code') || '');
@@ -68,6 +69,14 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
   const [countryToDelete, setCountryToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const hasActiveFilters = searchParams.get('name') || searchParams.get('country_code') || searchParams.get('zone_code');
+
+  // Keep panel inputs in sync with header filters (URL params)
+  useEffect(() => {
+    setName(searchParams.get('name') || '');
+    setCountryCode(searchParams.get('country_code') || '');
+    setZoneCode(searchParams.get('zone_code') || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Safety checks for meta
   const currentPage = meta?.current_page || 1;
@@ -82,6 +91,19 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
 
   const orderBy = searchParams.get('order_by') || '';
   const orderDirection = searchParams.get('order_direction') || 'asc';
+
+  const setFilter = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value.length > 0) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.set('page', '1');
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  };
 
   const handleSort = (columnId: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -403,6 +425,7 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
+    setFiltersResetKey((k) => k + 1);
   };
 
   return (
@@ -551,6 +574,55 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
                 ))}
               </TableRow>
             ))}
+            {/* Second header row with inline filters matching Brokers */}
+            <TableRow key={`filters-row-${filtersResetKey}`}>
+              {table.getHeaderGroups()[0]?.headers.map((header, index) => {
+                const colId = header.column.id;
+                let control: React.ReactNode = null;
+                if (colId === 'name') {
+                  control = (
+                    <Input
+                      id="hdr_name"
+                      defaultValue={searchParams.get('name') || ''}
+                      key={`rst-${filtersResetKey}-name`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('name', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter name"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'country_code') {
+                  control = (
+                    <Input
+                      id="hdr_country_code"
+                      defaultValue={searchParams.get('country_code') || ''}
+                      key={`rst-${filtersResetKey}-country_code`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('country_code', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter code"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'zone_code') {
+                  control = (
+                    <Input
+                      id="hdr_zone_code"
+                      defaultValue={searchParams.get('zone_code') || ''}
+                      key={`rst-${filtersResetKey}-zone_code`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('zone_code', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter code"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                }
+                return (
+                  <TableHead key={`filter-${header.id}`} className={index === 0 ? 'bg-gray-100 font-bold' : ''}>
+                    {control}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (

@@ -12,6 +12,7 @@ interface BrokersTableWrapperProps {
     country?: string;
     zone?: string;
     trading_name?: string;
+    is_active?: string;
   }>;
 }
 
@@ -29,6 +30,7 @@ export async function BrokersTableWrapper({ searchParams }: BrokersTableWrapperP
     country: params.country,
     zone: params.zone,
     trading_name: params.trading_name,
+    is_active: params.is_active,
   };
 
   pageLogger.debug('Loading brokers', { page, perPage, orderBy, orderDirection, filters });

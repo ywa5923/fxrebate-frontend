@@ -10,6 +10,7 @@ export interface PlatformUserFilters {
   name?: string;
   email?: string;
   role?: string;
+  is_active?: '1' | '0' | string;
   order_by?: string;
   order_direction?: 'asc' | 'desc';
 }
@@ -33,6 +34,7 @@ export async function getPlatformUserList(
     if (filters?.name) params.set('name', filters.name);
     if (filters?.email) params.set('email', filters.email);
     if (filters?.role) params.set('role', filters.role);
+    if (filters?.is_active) params.set('is_active', filters.is_active);
     if (filters?.order_by) params.set('order_by', filters.order_by);
     if (filters?.order_direction) params.set('order_direction', filters.order_direction);
 

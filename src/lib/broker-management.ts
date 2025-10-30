@@ -37,6 +37,7 @@ export interface BrokerFilters {
   country?: string;
   zone?: string;
   trading_name?: string;
+  is_active?: '1' | '0' | string;
 }
 
 export async function getBrokerList(
@@ -78,6 +79,9 @@ export async function getBrokerList(
     }
     if (filters?.trading_name) {
       params.set('trading_name', filters.trading_name);
+    }
+    if (filters?.is_active) {
+      params.set('is_active', filters.is_active);
     }
 
     const response = await fetch(

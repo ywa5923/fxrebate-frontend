@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ExternalLink, Power, ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from 'lucide-react';
@@ -23,7 +24,7 @@ import { Broker } from '@/lib/broker-management';
 import Image from 'next/image';
 import { toggleBrokerStatus } from './actions';
 import { toast } from 'sonner';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 interface BrokersTableProps {
   data: Broker[];
@@ -394,6 +395,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
   const locale = (params?.locale as string) || 'en';
   const [isPending, startTransition] = useTransition();
   const [showFilters, setShowFilters] = useState(false);
+  const [filtersResetKey, setFiltersResetKey] = useState(0);
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -408,9 +410,20 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
   const [country, setCountry] = useState(searchParams.get('country') || '');
   const [zone, setZone] = useState(searchParams.get('zone') || '');
   const [tradingName, setTradingName] = useState(searchParams.get('trading_name') || '');
+  const [isActive, setIsActive] = useState(searchParams.get('is_active') || '');
   
   const hasActiveFilters = searchParams.get('broker_type') || searchParams.get('country') || 
-                          searchParams.get('zone') || searchParams.get('trading_name');
+                          searchParams.get('zone') || searchParams.get('trading_name') || searchParams.get('is_active');
+
+  // Sync panel with header/URL filters
+  useEffect(() => {
+    setBrokerType(searchParams.get('broker_type') || '');
+    setCountry(searchParams.get('country') || '');
+    setZone(searchParams.get('zone') || '');
+    setTradingName(searchParams.get('trading_name') || '');
+    setIsActive(searchParams.get('is_active') || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleSort = (column: SortableColumn) => {
     startTransition(() => {
@@ -493,7 +506,26 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
       } else {
         params.delete('trading_name');
       }
+
+      if (isActive && isActive !== 'any') {
+        params.set('is_active', isActive);
+      } else {
+        params.delete('is_active');
+      }
       
+      router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
+    });
+  };
+
+  const setHeaderFilter = (key: string, value: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value.length > 0) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      params.set('page', '1');
       router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
   };
@@ -503,6 +535,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
     setCountry('');
     setZone('');
     setTradingName('');
+    setIsActive('');
     
     startTransition(() => {
       const params = new URLSearchParams(searchParams.toString());
@@ -510,9 +543,11 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
       params.delete('country');
       params.delete('zone');
       params.delete('trading_name');
+      params.delete('is_active');
       params.set('page', '1');
       router.push(`/${locale}/control-panel/super-manager/brokers?${params.toString()}`);
     });
+    setFiltersResetKey((k) => k + 1);
   };
 
   return (
@@ -597,6 +632,19 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="is_active">Status</Label>
+              <Select onValueChange={(v) => setIsActive(v)} defaultValue={isActive || undefined}>
+                <SelectTrigger id="is_active">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="1">ACTIVE</SelectItem>
+                  <SelectItem value="0">INACTIVE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="flex gap-2">
@@ -638,6 +686,81 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
                 ))}
               </TableRow>
             ))}
+            {/* Inline filters row */
+            }
+            <TableRow key={`filters-row-${filtersResetKey}`}>
+              {table.getHeaderGroups()[0]?.headers.map((header) => {
+                const colId = header.column.id;
+                let control: React.ReactNode = null;
+                if (colId === 'trading_name') {
+                  control = (
+                    <Input
+                      id="hdr_trading_name"
+                      defaultValue={searchParams.get('trading_name') || ''}
+                      key={`rst-${filtersResetKey}-trading_name`}
+                      onKeyDown={(e) => e.key === 'Enter' && setHeaderFilter('trading_name', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter name"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'broker_type') {
+                  control = (
+                    <Input
+                      id="hdr_broker_type"
+                      defaultValue={searchParams.get('broker_type') || ''}
+                      key={`rst-${filtersResetKey}-broker_type`}
+                      onKeyDown={(e) => e.key === 'Enter' && setHeaderFilter('broker_type', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter type"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'country_code') {
+                  control = (
+                    <Input
+                      id="hdr_country"
+                      defaultValue={searchParams.get('country') || ''}
+                      key={`rst-${filtersResetKey}-country`}
+                      onKeyDown={(e) => e.key === 'Enter' && setHeaderFilter('country', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter country"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'zone_code') {
+                  control = (
+                    <Input
+                      id="hdr_zone"
+                      defaultValue={searchParams.get('zone') || ''}
+                      key={`rst-${filtersResetKey}-zone`}
+                      onKeyDown={(e) => e.key === 'Enter' && setHeaderFilter('zone', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter zone"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'is_active') {
+                  control = (
+                    <Select onValueChange={(v) => setHeaderFilter('is_active', v === 'any' ? '' : v)} defaultValue={(searchParams.get('is_active') as string) || 'any'}>
+                      <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-is_active`}>
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="1">ACTIVE</SelectItem>
+                        <SelectItem value="0">INACTIVE</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                }
+                return (
+                  <TableHead key={`filter-${header.id}`} className={(header.column.columnDef.meta as any)?.headerClassName}>
+                    {control}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
           </TableHeader>
           <TableBody>
               {table.getRowModel().rows?.length ? (

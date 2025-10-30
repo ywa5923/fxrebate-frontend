@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -9,6 +9,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -58,6 +59,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const [isBusy, startBusy] = useTransition();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [filtersResetKey, setFiltersResetKey] = useState(0);
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -71,8 +73,18 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const [name, setName] = useState(searchParams.get('name') || '');
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [role, setRole] = useState(searchParams.get('role') || '');
+  const [isActive, setIsActive] = useState(searchParams.get('is_active') || '');
 
-  const hasActiveFilters = searchParams.get('name') || searchParams.get('email') || searchParams.get('role');
+  const hasActiveFilters = searchParams.get('name') || searchParams.get('email') || searchParams.get('role') || searchParams.get('is_active');
+
+  // Sync panel fields with URL/header filters
+  useEffect(() => {
+    setName(searchParams.get('name') || '');
+    setEmail(searchParams.get('email') || '');
+    setRole(searchParams.get('role') || '');
+    setIsActive(searchParams.get('is_active') || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const onSort = (column: SortableColumn) => {
     startTransition(() => {
@@ -104,6 +116,19 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
     </Button>
   );
 
+  const setFilter = (key: string, value: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value.length > 0) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      params.set('page', '1');
+      router.push(`/${locale}/control-panel/super-manager/platform-users?${params.toString()}`);
+    });
+  };
+
   const columns: ColumnDef<PlatformUser>[] = [
     {
       id: 'index',
@@ -115,9 +140,18 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       meta: { headerClassName: 'bg-gray-100 font-semibold', cellClassName: 'bg-gray-50' },
     },
     { accessorKey: 'id', header: () => sortHeader('id', 'ID') },
-    { accessorKey: 'name', header: () => sortHeader('name', 'Name') },
-    { accessorKey: 'email', header: () => sortHeader('email', 'Email') },
-    { accessorKey: 'role', header: () => sortHeader('role', 'Role') },
+    {
+      accessorKey: 'name',
+      header: () => sortHeader('name', 'Name'),
+    },
+    {
+      accessorKey: 'email',
+      header: () => sortHeader('email', 'Email'),
+    },
+    {
+      accessorKey: 'role',
+      header: () => sortHeader('role', 'Role'),
+    },
     {
       accessorKey: 'is_active',
       header: () => sortHeader('is_active', 'Status'),
@@ -254,19 +288,21 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       name ? params.set('name', name) : params.delete('name');
       email ? params.set('email', email) : params.delete('email');
       role ? params.set('role', role) : params.delete('role');
+      if (isActive && isActive !== 'any') { params.set('is_active', isActive); } else { params.delete('is_active'); }
       params.set('page', '1');
       router.push(`/${locale}/control-panel/super-manager/platform-users?${params.toString()}`);
     });
   };
 
   const handleClearFilters = () => {
-    setName(''); setEmail(''); setRole('');
+    setName(''); setEmail(''); setRole(''); setIsActive('');
     startTransition(() => {
       const params = new URLSearchParams(searchParams.toString());
-      params.delete('name'); params.delete('email'); params.delete('role');
+      params.delete('name'); params.delete('email'); params.delete('role'); params.delete('is_active');
       params.set('page', '1');
       router.push(`/${locale}/control-panel/super-manager/platform-users?${params.toString()}`);
     });
+    setFiltersResetKey((k) => k + 1);
   };
 
   return (
@@ -331,6 +367,19 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
               <Label htmlFor="role">Role</Label>
               <Input id="role" placeholder="e.g., zone_admin" value={role} onChange={(e) => setRole(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="is_active">Status</Label>
+              <Select onValueChange={(v) => setIsActive(v)} defaultValue={isActive || undefined}>
+                <SelectTrigger id="is_active">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="1">ACTIVE</SelectItem>
+                  <SelectItem value="0">INACTIVE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleApplyFilters} size="sm" className="bg-green-900 hover:bg-green-950 text-white">Apply Filters</Button>
@@ -352,6 +401,68 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
                   ))}
                 </TableRow>
               ))}
+            {/* Second header row with inline filters, aligned with columns */}
+            <TableRow key={`filters-row-${filtersResetKey}`}>
+              {table.getHeaderGroups()[0]?.headers.map((header) => {
+                const colId = header.column.id;
+                let control: React.ReactNode = null;
+                if (colId === 'name') {
+                  control = (
+                    <Input
+                      id="hdr_name"
+                      defaultValue={searchParams.get('name') || ''}
+                      key={`rst-${filtersResetKey}-name`}
+                      onKeyDown={(e) => e.key === 'Enter' && setFilter('name', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter name"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'email') {
+                  control = (
+                    <Input
+                      id="hdr_email"
+                      defaultValue={searchParams.get('email') || ''}
+                      key={`rst-${filtersResetKey}-email`}
+                      onKeyDown={(e) => e.key === 'Enter' && setFilter('email', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter email"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'role') {
+                  control = (
+                    <Input
+                      id="hdr_role"
+                      defaultValue={searchParams.get('role') || ''}
+                      key={`rst-${filtersResetKey}-role`}
+                      onKeyDown={(e) => e.key === 'Enter' && setFilter('role', (e.target as HTMLInputElement).value)}
+                      className="h-8 text-xs"
+                      placeholder="Filter role"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                  } else if (colId === 'is_active') {
+                    control = (
+                      <Select onValueChange={(v) => setFilter('is_active', v === 'any' ? '' : v)} defaultValue={(searchParams.get('is_active') as string) || 'any'}>
+                        <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-is_active`}>
+                          <SelectValue placeholder="Any" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">ANY</SelectItem>
+                          <SelectItem value="1">ACTIVE</SelectItem>
+                          <SelectItem value="0">INACTIVE</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    );
+                }
+                return (
+                  <TableHead key={`filter-${header.id}`} className={(header.column.columnDef.meta as any)?.headerClassName}>
+                    {control}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (

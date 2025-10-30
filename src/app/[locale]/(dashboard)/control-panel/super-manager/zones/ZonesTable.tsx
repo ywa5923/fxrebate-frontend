@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import {
   ColumnDef,
@@ -67,6 +67,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
   
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [filtersResetKey, setFiltersResetKey] = useState(0);
   const [name, setName] = useState(searchParams.get('name') || '');
   const [zoneCode, setZoneCode] = useState(searchParams.get('zone_code') || '');
   
@@ -74,6 +75,13 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
   const [zoneToDelete, setZoneToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const hasActiveFilters = searchParams.get('name') || searchParams.get('zone_code');
+
+  // Sync panel with header/URL filters
+  useEffect(() => {
+    setName(searchParams.get('name') || '');
+    setZoneCode(searchParams.get('zone_code') || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Safety checks for meta
   const currentPage = meta?.current_page || 1;
@@ -88,6 +96,17 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
 
   const orderBy = searchParams.get('order_by') || '';
   const orderDirection = searchParams.get('order_direction') || 'asc';
+
+  const setFilter = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value.length > 0) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.set('page', '1');
+    startTransition(() => router.push(`?${params.toString()}`));
+  };
 
   const handleSort = (columnId: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -397,6 +416,7 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
+    setFiltersResetKey((k) => k + 1);
   };
 
   return (
@@ -536,6 +556,43 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
                 ))}
               </TableRow>
             ))}
+            {/* Second header row with inline filters to align like Brokers */}
+            <TableRow key={`filters-row-${filtersResetKey}`}>
+              {table.getHeaderGroups()[0]?.headers.map((header, index) => {
+                const colId = header.column.id;
+                let control: React.ReactNode = null;
+                if (colId === 'name') {
+                  control = (
+                    <Input
+                      id="hdr_zone_name"
+                      defaultValue={searchParams.get('name') || ''}
+                      key={`rst-${filtersResetKey}-name`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('name', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter name"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'zone_code') {
+                  control = (
+                    <Input
+                      id="hdr_zone_code"
+                      defaultValue={searchParams.get('zone_code') || ''}
+                      key={`rst-${filtersResetKey}-zone_code`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('zone_code', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter code"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                }
+                return (
+                  <TableHead key={`filter-${header.id}`} className={index === 0 ? 'bg-gray-100 font-bold' : ''}>
+                    {control}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (

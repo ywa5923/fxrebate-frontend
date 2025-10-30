@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -51,6 +51,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [isBusy, startBusy] = useTransition();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [filtersResetKey, setFiltersResetKey] = useState(0);
   const [permissionToDelete, setPermissionToDelete] = useState<{ id: number; label: string } | null>(null);
 
   const currentPage = meta?.current_page || 1;
@@ -70,7 +71,31 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
   const [subject, setSubject] = useState(searchParams.get('subject') || '');
   const [isActive, setIsActive] = useState(searchParams.get('is_active') || '');
 
-  const hasActiveFilters = [subject_type, subject_id, permission_type, resource_id, resource_value, action, subject, isActive].some(Boolean);
+  // Compute active filters directly from current URL params so header-applied filters are reflected immediately
+  const activeFilterValues = [
+    searchParams.get('subject_type'),
+    searchParams.get('subject_id'),
+    searchParams.get('permission_type'),
+    searchParams.get('resource_id'),
+    searchParams.get('resource_value'),
+    searchParams.get('action'),
+    searchParams.get('subject'),
+    searchParams.get('is_active'),
+  ];
+  const hasActiveFilters = activeFilterValues.some(Boolean);
+
+  // Keep filter panel fields in sync with URL-driven header filters
+  useEffect(() => {
+    setSubjectType(searchParams.get('subject_type') || '');
+    setSubjectId(searchParams.get('subject_id') || '');
+    setPermissionType(searchParams.get('permission_type') || '');
+    setResourceId(searchParams.get('resource_id') || '');
+    setResourceValue(searchParams.get('resource_value') || '');
+    setAction(searchParams.get('action') || '');
+    setSubject(searchParams.get('subject') || '');
+    setIsActive(searchParams.get('is_active') || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const onSort = (column: SortableColumn) => {
     startTransition(() => {
@@ -94,6 +119,19 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
     </Button>
   );
 
+  const setFilter = (key: string, value: string, anyValue?: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (!value || value === '' || (anyValue && value === anyValue)) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+      params.set('page', '1');
+      router.push(`/${locale}/control-panel/super-manager/user-permissions?${params.toString()}`);
+    });
+  };
+
   const formatDateUTC = (value: string | null) => {
     if (!value) return '-';
     const d = new Date(value);
@@ -104,8 +142,14 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
   const columns: ColumnDef<UserPermission>[] = [
     { id: 'index', header: '#', cell: ({ row }) => ((currentPage - 1) * perPage + row.index + 1), meta: { headerClassName: 'bg-gray-100 font-semibold', cellClassName: 'bg-gray-50' } },
     { accessorKey: 'id', header: () => sortHeader('id', 'ID') },
-    { accessorKey: 'subject_type', header: () => sortHeader('subject_type', 'User Type') },
-    { accessorKey: 'subject_id', header: () => sortHeader('subject_id', 'User ID') },
+    {
+      accessorKey: 'subject_type',
+      header: () => sortHeader('subject_type', 'User Type'),
+    },
+    {
+      accessorKey: 'subject_id',
+      header: () => sortHeader('subject_id', 'User ID'),
+    },
     {
       id: 'user_data',
       header: 'User Data',
@@ -120,11 +164,27 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
         );
       }
     },
-    { accessorKey: 'permission_type', header: () => sortHeader('permission_type', 'Permission Type') },
-    { accessorKey: 'action', header: () => sortHeader('action', 'Action') },
-    { accessorKey: 'resource_id', header: () => sortHeader('resource_id', 'Resource ID') },
-    { accessorKey: 'resource_value', header: () => sortHeader('resource_value', 'Resource Value') },
-    { accessorKey: 'is_active', header: () => sortHeader('is_active', 'Status'), cell: ({ row }) => (row.getValue('is_active') as boolean) ? 'Active' : 'Inactive' },
+    {
+      accessorKey: 'permission_type',
+      header: () => sortHeader('permission_type', 'Permission Type'),
+    },
+    {
+      accessorKey: 'action',
+      header: () => sortHeader('action', 'Action'),
+    },
+    {
+      accessorKey: 'resource_id',
+      header: () => sortHeader('resource_id', 'Resource ID'),
+    },
+    {
+      accessorKey: 'resource_value',
+      header: () => sortHeader('resource_value', 'Resource Value'),
+    },
+    {
+      accessorKey: 'is_active',
+      header: () => sortHeader('is_active', 'Status'),
+      cell: ({ row }) => (row.getValue('is_active') as boolean) ? 'Active' : 'Inactive'
+    },
     { accessorKey: 'created_at', header: () => sortHeader('created_at', 'Created At'), cell: ({ row }) => formatDateUTC(row.getValue('created_at') as string | null) },
     { accessorKey: 'updated_at', header: () => sortHeader('updated_at', 'Updated At'), cell: ({ row }) => formatDateUTC(row.getValue('updated_at') as string | null) },
     {
@@ -214,6 +274,8 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
       params.set('page', '1');
       router.push(`/${locale}/control-panel/super-manager/user-permissions?${params.toString()}`);
     });
+    // force header filter controls to reset
+    setFiltersResetKey((k) => k + 1);
   };
 
   const handleToggle = (id: number) => {
@@ -283,7 +345,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
           {showFilters ? 'Hide Filters' : 'Show Filters'}
           {hasActiveFilters && (
             <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-blue-600 rounded-full">
-              {[subject_type, subject_id, permission_type, resource_id, resource_value, action].filter(Boolean).length}
+              {activeFilterValues.filter(Boolean).length}
             </span>
           )}
         </Button>
@@ -391,6 +453,111 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                   ))}
                 </TableRow>
               ))}
+            {/* Second header row with inline filters matching Brokers layout */}
+            <TableRow key={`filters-row-${filtersResetKey}`}>
+              {table.getHeaderGroups()[0]?.headers.map((header) => {
+                const colId = header.column.id;
+                let control: React.ReactNode = null;
+                if (colId === 'subject_type') {
+                  control = (
+                    <Select onValueChange={(v) => setFilter('subject_type', v, 'any')} defaultValue={(searchParams.get('subject_type') as string) || 'any'}>
+                      <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-subject_type`}>
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="BrokerTeamUser">BrokerTeamUser</SelectItem>
+                        <SelectItem value="PlatformUser">PlatformUser</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                } else if (colId === 'subject_id') {
+                  control = (
+                    <Input
+                      id="hdr_subject_id"
+                      defaultValue={(searchParams.get('subject_id') as string) || ''}
+                      key={`rst-${filtersResetKey}-subject_id`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('subject_id', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter ID"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'permission_type') {
+                  control = (
+                    <Select onValueChange={(v) => setFilter('permission_type', v, 'any')} defaultValue={(searchParams.get('permission_type') as string) || 'any'}>
+                      <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-permission_type`}>
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="broker">BROKER</SelectItem>
+                        <SelectItem value="country">COUNTRY</SelectItem>
+                        <SelectItem value="zone">ZONE</SelectItem>
+                        <SelectItem value="seo-country">SEO-COUNTRY</SelectItem>
+                        <SelectItem value="translator-country">TRANSLATOR-COUNTRY</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                } else if (colId === 'action') {
+                  control = (
+                    <Select onValueChange={(v) => setFilter('action', v, 'any')} defaultValue={(searchParams.get('action') as string) || 'any'}>
+                      <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-action`}>
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="manage">MANAGE</SelectItem>
+                        <SelectItem value="edit">EDIT</SelectItem>
+                        <SelectItem value="view">VIEW</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                } else if (colId === 'resource_id') {
+                  control = (
+                    <Input
+                      id="hdr_resource_id"
+                      defaultValue={(searchParams.get('resource_id') as string) || ''}
+                      key={`rst-${filtersResetKey}-resource_id`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('resource_id', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter ID"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'resource_value') {
+                  control = (
+                    <Input
+                      id="hdr_resource_value"
+                      defaultValue={(searchParams.get('resource_value') as string) || ''}
+                      key={`rst-${filtersResetKey}-resource_value`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('resource_value', (e.target as HTMLInputElement).value); }}
+                      className="h-8 text-xs"
+                      placeholder="Filter value"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                  );
+                } else if (colId === 'is_active') {
+                  control = (
+                    <Select onValueChange={(v) => setFilter('is_active', v, 'any')} defaultValue={(searchParams.get('is_active') as string) || 'any'}>
+                      <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-is_active`}>
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="1">ACTIVE</SelectItem>
+                        <SelectItem value="0">INACTIVE</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  );
+                }
+                return (
+                  <TableHead key={`filter-${header.id}`} className={(header.column.columnDef.meta as any)?.headerClassName}>
+                    {control}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
