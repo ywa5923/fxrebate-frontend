@@ -79,6 +79,7 @@ const iconMap: Record<string, LucideIcon> = {
   Compass,
   List,
   Sliders,
+  Shield,
   Settings: Settings2,
   Options: Sliders,
   Cog: Settings2,

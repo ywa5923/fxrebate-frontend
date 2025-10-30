@@ -55,14 +55,9 @@ export default async function SuperManagerLayout({
       icon: 'Users'
     },
     {
-      name: 'Manage Locale Editors',
-      url: '/en/control-panel/super-manager/locale-editors',
-      icon: 'Globe'
-    },
-    {
-      name: 'Manage Seo Editors',
-      url: '/en/control-panel/super-manager/seo-editors',
-      icon: 'Search'
+      name: 'Manage User Permissions',
+      url: '/en/control-panel/super-manager/user-permissions',
+      icon: 'Shield'
     }
   ];
 

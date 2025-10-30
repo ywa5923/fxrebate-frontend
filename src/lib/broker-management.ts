@@ -130,7 +130,7 @@ export async function toggleBrokerActiveStatus(brokerId: number): Promise<{ succ
     const response = await fetch(
       `${BASE_URL}/brokers/toggle-active-status/${brokerId}`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${bearerToken}`,

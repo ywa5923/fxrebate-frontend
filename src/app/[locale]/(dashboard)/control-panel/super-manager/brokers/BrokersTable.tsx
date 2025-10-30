@@ -640,11 +640,12 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+              {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className={!row.original.is_active ? 'bg-red-50/70' : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell 

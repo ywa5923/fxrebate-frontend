@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { deletePlatformUser, updatePlatformUser } from '@/lib/platform-user-requests';
+import { deletePlatformUser, togglePlatformUser } from '@/lib/platform-user-requests';
 
 interface PlatformUsersTableProps {
   data: PlatformUser[];
@@ -215,12 +215,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const handleToggleStatus = (user: PlatformUser) => {
     startBusy(async () => {
       try {
-        const res = await updatePlatformUser(user.id, {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          is_active: !user.is_active,
-        });
+        const res = await togglePlatformUser(user.id);
         if (res.success) {
           toast.success('Status updated');
           router.refresh();
@@ -361,7 +356,11 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={!row.original.is_active ? 'bg-red-50/70' : undefined}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className={(cell.column.columnDef.meta as any)?.cellClassName}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

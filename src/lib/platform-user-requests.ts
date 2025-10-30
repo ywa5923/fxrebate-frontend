@@ -139,6 +139,30 @@ export async function updatePlatformUser(id: number, payload: any): Promise<{ su
   }
 }
 
+export async function togglePlatformUser(id: number): Promise<{ success: boolean; message?: string }> {
+  const log = logger.child('lib/platform-user-requests/togglePlatformUser');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) return { success: false, message: 'Authentication token not found' };
+    const response = await fetch(`${BASE_URL}/platform-users/${id}/toggle`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${bearerToken}`,
+      },
+    });
+    let data: any = null;
+    try { data = await response.json(); } catch {}
+    if (!response.ok) {
+      log.error('Error toggling platform user', { status: response.status, message: data?.message });
+      return { success: false, message: data?.message || `HTTP error: ${response.status}` };
+    }
+    return { success: true, message: data?.message || 'Platform user status toggled' };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
+  }
+}
+
 export async function deletePlatformUser(id: number): Promise<{ success: boolean; message?: string }> {
   const log = logger.child('lib/platform-user-requests/deletePlatformUser');
   try {
