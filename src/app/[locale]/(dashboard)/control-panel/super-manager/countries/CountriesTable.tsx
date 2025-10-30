@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import {
   ColumnDef,
@@ -41,8 +41,11 @@ import {
   Filter,
   Trash2,
   X,
-  Edit
+  Edit,
+  Sliders,
+  Eraser
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { deleteCountry } from '@/lib/country-requests';
 import type { Country, CountryPagination } from '@/types/Country';
@@ -62,6 +65,19 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
+  const initialColumnVisibility = useMemo(() => ({
+    row_number: true,
+    id: true,
+    name: true,
+    country_code: true,
+    zone_name: true,
+    zone_code: true,
+    brokers_count: true,
+    created_at: true,
+    updated_at: false,
+    actions: true,
+  }) as Record<string, boolean>, []);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
   const [name, setName] = useState(searchParams.get('name') || '');
   const [countryCode, setCountryCode] = useState(searchParams.get('country_code') || '');
   const [zoneCode, setZoneCode] = useState(searchParams.get('zone_code') || '');
@@ -369,6 +385,8 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: totalPages,
+    state: { columnVisibility },
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   const handlePageChange = (newPage: number) => {
@@ -460,7 +478,7 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <Button
           variant="outline"
           size="sm"
@@ -475,16 +493,15 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
             </span>
           )}
         </Button>
-        
         {hasActiveFilters && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleClearFilters}
-            className="gap-2 text-red-600 hover:text-red-700"
+            className="ml-2 gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
           >
-            <X className="h-4 w-4" />
-            Clear All Filters
+            <Eraser className="h-4 w-4" />
+            <span>Clear all filters</span>
           </Button>
         )}
       </div>
@@ -548,9 +565,45 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-gray-600">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
         <div>
           Showing {from} to {to} of {total} countries
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table.getAllLeafColumns().map((column) => {
+                const columnLabelMap: Record<string, string> = {
+                  row_number: '#',
+                  id: 'ID',
+                  name: 'Country Name',
+                  country_code: 'Country Code',
+                  zone_name: 'Zone Name',
+                  zone_code: 'Zone Code',
+                  brokers_count: 'Brokers',
+                  created_at: 'Created At',
+                  updated_at: 'Updated At',
+                  actions: 'Actions',
+                };
+                const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
