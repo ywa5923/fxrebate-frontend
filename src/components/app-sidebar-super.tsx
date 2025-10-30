@@ -60,6 +60,7 @@ interface SidebarLink {
 interface AppSidebarSuperProps extends React.ComponentProps<typeof Sidebar> {
   userLinks?: SidebarLink[];
   settingsLinks?: SidebarLink[];
+  i18nLinks?: SidebarLink[];
   userName?: string;
   userEmail?: string;
 }
@@ -89,6 +90,7 @@ const iconMap: Record<string, LucideIcon> = {
 export function AppSidebarSuper({ 
   userLinks = [], 
   settingsLinks = [], 
+  i18nLinks = [],
   userName = "Admin",
   userEmail = "",
   ...props 
@@ -110,7 +112,10 @@ export function AppSidebarSuper({
         {/* Main Navigation Links */}
         {userLinks.length > 0 && (
           <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <SidebarGroupLabel>Management</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              <Users className="h-4 w-4 mr-2 inline" />
+              Staff Management
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {userLinks.map((link) => {
@@ -290,6 +295,41 @@ export function AppSidebarSuper({
                           </DropdownMenu>
                         )}
                       </div>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* System Languages & Translations Section */}
+        {i18nLinks.length > 0 && (
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel>
+              <Globe2 className="h-4 w-4 mr-2 inline" />
+              Translation Management
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {i18nLinks.map((link) => {
+                  const IconComponent = iconMap[link.icon] || Languages;
+                  const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
+                  return (
+                    <SidebarMenuItem key={link.name}>
+                      <SidebarMenuButton asChild className="flex-1">
+                        <Link
+                          href={link.url}
+                          className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                            isActive 
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                          }`}
+                        >
+                          <IconComponent className="mr-3 h-4 w-4" />
+                          {link.name}
+                        </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
                 })}

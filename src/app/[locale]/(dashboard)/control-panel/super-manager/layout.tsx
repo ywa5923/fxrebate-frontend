@@ -62,7 +62,6 @@ export default async function SuperManagerLayout({
   ];
 
   const sidebarSettingsLinks = [
-  
   {
     name: 'Countries',
     url: '/en/control-panel/super-manager/countries',
@@ -72,16 +71,6 @@ export default async function SuperManagerLayout({
     name: 'Zones',
     url: '/en/control-panel/super-manager/zones',
     icon: 'Compass'
-  },
-  {
-    name: 'System Languages',
-    url: '/en/control-panel/super-manager/system-languages',
-    icon: 'Flag'
-  },
-  {
-    name: 'Translations',
-    url: '/en/control-panel/super-manager/translations',
-    icon: 'FileText'
   },
   {
     name: 'Dropdown Lists',
@@ -100,6 +89,19 @@ export default async function SuperManagerLayout({
   }
 ]
 
+  const sidebarI18nLinks = [
+    {
+      name: 'System Languages',
+      url: '/en/control-panel/super-manager/system-languages',
+      icon: 'Flag'
+    },
+    {
+      name: 'Translations',
+      url: '/en/control-panel/super-manager/translations',
+      icon: 'FileText'
+    },
+  ]
+
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
@@ -107,6 +109,7 @@ export default async function SuperManagerLayout({
           <AppSidebarSuper 
             userLinks={sidebarUserLinks} 
             settingsLinks={sidebarSettingsLinks}
+            i18nLinks={sidebarI18nLinks}
             userName={loggedUser?.name}
             userEmail={loggedUser?.email}
           />
