@@ -18,13 +18,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ExternalLink, Power, ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, ToggleLeft, ToggleRight, Sliders, Eraser } from 'lucide-react';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { Broker } from '@/lib/broker-management';
 import Image from 'next/image';
 import { toggleBrokerStatus } from './actions';
 import { toast } from 'sonner';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 
 interface BrokersTableProps {
   data: Broker[];
@@ -65,18 +66,14 @@ function ToggleActiveButton({ broker }: { broker: Broker }) {
         </div>
       )}
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
-        className={`${
-          broker.is_active 
-            ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700' 
-            : 'bg-gray-400 hover:bg-gray-500 text-white border-gray-400 hover:border-gray-500'
-        }`}
+        className={`${broker.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
         onClick={handleToggle}
         disabled={isPending}
         title={broker.is_active ? 'Deactivate broker' : 'Activate broker'}
       >
-        <Power className="h-4 w-4" />
+        {broker.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
       </Button>
     </>
   );
@@ -396,6 +393,24 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
   const [isPending, startTransition] = useTransition();
   const [showFilters, setShowFilters] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
+  const initialColumnVisibility = useMemo(() => {
+    // Hide updated_at by default; show all others
+    return {
+      index: true,
+      id: true,
+      logo: true,
+      trading_name: true,
+      broker_type: true,
+      country_code: true,
+      zone_code: true,
+      is_active: true,
+      home_url: true,
+      created_at: true,
+      updated_at: false,
+      actions: true,
+    } as Record<string, boolean>;
+  }, []);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -465,6 +480,8 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: totalPages,
+    state: { columnVisibility },
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   const handlePageChange = (newPage: number) => {
@@ -553,7 +570,7 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
   return (
     <div className="space-y-4">
       {/* Filter Panel */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <Button
           variant="outline"
           size="sm"
@@ -568,18 +585,18 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
             </span>
           )}
         </Button>
-        
         {hasActiveFilters && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleClearFilters}
-            className="gap-2 text-red-600 hover:text-red-700"
+            className="ml-2 gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
           >
-            <X className="h-4 w-4" />
-            Clear All Filters
+            <Eraser className="h-4 w-4" />
+            <span>Clear all filters</span>
           </Button>
         )}
+        <div className="ml-auto" />
       </div>
 
       {showFilters && (
@@ -665,6 +682,45 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
           </div>
         </div>
       )}
+
+      <div className="flex items-center justify-end mt-2 gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+              <Sliders className="h-4 w-4" />
+              <span className="hidden sm:inline">Select Columns</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {table.getAllLeafColumns().map((column) => {
+              const columnLabelMap: Record<string, string> = {
+                index: '#',
+                id: 'ID',
+                logo: 'Logo',
+                trading_name: 'Trading Name',
+                broker_type: 'Type',
+                country_code: 'Country',
+                zone_code: 'Zone',
+                is_active: 'Status',
+                home_url: 'Website',
+                created_at: 'Created At',
+                updated_at: 'Updated At',
+                actions: 'Actions',
+              };
+              const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                >
+                  {label}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div className="rounded-md border overflow-hidden">
         <div className="overflow-x-auto">
         <Table>

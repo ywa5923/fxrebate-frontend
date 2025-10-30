@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useTransition, useState, useEffect } from 'react';
+import { useTransition, useState, useEffect, useMemo } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -61,7 +61,16 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const initialColumnVisibility = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    const keys = ['index','id','name','email','role','is_active','last_login_at','created_at','updated_at','actions'];
+    keys.forEach((id) => {
+      const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
+      map[id] = !shouldHide;
+    });
+    return map;
+  }, []);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -248,18 +257,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
     onColumnVisibilityChange: setColumnVisibility,
   });
 
-  useEffect(() => {
-    if (Object.keys(columnVisibility).length === 0) {
-      const current: Record<string, boolean> = {};
-      table.getAllLeafColumns().forEach((col) => {
-        const id = col.id as string;
-        const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
-        current[id] = !shouldHide;
-      });
-      setColumnVisibility(current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // no-op: we set initial visibility up-front to avoid flash of visible columns
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => {
