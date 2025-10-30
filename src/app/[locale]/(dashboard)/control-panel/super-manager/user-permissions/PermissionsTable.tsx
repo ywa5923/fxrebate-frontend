@@ -54,21 +54,25 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
   const [permissionToDelete, setPermissionToDelete] = useState<{ id: number; label: string } | null>(null);
-  const defaultColumnVisibility = useMemo(() => {
-    // Hide all columns ending with 'id' (case-insensitive) and created_at/updated_at by default
-    const hidden: Record<string, boolean> = {};
-    const toHide = new Set(['created_at', 'updated_at']);
-    const columnKeys: string[] = [
-      'index','id','subject_type','subject_id','user_data','permission_type','action','resource_id','resource_value','is_active','created_at','updated_at','actions'
-    ];
-    columnKeys.forEach((key) => {
-      if (toHide.has(key) || /id$/i.test(key)) {
-        hidden[key] = false; // false means hidden in columnVisibility map? (react-table expects true=visible). We'll set after table created.
-      }
-    });
-    return hidden;
+  const initialColumnVisibility = useMemo(() => {
+    // Align with other tables: show all by default except updated_at
+    return {
+      index: true,
+      id: true,
+      subject_type: true,
+      subject_id: false,
+      user_data: true,
+      permission_type: true,
+      action: true,
+      resource_id: false,
+      resource_value: true,
+      is_active: true,
+      created_at: true,
+      updated_at: false,
+      actions: true,
+    } as Record<string, boolean>;
   }, []);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
 
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
@@ -270,19 +274,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
     onColumnVisibilityChange: setColumnVisibility,
   });
 
-  useEffect(() => {
-    // Initialize defaults only once on mount
-    if (Object.keys(columnVisibility).length === 0) {
-      const current: Record<string, boolean> = {};
-      table.getAllLeafColumns().forEach((col) => {
-        const id = col.id;
-        const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
-        current[id] = !shouldHide; // true = visible
-      });
-      setColumnVisibility(current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // initial visibility set up-front via initialColumnVisibility
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => {
