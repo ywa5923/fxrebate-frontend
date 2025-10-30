@@ -62,13 +62,19 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
   const initialColumnVisibility = useMemo(() => {
-    const map: Record<string, boolean> = {};
-    const keys = ['index','id','name','email','role','is_active','last_login_at','created_at','updated_at','actions'];
-    keys.forEach((id) => {
-      const shouldHide = /id$/i.test(id) || id === 'created_at' || id === 'updated_at';
-      map[id] = !shouldHide;
-    });
-    return map;
+    // Align with brokers: show all by default except updated_at
+    return {
+      index: true,
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      is_active: true,
+      last_login_at: true,
+      created_at: true,
+      updated_at: false,
+      actions: true,
+    } as Record<string, boolean>;
   }, []);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
 
