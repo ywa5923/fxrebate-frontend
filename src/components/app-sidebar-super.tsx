@@ -223,6 +223,30 @@ export function AppSidebarSuper({
                                   Create Broker Type Permission
                                 </Link>
                               </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions/country-permission/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create Country Type Permission
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions/zone-permission/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create Zone Type Permission
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions/seo-permission/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create SEO Type Permission
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/user-permissions/translator-permission/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create Translator Type Permission
+                                </Link>
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}

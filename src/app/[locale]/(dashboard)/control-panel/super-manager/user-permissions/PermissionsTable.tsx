@@ -139,6 +139,14 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
     return d.toISOString().slice(0, 10);
   };
 
+  const formatPermissionType = (value: string | null | undefined) => {
+    if (!value) return '-';
+    // Support new API values and keep legacy fallback just in case
+    if (value === 'seo' || value === 'seo-country') return 'SEO';
+    if (value === 'translator' || value === 'translator-country') return 'TRANSLATOR';
+    return String(value).toUpperCase();
+  };
+
   const columns: ColumnDef<UserPermission>[] = [
     { id: 'index', header: '#', cell: ({ row }) => ((currentPage - 1) * perPage + row.index + 1), meta: { headerClassName: 'bg-gray-100 font-semibold', cellClassName: 'bg-gray-50' } },
     { accessorKey: 'id', header: () => sortHeader('id', 'ID') },
@@ -167,6 +175,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
     {
       accessorKey: 'permission_type',
       header: () => sortHeader('permission_type', 'Permission Type'),
+      cell: ({ row }) => formatPermissionType(row.getValue('permission_type') as string),
     },
     {
       accessorKey: 'action',
@@ -195,11 +204,11 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
         const label = `${perm.permission_type}:${perm.action}`;
         return (
           <div className="flex items-center gap-2">
-            {perm.permission_type === 'broker' && (
+            {(perm.permission_type === 'broker' || perm.permission_type === 'country' || perm.permission_type === 'zone' || perm.permission_type === 'seo' || perm.permission_type === 'translator') && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push(`/${locale}/control-panel/super-manager/user-permissions/broker-permission/edit/${perm.id}`)}
+                onClick={() => router.push(`/${locale}/control-panel/super-manager/user-permissions/${perm.permission_type}-permission/edit/${perm.id}`)}
                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 title="Edit permission"
               >
@@ -399,8 +408,8 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                   <SelectItem value="broker">BROKER</SelectItem>
                   <SelectItem value="country">COUNTRY</SelectItem>
                   <SelectItem value="zone">ZONE</SelectItem>
-                  <SelectItem value="seo-country">SEO-COUNTRY</SelectItem>
-                  <SelectItem value="translator-country">TRANSLATOR-COUNTRY</SelectItem>
+                  <SelectItem value="seo">SEO</SelectItem>
+                  <SelectItem value="translator">TRANSLATOR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -512,14 +521,14 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                       <SelectTrigger className="h-8" key={`rst-${filtersResetKey}-permission_type`}>
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="any">ANY</SelectItem>
-                        <SelectItem value="broker">BROKER</SelectItem>
-                        <SelectItem value="country">COUNTRY</SelectItem>
-                        <SelectItem value="zone">ZONE</SelectItem>
-                        <SelectItem value="seo-country">SEO-COUNTRY</SelectItem>
-                        <SelectItem value="translator-country">TRANSLATOR-COUNTRY</SelectItem>
-                      </SelectContent>
+                <SelectContent>
+                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="broker">BROKER</SelectItem>
+                  <SelectItem value="country">COUNTRY</SelectItem>
+                  <SelectItem value="zone">ZONE</SelectItem>
+                  <SelectItem value="seo">SEO</SelectItem>
+                  <SelectItem value="translator">TRANSLATOR</SelectItem>
+                </SelectContent>
                     </Select>
                   );
                 } else if (colId === 'action') {

@@ -97,7 +97,7 @@ export async function toggleUserPermission(id: number): Promise<{ success: boole
 export interface CreateUserPermissionPayload {
   subject_type: string;
   subject_id: number;
-  permission_type: 'broker' | 'country' | 'zone' | 'seo-country' | 'translator-country';
+  permission_type: 'broker' | 'country' | 'zone' | 'seo' | 'translator';
   resource_id?: number | null;
   resource_value?: string | null;
   action: 'view' | 'edit' | 'delete' | 'manage';
@@ -111,19 +111,21 @@ export async function createUserPermission(payload: CreateUserPermissionPayload)
     const bearerToken = await getBearerToken();
     if (!bearerToken) return { success: false, message: 'Authentication token not found' };
 
-   
     const response = await fetch(`${BASE_URL}/user-permissions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
       body: JSON.stringify(payload),
     });
-    const data = await response.json().catch(() => ({}));
+   
+    const data = await response.json();
+   
     if (!response.ok) {
       log.error('Error creating permission', { status: response.status, message: data?.message });
       return { success: false, message: data?.message || `HTTP error: ${response.status}` };
     }
     return { success: true, message: data?.message || 'Permission created successfully', data: data?.data };
   } catch (err) {
+    log.error('==!!!!!!!!!!!==Error creating user permission', { error: err instanceof Error ? err.message : err });
     return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
   }
 }
