@@ -42,6 +42,13 @@ interface PlatformUsersTableProps {
 type SortableColumn = 'id' | 'name' | 'email' | 'role' | 'is_active' | 'last_login_at' | 'created_at' | 'updated_at';
 
 export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
+  const formatDateUTC = (value: string | null) => {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '-';
+    // YYYY-MM-DD for deterministic SSR/CSR match
+    return d.toISOString().slice(0, 10);
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -131,7 +138,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       header: () => sortHeader('last_login_at', 'Last Login'),
       cell: ({ row }) => {
         const date = row.getValue('last_login_at') as string | null;
-        return date ? new Date(date).toLocaleString() : '-';
+        return formatDateUTC(date);
       },
     },
     {
@@ -139,7 +146,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       header: () => sortHeader('created_at', 'Created At'),
       cell: ({ row }) => {
         const date = row.getValue('created_at') as string | null;
-        return date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
+        return formatDateUTC(date);
       },
     },
     {
@@ -147,7 +154,7 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       header: () => sortHeader('updated_at', 'Updated At'),
       cell: ({ row }) => {
         const date = row.getValue('updated_at') as string | null;
-        return date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
+        return formatDateUTC(date);
       },
     },
     {

@@ -53,6 +53,12 @@ interface ZonesTableProps {
 }
 
 export function ZonesTable({ data, meta }: ZonesTableProps) {
+  const formatDateUTC = (value: string | null) => {
+    if (!value) return 'N/A';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return 'N/A';
+    return d.toISOString().slice(0, 10);
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -238,12 +244,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
       cell: ({ row }) => {
         const date = row.getValue('created_at') as string | null;
-        if (!date) return <span className="text-gray-400 italic">N/A</span>;
-        return new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
+        const formatted = formatDateUTC(date);
+        return formatted === 'N/A' ? (
+          <span className="text-gray-400 italic">N/A</span>
+        ) : (
+          <>{formatted}</>
+        );
       },
     },
     {
@@ -262,12 +268,12 @@ export function ZonesTable({ data, meta }: ZonesTableProps) {
       },
       cell: ({ row }) => {
         const date = row.getValue('updated_at') as string | null;
-        if (!date) return <span className="text-gray-400 italic">N/A</span>;
-        return new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
+        const formatted = formatDateUTC(date);
+        return formatted === 'N/A' ? (
+          <span className="text-gray-400 italic">N/A</span>
+        ) : (
+          <>{formatted}</>
+        );
       },
     },
     {

@@ -382,6 +382,12 @@ const createColumns = ({ currentPage, perPage, orderBy, orderDirection, onSort }
 ];
 
 export function BrokersTable({ data, meta }: BrokersTableProps) {
+  const formatDateUTC = (value: string | null) => {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '-';
+    return d.toISOString().slice(0, 10);
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
