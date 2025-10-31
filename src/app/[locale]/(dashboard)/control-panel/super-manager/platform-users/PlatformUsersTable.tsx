@@ -227,6 +227,16 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
             <Button
               variant="ghost"
               size="sm"
+              className={`${user.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+              onClick={() => handleToggleStatus(user)}
+              disabled={isBusy}
+              title={user.is_active ? 'Deactivate user' : 'Activate user'}
+            >
+              {user.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setUserToDelete({ id: user.id, name: user.name });
                 setDeleteDialogOpen(true);
@@ -236,16 +246,6 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
               disabled={isBusy}
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`${user.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
-              onClick={() => handleToggleStatus(user)}
-              disabled={isBusy}
-              title={user.is_active ? 'Deactivate user' : 'Activate user'}
-            >
-              {user.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </Button>
           </div>
         );

@@ -238,6 +238,16 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             <Button
               variant="ghost"
               size="sm"
+              className={`${perm.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+              onClick={() => handleToggle(perm.id)}
+              disabled={isBusy}
+              title={perm.is_active ? 'Deactivate' : 'Activate'}
+            >
+              {perm.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setPermissionToDelete({ id: perm.id, label });
                 setDeleteDialogOpen(true);
@@ -247,16 +257,6 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               disabled={isBusy}
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`${perm.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
-              onClick={() => handleToggle(perm.id)}
-              disabled={isBusy}
-              title={perm.is_active ? 'Deactivate' : 'Activate'}
-            >
-              {perm.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </Button>
           </div>
         );

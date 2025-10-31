@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, ToggleLeft, ToggleRight, Sliders, Eraser } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpRight, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, ToggleLeft, ToggleRight, Sliders, Eraser } from 'lucide-react';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { Broker } from '@/lib/broker-management';
@@ -68,12 +68,12 @@ function ToggleActiveButton({ broker }: { broker: Broker }) {
       <Button
         variant="ghost"
         size="sm"
-        className={`${broker.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+        className={`h-9 w-9 p-0 ${broker.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
         onClick={handleToggle}
         disabled={isPending}
         title={broker.is_active ? 'Deactivate broker' : 'Activate broker'}
       >
-        {broker.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+        {broker.is_active ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
       </Button>
     </>
   );
@@ -365,17 +365,16 @@ const createColumns = ({ currentPage, perPage, orderBy, orderDirection, onSort }
           <Button
             variant="outline"
             size="sm"
-            className="h-7 px-1.5 sm:px-2 gap-1.5 shrink-0 border-blue-200 hover:bg-blue-50"
-            style={{ color: '#0F3C8F' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#0C2F70'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#0F3C8F'}
+            className="h-7 w-7 p-0 shrink-0 border-gray-300 hover:bg-orange-400"
+            style={{ color: '#1f2937' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
             onClick={() => {
               window.location.href = dashboardUrl;
             }}
             title="Go to broker dashboard"
           >
-            <LayoutDashboard className="h-3.5 w-3.5" style={{ color: 'inherit' }} />
-            <span className="hidden sm:inline text-xs" style={{ color: 'inherit' }}>Dashboard</span>
+            <ArrowUpRight className="h-4 w-4" style={{ color: 'inherit' }} />
           </Button>
         </div>
       );

@@ -122,9 +122,9 @@ export function AppSidebarSuper({
                   const IconComponent = iconMap[link.icon] || Building;
                   // Check if current path matches or starts with the link URL (for sub-routes)
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
-                  const isManageBrokers = link.name === 'Manage Brokers';
-                  const isPlatformUsers = link.name === 'Manage Platform Users' || link.name === 'Platform Users';
-                  const isUserPermissions = link.name === 'Manage User Permissions' || link.name === 'User Permissions';
+                  const isManageBrokers = link.name === 'Brokers';
+                  const isPlatformUsers = link.name === 'Platform Users';
+                  const isUserPermissions = link.name === 'User Permissions';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -132,14 +132,14 @@ export function AppSidebarSuper({
                         <SidebarMenuButton asChild className="flex-1">
                           <Link
                             href={link.url}
-                            className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                            className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
-                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                                ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
+                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
                             }`}
                           >
-                            <IconComponent className="mr-3 h-4 w-4" />
-                            {link.name}
+                            <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
+                            <span className="flex-1 min-w-0">{link.name}</span>
                           </Link>
                         </SidebarMenuButton>
                         
@@ -281,14 +281,14 @@ export function AppSidebarSuper({
                         <SidebarMenuButton asChild className="flex-1">
                           <Link
                             href={link.url}
-                            className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                            className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
-                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                                ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
+                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
                             }`}
                           >
-                            <IconComponent className="mr-3 h-4 w-4" />
-                            {link.name}
+                            <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
+                            <span className="flex-1 min-w-0">{link.name}</span>
                           </Link>
                         </SidebarMenuButton>
                         
@@ -373,14 +373,14 @@ export function AppSidebarSuper({
                       <SidebarMenuButton asChild className="flex-1">
                         <Link
                           href={link.url}
-                          className={`flex items-center px-3 py-2 rounded-md transition-all duration-200 font-medium text-sm ${
+                          className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                             isActive 
-                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600'
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-3' 
+                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
                           }`}
                         >
-                          <IconComponent className="mr-3 h-4 w-4" />
-                          {link.name}
+                          <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
+                          <span className="flex-1 min-w-0">{link.name}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

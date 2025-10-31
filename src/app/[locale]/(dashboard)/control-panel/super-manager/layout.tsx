@@ -45,17 +45,17 @@ export default async function SuperManagerLayout({
 
   const sidebarUserLinks = [
     {
-      name: 'Manage Brokers',
+      name: 'Brokers',
       url: '/en/control-panel/super-manager/brokers',
       icon: 'Building'
     },
     {
-      name: 'Manage Platform Users',
+      name: 'Platform Users',
       url: '/en/control-panel/super-manager/platform-users',
       icon: 'Users'
     },
     {
-      name: 'Manage User Permissions',
+      name: 'User Permissions',
       url: '/en/control-panel/super-manager/user-permissions',
       icon: 'Shield'
     }
