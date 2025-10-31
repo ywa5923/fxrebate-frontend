@@ -416,41 +416,46 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-end mt-2 gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
-              <Sliders className="h-4 w-4" />
-              <span className="hidden sm:inline">Select Columns</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {table.getAllLeafColumns().map((column) => {
-              const columnLabelMap: Record<string, string> = {
-                index: '#',
-                id: 'ID',
-                name: 'Name',
-                email: 'Email',
-                role: 'Role',
-                is_active: 'Status',
-                last_login_at: 'Last Login',
-                created_at: 'Created At',
-                updated_at: 'Updated At',
-                actions: 'Actions',
-              };
-              const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
-                >
-                  {label}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+        <div>
+          Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, total)} of {total} users
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table.getAllLeafColumns().map((column) => {
+                const columnLabelMap: Record<string, string> = {
+                  index: '#',
+                  id: 'ID',
+                  name: 'Name',
+                  email: 'Email',
+                  role: 'Role',
+                  is_active: 'Status',
+                  last_login_at: 'Last Login',
+                  created_at: 'Created At',
+                  updated_at: 'Updated At',
+                  actions: 'Actions',
+                };
+                const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="rounded-md border overflow-hidden">
@@ -555,9 +560,6 @@ export function PlatformUsersTable({ data, meta }: PlatformUsersTableProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-        <div className="text-sm text-muted-foreground">
-          Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, total)} of {total} users
-        </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage <= 1} className="h-8 px-2 sm:px-3" title="First page">
             <ChevronsLeft className="h-4 w-4" />

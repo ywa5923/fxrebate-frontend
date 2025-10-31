@@ -431,16 +431,16 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject_id">User ID</Label>
-              <Input id="subject_id" value={subject_id} onChange={(e) => setSubjectId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="subject_id" placeholder="e.g., 123" value={subject_id} onChange={(e) => setSubjectId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="permission_type">Permission Type</Label>
-              <Select onValueChange={(v) => setPermissionType(v)} defaultValue={permission_type || undefined}>
+              <Select onValueChange={(v) => setPermissionType(v)} defaultValue={permission_type || 'any'}>
                 <SelectTrigger id="permission_type">
-                  <SelectValue />
+                  <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="broker">BROKER</SelectItem>
                   <SelectItem value="country">COUNTRY</SelectItem>
                   <SelectItem value="zone">ZONE</SelectItem>
@@ -451,20 +451,20 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="resource_id">Resource ID</Label>
-              <Input id="resource_id" value={resource_id} onChange={(e) => setResourceId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="resource_id" placeholder="e.g., 456" value={resource_id} onChange={(e) => setResourceId(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="resource_value">Resource Value</Label>
-              <Input id="resource_value" value={resource_value} onChange={(e) => setResourceValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="resource_value" placeholder="e.g., Trading Name" value={resource_value} onChange={(e) => setResourceValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="action">Action</Label>
-              <Select onValueChange={(v) => setAction(v)} defaultValue={action || undefined}>
+              <Select onValueChange={(v) => setAction(v)} defaultValue={action || 'any'}>
                 <SelectTrigger id="action">
-                  <SelectValue />
+                  <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="manage">MANAGE</SelectItem>
                   <SelectItem value="edit">EDIT</SelectItem>
                   <SelectItem value="view">VIEW</SelectItem>
@@ -473,16 +473,16 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">User name or email</Label>
-              <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
+              <Input id="subject" placeholder="e.g., john@example.com or John Doe" value={subject} onChange={(e) => setSubject(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} style={{ backgroundColor: '#ffffff' }} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="is_active">Status</Label>
-              <Select onValueChange={(v) => setIsActive(v)} defaultValue={isActive || undefined}>
+              <Select onValueChange={(v) => setIsActive(v)} defaultValue={isActive || 'any'}>
                 <SelectTrigger id="is_active">
-                  <SelectValue />
+                  <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="1">ACTIVE</SelectItem>
                   <SelectItem value="0">INACTIVE</SelectItem>
                 </SelectContent>
@@ -496,7 +496,11 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-end mt-2 gap-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+        <div>
+          Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, total)} of {total} permissions
+        </div>
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
@@ -534,6 +538,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
               })}
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
       </div>
 
       <div className="rounded-md border overflow-hidden">
@@ -598,7 +603,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="any">ANY</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="broker">BROKER</SelectItem>
                   <SelectItem value="country">COUNTRY</SelectItem>
                   <SelectItem value="zone">ZONE</SelectItem>
@@ -614,7 +619,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="any">Any</SelectItem>
                         <SelectItem value="manage">MANAGE</SelectItem>
                         <SelectItem value="edit">EDIT</SelectItem>
                         <SelectItem value="view">VIEW</SelectItem>
@@ -652,7 +657,7 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">ANY</SelectItem>
+                        <SelectItem value="any">Any</SelectItem>
                         <SelectItem value="1">ACTIVE</SelectItem>
                         <SelectItem value="0">INACTIVE</SelectItem>
                       </SelectContent>
@@ -693,9 +698,6 @@ export function PermissionsTable({ data, meta }: PermissionsTableProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-        <div className="text-sm text-muted-foreground">
-          Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, total)} of {total} permissions
-        </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage <= 1} className="h-8 px-2 sm:px-3" title="First page">
             <ChevronsLeft className="h-4 w-4" />

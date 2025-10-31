@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, ToggleLeft, ToggleRight, Sliders, Eraser } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutDashboard, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, ToggleLeft, ToggleRight, Sliders, Eraser } from 'lucide-react';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { Broker } from '@/lib/broker-management';
@@ -365,13 +365,17 @@ const createColumns = ({ currentPage, perPage, orderBy, orderDirection, onSort }
           <Button
             variant="outline"
             size="sm"
-            className="bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700 hover:border-emerald-800"
+            className="h-7 px-1.5 sm:px-2 gap-1.5 shrink-0 border-blue-200 hover:bg-blue-50"
+            style={{ color: '#0F3C8F' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#0C2F70'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#0F3C8F'}
             onClick={() => {
               window.location.href = dashboardUrl;
             }}
             title="Go to broker dashboard"
           >
-            <ExternalLink className="h-4 w-4" />
+            <LayoutDashboard className="h-3.5 w-3.5" style={{ color: 'inherit' }} />
+            <span className="hidden sm:inline text-xs" style={{ color: 'inherit' }}>Dashboard</span>
           </Button>
         </div>
       );
@@ -683,43 +687,49 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-end mt-2 gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
-              <Sliders className="h-4 w-4" />
-              <span className="hidden sm:inline">Select Columns</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {table.getAllLeafColumns().map((column) => {
-              const columnLabelMap: Record<string, string> = {
-                index: '#',
-                id: 'ID',
-                logo: 'Logo',
-                trading_name: 'Trading Name',
-                broker_type: 'Type',
-                country_code: 'Country',
-                zone_code: 'Zone',
-                is_active: 'Status',
-                home_url: 'Website',
-                created_at: 'Created At',
-                updated_at: 'Updated At',
-                actions: 'Actions',
-              };
-              const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
-                >
-                  {label}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+        <div>
+          Showing {((currentPage - 1) * perPage) + 1} to{' '}
+          {Math.min(currentPage * perPage, total)} of {total} brokers
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {table.getAllLeafColumns().map((column) => {
+                const columnLabelMap: Record<string, string> = {
+                  index: '#',
+                  id: 'ID',
+                  logo: 'Logo',
+                  trading_name: 'Trading Name',
+                  broker_type: 'Type',
+                  country_code: 'Country',
+                  zone_code: 'Zone',
+                  is_active: 'Status',
+                  home_url: 'Website',
+                  created_at: 'Created At',
+                  updated_at: 'Updated At',
+                  actions: 'Actions',
+                };
+                const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="rounded-md border overflow-hidden">
         <div className="overflow-x-auto">
@@ -855,10 +865,6 @@ export function BrokersTable({ data, meta }: BrokersTableProps) {
       </div>
       
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-        <div className="text-sm text-muted-foreground">
-          Showing {((currentPage - 1) * perPage) + 1} to{' '}
-          {Math.min(currentPage * perPage, total)} of {total} brokers
-        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"

@@ -705,33 +705,40 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
         </Table>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
-        </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
+            disabled={currentPage <= 1}
+            className="h-8 px-2 sm:px-3"
+            title="First page"
           >
             <ChevronsLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">First</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            disabled={currentPage <= 1}
+            className="h-8 px-2 sm:px-3"
+            title="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="hidden sm:inline ml-1">Previous</span>
           </Button>
+          <div className="text-xs sm:text-sm font-medium px-2">
+            {currentPage} / {totalPages}
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage >= totalPages}
+            className="h-8 px-2 sm:px-3"
+            title="Next page"
           >
             <span className="hidden sm:inline mr-1">Next</span>
             <ChevronRight className="h-4 w-4" />
@@ -740,8 +747,11 @@ export function CountriesTable({ data, meta }: CountriesTableProps) {
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(totalPages)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage >= totalPages}
+            className="h-8 px-2 sm:px-3"
+            title="Last page"
           >
+            <span className="hidden sm:inline mr-1">Last</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
