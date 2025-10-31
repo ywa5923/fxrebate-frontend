@@ -1,6 +1,7 @@
-import { Suspense } from 'react';
-import { EditCountryFormWrapper } from '../EditCountryFormWrapper';
-import { FormSkeleton } from '@/app/[locale]/(dashboard)/control-panel/super-manager/countries/add/FormSkeleton';
+import { getZoneList } from '@/lib/zone-requests';
+import { getCountryById } from '@/lib/country-requests';
+import { EditCountryForm } from '../EditCountryForm';
+import { notFound } from 'next/navigation';
 
 interface EditCountryPageProps {
   params: Promise<{ id: string }>;
@@ -20,10 +21,22 @@ export default async function EditCountryPage({ params }: EditCountryPageProps) 
     );
   }
 
-  return (
-    <Suspense fallback={<FormSkeleton />}>
-      <EditCountryFormWrapper countryId={countryId} />
-    </Suspense>
-  );
+  // Fetch zones for the select dropdown
+  const zonesData = await getZoneList(1, 100);
+  
+  // Fetch country data
+  try {
+    const countryData = await getCountryById(countryId);
+    
+    if (!countryData.success || !countryData.data) {
+      notFound();
+    }
+
+    return (
+      <EditCountryForm zones={zonesData?.data || []} country={countryData.data} />
+    );
+  } catch (error) {
+    notFound();
+  }
 }
 

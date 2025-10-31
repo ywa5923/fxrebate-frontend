@@ -1,12 +1,10 @@
-import { Suspense } from 'react';
-import { RegisterBrokerFormWrapper } from './RegisterBrokerFormWrapper';
-import { FormSkeleton } from './skeleton';
+import { getBrokerTypesAndCountries } from '@/lib/broker-requests';
+import { RegisterBrokerForm } from './RegisterBrokerForm';
 
-export default function RegisterBrokerPage() {
+export default async function RegisterBrokerPage() {
+  const meta = await getBrokerTypesAndCountries();
   return (
-    <Suspense fallback={<FormSkeleton />}> 
-      <RegisterBrokerFormWrapper />
-    </Suspense>
+    <RegisterBrokerForm brokerTypes={meta.brokerTypes || []} countries={meta.countries || []} />
   );
 }
 
