@@ -21,9 +21,6 @@ interface BrokersPageProps {
 export default async function BrokersPage({ searchParams }: BrokersPageProps) {
   return (
     <div className="flex-1 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Manage Brokers</h2>
-      </div>
       <Suspense fallback={<TableSkeleton />}>
         <BrokersTableWrapper searchParams={searchParams} />
       </Suspense>

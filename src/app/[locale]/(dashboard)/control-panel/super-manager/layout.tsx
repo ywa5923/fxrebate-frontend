@@ -7,14 +7,7 @@ import { isAuthenticated } from '@/lib/auth-actions';
 import { isSuperAdmin } from '@/lib/permissions';
 import logger from '@/lib/logger';
 import { redirect } from 'next/navigation';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { BreadcrumbsSuperManager } from "@/components/breadcrumbs-super-manager"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -121,19 +114,7 @@ export default async function SuperManagerLayout({
                   orientation="vertical"
                   className="mr-2 h-4 hidden sm:block"
                 />
-                <Breadcrumb className="flex-1 min-w-0">
-                  <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#" className="max-w-20 truncate md:max-w-none">
-                        Super Admin Dashboard
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="line-clamp-1">Control Panel</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
+                <BreadcrumbsSuperManager />
               </div>
             </header>
             <main className="flex-1 p-2 sm:p-4 md:p-6">

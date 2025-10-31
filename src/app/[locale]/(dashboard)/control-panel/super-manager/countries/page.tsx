@@ -20,9 +20,6 @@ interface CountriesPageProps {
 export default async function CountriesPage({ searchParams }: CountriesPageProps) {
   return (
     <div className="flex-1 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Manage Countries</h2>
-      </div>
       <Suspense fallback={<TableSkeleton />}>
         <CountriesTableWrapper searchParams={searchParams} />
       </Suspense>

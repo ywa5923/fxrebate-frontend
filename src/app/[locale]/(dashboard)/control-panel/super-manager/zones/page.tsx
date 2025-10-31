@@ -19,9 +19,6 @@ interface ZonesPageProps {
 export default async function ZonesPage({ searchParams }: ZonesPageProps) {
   return (
     <div className="flex-1 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Manage Zones</h2>
-      </div>
       <Suspense fallback={<TableSkeleton />}>
         <ZonesTableWrapper searchParams={searchParams} />
       </Suspense>
