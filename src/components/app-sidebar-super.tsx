@@ -274,6 +274,7 @@ export function AppSidebarSuper({
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
                   const isZones = link.name === 'Zones';
                   const isCountries = link.name === 'Countries';
+                  const isDropdownLists = link.name === 'Dropdown Lists';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -314,6 +315,34 @@ export function AppSidebarSuper({
                                 <Link href="/en/control-panel/super-manager/zones/add" className="flex items-center cursor-pointer">
                                   <Plus className="mr-2 h-4 w-4" />
                                   Add New Zone
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                        
+                        {isDropdownLists && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56">
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/dropdown-lists" className="flex items-center cursor-pointer">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Dropdown Lists
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/en/control-panel/super-manager/dropdown-lists/add" className="flex items-center cursor-pointer">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Create New Dropdown List
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
