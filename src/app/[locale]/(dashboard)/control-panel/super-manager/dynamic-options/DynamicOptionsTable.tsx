@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition, useCallback } from 'react';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import {
   ColumnDef,
@@ -33,14 +33,15 @@ import {
   Eraser,
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { DynamicOption, DynamicOptionPagination } from '@/types/DynamicOption';
+import type { DynamicOption, DynamicOptionPagination, TableColumnConfig } from '@/types/DynamicOption';
 
 interface DynamicOptionsTableProps {
   data?: DynamicOption[];
   meta?: DynamicOptionPagination;
+  tableColumns?: Record<string, TableColumnConfig>;
 }
 
-export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
+export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptionsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -60,26 +61,38 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
   const [forProps, setForProps] = useState(searchParams.get('for_props') || '');
   const [required, setRequired] = useState(searchParams.get('required') || '');
 
-  const initialColumnVisibility = useMemo(() => ({
-    row_number: true,
-    name: true,
-    slug: true,
-    form_type: true,
-    data_type: true,
-    required: true,
-    category_name: false,
-    dropdown_category_name: false,
-    applicable_for: false,
-    for_brokers: false,
-    for_crypto: false,
-    for_props: false,
-  }) as Record<string, boolean>, []);
+  // Build initial column visibility from table_columns
+  const initialColumnVisibility = useMemo(() => {
+    const visibility: Record<string, boolean> = { row_number: true }; // Always show row number
+    if (tableColumns) {
+      Object.entries(tableColumns).forEach(([key, config]) => {
+        visibility[key] = config.visible;
+      });
+    } else {
+      // Fallback to defaults if tableColumns not provided
+      visibility.name = true;
+      visibility.slug = true;
+      visibility.form_type = true;
+      visibility.data_type = true;
+      visibility.required = true;
+      visibility.category_name = false;
+      visibility.dropdown_category_name = false;
+      visibility.applicable_for = false;
+      visibility.for_brokers = false;
+      visibility.for_crypto = false;
+      visibility.for_props = false;
+    }
+    return visibility;
+  }, [tableColumns]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
   
-  const hasActiveFilters = searchParams.get('category_name') || searchParams.get('dropdown_category_name') || 
-    searchParams.get('name') || searchParams.get('applicable_for') || searchParams.get('data_type') || 
-    searchParams.get('form_type') || searchParams.get('for_brokers') || searchParams.get('for_crypto') || 
-    searchParams.get('for_props') || searchParams.get('required');
+  // Get filterable columns from table_columns
+  const filterableColumns = useMemo(() => {
+    if (!tableColumns) return new Set(['category_name', 'dropdown_category_name', 'name', 'applicable_for', 'data_type', 'form_type', 'for_brokers', 'for_crypto', 'for_props', 'required']);
+    return new Set(Object.entries(tableColumns).filter(([_, config]) => config.filterable).map(([key]) => key));
+  }, [tableColumns]);
+  
+  const hasActiveFilters = Array.from(filterableColumns).some(key => searchParams.get(key));
 
   useEffect(() => {
     setCategoryName(searchParams.get('category_name') || '');
@@ -118,7 +131,7 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
     startTransition(() => router.push(`?${params.toString()}`));
   };
 
-  const handleSort = (columnId: string) => {
+  const handleSort = useCallback((columnId: string) => {
     const params = new URLSearchParams(searchParams.toString());
     
     if (orderBy === columnId) {
@@ -138,172 +151,133 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
-  };
+  }, [searchParams, orderBy, orderDirection, router, startTransition]);
 
-  const getSortIcon = (columnId: string) => {
+  const getSortIcon = useCallback((columnId: string) => {
     if (orderBy !== columnId) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
     }
     return orderDirection === 'asc' 
       ? <ArrowUp className="ml-2 h-4 w-4" /> 
       : <ArrowDown className="ml-2 h-4 w-4" />;
+  }, [orderBy, orderDirection]);
+
+  // Helper function to format cell value
+  const formatCellValue = (columnKey: string, value: any): React.ReactNode => {
+    // Boolean-like fields (required, for_brokers, for_crypto, for_props, is_active)
+    const booleanFields = ['required', 'for_brokers', 'for_crypto', 'for_props', 'is_active', 'default_loading', 'load_in_dropdown', 'allow_sorting'];
+    if (booleanFields.includes(columnKey)) {
+      const isTrue = value === 1 || value === true || value === '1' || value === 'true';
+      const isRedField = columnKey === 'required' || columnKey === 'is_active';
+      return (
+        <div className="text-center">
+          <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
+            isTrue ? (isRedField ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800') : 'bg-gray-100 text-gray-600'
+          }`}>
+            {isTrue ? 'Yes' : 'No'}
+          </span>
+        </div>
+      );
+    }
+
+    // Slug field special formatting
+    if (columnKey === 'slug') {
+      return (
+        <span className="font-mono text-sm text-gray-600">
+          {value || <span className="text-gray-400 italic">N/A</span>}
+        </span>
+      );
+    }
+
+    // Default: show value or N/A
+    return value || <span className="text-gray-400 italic">N/A</span>;
   };
 
-  const columns: ColumnDef<DynamicOption>[] = [
-    {
-      id: 'row_number',
-      header: '#',
-      cell: ({ row }) => {
-        const rowNumber = (currentPage - 1) * perPage + (row?.index ?? 0) + 1;
-        return <div className="font-medium">{rowNumber}</div>;
+  // Dynamically build columns from table_columns
+  const columns: ColumnDef<DynamicOption>[] = useMemo(() => {
+    const cols: ColumnDef<DynamicOption>[] = [
+      {
+        id: 'row_number',
+        header: '#',
+        cell: ({ row }) => {
+          const rowNumber = (currentPage - 1) * perPage + (row?.index ?? 0) + 1;
+          return <div className="font-medium">{rowNumber}</div>;
+        },
       },
-    },
-    {
-      accessorKey: 'name',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => handleSort('name')}
-            className="hover:bg-transparent p-0 font-semibold"
-          >
-            Name
-            {getSortIcon('name')}
-          </Button>
-        );
-      },
-    },
-    {
-      accessorKey: 'slug',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => handleSort('slug')}
-            className="hover:bg-transparent p-0 font-semibold"
-          >
-            Slug
-            {getSortIcon('slug')}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <span className="font-mono text-sm text-gray-600">
-            {row.getValue('slug')}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'form_type',
-      header: 'Form Type',
-      cell: ({ row }) => {
-        const formType = row.getValue('form_type') as string | null;
-        return formType || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'data_type',
-      header: 'Data Type',
-      cell: ({ row }) => {
-        const dataType = row.getValue('data_type') as string | null;
-        return dataType || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'required',
-      header: 'Required',
-      cell: ({ row }) => {
-        const required = row.original.required;
-        const isRequired = required === 1 || required === true;
-        return (
-          <div className="text-center">
-            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
-              isRequired ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {isRequired ? 'Yes' : 'No'}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'category_name',
-      header: 'Category Name',
-      cell: ({ row }) => {
-        const categoryName = row.original.category_name;
-        return categoryName || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'dropdown_category_name',
-      header: 'Dropdown Category',
-      cell: ({ row }) => {
-        const dropdownCategoryName = row.original.dropdown_category_name;
-        return dropdownCategoryName || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'applicable_for',
-      header: 'Applicable For',
-      cell: ({ row }) => {
-        const applicableFor = row.original.applicable_for;
-        return applicableFor || <span className="text-gray-400 italic">N/A</span>;
-      },
-    },
-    {
-      accessorKey: 'for_brokers',
-      header: 'For Brokers',
-      cell: ({ row }) => {
-        const forBrokers = row.original.for_brokers;
-        const isTrue = forBrokers === 1 || forBrokers === true;
-        return (
-          <div className="text-center">
-            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
-              isTrue ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {isTrue ? 'Yes' : 'No'}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'for_crypto',
-      header: 'For Crypto',
-      cell: ({ row }) => {
-        const forCrypto = row.original.for_crypto;
-        const isTrue = forCrypto === 1 || forCrypto === true;
-        return (
-          <div className="text-center">
-            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
-              isTrue ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {isTrue ? 'Yes' : 'No'}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'for_props',
-      header: 'For Props',
-      cell: ({ row }) => {
-        const forProps = row.original.for_props;
-        const isTrue = forProps === 1 || forProps === true;
-        return (
-          <div className="text-center">
-            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
-              isTrue ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {isTrue ? 'Yes' : 'No'}
-            </span>
-          </div>
-        );
-      },
-    },
-  ];
+    ];
+
+    if (tableColumns) {
+      // Preserve the order from table_columns as provided by the API
+      Object.entries(tableColumns).forEach(([columnKey, config]) => {
+        // columnKey is the field name (e.g., "slug", "form_type")
+        // config contains { label, visible, sortable, filterable }
+        // Example: table_columns["form_type"] = { label: "Form Type", visible: true, sortable: true, filterable: true }
+        const isSortable = config.sortable;
+        const colDef: ColumnDef<DynamicOption> = {
+          id: columnKey, // e.g., "form_type"
+          accessorKey: columnKey, // Accesses row.original[columnKey]
+          header: isSortable ? () => {
+            return (
+              <Button
+                variant="ghost"
+                onClick={() => handleSort(columnKey)}
+                className="hover:bg-transparent p-0 font-semibold"
+              >
+                {config.label} {/* e.g., "Form Type" from table_columns["form_type"].label */}
+                {getSortIcon(columnKey)}
+              </Button>
+            );
+          } : config.label, // Use config.label if not sortable
+          cell: ({ row }) => {
+            const value = row.original[columnKey]; // Get value from data using columnKey
+            return formatCellValue(columnKey, value);
+          },
+        };
+        cols.push(colDef);
+      });
+    } else {
+      // Fallback: build columns from data if tableColumns not provided
+      const fallbackColumns: Record<string, { label: string; sortable: boolean; filterable: boolean }> = {
+        name: { label: 'Name', sortable: true, filterable: true },
+        slug: { label: 'Slug', sortable: true, filterable: true },
+        form_type: { label: 'Form Type', sortable: true, filterable: true },
+        data_type: { label: 'Data Type', sortable: true, filterable: true },
+        required: { label: 'Required', sortable: true, filterable: true },
+        category_name: { label: 'Category Name', sortable: true, filterable: true },
+        dropdown_category_name: { label: 'Dropdown Category', sortable: true, filterable: true },
+        applicable_for: { label: 'Applicable For', sortable: true, filterable: true },
+        for_brokers: { label: 'For Brokers', sortable: true, filterable: true },
+        for_crypto: { label: 'For Crypto', sortable: true, filterable: true },
+        for_props: { label: 'For Props', sortable: true, filterable: true },
+      };
+
+      Object.entries(fallbackColumns).forEach(([columnKey, config]) => {
+        const colDef: ColumnDef<DynamicOption> = {
+          id: columnKey,
+          accessorKey: columnKey,
+          header: config.sortable ? () => {
+            return (
+              <Button
+                variant="ghost"
+                onClick={() => handleSort(columnKey)}
+                className="hover:bg-transparent p-0 font-semibold"
+              >
+                {config.label}
+                {getSortIcon(columnKey)}
+              </Button>
+            );
+          } : config.label,
+          cell: ({ row }) => {
+            const value = row.original[columnKey];
+            return formatCellValue(columnKey, value);
+          },
+        };
+        cols.push(colDef);
+      });
+    }
+
+    return cols;
+  }, [tableColumns, currentPage, perPage, orderBy, orderDirection, handleSort, getSortIcon]);
 
   const table = useReactTable({
     data: safeData,
@@ -565,23 +539,17 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
                 <span className="hidden sm:inline">Select Columns</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 max-h-[300px] overflow-y-auto">
               {table.getAllLeafColumns().map((column) => {
-                const columnLabelMap: Record<string, string> = {
-                  row_number: '#',
-                  name: 'Name',
-                  slug: 'Slug',
-                  form_type: 'Form Type',
-                  data_type: 'Data Type',
-                  required: 'Required',
-                  category_name: 'Category Name',
-                  dropdown_category_name: 'Dropdown Category',
-                  applicable_for: 'Applicable For',
-                  for_brokers: 'For Brokers',
-                  for_crypto: 'For Crypto',
-                  for_props: 'For Props',
-                };
-                const label = columnLabelMap[column.id as string] ?? String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                let label: string;
+                if (column.id === 'row_number') {
+                  label = '#';
+                } else if (tableColumns && tableColumns[column.id]) {
+                  label = tableColumns[column.id].label;
+                } else {
+                  // Fallback: format column id
+                  label = String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                }
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -597,8 +565,9 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
         </div>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
+      <div className="rounded-md border w-full" style={{ maxWidth: '100%' }}>
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:h-3 [&::-webkit-scrollbar]:block [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-500" style={{ scrollbarWidth: 'thin', scrollbarColor: '#9ca3af #f3f4f6' }}>
+          <Table className="w-full" style={{ minWidth: 'max-content', tableLayout: 'auto' }}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -621,139 +590,36 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
               {table.getHeaderGroups()[0]?.headers.map((header, index) => {
                 const colId = header.column.id;
                 let control: React.ReactNode = null;
-                if (colId === 'name') {
-                  control = (
-                    <Input
-                      id="hdr_name"
-                      defaultValue={searchParams.get('name') || ''}
-                      key={`rst-${filtersResetKey}-name`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('name', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter name"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'slug') {
-                  control = (
-                    <Input
-                      id="hdr_slug"
-                      defaultValue={searchParams.get('slug') || ''}
-                      key={`rst-${filtersResetKey}-slug`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('slug', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter slug"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'form_type') {
-                  control = (
-                    <Input
-                      id="hdr_form_type"
-                      defaultValue={searchParams.get('form_type') || ''}
-                      key={`rst-${filtersResetKey}-form_type`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('form_type', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter form type"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'data_type') {
-                  control = (
-                    <Input
-                      id="hdr_data_type"
-                      defaultValue={searchParams.get('data_type') || ''}
-                      key={`rst-${filtersResetKey}-data_type`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('data_type', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter data type"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'category_name') {
-                  control = (
-                    <Input
-                      id="hdr_category_name"
-                      defaultValue={searchParams.get('category_name') || ''}
-                      key={`rst-${filtersResetKey}-category_name`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('category_name', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter category"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'dropdown_category_name') {
-                  control = (
-                    <Input
-                      id="hdr_dropdown_category_name"
-                      defaultValue={searchParams.get('dropdown_category_name') || ''}
-                      key={`rst-${filtersResetKey}-dropdown_category_name`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('dropdown_category_name', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter dropdown category"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'applicable_for') {
-                  control = (
-                    <Input
-                      id="hdr_applicable_for"
-                      defaultValue={searchParams.get('applicable_for') || ''}
-                      key={`rst-${filtersResetKey}-applicable_for`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('applicable_for', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter applicable for"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'for_brokers') {
-                  control = (
-                    <Input
-                      id="hdr_for_brokers"
-                      defaultValue={searchParams.get('for_brokers') || ''}
-                      key={`rst-${filtersResetKey}-for_brokers`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('for_brokers', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter for brokers"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'for_crypto') {
-                  control = (
-                    <Input
-                      id="hdr_for_crypto"
-                      defaultValue={searchParams.get('for_crypto') || ''}
-                      key={`rst-${filtersResetKey}-for_crypto`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('for_crypto', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter for crypto"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'for_props') {
-                  control = (
-                    <Input
-                      id="hdr_for_props"
-                      defaultValue={searchParams.get('for_props') || ''}
-                      key={`rst-${filtersResetKey}-for_props`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('for_props', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter for props"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
-                } else if (colId === 'required') {
-                  control = (
-                    <Input
-                      id="hdr_required"
-                      defaultValue={searchParams.get('required') || ''}
-                      key={`rst-${filtersResetKey}-required`}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setFilter('required', (e.target as HTMLInputElement).value); }}
-                      className="h-8 text-xs"
-                      placeholder="Filter required"
-                      style={{ backgroundColor: '#ffffff' }}
-                    />
-                  );
+                
+                // Only show filter if column is filterable according to table_columns
+                if (colId !== 'row_number') {
+                  const isFilterable = tableColumns 
+                    ? (tableColumns[colId]?.filterable ?? false)
+                    : filterableColumns.has(colId);
+                  
+                  if (isFilterable) {
+                    const placeholder = tableColumns?.[colId]?.label 
+                      ? `Filter ${tableColumns[colId].label.toLowerCase()}`
+                      : `Filter ${colId.replace(/_/g, ' ')}`;
+                    
+                    control = (
+                      <Input
+                        id={`hdr_${colId}`}
+                        defaultValue={searchParams.get(colId) || ''}
+                        key={`rst-${filtersResetKey}-${colId}`}
+                        onKeyDown={(e) => { 
+                          if (e.key === 'Enter') {
+                            setFilter(colId, (e.target as HTMLInputElement).value);
+                          }
+                        }}
+                        className="h-8 text-xs"
+                        placeholder={placeholder}
+                        style={{ backgroundColor: '#ffffff' }}
+                      />
+                    );
+                  }
                 }
+                
                 return (
                   <TableHead key={`filter-${header.id}`} className={index === 0 ? 'bg-gray-100 font-bold' : ''}>
                     {control}
@@ -788,6 +654,7 @@ export function DynamicOptionsTable({ data, meta }: DynamicOptionsTableProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">

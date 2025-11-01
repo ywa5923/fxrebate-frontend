@@ -29,9 +29,17 @@ export interface DynamicOptionPagination {
   to: number;
 }
 
+export interface TableColumnConfig {
+  label: string;
+  visible: boolean;
+  sortable: boolean;
+  filterable: boolean;
+}
+
 export interface DynamicOptionListResponse {
   success: boolean;
   data: DynamicOption[];
+  table_columns?: Record<string, TableColumnConfig>;
   pagination: DynamicOptionPagination;
 }
 

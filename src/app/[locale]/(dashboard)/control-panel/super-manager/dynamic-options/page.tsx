@@ -50,6 +50,7 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
       <DynamicOptionsTable 
         data={optionData?.data || []} 
         meta={optionData?.pagination}
+        tableColumns={optionData?.table_columns}
       />
     </div>
   );

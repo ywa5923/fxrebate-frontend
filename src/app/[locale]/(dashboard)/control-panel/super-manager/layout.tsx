@@ -91,7 +91,7 @@ export default async function SuperManagerLayout({
   ]
 
   return (
-    <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
+    <div className={cn(satoshi.variable, 'h-screen overflow-hidden bg-[#FFF] dark:bg-black')}>
       <Providers>
         <SidebarProvider>
           <AppSidebarSuper 
@@ -101,7 +101,7 @@ export default async function SuperManagerLayout({
             userName={loggedUser?.name}
             userEmail={loggedUser?.email}
           />
-          <SidebarInset>
+          <SidebarInset className="flex flex-col h-screen overflow-hidden">
             <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-3 sm:px-4 w-full">
                 <SidebarTrigger className="-ml-1" />
@@ -112,7 +112,7 @@ export default async function SuperManagerLayout({
                 <BreadcrumbsSuperManager />
               </div>
             </header>
-            <main className="flex-1 p-2 sm:p-4 md:p-6">
+            <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-y-auto overflow-x-hidden">
               {children}
             </main>
           </SidebarInset>
