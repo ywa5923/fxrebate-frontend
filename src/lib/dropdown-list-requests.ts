@@ -11,8 +11,8 @@ import { BASE_URL } from '@/constants';
 export async function getDropdownLists(
   page: number = 1,
   perPage: number = 25,
-  _orderBy?: string,
-  _orderDirection?: 'asc' | 'desc',
+  orderBy?: string,
+  orderDirection?: 'asc' | 'desc',
   filters?: DropdownListFilters
 ): Promise<DropdownListListResponse> {
   const log = logger.child('lib/dropdown-list-requests/getDropdownLists');
@@ -27,6 +27,8 @@ export async function getDropdownLists(
       per_page: perPage.toString(),
     });
 
+    if (orderBy) params.set('order_by', orderBy);
+    if (orderDirection) params.set('order_direction', orderDirection);
     if (filters?.name) params.set('name', filters.name);
     if (filters?.slug) params.set('slug', filters.slug);
     if (filters?.description) params.set('description', filters.description);

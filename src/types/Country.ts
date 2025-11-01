@@ -1,8 +1,4 @@
-export interface Zone {
-  id: number;
-  name: string;
-  zone_code: string;
-}
+import type { Zone } from './Zone';
 
 export interface Country {
   id: number;

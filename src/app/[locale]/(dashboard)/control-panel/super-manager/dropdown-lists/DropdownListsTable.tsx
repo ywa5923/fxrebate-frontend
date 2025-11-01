@@ -34,16 +34,18 @@ import {
   ChevronRight, 
   ChevronsLeft, 
   ChevronsRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Filter,
   Sliders,
   Eraser,
   Edit,
   Trash2,
-  MoreHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { deleteDropdownList } from '@/lib/dropdown-list-requests';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { DropdownList, DropdownListPagination } from '@/types/DropdownList';
 
 interface DropdownListsTableProps {
@@ -95,6 +97,9 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
 
   const safeData = data || [];
 
+  const orderBy = searchParams.get('order_by') || '';
+  const orderDirection = searchParams.get('order_direction') || 'asc';
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<{ id: number; name: string } | null>(null);
 
@@ -111,6 +116,37 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
     });
   };
 
+  const handleSort = (columnId: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (orderBy === columnId) {
+      if (orderDirection === 'asc') {
+        params.set('order_direction', 'desc');
+      } else {
+        params.delete('order_by');
+        params.delete('order_direction');
+      }
+    } else {
+      params.set('order_by', columnId);
+      params.set('order_direction', 'asc');
+    }
+    
+    params.set('page', '1');
+    
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  };
+
+  const getSortIcon = (columnId: string) => {
+    if (orderBy !== columnId) {
+      return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    }
+    return orderDirection === 'asc' 
+      ? <ArrowUp className="ml-2 h-4 w-4" /> 
+      : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
   const columns: ColumnDef<DropdownList>[] = [
     {
       id: 'row_number',
@@ -120,9 +156,51 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
         return <div className="font-medium">{rowNumber}</div>;
       },
     },
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'slug', header: 'Slug' },
+    {
+      accessorKey: 'id',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('id')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            ID
+            {getSortIcon('id')}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: 'name',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('name')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Name
+            {getSortIcon('name')}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: 'slug',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('slug')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Slug
+            {getSortIcon('slug')}
+          </Button>
+        );
+      },
+    },
     {
       id: 'options',
       header: 'Options',
@@ -135,7 +213,18 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
     },
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('description')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Description
+            {getSortIcon('description')}
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const value = row.getValue('description') as string | null;
         return value || <span className="text-gray-400 italic">N/A</span>;
@@ -143,7 +232,18 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
     },
     {
       accessorKey: 'created_at',
-      header: 'Created At',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('created_at')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Created At
+            {getSortIcon('created_at')}
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue('created_at') as string | null;
         if (!date) return <span className="text-gray-400 italic">N/A</span>;
@@ -154,7 +254,18 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
     },
     {
       accessorKey: 'updated_at',
-      header: 'Updated At',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => handleSort('updated_at')}
+            className="hover:bg-transparent p-0 font-semibold"
+          >
+            Updated At
+            {getSortIcon('updated_at')}
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = row.getValue('updated_at') as string | null;
         if (!date) return <span className="text-gray-400 italic">N/A</span>;
@@ -374,18 +485,6 @@ export function DropdownListsTable({ data, meta }: DropdownListsTableProps) {
                   </DropdownMenuCheckboxItem>
                 );
               })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => router.push(`/${locale}/control-panel/super-manager/dropdown-lists/add`)}>
-                Create new List
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

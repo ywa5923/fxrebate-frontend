@@ -71,8 +71,8 @@ export default async function SuperManagerLayout({
     icon: 'List'
   },
   {
-    name: 'Broker Dynamic Options',
-    url: '/en/control-panel/super-manager/broker-dynamic-options',
+    name: 'Dynamic Options',
+    url: '/en/control-panel/super-manager/dynamic-options',
     icon: 'Options'
   }
 ]
