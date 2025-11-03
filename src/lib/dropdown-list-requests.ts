@@ -179,4 +179,61 @@ export async function deleteDropdownList(id: number): Promise<{ success: boolean
   }
 }
 
+// Fetch all dropdown lists (for select dropdowns) - unpaginated
+export async function getAllDropdownLists(): Promise<{ success: boolean; data?: DropdownList[]; message?: string }> {
+  const log = logger.child('lib/dropdown-list-requests/getAllDropdownLists');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      return { success: false, message: 'Authentication token not found' };
+    }
+    // Fetch all pages - get first page to see total pages
+    let allData: DropdownList[] = [];
+    let page = 1;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: '100', // Get 100 per page to minimize requests
+      });
+      
+      const response = await fetch(`${BASE_URL}/dropdown-list?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+        next: { revalidate: 0 },
+      });
+      
+      if (!response.ok) {
+        const msg = `HTTP error: ${response.status}`;
+        log.error('Error fetching dropdown lists', { error: msg });
+        return { success: false, message: msg };
+      }
+      
+      const data: DropdownListListResponse = await response.json();
+      if (!data.success) {
+        return { success: false, message: 'Failed to fetch dropdown lists' };
+      }
+      
+      if (data.data && data.data.length > 0) {
+        allData = [...allData, ...data.data];
+      }
+      
+      // Check if there are more pages
+      if (data.pagination && page >= data.pagination.last_page) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+    
+    return { success: true, data: allData };
+  } catch (err) {
+    log.error('Error fetching all dropdown lists', {
+      error: err instanceof Error ? err.message : err,
+    });
+    return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
 

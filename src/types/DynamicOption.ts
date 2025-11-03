@@ -1,23 +1,30 @@
 export interface DynamicOption {
-  [key: string]: any; // Since keys are dynamic (slug-based)
-  slug: string;
+  id: number;
   name: string;
-  category_name?: string;
-  dropdown_category_name?: string;
-  applicable_for?: string;
-  data_type?: string;
-  form_type?: string;
-  for_brokers?: number | boolean;
-  for_crypto?: number | boolean;
-  for_props?: number | boolean;
-  required?: number | boolean;
-  default_loading?: number | boolean | null;
-  default_loading_position?: number;
-  dropdown_position?: number;
-  load_in_dropdown?: number | boolean;
-  allow_sorting?: number | boolean;
-  tooltip?: string | null;
-  placeholder?: string | null;
+  slug: string;
+  applicable_for: string | null;
+  data_type: string;
+  form_type: string;
+  meta_data: string | null;
+  for_crypto: number | boolean;
+  for_brokers: number | boolean;
+  for_props: number | boolean;
+  category_name: string | null;
+  position_in_category: number | null;
+  dropdown_list_attached: string | null;
+  required: number | boolean;
+  placeholder: string | null;
+  tooltip: string | null;
+  min_constraint: number | string | null;
+  max_constraint: number | string | null;
+  load_in_dropdown: number | boolean;
+  dropdown_position: number | null;
+  default_loading: number | boolean | null;
+  default_loading_position: number | null;
+  is_active: number | boolean;
+  allow_sorting: number | boolean;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface DynamicOptionPagination {
@@ -37,6 +44,13 @@ export interface TableColumnConfig {
 }
 
 export interface DynamicOptionListResponse {
+  success: boolean;
+  data: DynamicOption[];
+  table_columns?: Record<string, TableColumnConfig>;
+  pagination: DynamicOptionPagination;
+}
+
+export interface DynamicOptionApiResponse {
   success: boolean;
   data: DynamicOption[];
   table_columns?: Record<string, TableColumnConfig>;

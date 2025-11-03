@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   ChevronLeft, 
   ChevronRight, 
@@ -50,16 +51,39 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
   
   const [showFilters, setShowFilters] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
-  const [categoryName, setCategoryName] = useState(searchParams.get('category_name') || '');
-  const [dropdownCategoryName, setDropdownCategoryName] = useState(searchParams.get('dropdown_category_name') || '');
-  const [name, setName] = useState(searchParams.get('name') || '');
-  const [applicableFor, setApplicableFor] = useState(searchParams.get('applicable_for') || '');
-  const [dataType, setDataType] = useState(searchParams.get('data_type') || '');
-  const [formType, setFormType] = useState(searchParams.get('form_type') || '');
-  const [forBrokers, setForBrokers] = useState(searchParams.get('for_brokers') || '');
-  const [forCrypto, setForCrypto] = useState(searchParams.get('for_crypto') || '');
-  const [forProps, setForProps] = useState(searchParams.get('for_props') || '');
-  const [required, setRequired] = useState(searchParams.get('required') || '');
+  
+  // Helper to get boolean filter value from URL params (returns "any", "1", or "0")
+  const getBooleanFilterValue = (key: string): string => {
+    const value = searchParams.get(key);
+    if (!value) return 'any';
+    if (value === '1' || value === 'true') return '1';
+    if (value === '0' || value === 'false') return '0';
+    return 'any';
+  };
+  
+  // Single state object for all filters
+  const [filters, setFilters] = useState(() => {
+    const getBoolValue = (key: string): string => {
+      const val = searchParams.get(key);
+      if (!val) return 'any';
+      if (val === '1' || val === 'true') return '1';
+      if (val === '0' || val === 'false') return '0';
+      return 'any';
+    };
+
+    return {
+      category_name: searchParams.get('category_name') || '',
+      dropdown_category_name: searchParams.get('dropdown_category_name') || '',
+      name: searchParams.get('name') || '',
+      applicable_for: searchParams.get('applicable_for') || '',
+      data_type: searchParams.get('data_type') || '',
+      form_type: searchParams.get('form_type') || '',
+      for_brokers: getBoolValue('for_brokers'),
+      for_crypto: getBoolValue('for_crypto'),
+      for_props: getBoolValue('for_props'),
+      required: getBoolValue('required'),
+    };
+  });
 
   // Build initial column visibility from table_columns
   const initialColumnVisibility = useMemo(() => {
@@ -92,22 +116,6 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
     return new Set(Object.entries(tableColumns).filter(([_, config]) => config.filterable).map(([key]) => key));
   }, [tableColumns]);
   
-  const hasActiveFilters = Array.from(filterableColumns).some(key => searchParams.get(key));
-
-  useEffect(() => {
-    setCategoryName(searchParams.get('category_name') || '');
-    setDropdownCategoryName(searchParams.get('dropdown_category_name') || '');
-    setName(searchParams.get('name') || '');
-    setApplicableFor(searchParams.get('applicable_for') || '');
-    setDataType(searchParams.get('data_type') || '');
-    setFormType(searchParams.get('form_type') || '');
-    setForBrokers(searchParams.get('for_brokers') || '');
-    setForCrypto(searchParams.get('for_crypto') || '');
-    setForProps(searchParams.get('for_props') || '');
-    setRequired(searchParams.get('required') || '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
-
   const currentPage = meta?.current_page || 1;
   const totalPages = meta?.last_page || 1;
   const perPage = meta?.per_page || 25;
@@ -116,16 +124,62 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
   const total = meta?.total || 0;
   
   const safeData = data || [];
+  
+  // Identify boolean columns (columns that typically have boolean values)
+  const booleanColumns = useMemo(() => {
+    const booleanFields = new Set(['for_crypto', 'for_brokers', 'for_props', 'required', 'is_active', 'default_loading', 'load_in_dropdown', 'allow_sorting']);
+    // Also check if we have data to infer boolean columns from data_type
+    if (safeData.length > 0) {
+      const firstItem = safeData[0] as Record<string, any>;
+      // Check data_type field or known boolean patterns
+      Object.keys(firstItem).forEach((key) => {
+        const value = firstItem[key];
+        // If value is 0, 1, true, false and column is not already in the set, it might be boolean
+        if ((value === 0 || value === 1 || value === true || value === false) && 
+            typeof value === 'number' || typeof value === 'boolean') {
+          booleanFields.add(key);
+        }
+      });
+    }
+    return booleanFields;
+  }, [safeData]);
+  
+  const hasActiveFilters = Array.from(filterableColumns).some(key => searchParams.get(key));
+
+  useEffect(() => {
+    setFilters({
+      category_name: searchParams.get('category_name') || '',
+      dropdown_category_name: searchParams.get('dropdown_category_name') || '',
+      name: searchParams.get('name') || '',
+      applicable_for: searchParams.get('applicable_for') || '',
+      data_type: searchParams.get('data_type') || '',
+      form_type: searchParams.get('form_type') || '',
+      for_brokers: getBooleanFilterValue('for_brokers'),
+      for_crypto: getBooleanFilterValue('for_crypto'),
+      for_props: getBooleanFilterValue('for_props'),
+      required: getBooleanFilterValue('required'),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const orderBy = searchParams.get('order_by') || '';
   const orderDirection = searchParams.get('order_direction') || 'asc';
 
-  const setFilter = (key: string, value: string) => {
+  const setFilter = (key: string, value: string | boolean | undefined) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value && value.length > 0) {
-      params.set(key, value);
-    } else {
+    // Handle "any" as a special value that removes the filter
+    if (value === 'any' || value === undefined || value === null || value === '' || value === false) {
       params.delete(key);
+    } else if (value !== undefined && value !== null) {
+      // For boolean values, convert to "1" for true, "0" for false
+      if (typeof value === 'boolean') {
+        params.set(key, value ? '1' : '0');
+      } else if (value === '1' || value === '0') {
+        // Handle string boolean values
+        params.set(key, value);
+      } else {
+        params.set(key, String(value));
+      }
     }
     params.set('page', '1');
     startTransition(() => router.push(`?${params.toString()}`));
@@ -229,7 +283,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
             );
           } : config.label, // Use config.label if not sortable
           cell: ({ row }) => {
-            const value = row.original[columnKey]; // Get value from data using columnKey
+            const value = (row.original as Record<string, any>)[columnKey]; // Get value from data using columnKey
             return formatCellValue(columnKey, value);
           },
         };
@@ -268,7 +322,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
             );
           } : config.label,
           cell: ({ row }) => {
-            const value = row.original[columnKey];
+            const value = (row.original as Record<string, any>)[columnKey];
             return formatCellValue(columnKey, value);
           },
         };
@@ -304,16 +358,18 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
     
-    if (categoryName) params.set('category_name', categoryName); else params.delete('category_name');
-    if (dropdownCategoryName) params.set('dropdown_category_name', dropdownCategoryName); else params.delete('dropdown_category_name');
-    if (name) params.set('name', name); else params.delete('name');
-    if (applicableFor) params.set('applicable_for', applicableFor); else params.delete('applicable_for');
-    if (dataType) params.set('data_type', dataType); else params.delete('data_type');
-    if (formType) params.set('form_type', formType); else params.delete('form_type');
-    if (forBrokers) params.set('for_brokers', forBrokers); else params.delete('for_brokers');
-    if (forCrypto) params.set('for_crypto', forCrypto); else params.delete('for_crypto');
-    if (forProps) params.set('for_props', forProps); else params.delete('for_props');
-    if (required) params.set('required', required); else params.delete('required');
+    if (filters.category_name) params.set('category_name', filters.category_name); else params.delete('category_name');
+    if (filters.dropdown_category_name) params.set('dropdown_category_name', filters.dropdown_category_name); else params.delete('dropdown_category_name');
+    if (filters.name) params.set('name', filters.name); else params.delete('name');
+    if (filters.applicable_for) params.set('applicable_for', filters.applicable_for); else params.delete('applicable_for');
+    if (filters.data_type) params.set('data_type', filters.data_type); else params.delete('data_type');
+    if (filters.form_type) params.set('form_type', filters.form_type); else params.delete('form_type');
+    
+    // Boolean filters
+    if (filters.for_brokers !== 'any') params.set('for_brokers', filters.for_brokers); else params.delete('for_brokers');
+    if (filters.for_crypto !== 'any') params.set('for_crypto', filters.for_crypto); else params.delete('for_crypto');
+    if (filters.for_props !== 'any') params.set('for_props', filters.for_props); else params.delete('for_props');
+    if (filters.required !== 'any') params.set('required', filters.required); else params.delete('required');
     
     params.set('page', '1');
     
@@ -323,16 +379,18 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
   };
 
   const handleClearFilters = () => {
-    setCategoryName('');
-    setDropdownCategoryName('');
-    setName('');
-    setApplicableFor('');
-    setDataType('');
-    setFormType('');
-    setForBrokers('');
-    setForCrypto('');
-    setForProps('');
-    setRequired('');
+    setFilters({
+      category_name: '',
+      dropdown_category_name: '',
+      name: '',
+      applicable_for: '',
+      data_type: '',
+      form_type: '',
+      for_brokers: 'any',
+      for_crypto: 'any',
+      for_props: 'any',
+      required: 'any',
+    });
     
     const params = new URLSearchParams(searchParams.toString());
     params.delete('category_name');
@@ -402,8 +460,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="category_name"
                 placeholder="Filter category name"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
+                value={filters.category_name}
+                onChange={(e) => setFilters({ ...filters, category_name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -413,8 +471,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="dropdown_category_name"
                 placeholder="Filter dropdown category"
-                value={dropdownCategoryName}
-                onChange={(e) => setDropdownCategoryName(e.target.value)}
+                value={filters.dropdown_category_name}
+                onChange={(e) => setFilters({ ...filters, dropdown_category_name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -424,8 +482,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="name"
                 placeholder="Filter name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={filters.name}
+                onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -435,8 +493,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="applicable_for"
                 placeholder="Filter applicable for"
-                value={applicableFor}
-                onChange={(e) => setApplicableFor(e.target.value)}
+                value={filters.applicable_for}
+                onChange={(e) => setFilters({ ...filters, applicable_for: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -446,8 +504,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="data_type"
                 placeholder="e.g., string, int, boolean"
-                value={dataType}
-                onChange={(e) => setDataType(e.target.value)}
+                value={filters.data_type}
+                onChange={(e) => setFilters({ ...filters, data_type: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
@@ -457,55 +515,87 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
               <Input
                 id="form_type"
                 placeholder="e.g., string, number, checkbox"
-                value={formType}
-                onChange={(e) => setFormType(e.target.value)}
+                value={filters.form_type}
+                onChange={(e) => setFilters({ ...filters, form_type: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="for_brokers">For Brokers</Label>
-              <Input
-                id="for_brokers"
-                placeholder="Filter for brokers"
-                value={forBrokers}
-                onChange={(e) => setForBrokers(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                style={{ backgroundColor: '#ffffff' }}
-              />
+              <Select
+                value={filters.for_brokers}
+                onValueChange={(value) => {
+                  setFilters({ ...filters, for_brokers: value });
+                  setFilter('for_brokers', value);
+                }}
+              >
+                <SelectTrigger id="for_brokers" className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">True</SelectItem>
+                  <SelectItem value="0">False</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="for_crypto">For Crypto</Label>
-              <Input
-                id="for_crypto"
-                placeholder="Filter for crypto"
-                value={forCrypto}
-                onChange={(e) => setForCrypto(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                style={{ backgroundColor: '#ffffff' }}
-              />
+              <Select
+                value={filters.for_crypto}
+                onValueChange={(value) => {
+                  setFilters({ ...filters, for_crypto: value });
+                  setFilter('for_crypto', value);
+                }}
+              >
+                <SelectTrigger id="for_crypto" className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">True</SelectItem>
+                  <SelectItem value="0">False</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="for_props">For Props</Label>
-              <Input
-                id="for_props"
-                placeholder="Filter for props"
-                value={forProps}
-                onChange={(e) => setForProps(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                style={{ backgroundColor: '#ffffff' }}
-              />
+              <Select
+                value={filters.for_props}
+                onValueChange={(value) => {
+                  setFilters({ ...filters, for_props: value });
+                  setFilter('for_props', value);
+                }}
+              >
+                <SelectTrigger id="for_props" className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">True</SelectItem>
+                  <SelectItem value="0">False</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="required">Required</Label>
-              <Input
-                id="required"
-                placeholder="Filter required"
-                value={required}
-                onChange={(e) => setRequired(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                style={{ backgroundColor: '#ffffff' }}
-              />
+              <Select
+                value={filters.required}
+                onValueChange={(value) => {
+                  setFilters({ ...filters, required: value });
+                  setFilter('required', value);
+                }}
+              >
+                <SelectTrigger id="required" className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">True</SelectItem>
+                  <SelectItem value="0">False</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex gap-2">
@@ -566,7 +656,13 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
       </div>
 
       <div className="rounded-md border w-full" style={{ maxWidth: '100%' }}>
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:h-3 [&::-webkit-scrollbar]:block [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-500" style={{ scrollbarWidth: 'thin', scrollbarColor: '#9ca3af #f3f4f6' }}>
+        <div 
+          className="overflow-x-auto" 
+          style={{ 
+            scrollbarWidth: 'thin', 
+            scrollbarColor: '#9ca3af #f3f4f6'
+          }}
+        >
           <Table className="w-full" style={{ minWidth: 'max-content', tableLayout: 'auto' }}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -598,25 +694,53 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                     : filterableColumns.has(colId);
                   
                   if (isFilterable) {
-                    const placeholder = tableColumns?.[colId]?.label 
-                      ? `Filter ${tableColumns[colId].label.toLowerCase()}`
-                      : `Filter ${colId.replace(/_/g, ' ')}`;
+                    const isBoolean = booleanColumns.has(colId);
                     
-                    control = (
-                      <Input
-                        id={`hdr_${colId}`}
-                        defaultValue={searchParams.get(colId) || ''}
-                        key={`rst-${filtersResetKey}-${colId}`}
-                        onKeyDown={(e) => { 
-                          if (e.key === 'Enter') {
-                            setFilter(colId, (e.target as HTMLInputElement).value);
-                          }
-                        }}
-                        className="h-8 text-xs"
-                        placeholder={placeholder}
-                        style={{ backgroundColor: '#ffffff' }}
-                      />
-                    );
+                    if (isBoolean) {
+                      // Use select for boolean filters (Any, True, False)
+                      const filterValue = getBooleanFilterValue(colId);
+                      control = (
+                        <div className="flex items-center justify-center">
+                          <Select
+                            key={`rst-${filtersResetKey}-${colId}`}
+                            value={filterValue}
+                            onValueChange={(value) => {
+                              setFilter(colId, value);
+                            }}
+                          >
+                            <SelectTrigger id={`hdr_${colId}`} size="sm" className="h-8 w-full">
+                              <SelectValue placeholder="Any" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="any">Any</SelectItem>
+                              <SelectItem value="1">True</SelectItem>
+                              <SelectItem value="0">False</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    } else {
+                      // Use input for text filters
+                      const placeholder = tableColumns?.[colId]?.label 
+                        ? `Filter ${tableColumns[colId].label.toLowerCase()}`
+                        : `Filter ${colId.replace(/_/g, ' ')}`;
+                      
+                      control = (
+                        <Input
+                          id={`hdr_${colId}`}
+                          defaultValue={searchParams.get(colId) || ''}
+                          key={`rst-${filtersResetKey}-${colId}`}
+                          onKeyDown={(e) => { 
+                            if (e.key === 'Enter') {
+                              setFilter(colId, (e.target as HTMLInputElement).value);
+                            }
+                          }}
+                          className="h-8 text-xs"
+                          placeholder={placeholder}
+                          style={{ backgroundColor: '#ffffff' }}
+                        />
+                      );
+                    }
                   }
                 }
                 

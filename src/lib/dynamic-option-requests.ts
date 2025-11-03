@@ -3,7 +3,7 @@
 import { getBearerToken } from './auth-actions';
 import logger from './logger';
 import { BASE_URL } from '@/constants';
-import type { DynamicOptionListResponse, DynamicOptionFilters } from '@/types/DynamicOption';
+import type { DynamicOptionListResponse, DynamicOptionFilters, DynamicOptionApiResponse } from '@/types/DynamicOption';
 
 export async function getDynamicOptionList(
   page: number = 1,
@@ -82,11 +82,19 @@ export async function getDynamicOptionList(
       throw new Error(msg);
     }
 
-    const data: DynamicOptionListResponse = await response.json();
+    const rawData: DynamicOptionApiResponse = await response.json();
 
-    if (!data.success) {
+    if (!rawData.success) {
       throw new Error('Failed to fetch dynamic option list');
     }
+
+    // API returns flat structure: { success, data, table_columns, pagination }
+    const data: DynamicOptionListResponse = {
+      success: rawData.success,
+      data: rawData.data || [],
+      table_columns: rawData.table_columns,
+      pagination: rawData.pagination,
+    };
 
     return data;
   } catch (err) {
@@ -94,6 +102,84 @@ export async function getDynamicOptionList(
       error: err instanceof Error ? err.message : err 
     });
     throw err;
+  }
+}
+
+export interface CreateDynamicOptionInput {
+  name: string;
+  slug: string;
+  applicable_for: string;
+  data_type: string;
+  form_type: string;
+  meta_data?: string | null;
+  for_crypto: boolean | number;
+  for_brokers: boolean | number;
+  for_props: boolean | number;
+  required: boolean | number;
+  placeholder?: string | null;
+  tooltip?: string | null;
+  min_constraint?: string | null;
+  max_constraint?: string | null;
+  load_in_dropdown?: boolean | number | null;
+  default_loading?: boolean | number | null;
+  default_loading_position?: number | null;
+  dropdown_position?: number | null;
+  position_in_category?: number | null;
+  is_active?: boolean | number | null;
+  allow_sorting?: boolean | number | null;
+  category_name?: string | null;
+  dropdown_list_attached?: string | null;
+}
+
+export async function createDynamicOption(
+  input: CreateDynamicOptionInput
+): Promise<{ success: boolean; message?: string }> {
+  const log = logger.child('lib/dynamic-option-requests/createDynamicOption');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      return { success: false, message: 'Authentication token not found' };
+    }
+    const response = await fetch(`${BASE_URL}/broker-options`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+      body: JSON.stringify(input),
+    });
+    
+    let data: any = {};
+    try {
+      const text = await response.text();
+      if (text) {
+        data = JSON.parse(text);
+      }
+    } catch (e) {
+      log.error('Failed to parse response', { error: e });
+    }
+    
+    if (!response.ok) {
+      // Handle validation errors
+      let message = data?.message || `HTTP error: ${response.status}`;
+      
+      // If there are validation errors, append them to the message
+      if (data?.errors) {
+        const validationErrors = Object.entries(data.errors)
+          .map(([field, errors]: [string, any]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+          .join('; ');
+        message += ` - ${validationErrors}`;
+      }
+      
+      log.error('Error creating dynamic option', { 
+        status: response.status, 
+        message,
+        errors: data?.errors,
+        data: data
+      });
+      return { success: false, message };
+    }
+    return { success: true, message: data?.message };
+  } catch (err) {
+    log.error('Error creating dynamic option', { error: err instanceof Error ? err.message : err });
+    return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
   }
 }
 
