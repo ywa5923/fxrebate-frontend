@@ -243,6 +243,20 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
       );
     }
 
+    // Meta data field - ensure it's always rendered as a string
+    if (columnKey === 'meta_data') {
+      if (!value) {
+        return <span className="text-gray-400 italic">N/A</span>;
+      }
+      // If it's already a string, use it; if it's an object, stringify it
+      const displayValue = typeof value === 'string' ? value : JSON.stringify(value);
+      return (
+        <span className="font-mono text-xs text-gray-600 break-all">
+          {displayValue}
+        </span>
+      );
+    }
+
     // Default: show value or N/A
     return value || <span className="text-gray-400 italic">N/A</span>;
   };

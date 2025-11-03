@@ -127,8 +127,125 @@ export interface CreateDynamicOptionInput {
   position_in_category?: number | null;
   is_active?: boolean | number | null;
   allow_sorting?: boolean | number | null;
-  category_name?: string | null;
-  dropdown_list_attached?: string | null;
+  category_name?: number | null;
+  dropdown_list_attached?: number | null;
+}
+
+export interface OptionCategory {
+  id: number;
+  name: string;
+}
+
+export interface OptionCategoryListResponse {
+  success: boolean;
+  data: OptionCategory[];
+}
+
+export async function getOptionCategories(): Promise<OptionCategoryListResponse> {
+  const log = logger.child('lib/dynamic-option-requests/getOptionCategories');
+  
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/option-categories/get-list`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`,
+        },
+        next: { revalidate: 0 }
+      }
+    );
+
+    if (!response.ok) {
+      const msg = `HTTP error: ${response.status}`;
+      log.error('Error fetching option categories', { error: msg });
+      throw new Error(msg);
+    }
+
+    const rawData = await response.json();
+
+    if (!rawData.success) {
+      throw new Error('Failed to fetch option categories');
+    }
+
+    // Extract only id and name from each category
+    const categories: OptionCategory[] = (rawData.data || []).map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+    }));
+
+    return {
+      success: true,
+      data: categories,
+    };
+  } catch (err) {
+    log.error('Error fetching option categories', { 
+      error: err instanceof Error ? err.message : err 
+    });
+    throw err;
+  }
+}
+
+export interface FormMetaData {
+  applicable_for: string[];
+  data_type: string[];
+  form_type: string[];
+}
+
+export interface FormMetaDataResponse {
+  success: boolean;
+  data: FormMetaData;
+}
+
+export async function getFormMetaData(): Promise<FormMetaDataResponse> {
+  const log = logger.child('lib/dynamic-option-requests/getFormMetaData');
+  
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      throw new Error('Authentication token not found');
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/broker-options/form-meta-data`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`,
+        },
+        next: { revalidate: 0 }
+      }
+    );
+
+    if (!response.ok) {
+      const msg = `HTTP error: ${response.status}`;
+      log.error('Error fetching form metadata', { error: msg });
+      throw new Error(msg);
+    }
+
+    const rawData = await response.json();
+
+    if (!rawData.success) {
+      throw new Error('Failed to fetch form metadata');
+    }
+
+    return {
+      success: true,
+      data: rawData.data,
+    };
+  } catch (err) {
+    log.error('Error fetching form metadata', { 
+      error: err instanceof Error ? err.message : err 
+    });
+    throw err;
+  }
 }
 
 export async function createDynamicOption(

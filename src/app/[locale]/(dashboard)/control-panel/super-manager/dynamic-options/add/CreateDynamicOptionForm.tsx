@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,12 +8,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createDynamicOption } from '@/lib/dynamic-option-requests';
-import { getAllDropdownLists } from '@/lib/dropdown-list-requests';
+import { createDynamicOption, type OptionCategory, type FormMetaData, type CreateDynamicOptionInput } from '@/lib/dynamic-option-requests';
 import { toast } from 'sonner';
 import type { DropdownList } from '@/types/DropdownList';
 
-export default function CreateDynamicOptionForm() {
+interface CreateDynamicOptionFormProps {
+  dropdownLists: DropdownList[];
+  optionCategories: OptionCategory[];
+  formMetaData: FormMetaData | null;
+}
+
+export default function CreateDynamicOptionForm({
+  dropdownLists,
+  optionCategories,
+  formMetaData,
+}: CreateDynamicOptionFormProps) {
   const router = useRouter();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
@@ -41,31 +50,8 @@ export default function CreateDynamicOptionForm() {
   const [positionInCategory, setPositionInCategory] = useState<number | null>(null);
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [allowSorting, setAllowSorting] = useState<boolean | null>(null);
-  const [categoryName, setCategoryName] = useState('');
-  const [dropdownListAttached, setDropdownListAttached] = useState<string | null>(null);
-
-  // Dropdown lists for dropdown_list_attached
-  const [dropdownLists, setDropdownLists] = useState<DropdownList[]>([]);
-  const [loadingDropdownLists, setLoadingDropdownLists] = useState(true);
-
-  useEffect(() => {
-    // Fetch dropdown lists
-    async function fetchDropdownLists() {
-      try {
-        const result = await getAllDropdownLists();
-        if (result.success && result.data) {
-          setDropdownLists(result.data);
-        } else {
-          toast.error('Failed to load dropdown lists');
-        }
-      } catch (error) {
-        toast.error('Error loading dropdown lists');
-      } finally {
-        setLoadingDropdownLists(false);
-      }
-    }
-    fetchDropdownLists();
-  }, []);
+  const [categoryName, setCategoryName] = useState<number | null>(null);
+  const [dropdownListAttached, setDropdownListAttached] = useState<number | null>(null);
 
   const slugify = (text: string) =>
     text
@@ -106,7 +92,7 @@ export default function CreateDynamicOptionForm() {
       return;
     }
 
-    const formData = {
+    const formData: CreateDynamicOptionInput = {
       name: name.trim(),
       slug: slug.trim(),
       applicable_for: applicableFor.trim(),
@@ -130,7 +116,7 @@ export default function CreateDynamicOptionForm() {
       position_in_category: positionInCategory || 0,
       is_active: isActive === true ? 1 : (isActive === false ? 0 : null),
       allow_sorting: allowSorting === true ? 1 : (allowSorting === false ? 0 : null),
-      category_name: categoryName.trim() || null,
+      category_name: categoryName || null,
       dropdown_list_attached: dropdownListAttached || null,
     };
 
@@ -141,7 +127,8 @@ export default function CreateDynamicOptionForm() {
         router.push(`/${locale}/control-panel/super-manager/dynamic-options`);
         router.refresh();
       } else {
-        toast.error('Failed to create dynamic option', { description: res.message });
+        const errorMessage = typeof res.message === 'string' ? res.message : JSON.stringify(res.message || 'Unknown error');
+        toast.error('Failed to create dynamic option', { description: errorMessage });
       }
     });
   };
@@ -172,103 +159,91 @@ export default function CreateDynamicOptionForm() {
               required
             />
           </div>
+        </div>
+      </div>
+
+      {/* Applicability Section */}
+      <div className="space-y-4 border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold">Applicability</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="applicable_for">Applicable For *</Label>
-            <Input
-              id="applicable_for"
-              value={applicableFor}
-              onChange={(e) => setApplicableFor(e.target.value)}
-              placeholder="e.g., broker"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="data_type">Data Type *</Label>
-            <Select value={dataType} onValueChange={setDataType} required>
-              <SelectTrigger id="data_type">
-                <SelectValue placeholder="Select data type" />
+            <Label htmlFor="applicable_for">Select Dynamic Table *</Label>
+            <Select value={applicableFor} onValueChange={setApplicableFor} required disabled={!formMetaData}>
+              <SelectTrigger id="applicable_for">
+                <SelectValue placeholder={!formMetaData ? 'Loading...' : 'Select dynamic table'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="string">String</SelectItem>
-                <SelectItem value="int">Integer</SelectItem>
-                <SelectItem value="boolean">Boolean</SelectItem>
-                <SelectItem value="text">Text</SelectItem>
+                {formMetaData?.applicable_for?.map((value, index) => (
+                  <SelectItem key={value || index} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="for_brokers"
+                checked={forBrokers}
+                onCheckedChange={(checked) => setForBrokers(checked === true)}
+              />
+              <Label htmlFor="for_brokers">For Brokers</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="for_crypto"
+                checked={forCrypto}
+                onCheckedChange={(checked) => setForCrypto(checked === true)}
+              />
+              <Label htmlFor="for_crypto">For Crypto</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="for_props"
+                checked={forProps}
+                onCheckedChange={(checked) => setForProps(checked === true)}
+              />
+              <Label htmlFor="for_props">For Props</Label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Form View Section */}
+      <div className="space-y-4 border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold">Form View Section</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="data_type">Data Type *</Label>
+            <Select value={dataType} onValueChange={setDataType} required disabled={!formMetaData}>
+              <SelectTrigger id="data_type">
+                <SelectValue placeholder={!formMetaData ? 'Loading...' : 'Select data type'} />
+              </SelectTrigger>
+              <SelectContent>
+                {formMetaData?.data_type?.map((value, index) => (
+                  <SelectItem key={value || index} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="form_type">Form Type *</Label>
-            <Select value={formType} onValueChange={setFormType} required>
+            <Select value={formType} onValueChange={setFormType} required disabled={!formMetaData}>
               <SelectTrigger id="form_type">
-                <SelectValue placeholder="Select form type" />
+                <SelectValue placeholder={!formMetaData ? 'Loading...' : 'Select form type'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="string">String</SelectItem>
-                <SelectItem value="number">Number</SelectItem>
-                <SelectItem value="checkbox">Checkbox</SelectItem>
-                <SelectItem value="textarea">Textarea</SelectItem>
-                <SelectItem value="url">URL</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="select">Select</SelectItem>
+                {formMetaData?.form_type?.map((value, index) => (
+                  <SelectItem key={value || index} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="meta_data">Meta Data</Label>
-            <Textarea
-              id="meta_data"
-              value={metaData}
-              onChange={(e) => setMetaData(e.target.value)}
-              placeholder="JSON string or additional data"
-              rows={3}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Boolean Required Fields */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Boolean Fields (Required)</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="for_crypto"
-              checked={forCrypto}
-              onCheckedChange={(checked) => setForCrypto(checked === true)}
-            />
-            <Label htmlFor="for_crypto">For Crypto *</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="for_brokers"
-              checked={forBrokers}
-              onCheckedChange={(checked) => setForBrokers(checked === true)}
-            />
-            <Label htmlFor="for_brokers">For Brokers *</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="for_props"
-              checked={forProps}
-              onCheckedChange={(checked) => setForProps(checked === true)}
-            />
-            <Label htmlFor="for_props">For Props *</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="required"
-              checked={required}
-              onCheckedChange={(checked) => setRequired(checked === true)}
-            />
-            <Label htmlFor="required">Required *</Label>
-          </div>
-        </div>
-      </div>
-
-      {/* Optional Fields Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Optional Fields</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="placeholder">Placeholder</Label>
             <Input
@@ -307,29 +282,27 @@ export default function CreateDynamicOptionForm() {
               placeholder="Maximum value"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="category_name">Category Name</Label>
-            <Input
-              id="category_name"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              placeholder="Category name"
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="required"
+              checked={required}
+              onCheckedChange={(checked) => setRequired(checked === true)}
             />
+            <Label htmlFor="required">Required</Label>
           </div>
           <div className="space-y-2">
             <Label htmlFor="dropdown_list_attached">Dropdown List Attached</Label>
             <Select
-              value={dropdownListAttached || 'any'}
-              onValueChange={(value) => setDropdownListAttached(value === 'any' ? null : value)}
-              disabled={loadingDropdownLists}
+              value={dropdownListAttached ? dropdownListAttached.toString() : 'any'}
+              onValueChange={(value) => setDropdownListAttached(value === 'any' ? null : parseInt(value))}
             >
               <SelectTrigger id="dropdown_list_attached">
-                <SelectValue placeholder={loadingDropdownLists ? 'Loading...' : 'Select dropdown list'} />
+                <SelectValue placeholder="Select dropdown list" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">None</SelectItem>
                 {dropdownLists.map((list) => (
-                  <SelectItem key={list.id} value={list.name}>
+                  <SelectItem key={list.id} value={list.id.toString()}>
                     {list.name}
                   </SelectItem>
                 ))}
@@ -337,26 +310,48 @@ export default function CreateDynamicOptionForm() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="default_loading_position">Default Loading Position</Label>
-            <Input
-              id="default_loading_position"
-              type="number"
-              min="1"
-              value={defaultLoadingPosition || ''}
-              onChange={(e) => setDefaultLoadingPosition(e.target.value ? parseInt(e.target.value) : null)}
-              placeholder="Position"
+            <Label htmlFor="meta_data">Meta Data</Label>
+            <Textarea
+              id="meta_data"
+              value={metaData}
+              onChange={(e) => setMetaData(e.target.value)}
+              placeholder="JSON string or additional data"
+              rows={3}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="dropdown_position">Dropdown Position</Label>
-            <Input
-              id="dropdown_position"
-              type="number"
-              min="1"
-              value={dropdownPosition || ''}
-              onChange={(e) => setDropdownPosition(e.target.value ? parseInt(e.target.value) : null)}
-              placeholder="Position"
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_active"
+              checked={isActive === true}
+              onCheckedChange={(checked) => setIsActive(checked === true ? true : checked === false ? false : null)}
             />
+            <Label htmlFor="is_active">Is Active</Label>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Section */}
+      <div className="space-y-4 border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold">Category Section</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="category_name">Category Name</Label>
+            <Select
+              value={categoryName ? categoryName.toString() : 'any'}
+              onValueChange={(value) => setCategoryName(value === 'any' ? null : parseInt(value))}
+            >
+              <SelectTrigger id="category_name">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">None</SelectItem>
+                {optionCategories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="position_in_category">Position in Category</Label>
@@ -372,10 +367,18 @@ export default function CreateDynamicOptionForm() {
         </div>
       </div>
 
-      {/* Optional Boolean Fields */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Optional Boolean Fields</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Brokers Table Settings */}
+      <div className="space-y-4 border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold">Brokers Table Settings</h3>
+        <div className="flex items-center gap-6 flex-wrap">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="allow_sorting"
+              checked={allowSorting === true}
+              onCheckedChange={(checked) => setAllowSorting(checked === true ? true : checked === false ? false : null)}
+            />
+            <Label htmlFor="allow_sorting">Allow Sorting</Label>
+          </div>
           <div className="flex items-center space-x-2">
             <Checkbox
               id="load_in_dropdown"
@@ -383,6 +386,18 @@ export default function CreateDynamicOptionForm() {
               onCheckedChange={(checked) => setLoadInDropdown(checked === true ? true : checked === false ? false : null)}
             />
             <Label htmlFor="load_in_dropdown">Load in Dropdown</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="dropdown_position" className="whitespace-nowrap">Dropdown Position</Label>
+            <Input
+              id="dropdown_position"
+              type="number"
+              min="1"
+              value={dropdownPosition || ''}
+              onChange={(e) => setDropdownPosition(e.target.value ? parseInt(e.target.value) : null)}
+              placeholder="Position"
+              className="w-24"
+            />
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -392,24 +407,21 @@ export default function CreateDynamicOptionForm() {
             />
             <Label htmlFor="default_loading">Default Loading</Label>
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_active"
-              checked={isActive === true}
-              onCheckedChange={(checked) => setIsActive(checked === true ? true : checked === false ? false : null)}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="default_loading_position" className="whitespace-nowrap">Default Loading Position</Label>
+            <Input
+              id="default_loading_position"
+              type="number"
+              min="1"
+              value={defaultLoadingPosition || ''}
+              onChange={(e) => setDefaultLoadingPosition(e.target.value ? parseInt(e.target.value) : null)}
+              placeholder="Position"
+              className="w-24"
             />
-            <Label htmlFor="is_active">Is Active</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="allow_sorting"
-              checked={allowSorting === true}
-              onCheckedChange={(checked) => setAllowSorting(checked === true ? true : checked === false ? false : null)}
-            />
-            <Label htmlFor="allow_sorting">Allow Sorting</Label>
           </div>
         </div>
       </div>
+
 
       {/* Submit Buttons */}
       <div className="flex gap-2 pt-4">
