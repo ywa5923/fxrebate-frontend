@@ -84,11 +84,9 @@ export default function DynamicOptionForm({
   const locale = (params?.locale as string) || 'en';
   const [isPending, startTransition] = useTransition();
 
-  let categoryId=optionCategories.find(category => category.name === defaultValues?.category_name)?.id ;
-  if (!categoryId) {
-    toast.error('Category not found');
-    return;
-  }
+  
+  let categoryId=optionCategories.find(category => category.name === defaultValues?.category_name)?.id ?? optionCategories[0].id;
+  
   let dropdownListId=dropdownLists.find(list => list.name === defaultValues?.dropdown_list_attached)?.id ?? null;
   // Convert DynamicOption (or undefined) to complete FormValues in one pass
   const formDefaultValues = {
@@ -114,7 +112,7 @@ export default function DynamicOptionForm({
     is_active: defaultValues?.is_active === 1 || defaultValues?.is_active === true ? true : (defaultValues?.is_active === 0 || defaultValues?.is_active === false ? false : null),
     allow_sorting: defaultValues?.allow_sorting === 1 || defaultValues?.allow_sorting === true ? true : (defaultValues?.allow_sorting === 0 || defaultValues?.allow_sorting === false ? false : null),
     category_name: categoryId,
-    dropdown_list_attached: dropdownListId ?? null,
+    dropdown_list_attached: dropdownListId,
   };
 
   const form = useForm({
