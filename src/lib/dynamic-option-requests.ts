@@ -3,7 +3,7 @@
 import { getBearerToken } from './auth-actions';
 import logger from './logger';
 import { BASE_URL } from '@/constants';
-import type { DynamicOptionListResponse, DynamicOptionFilters, DynamicOptionApiResponse } from '@/types/DynamicOption';
+import type { DynamicOptionListResponse, DynamicOptionFilters, DynamicOptionApiResponse, DynamicOption, OptionCategory, OptionCategoryListResponse, FormMetaData, FormMetaDataResponse, DynamicOptionForm } from '@/types/DynamicOption';
 
 export async function getDynamicOptionList(
   page: number = 1,
@@ -105,41 +105,7 @@ export async function getDynamicOptionList(
   }
 }
 
-export interface CreateDynamicOptionInput {
-  name: string;
-  slug: string;
-  applicable_for: string;
-  data_type: string;
-  form_type: string;
-  meta_data?: string | null;
-  for_crypto: boolean | number;
-  for_brokers: boolean | number;
-  for_props: boolean | number;
-  required: boolean | number;
-  placeholder?: string | null;
-  tooltip?: string | null;
-  min_constraint?: string | null;
-  max_constraint?: string | null;
-  load_in_dropdown?: boolean | number | null;
-  default_loading?: boolean | number | null;
-  default_loading_position?: number | null;
-  dropdown_position?: number | null;
-  position_in_category?: number | null;
-  is_active?: boolean | number | null;
-  allow_sorting?: boolean | number | null;
-  category_name?: number | null;
-  dropdown_list_attached?: number | null;
-}
-
-export interface OptionCategory {
-  id: number;
-  name: string;
-}
-
-export interface OptionCategoryListResponse {
-  success: boolean;
-  data: OptionCategory[];
-}
+// Types moved to '@/types/DynamicOption'
 
 export async function getOptionCategories(): Promise<OptionCategoryListResponse> {
   const log = logger.child('lib/dynamic-option-requests/getOptionCategories');
@@ -192,16 +158,7 @@ export async function getOptionCategories(): Promise<OptionCategoryListResponse>
   }
 }
 
-export interface FormMetaData {
-  applicable_for: string[];
-  data_type: string[];
-  form_type: string[];
-}
-
-export interface FormMetaDataResponse {
-  success: boolean;
-  data: FormMetaData;
-}
+// Types moved to '@/types/DynamicOption'
 
 export async function getFormMetaData(): Promise<FormMetaDataResponse> {
   const log = logger.child('lib/dynamic-option-requests/getFormMetaData');
@@ -248,10 +205,53 @@ export async function getFormMetaData(): Promise<FormMetaDataResponse> {
   }
 }
 
+export async function getDynamicOption(id: number): Promise<{ success: boolean; data?: DynamicOption; message?: string }> {
+  const log = logger.child('lib/dynamic-option-requests/getDynamicOption');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      return { success: false, message: 'Authentication token not found' };
+    }
+    const response = await fetch(`${BASE_URL}/broker-options/${id}`, {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${bearerToken}`,
+        'Accept': 'application/json',
+      },
+      next: { revalidate: 0 },
+    });
+    
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = data?.message || `HTTP error: ${response.status}`;
+      log.error('Error fetching dynamic option', { status: response.status, message, id, data });
+      return { success: false, message };
+    }
+    
+    // Handle different response shapes - the API might return data directly or wrapped in { success, data }
+   
+    if (data.success ) {
+      let dynamicOption: DynamicOption=data.data
+     
+      return { success: true, data: dynamicOption };
+    } else {
+      log.error('Unexpected response shape for dynamic option', { data });
+      return { success: false, message: 'Unexpected response shape' };
+    }
+    
+    
+  } catch (err) {
+    log.error('Error fetching dynamic option', { error: err instanceof Error ? err.message : err, id });
+    return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
 export async function createDynamicOption(
-  input: CreateDynamicOptionInput
+  input: DynamicOptionForm
 ): Promise<{ success: boolean; message?: string }> {
   const log = logger.child('lib/dynamic-option-requests/createDynamicOption');
+  
   try {
     const bearerToken = await getBearerToken();
     if (!bearerToken) {
@@ -296,6 +296,102 @@ export async function createDynamicOption(
     return { success: true, message: data?.message };
   } catch (err) {
     log.error('Error creating dynamic option', { error: err instanceof Error ? err.message : err });
+    return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+export async function updateDynamicOption(
+  id: number,
+  input: DynamicOptionForm
+): Promise<{ success: boolean; message?: string }> {
+  const log = logger.child('lib/dynamic-option-requests/updateDynamicOption');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      return { success: false, message: 'Authentication token not found' };
+    }
+    
+    const url = `${BASE_URL}/broker-options/${id}`;
+    log.debug('Updating dynamic option', { id, url, input });
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${bearerToken}` 
+      },
+      body: JSON.stringify(input),
+    });
+    
+    let data: any = {};
+    let responseText = '';
+    try {
+      responseText = await response.text();
+      if (responseText) {
+        data = JSON.parse(responseText);
+      }
+    } catch (e) {
+      log.error('Failed to parse response', { error: e, responseText });
+    }
+    
+    if (!response.ok) {
+      // Handle validation errors
+      let message = data?.message || `HTTP error: ${response.status}`;
+      
+      // If there are validation errors, append them to the message
+      if (data?.errors) {
+        const validationErrors = Object.entries(data.errors)
+          .map(([field, errors]: [string, any]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+          .join('; ');
+        message += ` - ${validationErrors}`;
+      }
+      
+      log.error('Error updating dynamic option', { 
+        status: response.status, 
+        statusText: response.statusText,
+        message,
+        errors: data?.errors,
+        data: data,
+        id,
+        url,
+        requestBody: input
+      });
+      return { success: false, message };
+    }
+    
+    //log.debug('Dynamic option updated successfully', { id, data });
+    return { success: true, message: data?.message };
+  } catch (err) {
+    log.error('Error updating dynamic option', { 
+      error: err instanceof Error ? err.message : err, 
+      id,
+      stack: err instanceof Error ? err.stack : undefined
+    });
+    return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+export async function deleteDynamicOption(id: number): Promise<{ success: boolean; message?: string }> {
+  const log = logger.child('lib/dynamic-option-requests/deleteDynamicOption');
+  try {
+    const bearerToken = await getBearerToken();
+    if (!bearerToken) {
+      return { success: false, message: 'Authentication token not found' };
+    }
+    const response = await fetch(`${BASE_URL}/broker-options/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = data?.message || `HTTP error: ${response.status}`;
+      log.error('Error deleting dynamic option', { status: response.status, message, id });
+      return { success: false, message };
+    }
+    return { success: true, message: data?.message };
+  } catch (err) {
+    log.error('Error deleting dynamic option', { error: err instanceof Error ? err.message : err, id });
     return { success: false, message: err instanceof Error ? err.message : 'Unknown error' };
   }
 }

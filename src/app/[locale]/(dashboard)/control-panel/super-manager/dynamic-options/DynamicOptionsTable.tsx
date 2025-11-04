@@ -32,8 +32,22 @@ import {
   Filter,
   Sliders,
   Eraser,
+  Edit,
+  Trash2,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import { deleteDynamicOption } from '@/lib/dynamic-option-requests';
 import type { DynamicOption, DynamicOptionPagination, TableColumnConfig } from '@/types/DynamicOption';
 
 interface DynamicOptionsTableProps {
@@ -51,6 +65,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
   
   const [showFilters, setShowFilters] = useState(false);
   const [filtersResetKey, setFiltersResetKey] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [optionToDelete, setOptionToDelete] = useState<{ id: number; name: string } | null>(null);
   
   // Helper to get boolean filter value from URL params (returns "any", "1", or "0")
   const getBooleanFilterValue = (key: string): string => {
@@ -344,8 +360,42 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
       });
     }
 
+    // Add Actions column
+    cols.push({
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const item = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/${locale}/control-panel/super-manager/dynamic-options/${item.id}/edit`)}
+              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              title="Edit dynamic option"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setOptionToDelete({ id: item.id, name: item.name });
+                setDeleteDialogOpen(true);
+              }}
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              title="Delete dynamic option"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+    });
+
     return cols;
-  }, [tableColumns, currentPage, perPage, orderBy, orderDirection, handleSort, getSortIcon]);
+  }, [tableColumns, currentPage, perPage, orderBy, orderDirection, handleSort, getSortIcon, locale, router]);
 
   const table = useReactTable({
     data: safeData,
@@ -648,6 +698,8 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 let label: string;
                 if (column.id === 'row_number') {
                   label = '#';
+                } else if (column.id === 'actions') {
+                  label = 'Actions';
                 } else if (tableColumns && tableColumns[column.id]) {
                   label = tableColumns[column.id].label;
                 } else {
@@ -846,6 +898,41 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete dynamic option</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to delete "${optionToDelete?.name ?? ''}"? This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isPending}
+              onClick={() => {
+                if (!optionToDelete) return;
+                const { id } = optionToDelete;
+                startTransition(async () => {
+                  const res = await deleteDynamicOption(id);
+                  if (res.success) {
+                    toast.success('Dynamic option deleted');
+                    setDeleteDialogOpen(false);
+                    setOptionToDelete(null);
+                    router.refresh();
+                  } else {
+                    toast.error('Failed to delete dynamic option', { description: res.message });
+                  }
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

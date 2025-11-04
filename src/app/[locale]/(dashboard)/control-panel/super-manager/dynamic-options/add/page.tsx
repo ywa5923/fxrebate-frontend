@@ -1,34 +1,31 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import CreateDynamicOptionForm from './CreateDynamicOptionForm';
+import DynamicOptionForm from '../DynamicOptionForm';
 import { getAllDropdownLists } from '@/lib/dropdown-list-requests';
-import { getOptionCategories, getFormMetaData } from '@/lib/dynamic-option-requests';
+import { getOptionCategories, getFormMetaData, createDynamicOption } from '@/lib/dynamic-option-requests';
 
 export default async function AddDynamicOptionPage() {
   // Fetch all data in parallel using Promise.all
-  let dropdownListsResult, optionCategoriesResult, formMetaDataResult;
-  
-  try {
-    [dropdownListsResult, optionCategoriesResult, formMetaDataResult] = await Promise.all([
-      getAllDropdownLists(),
-      getOptionCategories(),
-      getFormMetaData(),
-    ]);
-  } catch (error) {
-    // Handle errors gracefully - initialize with empty values
-    dropdownListsResult = { success: false, data: [] };
-    optionCategoriesResult = { success: false, data: [] };
-    formMetaDataResult = { success: false, data: null };
+  const [dropdownListsResult, optionCategoriesResult, formMetaDataResult] = await Promise.all([
+    getAllDropdownLists(),
+    getOptionCategories(),
+    getFormMetaData(),
+  ]);
+
+  if (!dropdownListsResult?.success || !optionCategoriesResult?.success || !formMetaDataResult?.success) {
+    throw new Error('Failed to load dynamic option dependencies');
   }
 
   return (
     <div className="flex-1 space-y-6 max-w-5xl mx-auto w-full">
       <div className="text-xl font-semibold">Create New Dynamic Option</div>
-      <CreateDynamicOptionForm
-        dropdownLists={dropdownListsResult?.success ? dropdownListsResult.data || [] : []}
-        optionCategories={optionCategoriesResult?.success ? optionCategoriesResult.data || [] : []}
-        formMetaData={formMetaDataResult?.success ? formMetaDataResult.data || null : null}
+      <DynamicOptionForm
+        onSubmitHandler={createDynamicOption}
+        submitButtonText="Create Dynamic Option"
+        dropdownLists={dropdownListsResult.data || []}
+        optionCategories={optionCategoriesResult.data || []}
+        formMetaData={formMetaDataResult.data || null}
       />
     </div>
   );
