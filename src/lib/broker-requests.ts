@@ -64,15 +64,33 @@ export async function registerBroker(payload: RegisterBrokerData): Promise<Regis
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${bearerToken}`,
       },
       body: JSON.stringify(validation.data),
     });
 
-    const data = await response.json().catch(() => ({}));
+    let data: any = {};
+    let responseText = '';
+    try {
+      responseText = await response.text();
+      if (responseText) {
+        data = JSON.parse(responseText);
+      }
+    } catch (e) {
+      log.error('Failed to parse register broker response', { error: e, responseText });
+    }
     if (!response.ok) {
-      log.error('Error registering broker', { status: response.status, message: data?.message });
-      return { success: false, message: data?.message || `HTTP error: ${response.status}` };
+      // Include backend validation errors if present
+      let message = data?.message || `HTTP error: ${response.status}`;
+      if (data?.errors) {
+        const validationErrors = Object.entries(data.errors)
+          .map(([field, errors]: [string, any]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+          .join('; ');
+        message += ` - ${validationErrors}`;
+      }
+      log.error('Error registering broker', { status: response.status, statusText: response.statusText, message, errors: data?.errors, data });
+      return { success: false, message };
     }
 
     revalidatePath('/en/control-panel/super-manager/brokers');

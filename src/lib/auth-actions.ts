@@ -26,6 +26,7 @@ export async function authenticateWithMagicLink(token: string): Promise<{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({ token }),
     });
@@ -76,7 +77,7 @@ export async function authenticateWithMagicLink(token: string): Promise<{
       redirectTo = '/en/control-panel';
 
     } else if (user.user_type === 'platform_user') {
-      redirectTo = '/en/control-panel'
+      redirectTo = '/en/control-panel/platform-manager';
     } else if (user.user_type === 'team_user') {
       let brokerContext = responseData.data?.broker_context || null;
       if (brokerContext?.broker_id) {
@@ -426,6 +427,54 @@ export async function canAccessCurrentBroker(): Promise<boolean> {
 }
 
 
+
+/**
+ * Send magic link to the given email address
+ */
+export async function requestMagicLink(email: string): Promise<{ success: boolean; message?: string }> {
+  'use server'
+  const log = logger.child('AuthActions/requestMagicLink');
+  try {
+    const response = await fetch(`${BASE_URL}/login-with-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+      next: { revalidate: 0 },
+    });
+
+    let data: any = {};
+    let responseText = '';
+    try {
+      responseText = await response.text();
+      if (responseText) {
+        data = JSON.parse(responseText);
+      }
+    } catch (e) {
+      log.error('Failed to parse magic link response', { error: e, responseText });
+    }
+
+    if (!response.ok) {
+      let message = data?.message || `HTTP error: ${response.status}`;
+      if (data?.errors) {
+        const validationErrors = Object.entries(data.errors)
+          .map(([field, errors]: [string, any]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+          .join('; ');
+        message += ` - ${validationErrors}`;
+      }
+      log.error('Magic link request failed', { status: response.status, statusText: response.statusText, message, errors: data?.errors, data });
+      return { success: false, message };
+    }
+
+    //log.debug('Magic link request successful', { data });
+    return { success: true, message: data?.message || 'Magic link sent if email exists' };
+  } catch (err) {
+    log.error('Exception requesting magic link', { error: err instanceof Error ? err.message : err });
+    return { success: false, message: err instanceof Error ? err.message : 'Unexpected error' };
+  }
+}
 
 // {
 //   "success": true,

@@ -63,6 +63,10 @@ interface AppSidebarSuperProps extends React.ComponentProps<typeof Sidebar> {
   i18nLinks?: SidebarLink[];
   userName?: string;
   userEmail?: string;
+  basePath?: string; // panel base path, e.g. /en/control-panel/super-manager
+  roleLabel?: string; // label shown under user name in footer
+  panelTitle?: string; // optional colored title badge below logo
+  panelTitleClassName?: string; // classes for the title badge
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -93,6 +97,10 @@ export function AppSidebarSuper({
   i18nLinks = [],
   userName = "Admin",
   userEmail = "",
+  basePath = "/en/control-panel/super-manager",
+  roleLabel = "Super Admin",
+  panelTitle,
+  panelTitleClassName,
   ...props 
 }: AppSidebarSuperProps) {
   const pathname = usePathname();
@@ -108,6 +116,15 @@ export function AppSidebarSuper({
             className="h-10 w-auto"
           />
         </div>
+
+        {/* Optional Panel Title Badge */}
+        {panelTitle && (
+          <div className="px-3 group-data-[collapsible=icon]:hidden">
+            <div className={`rounded-md px-3 py-2 text-sm font-semibold ${panelTitleClassName || 'bg-orange-100 text-orange-700'}`}>
+              {panelTitle}
+            </div>
+          </div>
+        )}
 
         {/* Main Navigation Links */}
         {userLinks.length > 0 && (
@@ -156,13 +173,13 @@ export function AppSidebarSuper({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-56">
                               <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/brokers" className="flex items-center cursor-pointer">
+                                <Link href={`${basePath}/brokers`} className="flex items-center cursor-pointer">
                                   <Eye className="mr-2 h-4 w-4" />
                                   View Brokers List
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/brokers/register" className="flex items-center cursor-pointer">
+                                <Link href={`${basePath}/brokers/register`} className="flex items-center cursor-pointer">
                                   <UserPlus className="mr-2 h-4 w-4" />
                                   Register New Broker
                                 </Link>
@@ -460,7 +477,7 @@ export function AppSidebarSuper({
                 {userName}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                Super Admin
+                {roleLabel}
               </p>
             </div>
           </div>
