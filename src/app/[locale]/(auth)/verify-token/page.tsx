@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authenticateWithMagicLink } from "@/lib/auth-actions";
 import logger from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 // import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, XCircle } from "lucide-react";
 
 interface VerifyMagicLinkTokenResult {
   success: boolean;
@@ -23,17 +23,20 @@ export default function MagicLinkAuthPage() {
   const [error, setError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  const hasRun = useRef(false);
+
   const authLogger = logger.child('MagicLinkAuth');
 
   useEffect(() => {
     // Early return if already authenticating or not in loading state
-    if (isAuthenticating || status !== 'loading') {
+    if (isAuthenticating || status !== 'loading' || hasRun.current) {
       return;
     }
 
     const authenticateUser = async () => {
       setIsAuthenticating(true);
-      
+      hasRun.current = true;
+
       try {
         // Get token from URL parameters
         const token = searchParams.get('token');
@@ -86,13 +89,14 @@ export default function MagicLinkAuthPage() {
 
     authenticateUser();
 
-  }, [searchParams]);
+  }, [status]);
 
   const handleRetry = () => {
     setStatus('loading');
     setError('');
     setMessage('');
     setIsAuthenticating(false);
+    hasRun.current = false;
     // Retry authentication
     window.location.reload();
   };

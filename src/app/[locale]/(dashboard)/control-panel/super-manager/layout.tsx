@@ -26,7 +26,7 @@ export default async function SuperManagerLayout({
   const loggedUser = await isAuthenticated();
   if (!loggedUser) {
     layoutLogger.info('User not authenticated, redirecting to login');
-    redirect('/en');
+    //redirect('/en');
   }
 
   //const isSuper = isSuperAdmin(user);

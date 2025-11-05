@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
@@ -51,7 +52,7 @@ export default function Error({
               asChild
               className="w-full sm:w-auto"
             >
-              <a href="/en/control-panel/super-manager">Go Back</a>
+              <Link href="/en/control-panel/super-manager">Go Back</Link>
             </Button>
           </div>
         </CardContent>
