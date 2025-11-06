@@ -478,47 +478,10 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-          className="gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          {showFilters ? 'Hide Filters' : 'Show Filters'}
-          {hasActiveFilters && (
-            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-blue-600 rounded-full">
-              {[
-                searchParams.get('category_name'),
-                searchParams.get('dropdown_category_name'),
-                searchParams.get('name'),
-                searchParams.get('applicable_for'),
-                searchParams.get('data_type'),
-                searchParams.get('form_type'),
-                searchParams.get('for_brokers'),
-                searchParams.get('for_crypto'),
-                searchParams.get('for_props'),
-                searchParams.get('required')
-              ].filter(Boolean).length}
-            </span>
-          )}
-        </Button>
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearFilters}
-            className="ml-2 gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
-          >
-            <Eraser className="h-4 w-4" />
-            <span>Clear all filters</span>
-          </Button>
-        )}
-      </div>
+      {/* Filter controls moved next to Select Columns */}
 
       {showFilters && (
-        <div className="bg-gray-50 border-2 border-dashed border-green-700 rounded-lg p-4 space-y-4">
+        <div className="bg-white dark:bg-white border-2 border-dashed border-blue-300 rounded-lg p-4 space-y-4" style={{ backgroundColor: '#ffffff' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category_name">Category Name</Label>
@@ -528,7 +491,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.category_name}
                 onChange={(e) => setFilters({ ...filters, category_name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.category_name && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.category_name && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -540,7 +503,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.dropdown_category_name}
                 onChange={(e) => setFilters({ ...filters, dropdown_category_name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.dropdown_category_name && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.dropdown_category_name && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -552,7 +515,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.name}
                 onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.name && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.name && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -564,7 +527,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.applicable_for}
                 onChange={(e) => setFilters({ ...filters, applicable_for: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.applicable_for && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.applicable_for && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -576,7 +539,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.data_type}
                 onChange={(e) => setFilters({ ...filters, data_type: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.data_type && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.data_type && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -588,7 +551,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                 value={filters.form_type}
                 onChange={(e) => setFilters({ ...filters, form_type: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                className={cn(filters.form_type && 'border-orange-600 ring-1 ring-orange-300')}
+                className={cn(filters.form_type && 'border-blue-600 ring-1 ring-blue-300')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             </div>
@@ -601,7 +564,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                   setFilter('for_brokers', value);
                 }}
               >
-                <SelectTrigger id="for_brokers" className={cn('w-full', filters.for_brokers !== 'any' && 'border-orange-600 ring-1 ring-orange-300')}>
+                <SelectTrigger id="for_brokers" className={cn('w-full', filters.for_brokers !== 'any' && 'border-blue-600 ring-1 ring-blue-300')}>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
@@ -620,7 +583,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                   setFilter('for_crypto', value);
                 }}
               >
-                <SelectTrigger id="for_crypto" className={cn('w-full', filters.for_crypto !== 'any' && 'border-orange-600 ring-1 ring-orange-300')}>
+                <SelectTrigger id="for_crypto" className={cn('w-full', filters.for_crypto !== 'any' && 'border-blue-600 ring-1 ring-blue-300')}>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
@@ -639,7 +602,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                   setFilter('for_props', value);
                 }}
               >
-                <SelectTrigger id="for_props" className={cn('w-full', filters.for_props !== 'any' && 'border-orange-600 ring-1 ring-orange-300')}>
+                <SelectTrigger id="for_props" className={cn('w-full', filters.for_props !== 'any' && 'border-blue-600 ring-1 ring-blue-300')}>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
@@ -658,7 +621,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                   setFilter('required', value);
                 }}
               >
-                <SelectTrigger id="required" className={cn('w-full', filters.required !== 'any' && 'border-orange-600 ring-1 ring-orange-300')}>
+                <SelectTrigger id="required" className={cn('w-full', filters.required !== 'any' && 'border-blue-600 ring-1 ring-blue-300')}>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
@@ -673,7 +636,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
             <Button
               onClick={handleApplyFilters}
               size="sm"
-              className="bg-green-900 hover:bg-green-950 text-white"
+              className="bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300"
             >
               Apply Filters
             </Button>
@@ -693,6 +656,44 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
           Showing {from} to {to} of {total} dynamic options
         </div>
         <div className="flex items-center gap-2">
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearFilters}
+              className="gap-2 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+              title="Clear all filters"
+            >
+              <Eraser className="h-4 w-4" />
+              <span className="hidden sm:inline">Clear all</span>
+            </Button>
+          )}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300"
+            title={showFilters ? 'Hide Filters' : 'Advanced Filters'}
+          >
+            <Filter className="h-4 w-4" />
+            <span className="hidden sm:inline">{showFilters ? 'Hide Filters' : 'Advanced Filters'}</span>
+            {hasActiveFilters && (
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-orange-500 rounded-full">
+                {[
+                  searchParams.get('category_name'),
+                  searchParams.get('dropdown_category_name'),
+                  searchParams.get('name'),
+                  searchParams.get('applicable_for'),
+                  searchParams.get('data_type'),
+                  searchParams.get('form_type'),
+                  searchParams.get('for_brokers'),
+                  searchParams.get('for_crypto'),
+                  searchParams.get('for_props'),
+                  searchParams.get('required')
+                ].filter(Boolean).length}
+              </span>
+            )}
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
@@ -781,7 +782,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                               setFilter(colId, value);
                             }}
                           >
-                            <SelectTrigger id={`hdr_${colId}`} size="sm" className={cn('h-8 w-full', filterValue !== 'any' && 'border-orange-600 ring-1 ring-orange-300')}>
+                            <SelectTrigger id={`hdr_${colId}`} size="sm" className={cn('h-8 w-full', filterValue !== 'any' && 'border-blue-600 ring-1 ring-blue-300')}>
                               <SelectValue placeholder="Any" />
                             </SelectTrigger>
                             <SelectContent>
@@ -808,7 +809,7 @@ export function DynamicOptionsTable({ data, meta, tableColumns }: DynamicOptions
                               setFilter(colId, (e.target as HTMLInputElement).value);
                             }
                           }}
-                          className={cn('h-8 text-xs', searchParams.get(colId) && 'border-orange-600 ring-1 ring-orange-300')}
+                          className={cn('h-8 text-xs', searchParams.get(colId) && 'border-blue-600 ring-1 ring-blue-300')}
                           placeholder={placeholder}
                           style={{ backgroundColor: '#ffffff' }}
                         />

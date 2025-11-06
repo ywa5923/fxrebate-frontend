@@ -39,6 +39,11 @@ export interface DynamicOptionForm extends BaseDynamicOption {
   dropdown_list_attached?: number | null;
 }
 
+// export interface DynamicOptionRow extends DynamicOptionForm {
+//   created_at: string | null;
+//   updated_at: string | null;
+// }
+
 export interface DynamicOptionPagination {
   current_page: number;
   last_page: number;
