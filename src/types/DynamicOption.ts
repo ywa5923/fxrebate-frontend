@@ -1,3 +1,5 @@
+import { FTColumnsConfig, FTFilters } from "@/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/FilterableTable";
+
 // Common fields shared by server model and form payload
 export interface BaseDynamicOption {
   name: string;
@@ -59,11 +61,22 @@ export interface TableColumnConfig {
   sortable: boolean;
   filterable: boolean;
 }
+//to modify and sync with filtrable table
+// export interface DynamicOptionListResponse {
+//   success: boolean;
+//   data: DynamicOption[];
+//   table_columns_config?: Record<string, TableColumnConfig>;
+//   filters_config?: Record<string, any>;
+//   pagination: DynamicOptionPagination;
+// }
 
+//to modify and sync with filtrable table
 export interface DynamicOptionListResponse {
   success: boolean;
   data: DynamicOption[];
-  table_columns?: Record<string, TableColumnConfig>;
+ // table_columns_config: Record<string, TableColumnConfig>;
+ table_columns_config: FTColumnsConfig<DynamicOption>;
+  filters_config: FTFilters<DynamicOption>;
   pagination: DynamicOptionPagination;
 }
 
@@ -72,6 +85,8 @@ export interface DynamicOptionApiResponse {
   data: DynamicOption[];
   table_columns?: Record<string, TableColumnConfig>;
   pagination: DynamicOptionPagination;
+  filters_config?: FTFilters<DynamicOption>;
+  columns_config?: FTColumnsConfig<DynamicOption>;
 }
 
 export interface DynamicOptionFilters {

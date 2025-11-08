@@ -1,5 +1,6 @@
 import { getDynamicOptionList } from '@/lib/dynamic-option-requests';
 import { DynamicOptionsTable } from './DynamicOptionsTable';
+import FilterableTable from './FilterableTable';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -65,13 +66,21 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
 
   const optionData = await getDynamicOptionList(page, perPage, orderBy, orderDirection, filters);
 
+  console.log("fsdfsffsdffsd",optionData.table_columns_config);
+
   return (
     <div className="flex-1 space-y-4">
-      <DynamicOptionsTable 
+      {/*<DynamicOptionsTable 
         data={optionData?.data || []} 
         meta={optionData?.pagination}
         tableColumns={optionData?.table_columns}
-      />
+      />*/}
+      <FilterableTable
+       data={optionData.data } 
+       pagination={optionData.pagination}
+       columnsConfig={optionData.table_columns_config} 
+       filters={optionData.filters_config}
+       />
     </div>
   );
 }

@@ -92,7 +92,8 @@ export async function getDynamicOptionList(
     const data: DynamicOptionListResponse = {
       success: rawData.success,
       data: rawData.data || [],
-      table_columns: rawData.table_columns,
+      table_columns_config: rawData.table_columns_config,
+      filters_config: rawData.filters_config,
       pagination: rawData.pagination,
     };
 
