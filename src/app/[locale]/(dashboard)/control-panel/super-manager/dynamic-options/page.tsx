@@ -80,6 +80,7 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
        pagination={optionData.pagination}
        columnsConfig={optionData.table_columns_config} 
        filters={optionData.filters_config}
+       LOCAL_STORAGE_KEY="dynamic-options-filters"
        />
     </div>
   );

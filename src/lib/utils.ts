@@ -50,3 +50,10 @@ export function getOriginalPath(translatedPath: string, lang: string) {
   }
   return translatedPath; // Return as is if no translation found
 }
+
+export function shallowEqual(objA: any, objB: any) {
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((k) => objA[k] === objB[k]);
+}

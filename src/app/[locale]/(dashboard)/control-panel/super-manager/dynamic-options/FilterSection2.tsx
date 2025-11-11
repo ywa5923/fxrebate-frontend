@@ -19,6 +19,7 @@ import { InfoIcon, Filter, Eraser, Trash } from "lucide-react";
 import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef, useTransition} from "react";
+import { shallowEqual } from "@/lib/utils";
 
 type SelectOption = { label: string; value: string | number };
 type FilterConfig =
@@ -27,52 +28,89 @@ type FilterConfig =
 
 export default function FilterSection2({
   filters,
+  LOCAL_STORAGE_KEY,
 }: {
   filters: Record<string, FilterConfig>;
+  LOCAL_STORAGE_KEY: string;
 }) {
   let searchParams = useSearchParams();
   let router = useRouter();
   let pathname = usePathname();
 
-  
-  let [showFilters, setShowFilters] = useState(false);
+ 
   let [isPending, startTransition] = useTransition();
 
   let [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
+  
+ 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed === "object" && parsed !== null) {
+          setActiveFilters(parsed);
+          //APPLY SEARCH PARAMS TO THE FILTERS
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load saved filters:", e);
+    }
+  }, []);
   
 
   useEffect(() => {
     
     const activeKeys:Record<string, string>={};
+
+      // Load from localStorage
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (typeof parsed === "object" && parsed !== null) {
+        Object.assign(activeKeys, parsed);
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to load saved filters:", e);
+  }
    
+  //Override with search params if present
     Object.keys(filters ?? {}).forEach((key) => {
       if(searchParams.has(key)) {
         activeKeys[key] = searchParams.get(key) ?? "";
       }
      });
 
-    //setActiveFilters(activeKeys);
+    //Set state only if changed
     setActiveFilters((prev) => {
-        const same =
-          Object.keys(activeKeys).length === Object.keys(prev).length &&
-          Object.keys(activeKeys).every((k) => activeKeys[k] === prev[k]);
+        const same = shallowEqual(activeKeys, prev);
   
         return same ? prev : activeKeys;
       });
   
   }, [searchParams,filters]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(activeFilters));
+    } catch (e) {
+      console.warn("Failed to save filters:", e);
+    }
+  }, [activeFilters]);
 
-  let handleClearFilters = () => {
-    let newSearchParams = new URLSearchParams(searchParams.toString());
-    Object.keys(filters ?? {}).forEach((key) => {
-     newSearchParams.delete(key);
-    });
-    startTransition(() => {
-      router.push(`${pathname}?${newSearchParams.toString()}`);
-    });
+  //======Deprecated:this is done in FilterableTable.tsx===============//
+  // let handleClearFilters = () => {
+  //   let newSearchParams = new URLSearchParams(searchParams.toString());
+  //   Object.keys(filters ?? {}).forEach((key) => {
+  //    newSearchParams.delete(key);
+  //   });
+  //   startTransition(() => {
+  //     router.push(`${pathname}?${newSearchParams.toString()}`);
+  //   });
    
-  };
+  // };
 
   let handleFilterDelete = (key: string) => {
     let newSearchParams = new URLSearchParams(searchParams.toString());
@@ -83,6 +121,7 @@ export default function FilterSection2({
   let handleFilterChange = (key: string, value: string) => {
     let newSearchParams = new URLSearchParams(searchParams.toString());
     if (value) newSearchParams.set(key, value);
+
     else newSearchParams.delete(key);
     setActiveFilters((prev) => {
     return { ...prev, [key]: value };
@@ -95,11 +134,9 @@ export default function FilterSection2({
   };
 
   let handleFilterChangeDebounced = useDebouncedCallback((key: string, value: string) => {
-
     let newSearchParams = new URLSearchParams(searchParams.toString());
     if (value) newSearchParams.set(key, value);
     else newSearchParams.delete(key);
-
 
     startTransition(() => {
       router.push(`${pathname}?${newSearchParams.toString()}`);
@@ -107,32 +144,7 @@ export default function FilterSection2({
   }, 500);
   return (
     <>
-    <div className="flex items-center gap-2">
-      <Button
-            variant="default"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300"
-            title={showFilters ? 'Hide Filters' : 'Advanced Filters'}
-          >
-            <Filter className="h-4 w-4" />
-            <span className="hidden sm:inline">{showFilters ? 'Hide Filters' : 'Advanced Filters'}</span>
-            {Object.keys(activeFilters).length > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-orange-500 rounded-full">
-                {Object.keys(activeFilters).length}
-              </span>
-            )}
-          </Button>
-         {Object.keys(activeFilters).length > 0 && <Button 
-          onClick={handleClearFilters} 
-          variant="outline" 
-          className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800">
-             <Eraser className="h-4 w-4" />
-             <span>Clear Filters</span>
-             </Button>}
-      </div>
-
-    {showFilters && <div
+     <div
       className="bg-white dark:bg-white border-2 border-dashed border-blue-300 rounded-lg p-4 space-y-4 w-full"
       style={{ backgroundColor: "#ffffff" }}
     >
@@ -251,7 +263,7 @@ export default function FilterSection2({
         })}
       </div>
      
-    </div>}
+    </div>
     </>
   );
 }

@@ -2,7 +2,19 @@
 //import { DynamicOption } from '@/types/DynamicOption';
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useState, useEffect, useTransition, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Sliders } from "lucide-react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Trash2,
+  Edit,
+  ChevronsLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+  Sliders,
+} from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   ColumnDef,
@@ -19,11 +31,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Filter, Eraser } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { deleteDynamicOption } from "@/lib/dynamic-option-requests";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import FilterSection2 from "./FilterSection2";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
@@ -88,13 +116,33 @@ export default function FilterableTable<T>({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const params = useParams();
-  const locale = (params?.locale as string) || 'en';
+  const locale = (params?.locale as string) || "en";
 
   //======State for delete dialog===============//
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [optionToDelete, setOptionToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [optionToDelete, setOptionToDelete] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
+  let [showFilters, setShowFilters] = useState(false);
 
+  const filtersCount = useMemo(() => {
+    return Object.keys(filters ?? {}).filter((key) => searchParams.has(key))
+      .length;
+  }, [searchParams, filters]);
+
+  let handleClearFilters = () => {
+    let newSearchParams = new URLSearchParams(searchParams.toString());
+    Object.keys(filters ?? {}).forEach((key) => {
+      newSearchParams.delete(key);
+    });
+
+    //setShowFilters(false);
+    startTransition(() => {
+      router.push(`?${newSearchParams.toString()}`);
+    });
+  };
   //======Get order by and order direction from search params===============//
   const orderBy = searchParams.get("order_by") || "";
   const orderDirection = searchParams.get("order_direction") || "asc";
@@ -154,7 +202,7 @@ export default function FilterableTable<T>({
     } else {
       const displayValue = colType === "json" ? JSON.stringify(value) : value;
       return (
-        <span className="font-mono text-xs text-gray-600 break-all">
+        <span className=" text-sm text-gray-800 break-all">
           {displayValue}
         </span>
       );
@@ -162,34 +210,34 @@ export default function FilterableTable<T>({
   };
 
   //======Build initial column visibility from columnsConfig===============//
-  
-   const initialColumnVisibility = useMemo(() => {
+
+  const initialColumnVisibility = useMemo(() => {
     const visibility: Record<string, boolean> = { row_number: true }; // Always show row number
     if (columnsConfig) {
       Object.entries(columnsConfig).forEach(([key, config]) => {
         visibility[key] = (config as FTColumnConfig).visible;
       });
-    
     }
     return visibility;
   }, [columnsConfig]);
 
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >(initialColumnVisibility);
 
-//======Handle page change===============//
+  //======Handle page change===============//
 
-const handlePageChange = (newPage: number) => {
-  if (newPage < 1 || newPage > totalPages || isPending) return;
-  
-  const params = new URLSearchParams(searchParams.toString());
-  params.set('page', newPage.toString());
-  params.set('per_page', perPage.toString());
-  
-  startTransition(() => {
-    router.push(`?${params.toString()}`);
-  });
-};
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || isPending) return;
 
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    params.set("per_page", perPage.toString());
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  };
 
   //======Generate column defs from columnsConfig===============//
   const columns: ColumnDef<T>[] = useMemo(() => {
@@ -208,9 +256,6 @@ const handlePageChange = (newPage: number) => {
     //Parse the columnsConfig and add the columns
     (Object.entries(columnsConfig) as Array<[string, FTColumnConfig]>).forEach(
       ([columnKey, config]) => {
-        // columnKey is the field name (e.g., "slug", "form_type")
-        // config contains { label, visible, sortable, filterable }
-
         const isSortable = config.sortable;
         const colDef: ColumnDef<T> = {
           id: columnKey, // e.g., "form_type"
@@ -240,18 +285,22 @@ const handlePageChange = (newPage: number) => {
       }
     );
 
-     // Add Actions column
-     cols.push({
-      id: 'actions',
-      header: 'Actions',
+    // Add Actions column
+    cols.push({
+      id: "actions",
+      header: "Actions",
       cell: ({ row }) => {
-        const item = row.original as unknown as { id: string };
+        const item = (row.original as unknown) as { id: string };
         return (
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/${locale}/control-panel/super-manager/dynamic-options/${item.id}/edit`)}
+              onClick={() =>
+                router.push(
+                  `/${locale}/control-panel/super-manager/dynamic-options/${item.id}/edit`
+                )
+              }
               className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               title="Edit dynamic option"
             >
@@ -275,7 +324,14 @@ const handlePageChange = (newPage: number) => {
     });
 
     return cols;
-  }, [columnsConfig,orderBy,orderDirection,currentPage,perPage,searchParams]);
+  }, [
+    columnsConfig,
+    orderBy,
+    orderDirection,
+    currentPage,
+    perPage,
+    searchParams,
+  ]);
 
   const table = useReactTable({
     data,
@@ -285,41 +341,90 @@ const handlePageChange = (newPage: number) => {
     pageCount: totalPages,
     state: { columnVisibility },
     onColumnVisibilityChange: setColumnVisibility,
-  });  
-    
-    
-    
-    
-    
-  
-  return  (<div className="space-y-4">
-           <FilterSection2 filters={filters} />
+  });
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
-           
-           <div>
-              Showing {from} to {to} of {total} dynamic options
-            </div>
-          <div className="flex items-center gap-2">Table Data</div>
+  return (
+    <div className="space-y-4 text-base">
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <FilterSection2 filters={filters} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+        <div>
+          Showing {from} to {to} of {total} dynamic options
+        </div>
+        <div className="flex items-end gap-2">
+          {filtersCount > 0 && (
+            <Button
+              onClick={handleClearFilters}
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+            >
+              <Eraser className="h-4 w-4" />
+              <span>Clear Filters</span>
+            </Button>
+          )}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300"
+            title={showFilters ? "Hide Filters" : "Advanced Filters"}
+          >
+            <Filter className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {showFilters ? "Hide Filters" : "Advanced Filters"}
+            </span>
+            {filtersCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-orange-500 rounded-full">
+                {filtersCount}
+              </span>
+            )}
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+              >
                 <Sliders className="h-4 w-4" />
                 <span className="hidden sm:inline">Select Columns</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 max-h-[300px] overflow-y-auto">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 max-h-[300px] overflow-y-auto"
+            >
               {table.getAllLeafColumns().map((column) => {
                 let label: string;
-                if (column.id === 'row_number') {
-                  label = '#';
-                } else if (column.id === 'actions') {
-                  label = 'Actions';
-                } else if (columnsConfig && columnsConfig[column.id as keyof T]) {
-                  label = (columnsConfig[column.id as keyof T] as FTColumnConfig).label;
+                if (column.id === "row_number") {
+                  label = "#";
+                } else if (column.id === "actions") {
+                  label = "Actions";
+                } else if (
+                  columnsConfig &&
+                  columnsConfig[column.id as keyof T]
+                ) {
+                  label = (columnsConfig[
+                    column.id as keyof T
+                  ] as FTColumnConfig).label;
                 } else {
                   // Fallback: format column id
-                  label = String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                  label = String(column.id)
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
                 }
                 return (
                   <DropdownMenuCheckboxItem
@@ -333,66 +438,76 @@ const handlePageChange = (newPage: number) => {
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-         </div>
-          <div className="rounded-md border w-full" style={{ maxWidth: '100%' }}>
-        <div 
-          className="overflow-x-auto" 
-          style={{ 
-            scrollbarWidth: 'thin', 
-            scrollbarColor: '#9ca3af #f3f4f6'
+        </div>
+      </div>
+      <div className="rounded-md border w-full" style={{ maxWidth: "100%" }}>
+        <div
+          className="overflow-x-auto"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#9ca3af #f3f4f6",
           }}
         >
-           <Table className="w-full" style={{ minWidth: 'max-content', tableLayout: 'auto' }}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header, index) => (
-                  <TableHead 
-                    key={header.id}
-                    className={index === 0 ? 'bg-gray-100 font-bold' : ''}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-             </TableHeader>
-             <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell, index) => (
-                    <TableCell 
-                      key={cell.id}
-                      className={index === 0 ? 'bg-gray-50 font-medium' : ''}
+          <Table
+            className="w-full"
+            style={{ minWidth: "max-content", tableLayout: "auto" }}
+          >
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header, index) => (
+                    <TableHead
+                      key={header.id}
+                      className={index === 0 ? "bg-gray-100 font-bold" : ""}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No dynamic options found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell, index) => (
+                      <TableCell
+                        key={cell.id}
+                        className={index === 0 ? "bg-gray-50 font-medium" : ""}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No dynamic options found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
           </Table>
-          </div>
-          </div>
+        </div>
+      </div>
 
-          {/* Pagination */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+      {/* Pagination */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -448,7 +563,9 @@ const handlePageChange = (newPage: number) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete dynamic option</AlertDialogTitle>
             <AlertDialogDescription>
-              {`Are you sure you want to delete "${optionToDelete?.name ?? ''}"? This action cannot be undone.`}
+              {`Are you sure you want to delete "${
+                optionToDelete?.name ?? ""
+              }"? This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -462,12 +579,14 @@ const handlePageChange = (newPage: number) => {
                 startTransition(async () => {
                   const res = await deleteDynamicOption(id);
                   if (res.success) {
-                    toast.success('Dynamic option deleted');
+                    toast.success("Dynamic option deleted");
                     setDeleteDialogOpen(false);
                     setOptionToDelete(null);
                     router.refresh();
                   } else {
-                    toast.error('Failed to delete dynamic option', { description: res.message });
+                    toast.error("Failed to delete dynamic option", {
+                      description: res.message,
+                    });
                   }
                 });
               }}
@@ -477,11 +596,6 @@ const handlePageChange = (newPage: number) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-          
-
-  </div>)
-    
-    
-    
- 
+    </div>
+  );
 }
