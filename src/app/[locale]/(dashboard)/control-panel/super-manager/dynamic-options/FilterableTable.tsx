@@ -104,6 +104,7 @@ export interface FTData<T> {
   pagination: FTPagination;
   columnsConfig: FTColumnsConfig<T>;
   filters: FTFilters<T>;
+  LOCAL_STORAGE_KEY: string;
 }
 
 export default function FilterableTable<T>({
@@ -111,6 +112,7 @@ export default function FilterableTable<T>({
   pagination,
   columnsConfig = {},
   filters,
+  LOCAL_STORAGE_KEY,
 }: FTData<T>) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -125,7 +127,25 @@ export default function FilterableTable<T>({
     name: string;
   } | null>(null);
 
-  let [showFilters, setShowFilters] = useState(false);
+  let [showFilters, setShowFilters] = useState(()=>{
+
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed === "object" && parsed !== null) {
+          return Object.keys(parsed).length > 0;
+        }
+        console.log("vervbrbrtbparsed",parsed);
+      }
+      console.log("vervbrbrtbparsed-saved",saved,LOCAL_STORAGE_KEY);
+    } catch (e) {
+      console.warn("Failed to load saved filters:", e);
+    }
+    return false;
+  });
+
+ 
 
   const filtersCount = useMemo(() => {
     return Object.keys(filters ?? {}).filter((key) => searchParams.has(key))
@@ -353,7 +373,7 @@ export default function FilterableTable<T>({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <FilterSection2 filters={filters} />
+            <FilterSection2 filters={filters} LOCAL_STORAGE_KEY={LOCAL_STORAGE_KEY} />
           </motion.div>
         )}
       </AnimatePresence>

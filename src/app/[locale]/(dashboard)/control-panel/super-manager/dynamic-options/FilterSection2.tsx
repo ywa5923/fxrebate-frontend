@@ -46,12 +46,25 @@ export default function FilterSection2({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      console.log("vervbrbrtbparsed-useEffectcvvbrf",saved,LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (typeof parsed === "object" && parsed !== null) {
-          setActiveFilters(parsed);
-          //APPLY SEARCH PARAMS TO THE FILTERS
+        
+       
+        console.log("parsed",Object.keys(parsed));
+        //construct search params in the url if they are not present
+      let newSearchParams = new URLSearchParams(searchParams.toString());
+      Object.keys(parsed ?? {}).forEach((key) => {
+        if(!searchParams.has(key)) {
+          newSearchParams.set(key, parsed[key] ?? "");
         }
+      });
+     // console.log("newSearchParams",newSearchParams.toString());
+
+        //push the search params to the url (only if changed)
+        const next = `${pathname}?${newSearchParams.toString()}`;
+        const curr = `${pathname}?${searchParams.toString()}`;
+        if (next !== curr) router.push(next);
       }
     } catch (e) {
       console.warn("Failed to load saved filters:", e);
@@ -64,17 +77,17 @@ export default function FilterSection2({
     const activeKeys:Record<string, string>={};
 
       // Load from localStorage
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (typeof parsed === "object" && parsed !== null) {
-        Object.assign(activeKeys, parsed);
-      }
-    }
-  } catch (e) {
-    console.warn("Failed to load saved filters:", e);
-  }
+  // try {
+  //   const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+  //   if (saved) {
+  //     const parsed = JSON.parse(saved);
+  //     if (typeof parsed === "object" && parsed !== null) {
+  //       Object.assign(activeKeys, parsed);
+  //     }
+  //   }
+  // } catch (e) {
+  //   console.warn("Failed to load saved filters:", e);
+  // }
    
   //Override with search params if present
     Object.keys(filters ?? {}).forEach((key) => {
@@ -86,7 +99,6 @@ export default function FilterSection2({
     //Set state only if changed
     setActiveFilters((prev) => {
         const same = shallowEqual(activeKeys, prev);
-  
         return same ? prev : activeKeys;
       });
   
