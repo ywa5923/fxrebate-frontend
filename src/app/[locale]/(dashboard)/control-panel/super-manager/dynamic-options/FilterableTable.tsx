@@ -2,7 +2,7 @@
 //import { DynamicOption } from '@/types/DynamicOption';
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useState, useEffect, useTransition, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Sliders } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   ColumnDef,
@@ -21,6 +21,10 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { deleteDynamicOption } from "@/lib/dynamic-option-requests";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import FilterSection2 from "./FilterSection2";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
@@ -85,6 +89,11 @@ export default function FilterableTable<T>({
   const [isPending, startTransition] = useTransition();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+
+  //======State for delete dialog===============//
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [optionToDelete, setOptionToDelete] = useState<{ id: number; name: string } | null>(null);
+
 
   //======Get order by and order direction from search params===============//
   const orderBy = searchParams.get("order_by") || "";
@@ -182,8 +191,6 @@ const handlePageChange = (newPage: number) => {
 };
 
 
-
-
   //======Generate column defs from columnsConfig===============//
   const columns: ColumnDef<T>[] = useMemo(() => {
     //First add the column for row number
@@ -254,8 +261,8 @@ const handlePageChange = (newPage: number) => {
               variant="ghost"
               size="sm"
               onClick={() => {
-               // setOptionToDelete({ id: item.id, name: item.name });
-               // setDeleteDialogOpen(true);
+                setOptionToDelete({ id: item.id, name: item.name });
+                setDeleteDialogOpen(true);
               }}
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Delete dynamic option"
@@ -286,12 +293,47 @@ const handlePageChange = (newPage: number) => {
     
   
   return  (<div className="space-y-4">
+           <FilterSection2 filters={filters} />
+
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+           
            <div>
               Showing {from} to {to} of {total} dynamic options
             </div>
-          <div className="flex items-center gap-2">Filter bar</div>
-          </div>
+          <div className="flex items-center gap-2">Table Data</div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <Sliders className="h-4 w-4" />
+                <span className="hidden sm:inline">Select Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 max-h-[300px] overflow-y-auto">
+              {table.getAllLeafColumns().map((column) => {
+                let label: string;
+                if (column.id === 'row_number') {
+                  label = '#';
+                } else if (column.id === 'actions') {
+                  label = 'Actions';
+                } else if (columnsConfig && columnsConfig[column.id as keyof T]) {
+                  label = (columnsConfig[column.id as keyof T] as FTColumnConfig).label;
+                } else {
+                  // Fallback: format column id
+                  label = String(column.id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                }
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(Boolean(v))}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+         </div>
           <div className="rounded-md border w-full" style={{ maxWidth: '100%' }}>
         <div 
           className="overflow-x-auto" 
@@ -348,6 +390,93 @@ const handlePageChange = (newPage: number) => {
           </Table>
           </div>
           </div>
+
+          {/* Pagination */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage <= 1}
+            className="h-8 px-2 sm:px-3"
+            title="First page"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">First</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="h-8 px-2 sm:px-3"
+            title="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">Previous</span>
+          </Button>
+          <div className="text-xs sm:text-sm font-medium px-2">
+            {currentPage} / {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="h-8 px-2 sm:px-3"
+            title="Next page"
+          >
+            <span className="hidden sm:inline mr-1">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage >= totalPages}
+            className="h-8 px-2 sm:px-3"
+            title="Last page"
+          >
+            <span className="hidden sm:inline mr-1">Last</span>
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete dynamic option</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to delete "${optionToDelete?.name ?? ''}"? This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isPending}
+              onClick={() => {
+                if (!optionToDelete) return;
+                const { id } = optionToDelete;
+                startTransition(async () => {
+                  const res = await deleteDynamicOption(id);
+                  if (res.success) {
+                    toast.success('Dynamic option deleted');
+                    setDeleteDialogOpen(false);
+                    setOptionToDelete(null);
+                    router.refresh();
+                  } else {
+                    toast.error('Failed to delete dynamic option', { description: res.message });
+                  }
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
           
 
   </div>)
