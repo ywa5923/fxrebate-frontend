@@ -46,12 +46,12 @@ export default function FilterSection2({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      console.log("vervbrbrtbparsed-useEffectcvvbrf",saved,LOCAL_STORAGE_KEY);
+   
       if (saved) {
         const parsed = JSON.parse(saved);
         
        
-        console.log("parsed",Object.keys(parsed));
+       
         //construct search params in the url if they are not present
       let newSearchParams = new URLSearchParams(searchParams.toString());
       Object.keys(parsed ?? {}).forEach((key) => {

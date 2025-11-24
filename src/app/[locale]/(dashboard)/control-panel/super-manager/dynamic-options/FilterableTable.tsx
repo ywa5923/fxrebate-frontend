@@ -127,23 +127,23 @@ export default function FilterableTable<T>({
     name: string;
   } | null>(null);
 
-  let [showFilters, setShowFilters] = useState(()=>{
-
+  const [hydrated, setHydrated] = useState(false);
+  let [showFilters, setShowFilters] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed === "object" && parsed !== null) {
-          return Object.keys(parsed).length > 0;
+          setShowFilters(Object.keys(parsed).length > 0);
         }
-        console.log("vervbrbrtbparsed",parsed);
       }
-      console.log("vervbrbrtbparsed-saved",saved,LOCAL_STORAGE_KEY);
     } catch (e) {
       console.warn("Failed to load saved filters:", e);
     }
-    return false;
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
  
 
@@ -366,9 +366,9 @@ export default function FilterableTable<T>({
   return (
     <div className="space-y-4 text-base">
       <AnimatePresence>
-        {showFilters && (
+        {hydrated && showFilters && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={false}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4 }}
