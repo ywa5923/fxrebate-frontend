@@ -5,6 +5,9 @@ import {
   FieldValues,
   useFieldArray,
 } from "react-hook-form";
+
+import { FormBaseProps, FormControlFunc } from "@/components/XForm/types";
+
 import { Field, FieldLabel, FieldDescription, FieldContent, FieldError } from "@/components/ui/field";
 import { ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,45 +21,9 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { XIcon } from "lucide-react";
+import { XIcon, PlusIcon } from "lucide-react";
 
-type FormControlProps<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TTransformedValues = TFieldValues
-> = {
-  name: TName;
-  label: ReactNode;
-  description?: ReactNode;
-  control: ControllerProps<TFieldValues, TName, TTransformedValues>["control"];
-};
 
-type FormBaseProps<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TTransformedValues = TFieldValues
-> = FormControlProps<TFieldValues, TName, TTransformedValues> & {
-  horizontal?: boolean;
-  controlFirst?: boolean;
-  children: (
-    field: Parameters<
-      ControllerProps<TFieldValues, TName, TTransformedValues>["render"]
-    >[0]["field"] & {
-      "aria-invalid": boolean;
-      id: string;
-    }
-  ) => ReactNode;
-};
-
-type FormControlFunc<
-  ExtraProps extends Record<string, unknown> = Record<never, never>
-> = <
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TTransformedValues = TFieldValues
->(
-  props: FormControlProps<TFieldValues, TName, TTransformedValues> & ExtraProps
-) => ReactNode;
 
 export function FormBase<
   TFieldValues extends FieldValues = FieldValues,
@@ -178,50 +145,14 @@ export const FormNumber: FormControlFunc = props => {
   return <FormBase {...props}>{field => <Input type="number" {...field} />}</FormBase>
 }
 
-export const FormArray: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input type="array" {...field} />}</FormBase>
-}
 
-export const FieldArrayItem: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input type="text" placeholder="Enter item" {...field} />}</FormBase>
-}
 
-export function ArrayField({
-  control,
-  name,
-  fieldDef,
-}: { control: any; name: string; fieldDef: any }) {
-
-  console.log("fieldDef", fieldDef);
-  const { fields, append, remove } = useFieldArray({ control, name });
-
-  return (
-    <>
-      {fields.map((item, index) => (
-        <div key={item.id ?? index}>
-          {Object.entries(fieldDef.fields ?? {}).map(([fKey, inner]: [string, any]) => (
-            <FormInput
-              key={fKey}
-              control={control}
-              name={`${name}.${index}.${fKey}` as any}
-              label={inner?.label || ""}
-            />
-          ))}
-          <Button type="button" onClick={() => remove(index)}>Remove</Button>
-          
-        </div>
-      ))}
-      <Button type="button" onClick={() => append({})}>Add</Button>
-    </>
-  );
-}
 export function ArrayFields({
   control,
   name,
   fieldDef,
 }: { control: any; name: string; fieldDef: any }) {
 
-  console.log("fieldDef", fieldDef);
   const { fields, append, remove } = useFieldArray({ control, name });
 
   return (
@@ -238,10 +169,22 @@ export function ArrayFields({
             />
           ))}
        
-          
+      
         </div>
       ))}
-      <Button type="button" onClick={() => append({})}>Add</Button>
+      <div className="mt-3 flex justify-start">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => append({})}
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add item
+        </Button>
+      </div>
+     
     </>
   );
 }

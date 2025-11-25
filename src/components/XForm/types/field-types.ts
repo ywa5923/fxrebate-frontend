@@ -19,6 +19,7 @@ export type fieldValidation = {
     lte_message?: string;
     email_message?: string;
   };
+
  export interface XFormField {
     type: string;
     label: string;
@@ -26,8 +27,15 @@ export type fieldValidation = {
     required: boolean;
     options?: string[];
     validation?: fieldValidation;
-    fields?: Record<string, XFormField>;//this is for array fields
+    fields?: Record<string, Omit<XFormField, 'fields'>>;//this is for array fields
   }
+
   export interface XFormSection {
     fields: Record<string, XFormField>;
+  }
+
+  export interface XFormDefinition {
+    name?: string;
+    description?: string;
+    sections: Record<string, XFormSection>;
   }

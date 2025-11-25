@@ -6,7 +6,9 @@ import { getBearerToken } from '@/lib/auth-actions';
 import logger from '@/lib/logger';
 import {BASE_URL} from '@/constants';
 import { DynamicOptionListResponse } from '@/types/DynamicOption';
-import XForm from './XForm';
+import XForm from '@/components/XForm/XForm';
+import { XFormDefinition } from '@/components/XForm/types';
+import { ApiClientResponse } from '@/lib/api-client';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -70,11 +72,6 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
     }).filter(([, v]) => v != null && v !== '')
   ) as BrokerOptionFilter;
 
-  interface BrokerOptionFormConfig {
-    name: string;
-    description: string;
-    sections:Record<string, any>;
-  }
   const optionData2 = await getDynamicOptionList(page, perPage, orderBy, orderDirection, filters);
   const bearerToken = await getBearerToken();
 
@@ -87,21 +84,21 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
 
   let url=`/broker-options/get-list?${queryString}`;
  
- const optionDataResponse = await apiClient<DynamicOptionListResponse>(url,bearerToken);
+ const optionDataResponse= await apiClient<DynamicOptionListResponse>(url,bearerToken);
  if (!optionDataResponse.success || !optionDataResponse.data) {
   log.error("Error fetching options list", { message: optionDataResponse.message });
   throw new Error(optionDataResponse.message || "Error fetching options list");
  }
  const optionData = optionDataResponse.data;
   
-  const res = await apiClient('/broker-options/form-data',bearerToken);
-  if (!res.success) {
-   log.error("Error fetching form meta data", { message: res.message });
-   throw new Error(res.message || "Error fetching form meta data");
+  const res = await apiClient<XFormDefinition>('/broker-options/form-data', bearerToken);
+  if (!res.success || !res.data) {
+    log.error("Error fetching form meta data", { message: res.message });
+    throw new Error(res.message || "Error fetching form meta data");
   }
-  const formData = res.data.data as BrokerOptionFormConfig;
+  const formDefinition = res.data!;
 
-  log.info('formData',{formData});
+  log.info('formDefinition',{formDefinition});
 
 
   return (
@@ -111,18 +108,18 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
         meta={optionData?.pagination}
         tableColumns={optionData?.table_columns}
       />*/}
-      <XForm formDefinition={formData} />
+      <XForm formDefinition={formDefinition} />
 
-     {/* 
+     
       <FilterableTable
        data={optionData.data } 
-       pagination={optionData.pagination}
+       pagination={optionDataResponse.pagination}
        columnsConfig={optionData.table_columns_config} 
        filters={optionData.filters_config}
        LOCAL_STORAGE_KEY="dynamic-options-filters"
        
        />
-       */}
+       
     </div>
   );
 }

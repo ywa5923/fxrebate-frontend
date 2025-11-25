@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { XFormSection, XFormField, fieldValidation } from "./types";
+import { XFormSection, XFormField, fieldValidation } from "./types/field-types";
 
 export function getFormSchema(formDefinition: any):z.ZodObject<any> {
    
@@ -86,6 +86,7 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
     return schema;
 }
 
+//------------DEPRECATED------------
 export function generateXFormSchema(formDefinition: any):z.ZodObject<any> {
     if (!formDefinition) {
         return z.object({}) as z.ZodObject<any>;

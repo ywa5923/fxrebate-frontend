@@ -12,9 +12,9 @@ import { z } from "zod";
 //import { generateXFormSchema } from "@/components/XForm/schema";
 import { getFormSchema } from "@/components/XForm/schema";
 import { Form } from "@/components/ui/form";
-import { FormBase, FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form";
+import { FormBase, FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { ArrayFields } from "@/components/XForm/form";
+import { ArrayFields } from "@/components/XForm/form-components";
 
 import {
   Field,
@@ -49,12 +49,8 @@ export default function XForm(
     },
   });
  
-  console.log("from sections", formDefinition.sections);
+  //console.log("from sections", formDefinition.sections);
   //const formSchema = z.object();
-
-
-
-
 
   const onSubmit = (data: any) => {
     console.log(data);
