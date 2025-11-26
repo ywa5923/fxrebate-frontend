@@ -1,4 +1,3 @@
-import { FTColumnsConfig, FTFilters } from "@/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/FilterableTable";
 
 // Common fields shared by server model and form payload
 export interface BaseDynamicOption {
@@ -46,14 +45,14 @@ export interface DynamicOptionForm extends BaseDynamicOption {
 //   updated_at: string | null;
 // }
 
-export interface DynamicOptionPagination {
-  current_page?: number;
-  last_page?: number;
-  per_page? : number;
-  total? : number;
-  from? : number;
-  to? : number;
-}
+// export interface DynamicOptionPagination {
+//   current_page?: number;
+//   last_page?: number;
+//   per_page? : number;
+//   total? : number;
+//   from? : number;
+//   to? : number;
+// }
 
 export interface TableColumnConfig {
   label: string;
@@ -71,57 +70,57 @@ export interface TableColumnConfig {
 // }
 
 //to modify and sync with filtrable table
-export interface DynamicOptionListResponse {
-  success: boolean;
-  data: DynamicOption[];
- // table_columns_config: Record<string, TableColumnConfig>;
- table_columns_config: FTColumnsConfig<DynamicOption>;
-  filters_config: FTFilters<DynamicOption>;
-  pagination: DynamicOptionPagination;
-}
+// export interface DynamicOptionListResponse {
+//   success: boolean;
+//   data: DynamicOption[];
+//  // table_columns_config: Record<string, TableColumnConfig>;
+//   table_columns_config: FTColumnsConfig<DynamicOption>;
+//   filters_config: FTFilters<DynamicOption>;
+//   pagination: DynamicOptionPagination;
+// }
 
-export interface DynamicOptionApiResponse {
-  success: boolean;
-  data: DynamicOption[];
-  table_columns?: Record<string, TableColumnConfig>;
-  pagination: DynamicOptionPagination;
-  filters_config?: FTFilters<DynamicOption>;
-  columns_config?: FTColumnsConfig<DynamicOption>;
-}
+// export interface DynamicOptionApiResponse {
+//   success: boolean;
+//   data: DynamicOption[];
+//   table_columns?: Record<string, TableColumnConfig>;
+//   pagination: DynamicOptionPagination;
+//   filters_config?: FTFilters<DynamicOption>;
+//   columns_config?: FTColumnsConfig<DynamicOption>;
+// }
 
-export interface DynamicOptionFilters {
-  category_name?: string;
-  dropdown_category_name?: string;
-  name?: string;
-  applicable_for?: string;
-  data_type?: string;
-  form_type?: string;
-  for_brokers?: string;
-  for_crypto?: string;
-  for_props?: string;
-  required?: string;
-}
+// export interface DynamicOptionFilters {
+//   category_name?: string;
+//   dropdown_category_name?: string;
+//   name?: string;
+//   applicable_for?: string;
+//   data_type?: string;
+//   form_type?: string;
+//   for_brokers?: string;
+//   for_crypto?: string;
+//   for_props?: string;
+//   required?: string;
+// }
 
 
 
-export interface OptionCategory {
-  id: number;
-  name: string;
-}
+// export interface OptionCategory {
+//   id: number;
+//   name: string;
+// }
 
-export interface OptionCategoryListResponse {
-  success: boolean;
-  data: OptionCategory[];
-}
+// export interface OptionCategoryListResponse {
+//   success: boolean;
+//   data: OptionCategory[];
+// }
 
-export interface FormMetaData {
-  applicable_for: string[];
-  data_type: string[];
-  form_type: string[];
-}
+// export interface FormMetaData {
+//   applicable_for: string[];
+//   data_type: string[];
+//   form_type: string[];
+// }
 
-export interface FormMetaDataResponse {
-  success: boolean;
-  data: FormMetaData;
-}
+// export interface FormMetaDataResponse {
+//   success: boolean;
+//   data: FormMetaData;
+// }
 

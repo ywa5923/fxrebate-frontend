@@ -87,13 +87,13 @@ export function FormBase<
 }
 
 export const FormInput: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input {...field} />}</FormBase>
+  return <FormBase {...props}>{field => <Input {...field} className="focus-visible:ring-0 focus-visible:border-ring" />}</FormBase>
 }
 
 export const FormInputGroup: FormControlFunc<{ remove: () => void }> = props => {
   return <FormBase {...props}>{field => {
     return (
-      <InputGroup>
+      <InputGroup className="focus-within:border-ring">
         <InputGroupInput {...field} />
         <InputGroupAddon align="inline-end">
           <InputGroupButton type="button"  variant="ghost" size="icon-xs"  onClick={() => props.remove()}>

@@ -30,30 +30,58 @@ import {
 import { Input } from "@/components/ui/input";
 import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { XFormDefinition } from "@/components/XForm/types";
 
-export default function XForm(
-  { formDefinition, formData }: { formDefinition?: any; formData?: any } = {}
-) {
-    
+function buildDefaultValues(def: XFormDefinition, data?: any) {
+  const out: Record<string, any> = { ...(data ?? {}) };
+  const sections = def.sections ?? {};
+  for (const [sectionKey, section] of Object.entries(sections)) {
+    const secDefaults: Record<string, any> = { ...(out[sectionKey] ?? {}) };
+    for (const [fieldKey, f] of Object.entries(section.fields ?? {})) {
+      if (secDefaults[fieldKey] !== undefined) continue;
+      if (f.type === 'checkbox' || f.type === 'boolean') secDefaults[fieldKey] = false;
+      else if (f.type === 'number') secDefaults[fieldKey] = '';
+      else if (f.type === 'multiselect') secDefaults[fieldKey] = [];
+      else if (f.type === 'array_field' || f.type === 'array_fields') secDefaults[fieldKey] = Array.isArray(secDefaults[fieldKey]) ? secDefaults[fieldKey] : [];
+      else secDefaults[fieldKey] = '';
+    }
+    out[sectionKey] = secDefaults;
+  }
+  return out;
+}
+
+type XFormProps = {
+  formDefinition: XFormDefinition;
+  formData?: any;
+}
+export default function XForm( { formDefinition, formData }: XFormProps) 
+{
+
   //generate form schema from formDefinition
   if (!formDefinition) {
-    return <div>No form definition</div>;
+    throw new Error("Form definition is required");
   }
-  //const formSchema = generateXFormSchema(formDefinition);
+  
   const formSchema = getFormSchema(formDefinition);
+  console.log("formSchema is aaaaa: ",  formSchema)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      'applicability.applicable_for':'account_type'
+      'firstRow.name':'',
+      'firstRow.slug':'',
+      'applicability.applicable_for':'account_type',
+      'applicability.for_crypto': 1 ,
+      'applicability.for_brokers': 0 ,
+      'applicability.for_props': 0 ,
+      'applicability.test_array':[{'field_name':'aaqa','field_slug':'aaqa'}],
     },
   });
  
-  //console.log("from sections", formDefinition.sections);
-  //const formSchema = z.object();
+
 
   const onSubmit = (data: any) => {
-    console.log(data);
+    console.log("form data is aaaaa: ", data);
   }
 
     return (
@@ -87,7 +115,7 @@ export default function XForm(
                                         })}
                                       </FormSelect>
                                     
-                                     case "array_field":
+                                     case "array_fields":
                                       return <ArrayFields key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} fieldDef={f} />
                                     default:
                                       return null;
@@ -97,6 +125,8 @@ export default function XForm(
                             </FieldSet>
                           );
                         })}
+                        <Button type="submit">Submit form</Button>
+                      
                       </form>
                  </Form>
           </div>

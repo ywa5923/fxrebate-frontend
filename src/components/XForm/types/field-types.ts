@@ -22,6 +22,7 @@ export type fieldValidation = {
 
  export interface XFormField {
     type: string;
+    valueType?: string;
     label: string;
     placeholder: string;
     required: boolean;

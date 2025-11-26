@@ -53,67 +53,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import FilterSection2 from "./FilterSection2";
+import { FTProps, FTColumnConfig } from "./types";
+import AddActionBtn from "./AddActionBtn";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
 //     [key: string]: FTRowValue;
 // }
 
-export type FTRowData<
-  T = string | boolean | number | null | undefined
-> = Record<string, T>;
 
-export interface FTPagination {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-  from: number;
-  to: number;
-}
-export interface FTColumnConfig {
-  label: string;
-  type: string;
-  visible: boolean;
-  sortable: boolean;
-  filterable: boolean;
-}
-export type FTColumnsConfig<T> = {
-  [K in keyof T]: FTColumnConfig;
-};
-
-// type FTColumnsStates<T> = Partial<Record<keyof T, FTColumnState>>;
-export type FTSelectOption = {
-  label: string;
-  value: string | number;
-};
-export interface FTFilterType {
-  type: "text" | "select";
-  tooltip?: string;
-  options?: FTSelectOption[];
-}
-
-export type FTFilters<T> = {
-  [K in keyof T]?: FTFilterType;
-};
-
-//export type FTFilters<T> = Partial<Record<keyof T, string | boolean>>;
-
-export interface FTData<T> {
-  data: T[];
-  pagination: FTPagination;
-  columnsConfig: FTColumnsConfig<T>;
-  filters: FTFilters<T>;
-  LOCAL_STORAGE_KEY: string;
-}
 
 export default function FilterableTable<T>({
   data,
   pagination,
-  columnsConfig = {},
+  columnsConfig,
   filters,
   LOCAL_STORAGE_KEY,
-}: FTData<T>) {
+  formDefinition,
+}: FTProps<T>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -313,7 +270,7 @@ export default function FilterableTable<T>({
         const item = (row.original as unknown) as { id: string };
         return (
           <div className="flex items-center gap-2">
-            <Button
+           {/* <Button
               variant="ghost"
               size="sm"
               onClick={() =>
@@ -325,7 +282,8 @@ export default function FilterableTable<T>({
               title="Edit dynamic option"
             >
               <Edit className="h-4 w-4" />
-            </Button>
+            </Button>*/}
+            <AddActionBtn formDefinition={formDefinition} resourceId={item.id}  resourceApiUrl={`/dynamic-options`} />
             <Button
               variant="ghost"
               size="sm"

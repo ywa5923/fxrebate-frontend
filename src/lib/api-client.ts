@@ -1,11 +1,18 @@
 // apiClient.ts
+import { FTColumnsConfig, FTFilters, FTPagination } from "@/components/FilterableTable";
 import logger from "./logger";
 import { BASE_URL } from "@/constants";
 
-export interface ApiClientResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
+// export interface Pagination {
+//   current_page: number;
+//   last_page: number;
+//   per_page: number;
+//   total: number;
+//   from: number;
+//   to: number;
+// }
+
+export interface ApiClientResponse<T> extends ServerJsonResponse<T>{
   status?: number;
 }
 
@@ -14,7 +21,11 @@ export interface ServerJsonResponse<T> {
   data?: T;
   message?: string;
   errors?: Record<string, string[]>;
+  pagination?: FTPagination;
+  table_columns_config?: FTColumnsConfig<T>;
+  filters_config?: FTFilters<T>;
 }
+
 export async function apiClient<T>(
   url: string,
   token: string | null,
@@ -22,6 +33,8 @@ export async function apiClient<T>(
 ): Promise<ApiClientResponse<T>> {
   const log = logger.child("lib/api-client/apiClient");
   const requestUrl = `${BASE_URL}${url}`;
+
+  log.info('requestUrl',{requestUrl});
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -34,12 +47,12 @@ export async function apiClient<T>(
     const status = response.status;
 
     // Try parse JSON safely
-    const serverJsonResponse: ServerJsonResponse<T> = await response.json().catch((err) => {
+    const serverJsonResponse: ServerJsonResponse<T>|null = await response.json().catch((err) => {
       log.error("Invalid JSON response", { url: requestUrl, status, error: err });
       return null;
     });
 
-    if (!response.ok) {
+    if (!response.ok ) {
      
       let message = serverJsonResponse?.message ?? `Request failed with status ${status}`;
 
@@ -54,12 +67,17 @@ export async function apiClient<T>(
       return { success: false, message, status };
     }
 
-    return { success: true, data: serverJsonResponse.data as T, status };
+    return { success: true, 
+             data: serverJsonResponse?.data as T,
+             status, pagination: serverJsonResponse?.pagination,
+             table_columns_config: serverJsonResponse?.table_columns_config, 
+             filters_config: serverJsonResponse?.filters_config 
+           };
 
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     log.error("Network exception", { url: requestUrl, message });
-    return { success: false, message };
+    return { success: false, message, status: 500 };
   }
 }
 

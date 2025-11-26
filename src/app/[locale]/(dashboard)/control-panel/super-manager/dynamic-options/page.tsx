@@ -1,14 +1,14 @@
 import { getDynamicOptionList } from '@/lib/dynamic-option-requests';
 import { DynamicOptionsTable } from './DynamicOptionsTable';
-import FilterableTable from './FilterableTable';
+import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';
 import { apiClient } from '@/lib/api-client';
 import { getBearerToken } from '@/lib/auth-actions';
 import logger from '@/lib/logger';
 import {BASE_URL} from '@/constants';
-import { DynamicOptionListResponse } from '@/types/DynamicOption';
+import {DynamicOption} from '@/types';
 import XForm from '@/components/XForm/XForm';
-import { XFormDefinition } from '@/components/XForm/types';
-import { ApiClientResponse } from '@/lib/api-client';
+import { XFormDefinition } from '@/components/XForm';
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -84,7 +84,7 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
 
   let url=`/broker-options/get-list?${queryString}`;
  
- const optionDataResponse= await apiClient<DynamicOptionListResponse>(url,bearerToken);
+ const optionDataResponse= await apiClient<DynamicOption>(url,bearerToken);
  if (!optionDataResponse.success || !optionDataResponse.data) {
   log.error("Error fetching options list", { message: optionDataResponse.message });
   throw new Error(optionDataResponse.message || "Error fetching options list");
@@ -100,6 +100,8 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
 
   log.info('formDefinition',{formDefinition});
 
+ log.info('optionData',{optionDataResponse});
+  log.info('optionDataResponse.pagination',{pagination: optionDataResponse.pagination});
 
   return (
     <div className="flex-1 space-y-4">
@@ -107,17 +109,17 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
         data={optionData?.data || []} 
         meta={optionData?.pagination}
         tableColumns={optionData?.table_columns}
-      />*/}
-      <XForm formDefinition={formDefinition} />
+      />
+      <XForm formDefinition={formDefinition} />*/}
 
      
       <FilterableTable
-       data={optionData.data } 
-       pagination={optionDataResponse.pagination}
-       columnsConfig={optionData.table_columns_config} 
-       filters={optionData.filters_config}
+       data={optionDataResponse.data as unknown as DynamicOption[]} 
+       pagination={optionDataResponse.pagination as unknown as FTPagination}
+       columnsConfig={optionDataResponse.table_columns_config as unknown as FTColumnsConfig<DynamicOption>} 
+       filters={optionDataResponse.filters_config as unknown as FTFilters<DynamicOption>}
        LOCAL_STORAGE_KEY="dynamic-options-filters"
-       
+       formDefinition={formDefinition}
        />
        
     </div>

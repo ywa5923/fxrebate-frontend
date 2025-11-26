@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { XFormSection, XFormField, fieldValidation } from "./types/field-types";
+import { XFormSection, XFormField, fieldValidation, XFormDefinition } from "./types/field-types";
 
-export function getFormSchema(formDefinition: any):z.ZodObject<any> {
+export function getFormSchema(formDefinition: XFormDefinition):z.ZodObject<any> {
    
   const sections = (formDefinition.sections ?? {}) as Record<string, XFormSection>;
   const schema: Record<string, z.ZodTypeAny> = {};
@@ -20,9 +20,10 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
     Object.entries(fields).forEach(([fieldKey, field]: [string, XFormField]) => {
       const validationObject = (field.validation ?? {}) as  fieldValidation;
       
-      if (field.type === "text" || field.type === "textarea" || field.type === "select") {
+      if (field.type === "text" || field.type === "textarea") {
         schema[fieldKey] = z.string();
-         
+      } else if (field.type === "select") {
+        schema[fieldKey] = field.valueType === "string" ? z.string() : z.number();
       } else if (field.type === "number") {
         schema[fieldKey] = z.number();
       } else if (field.type === "boolean" || field.type === "checkbox") {

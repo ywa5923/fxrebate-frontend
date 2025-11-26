@@ -1,3 +1,4 @@
+"use client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebouncedCallback } from "use-debounce";
@@ -20,29 +21,24 @@ import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef, useTransition} from "react";
 import { shallowEqual } from "@/lib/utils";
+import { FTFilters,FTFilterType,FTSelectOption } from "./types";
 
-type SelectOption = { label: string; value: string | number };
-type FilterConfig =
-  | { type: "text"; label: string; value?: string }
-  | { type: "select"; label: string; value?: string; options?: SelectOption[] };
-
-export default function FilterSection2({
+ interface FilterSection2Props<T> {
+  filters: FTFilters<T>;
+  LOCAL_STORAGE_KEY: string;
+}
+export default function FilterSection2<T>({
   filters,
   LOCAL_STORAGE_KEY,
-}: {
-  filters: Record<string, FilterConfig>;
-  LOCAL_STORAGE_KEY: string;
-}) {
+}: FilterSection2Props<T>) {
   let searchParams = useSearchParams();
   let router = useRouter();
   let pathname = usePathname();
 
- 
   let [isPending, startTransition] = useTransition();
 
   let [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
   
- 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -50,8 +46,6 @@ export default function FilterSection2({
       if (saved) {
         const parsed = JSON.parse(saved);
         
-       
-       
         //construct search params in the url if they are not present
       let newSearchParams = new URLSearchParams(searchParams.toString());
       Object.keys(parsed ?? {}).forEach((key) => {
@@ -73,22 +67,8 @@ export default function FilterSection2({
   
 
   useEffect(() => {
-    
     const activeKeys:Record<string, string>={};
 
-      // Load from localStorage
-  // try {
-  //   const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-  //   if (saved) {
-  //     const parsed = JSON.parse(saved);
-  //     if (typeof parsed === "object" && parsed !== null) {
-  //       Object.assign(activeKeys, parsed);
-  //     }
-  //   }
-  // } catch (e) {
-  //   console.warn("Failed to load saved filters:", e);
-  // }
-   
   //Override with search params if present
     Object.keys(filters ?? {}).forEach((key) => {
       if(searchParams.has(key)) {
@@ -112,17 +92,7 @@ export default function FilterSection2({
     }
   }, [activeFilters]);
 
-  //======Deprecated:this is done in FilterableTable.tsx===============//
-  // let handleClearFilters = () => {
-  //   let newSearchParams = new URLSearchParams(searchParams.toString());
-  //   Object.keys(filters ?? {}).forEach((key) => {
-  //    newSearchParams.delete(key);
-  //   });
-  //   startTransition(() => {
-  //     router.push(`${pathname}?${newSearchParams.toString()}`);
-  //   });
-   
-  // };
+
 
   let handleFilterDelete = (key: string) => {
     let newSearchParams = new URLSearchParams(searchParams.toString());
@@ -162,7 +132,7 @@ export default function FilterSection2({
     >
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-        {Object.entries(filters).map(([key, filterConfig]) => {
+        {(Object.entries(filters) as [string, FTFilterType][]).map(([key, filterConfig]) => {
           if (filterConfig.type === "select") {
             return (
               <div key={key}>
