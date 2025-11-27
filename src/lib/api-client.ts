@@ -2,7 +2,8 @@
 import { FTColumnsConfig, FTFilters, FTPagination } from "@/components/FilterableTable";
 import logger from "./logger";
 import { BASE_URL } from "@/constants";
-
+import { getBearerToken } from "./auth-actions";
+import { XFormDefinition } from "@/types";
 // export interface Pagination {
 //   current_page: number;
 //   last_page: number;
@@ -24,17 +25,23 @@ export interface ServerJsonResponse<T> {
   pagination?: FTPagination;
   table_columns_config?: FTColumnsConfig<T>;
   filters_config?: FTFilters<T>;
+  form_config?: XFormDefinition;
 }
 
 export async function apiClient<T>(
   url: string,
-  token: string | null,
+  useCookieToken: boolean = false,
   options: RequestInit = {}
 ): Promise<ApiClientResponse<T>> {
   const log = logger.child("lib/api-client/apiClient");
   const requestUrl = `${BASE_URL}${url}`;
 
   log.info('requestUrl',{requestUrl});
+
+  let token = null;
+  if (useCookieToken) {
+    token = await getBearerToken();
+  }
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -71,7 +78,8 @@ export async function apiClient<T>(
              data: serverJsonResponse?.data as T,
              status, pagination: serverJsonResponse?.pagination,
              table_columns_config: serverJsonResponse?.table_columns_config, 
-             filters_config: serverJsonResponse?.filters_config 
+             filters_config: serverJsonResponse?.filters_config,
+             form_config: serverJsonResponse?.form_config 
            };
 
   } catch (error) {

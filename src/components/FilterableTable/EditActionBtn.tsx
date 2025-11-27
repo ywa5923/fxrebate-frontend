@@ -10,10 +10,10 @@ import {
   import { Button } from "@/components/ui/button"
   import XForm from "@/components/XForm/XForm"
 import { useState } from "react"
-import { XFormDefinition } from "@/components/XForm"
+import { XFormDefinition } from "@/types"
 import { PencilIcon, PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-export default function EditActionBtn( { formDefinition,resourceId,resourceName,resourceApiUrl }: { formDefinition: XFormDefinition,resourceId?: number|string,resourceName?: string,resourceApiUrl?: string } ) {
+export default function EditActionBtn( { formConfig,resourceId,resourceName,resourceApiUrl }: { formConfig: XFormDefinition,resourceId?: number|string,resourceName?: string,resourceApiUrl?: string } ) {
     const [open, setOpen] = useState(false)
         
   return (
@@ -37,7 +37,7 @@ export default function EditActionBtn( { formDefinition,resourceId,resourceName,
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-      <XForm  formDefinition={formDefinition} resourceId={resourceId} resourceName={resourceName} resourceApiUrl={resourceApiUrl} />
+      <XForm  formConfig={formConfig} resourceId={resourceId} resourceName={resourceName} resourceApiUrl={resourceApiUrl} />
     </ScrollArea>
     
   </DialogContent>

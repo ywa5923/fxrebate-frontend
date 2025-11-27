@@ -72,8 +72,8 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
     }).filter(([, v]) => v != null && v !== '')
   ) as BrokerOptionFilter;
 
-  const optionData2 = await getDynamicOptionList(page, perPage, orderBy, orderDirection, filters);
-  const bearerToken = await getBearerToken();
+  //const optionData2 = await getDynamicOptionList(page, perPage, orderBy, orderDirection, filters);
+  //const bearerToken = await getBearerToken();
 
 
   const queryString = new URLSearchParams(
@@ -84,24 +84,30 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
 
   let url=`/broker-options/get-list?${queryString}`;
  
- const optionDataResponse= await apiClient<DynamicOption>(url,bearerToken);
+ const optionDataResponse= await apiClient<DynamicOption>(url,true);
  if (!optionDataResponse.success || !optionDataResponse.data) {
   log.error("Error fetching options list", { message: optionDataResponse.message });
   throw new Error(optionDataResponse.message || "Error fetching options list");
  }
  const optionData = optionDataResponse.data;
+ const formConfig = optionDataResponse.form_config;
+ 
+ if (!formConfig) {
+  log.error("Error fetching form config", { message: "Form config not found" });
+  throw new Error("Form config not found");
+ }
   
-  const res = await apiClient<XFormDefinition>('/broker-options/form-data', bearerToken);
-  if (!res.success || !res.data) {
-    log.error("Error fetching form meta data", { message: res.message });
-    throw new Error(res.message || "Error fetching form meta data");
-  }
-  const formDefinition = res.data!;
+//   const res = await apiClient<XFormDefinition>('/broker-options/form-data',true);
+//   if (!res.success || !res.data) {
+//     log.error("Error fetching form meta data", { message: res.message });
+//     throw new Error(res.message || "Error fetching form meta data");
+//   }
+//   const formDefinition = res.data!;
 
-  log.info('formDefinition',{formDefinition});
+//   log.info('formDefinition',{formDefinition});
 
- log.info('optionData',{optionDataResponse});
-  log.info('optionDataResponse.pagination',{pagination: optionDataResponse.pagination});
+//  log.info('optionData',{optionDataResponse});
+//   log.info('optionDataResponse.pagination',{pagination: optionDataResponse.pagination});
 
   return (
     <div className="flex-1 space-y-4">
@@ -119,7 +125,7 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
        columnsConfig={optionDataResponse.table_columns_config as unknown as FTColumnsConfig<DynamicOption>} 
        filters={optionDataResponse.filters_config as unknown as FTFilters<DynamicOption>}
        LOCAL_STORAGE_KEY="dynamic-options-filters"
-       formDefinition={formDefinition}
+       formConfig={formConfig}
        />
        
     </div>

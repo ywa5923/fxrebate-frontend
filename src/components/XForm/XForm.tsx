@@ -15,7 +15,7 @@ import { Form } from "@/components/ui/form";
 import { FormBase, FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { ArrayFields } from "@/components/XForm/form-components";
-
+import { useEffect } from "react";
 import {
   Field,
   FieldContent,
@@ -30,8 +30,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { XFormDefinition } from "@/components/XForm/types";
+import { XFormDefinition } from "@/types";
 
+import { BASE_URL } from "@/constants";
 function buildDefaultValues(def: XFormDefinition, data?: any) {
   const out: Record<string, any> = { ...(data ?? {}) };
   const sections = def.sections ?? {};
@@ -51,21 +52,27 @@ function buildDefaultValues(def: XFormDefinition, data?: any) {
 }
 
 type XFormProps = {
-  formDefinition: XFormDefinition;
+  formConfig: XFormDefinition;
   formData?: any;
   resourceId?: number|string;
   resourceName?: string;
   resourceApiUrl?: string;
 }
-export default function XForm( { formDefinition, formData, resourceId, resourceName, resourceApiUrl }: XFormProps) 
+export default function XForm( { formConfig, formData, resourceId, resourceName, resourceApiUrl }: XFormProps) 
 {
 
   //generate form schema from formDefinition
-  if (!formDefinition) {
+  if (!formConfig) {
     throw new Error("Form definition is required");
   }
+
+  useEffect(() => {
+    if (resourceId) {
+     let apiUrl=BASE_URL + resourceApiUrl + "/" + resourceId;
+    }
+  }, [resourceId]);
   
-  const formSchema = getFormSchema(formDefinition);
+  const formSchema = getFormSchema(formConfig);
   console.log("formSchema is aaaaa: ",  formSchema)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -92,7 +99,7 @@ export default function XForm( { formDefinition, formData, resourceId, resourceN
                   <h1>XForm</h1>
                   <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)}>
-                        {Object.entries(formDefinition.sections ?? {}).map(([sectionKey, section]: [string, any]) => {
+                        {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, any]) => {
                           return (
                             <FieldSet key={sectionKey}>
                             <FieldLegend>{sectionKey.toUpperCase()}</FieldLegend>

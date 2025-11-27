@@ -55,6 +55,7 @@ import {
 import FilterSection2 from "./FilterSection2";
 import { FTProps, FTColumnConfig } from "./types";
 import EditActionBtn from "./EditActionBtn";
+import DeleteActionBtn from "./DeleteActionBtn";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
@@ -69,7 +70,7 @@ export default function FilterableTable<T>({
   columnsConfig,
   filters,
   LOCAL_STORAGE_KEY,
-  formDefinition,
+  formConfig,
 }: FTProps<T>) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -283,8 +284,9 @@ export default function FilterableTable<T>({
             >
               <Edit className="h-4 w-4" />
             </Button>*/}
-            <EditActionBtn formDefinition={formDefinition} resourceId={item.id}  resourceName="Dynamic Option" resourceApiUrl={`/dynamic-options`} />
-            <Button
+            <EditActionBtn formConfig={formConfig} resourceId={item.id}  resourceName="Dynamic Option" resourceApiUrl={`/dynamic-options`} />
+            <DeleteActionBtn resourceId={item.id} resourcetoDelete={item.name} resourceApiUrl={`/dynamic-options`} />
+            {/*<Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -295,7 +297,7 @@ export default function FilterableTable<T>({
               title="Delete dynamic option"
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
+            </Button>*/}
           </div>
         );
       },

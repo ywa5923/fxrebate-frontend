@@ -1,4 +1,4 @@
-import { XFormDefinition } from "@/components/XForm";
+import { XFormDefinition } from "@/types";
 
 export type FTRowData<
   T = string | boolean | number | null | undefined
@@ -47,5 +47,5 @@ export interface FTProps<T> {
   columnsConfig: FTColumnsConfig<T>;
   filters: FTFilters<T>;
   LOCAL_STORAGE_KEY: string;
-  formDefinition: XFormDefinition;
+  formConfig: XFormDefinition;
 }

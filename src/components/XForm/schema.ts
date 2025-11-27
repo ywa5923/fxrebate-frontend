@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { XFormSection, XFormField, fieldValidation, XFormDefinition } from "./types/field-types";
+import { XFormSection, XFormField, fieldValidation, XFormDefinition } from "@/types";
 
-export function getFormSchema(formDefinition: XFormDefinition):z.ZodObject<any> {
+export function getFormSchema(formConfig: XFormDefinition):z.ZodObject<any> {
    
-  const sections = (formDefinition.sections ?? {}) as Record<string, XFormSection>;
+  const sections = (formConfig.sections ?? {}) as Record<string, XFormSection>;
   const schema: Record<string, z.ZodTypeAny> = {};
   Object.entries(sections).forEach(([sectionKey, section]) => {
     const fieldsSchema = generateFieldsSchema(section.fields ?? {});
