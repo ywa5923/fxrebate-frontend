@@ -53,8 +53,11 @@ function buildDefaultValues(def: XFormDefinition, data?: any) {
 type XFormProps = {
   formDefinition: XFormDefinition;
   formData?: any;
+  resourceId?: number|string;
+  resourceName?: string;
+  resourceApiUrl?: string;
 }
-export default function XForm( { formDefinition, formData }: XFormProps) 
+export default function XForm( { formDefinition, formData, resourceId, resourceName, resourceApiUrl }: XFormProps) 
 {
 
   //generate form schema from formDefinition
@@ -94,7 +97,7 @@ export default function XForm( { formDefinition, formData }: XFormProps)
                             <FieldSet key={sectionKey}>
                             <FieldLegend>{sectionKey.toUpperCase()}</FieldLegend>
                             <FieldDescription>
-                              {section?.description ?? "No description available"}
+                              {section?.description ?? ""}
                             </FieldDescription>
                             <FieldGroup data-slot="checkbox-group">
                                 {Object.entries(section?.fields ?? {}).map(([fieldKey, f]: [string, any]) => {
@@ -125,8 +128,10 @@ export default function XForm( { formDefinition, formData }: XFormProps)
                             </FieldSet>
                           );
                         })}
-                        <Button type="submit">Submit form</Button>
-                      
+                        <div className="flex justify-center items-center mt-3 py-2 bg-gray-50">
+
+                        <Button variant="outline" className="text-green-700 hover:text-green-800 border-green-700 hover:border-green-800 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
+                        </div>
                       </form>
                  </Form>
           </div>

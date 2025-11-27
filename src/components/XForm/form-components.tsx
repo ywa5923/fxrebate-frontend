@@ -188,7 +188,7 @@ export function ArrayFields({
           onClick={() => append({})}
         >
           <PlusIcon className="h-4 w-4" />
-          Add item
+          Add {fieldDef.label ?? "Item"}
         </Button>
       </div>
      

@@ -54,7 +54,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import FilterSection2 from "./FilterSection2";
 import { FTProps, FTColumnConfig } from "./types";
-import AddActionBtn from "./AddActionBtn";
+import EditActionBtn from "./EditActionBtn";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
@@ -283,7 +283,7 @@ export default function FilterableTable<T>({
             >
               <Edit className="h-4 w-4" />
             </Button>*/}
-            <AddActionBtn formDefinition={formDefinition} resourceId={item.id}  resourceApiUrl={`/dynamic-options`} />
+            <EditActionBtn formDefinition={formDefinition} resourceId={item.id}  resourceName="Dynamic Option" resourceApiUrl={`/dynamic-options`} />
             <Button
               variant="ghost"
               size="sm"
