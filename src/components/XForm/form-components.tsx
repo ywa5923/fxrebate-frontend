@@ -87,14 +87,21 @@ export function FormBase<
 }
 
 export const FormInput: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input {...field} className="focus-visible:ring-0 focus-visible:border-ring" />}</FormBase>
+  return <FormBase {...props}>{field => <Input {...field} className="" />}</FormBase>
 }
-
+  {/*----Class names for to disable the focus ring on the elements---
+   Input element: 
+   className="focus-visible:ring-0 focus-visible:border-ring"
+   InputGroup element: 
+    className="border border-input rounded-md focus-within:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0"
+ 
+  */}
 export const FormInputGroup: FormControlFunc<{ remove: () => void }> = props => {
   return <FormBase {...props}>{field => {
     return (
-      <InputGroup className="focus-within:border-ring">
-        <InputGroupInput {...field} />
+      <InputGroup  >
+        
+        <InputGroupInput  {...field} />
         <InputGroupAddon align="inline-end">
           <InputGroupButton type="button"  variant="ghost" size="icon-xs"  onClick={() => props.remove()}>
           <XIcon />

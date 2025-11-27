@@ -85,7 +85,7 @@ export default function XForm( { formDefinition, formData }: XFormProps)
   }
 
     return (
-         <div>
+         <div className="m-2">
                   <h1>XForm</h1>
                   <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)}>

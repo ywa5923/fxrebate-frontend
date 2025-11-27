@@ -23,15 +23,15 @@ export default function AddActionBtn( { formDefinition,resourceId,resourceName,r
       {resourceId ? <PencilIcon /> : (<><PlusIcon /> Add new {resourceName}</>)}
     </Button>
   </DialogTrigger>
-  <DialogContent className="max-h-[85vh] p-5 overflow-x-auto">
-    <DialogHeader>
+  <DialogContent className="max-h-[85vh] p-2 overflow-y-none">
+    <DialogHeader className="p-2">
       <DialogTitle>Edit {resourceName}</DialogTitle>
       <DialogDescription>
         Edit the resource form data.
       </DialogDescription>
     </DialogHeader>
-    <ScrollArea className="max-h-[70vh] p-5">
-      <XForm formDefinition={formDefinition} />
+    <ScrollArea className="max-h-[70vh] p-1">
+      <XForm  formDefinition={formDefinition} />
     </ScrollArea>
     
   </DialogContent>
