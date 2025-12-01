@@ -13,11 +13,11 @@ import { useState } from "react"
 import { XFormDefinition } from "@/types"
 import { PencilIcon, PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-export default function EditActionBtn( { formConfig,resourceId,resourceName,resourceApiUrl }: { formConfig: XFormDefinition,resourceId?: number|string,resourceName?: string,resourceApiUrl?: string } ) {
+export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,resourceId,resourceName,resourceApiUrl }: { getItemUrl?: string, updateItemUrl?: string, formConfig: XFormDefinition,resourceId?: number|string,resourceName?: string,resourceApiUrl?: string } ) {
     const [open, setOpen] = useState(false)
         
   return (
- <Dialog open={open} onOpenChange={setOpen}>
+ <Dialog open={open} modal={false} onOpenChange={setOpen}>
   <DialogTrigger asChild>
     <Button
       onClick={() => setOpen(true)}
@@ -37,7 +37,7 @@ export default function EditActionBtn( { formConfig,resourceId,resourceName,reso
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-      <XForm  formConfig={formConfig} resourceId={resourceId} resourceName={resourceName} resourceApiUrl={resourceApiUrl} />
+      <XForm getItemUrl={getItemUrl} updateItemUrl={updateItemUrl} formConfig={formConfig} resourceId={resourceId} resourceName={resourceName}  />
     </ScrollArea>
     
   </DialogContent>

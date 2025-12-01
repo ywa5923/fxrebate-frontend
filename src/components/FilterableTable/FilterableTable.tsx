@@ -71,6 +71,9 @@ export default function FilterableTable<T>({
   filters,
   LOCAL_STORAGE_KEY,
   formConfig,
+  getItemUrl,
+  deleteUrl,
+  updateItemUrl,
 }: FTProps<T>) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -284,8 +287,8 @@ export default function FilterableTable<T>({
             >
               <Edit className="h-4 w-4" />
             </Button>*/}
-            <EditActionBtn formConfig={formConfig} resourceId={item.id}  resourceName="Dynamic Option" resourceApiUrl={`/dynamic-options`} />
-            <DeleteActionBtn resourceId={item.id} resourcetoDelete={item.name} resourceApiUrl={`/dynamic-options`} />
+            <EditActionBtn getItemUrl={getItemUrl} updateItemUrl={updateItemUrl} formConfig={formConfig} resourceId={item.id}  resourceName="Dynamic Option" />
+            <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={item.name} />
             {/*<Button
               variant="ghost"
               size="sm"

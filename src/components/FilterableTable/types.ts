@@ -48,4 +48,7 @@ export interface FTProps<T> {
   filters: FTFilters<T>;
   LOCAL_STORAGE_KEY: string;
   formConfig: XFormDefinition;
+  getItemUrl?: string;
+  deleteUrl?: string;
+  updateItemUrl?: string;
 }

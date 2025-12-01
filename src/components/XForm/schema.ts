@@ -23,9 +23,10 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
       if (field.type === "text" || field.type === "textarea") {
         schema[fieldKey] = z.string();
       } else if (field.type === "select") {
-        schema[fieldKey] = field.valueType === "string" ? z.string() : z.number();
+       // schema[fieldKey] = field.valueType === "string" ? z.string() : z.coerce.number();
+        schema[fieldKey] = z.string();
       } else if (field.type === "number") {
-        schema[fieldKey] = z.number();
+        schema[fieldKey] = z.coerce.number();
       } else if (field.type === "boolean" || field.type === "checkbox") {
         schema[fieldKey] = z.boolean();
       } else if (field.type === "date") {
@@ -46,7 +47,7 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
           let maxMessage = validationObject.max_message ?? `${field.label} must be at most ${validationValue}`;
           schema[fieldKey] = (schema[fieldKey] as z.ZodNumber).max(validationValue, { message: maxMessage });
         }
-        if (validationKey === "required" && !validationValue) {
+        if (validationKey === "required" && validationValue=='false') {
           schema[fieldKey] = schema[fieldKey].optional();
         }
         if (validationKey === "gt") {

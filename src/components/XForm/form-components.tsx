@@ -123,7 +123,7 @@ export const FormSelect: FormControlFunc<{ children: ReactNode; placeholder?: st
   return (
     <FormBase {...props}>
       {({ onChange, onBlur, ...field }) => (
-        <Select {...field} onValueChange={onChange}>
+        <Select  {...field} onValueChange={onChange}>
           <SelectTrigger
             aria-invalid={field["aria-invalid"]}
             id={field.id}

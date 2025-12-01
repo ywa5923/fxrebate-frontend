@@ -126,6 +126,8 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
        filters={optionDataResponse.filters_config as unknown as FTFilters<DynamicOption>}
        LOCAL_STORAGE_KEY="dynamic-options-filters"
        formConfig={formConfig}
+       getItemUrl={`/broker-options`}
+       updateItemUrl={`/broker-options`}
        />
        
     </div>

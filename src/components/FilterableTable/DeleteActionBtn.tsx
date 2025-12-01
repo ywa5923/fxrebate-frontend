@@ -14,12 +14,12 @@ import { Trash } from "lucide-react"
 import { toast } from "sonner"
 import { BASE_URL } from "@/constants"
 import { useRouter } from "next/navigation"
-export default function DeleteActionBtn( { resourceId, resourcetoDelete, resourceApiUrl }: { resourceId?: number|string, resourcetoDelete?: string, resourceApiUrl?: string } ) {
+export default function DeleteActionBtn( { deleteUrl, resourceId, resourcetoDelete }: { deleteUrl?: string, resourceId?: number|string, resourcetoDelete?: string} ) {
     const [open, setOpen] = useState(false)
     const router = useRouter()
     const handleDelete = async () => {
 
-        let apiUrl=BASE_URL + resourceApiUrl + "/" + resourceId;
+        let apiUrl=BASE_URL + deleteUrl + "/" + resourceId;
         //to do: make an universal server action to delete the resource
         //const res = await deleteResource(resourceId, resourceApiUrl)
         const res = { success: true }
