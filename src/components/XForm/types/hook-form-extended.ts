@@ -26,6 +26,8 @@ export type FormBaseProps<
 > = FormControlProps<TFieldValues, TName, TTransformedValues> & {
   horizontal?: boolean;
   controlFirst?: boolean;
+  /** When true, render a required indicator (e.g., asterisk) next to the label. */
+  required?: boolean;
   children: (
     field: Parameters<
       ControllerProps<TFieldValues, TName, TTransformedValues>["render"]

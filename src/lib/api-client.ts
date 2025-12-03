@@ -45,6 +45,7 @@ export async function apiClient<T>(
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    "Accept": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
@@ -74,14 +75,24 @@ export async function apiClient<T>(
       return { success: false, message, status };
     }
 
-    return { success: true, 
-             data: serverJsonResponse?.data as T,
-             status, 
-             pagination: serverJsonResponse?.pagination,
-             table_columns_config: serverJsonResponse?.table_columns_config, 
-             filters_config: serverJsonResponse?.filters_config,
-             form_config: serverJsonResponse?.form_config 
-           };
+    const method = (options.method || 'GET').toUpperCase();
+   
+
+    const baseResponse: ApiClientResponse<T> = {
+      success: true,
+      data: (serverJsonResponse?.data as T),
+      status,
+    };
+
+    return method!=='GET'
+      ? baseResponse
+      : {
+          ...baseResponse,
+          pagination: serverJsonResponse?.pagination,
+          table_columns_config: serverJsonResponse?.table_columns_config,
+          filters_config: serverJsonResponse?.filters_config,
+          form_config: serverJsonResponse?.form_config,
+        };
 
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";

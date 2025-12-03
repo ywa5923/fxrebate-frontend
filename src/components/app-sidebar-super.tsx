@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import AddActionBtn from "@/components/XForm/AddActionBtn"
 import { 
   Settings2, 
   ChevronRight,
@@ -396,31 +397,10 @@ export function AppSidebarSuper({
                         )}
                         
                         {isDynamicOptions && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56">
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/dynamic-options" className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Dynamic Options
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/dynamic-options/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create New Dynamic Option
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                         <AddActionBtn
+                          resourceName="Dynamic Options"
+                          addApiUrl="/broker-options"
+                        />
                         )}
                       </div>
                     </SidebarMenuItem>

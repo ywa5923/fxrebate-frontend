@@ -12,7 +12,7 @@ import { Field, FieldLabel, FieldDescription, FieldContent, FieldError } from "@
 import { ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "../ui/button";
 import {
@@ -37,6 +37,7 @@ export function FormBase<
   description,
   controlFirst,
   horizontal,
+  required,
 }: FormBaseProps<TFieldValues, TName, TTransformedValues>) {
 
   return (
@@ -46,7 +47,10 @@ export function FormBase<
       render={({ field, fieldState }) => {
         const labelElement = (
           <>
-            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+            <FieldLabel htmlFor={field.name}>
+              {label}
+              {required ? <span className="text-destructive ml-0.5" aria-hidden>*</span> : null}
+            </FieldLabel>
             {description && <FieldDescription>{description}</FieldDescription>}
           </>
         )
@@ -86,8 +90,8 @@ export function FormBase<
   )
 }
 
-export const FormInput: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input {...field} className="" />}</FormBase>
+export const FormInput: FormControlFunc<{ required?: boolean }> = props => {
+  return <FormBase {...props}>{({ value, ...field }) => <Input {...field}  defaultValue={value ?? ""}   className="" />}</FormBase>
 }
   {/*----Class names for to disable the focus ring on the elements---
    Input element: 
@@ -96,7 +100,7 @@ export const FormInput: FormControlFunc = props => {
     className="border border-input rounded-md focus-within:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0"
  
   */}
-export const FormInputGroup: FormControlFunc<{ remove: () => void }> = props => {
+export const FormInputGroup: FormControlFunc<{ remove: () => void; required?: boolean }> = props => {
   return <FormBase {...props}>{field => {
     return (
       <InputGroup  >
@@ -111,11 +115,11 @@ export const FormInputGroup: FormControlFunc<{ remove: () => void }> = props => 
     )
   }}</FormBase>
 }
-export const FormTextarea: FormControlFunc = props => {
+export const FormTextarea: FormControlFunc<{ required?: boolean }> = props => {
   return <FormBase {...props}>{field => <Textarea {...field} />}</FormBase>
 }
-
-export const FormSelect: FormControlFunc<{ children: ReactNode; placeholder?: string }> = ({
+export const SelectIteNoneValue = "_none_";
+export const FormSelect: FormControlFunc<{ children: ReactNode; placeholder?: string; required?: boolean }> = ({
   children,
   placeholder,
   ...props
@@ -131,14 +135,17 @@ export const FormSelect: FormControlFunc<{ children: ReactNode; placeholder?: st
           >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
-          <SelectContent>{children}</SelectContent>
+          <SelectContent>
+          <SelectItem value={SelectIteNoneValue}>— None —</SelectItem>
+            {children}
+          </SelectContent>
         </Select>
       )}
     </FormBase>
   )
 }
 
-export const FormCheckbox: FormControlFunc = props => {
+export const FormCheckbox: FormControlFunc<{ required?: boolean }> = props => {
   return (
     <FormBase {...props} horizontal controlFirst>
       {({ onChange, value, ...field }) => (
@@ -148,9 +155,42 @@ export const FormCheckbox: FormControlFunc = props => {
   )
 }
 
-export const FormNumber: FormControlFunc = props => {
-  return <FormBase {...props}>{field => <Input type="number" {...field} />}</FormBase>
+export const FormNumber: FormControlFunc<{ required?: boolean }> = props => {
+  return (
+    <FormBase {...props}>
+      {({ value, ...field }) => (
+        <Input
+          type="number"
+          {...field}
+          value={value ?? ""}
+        />
+      )}
+    </FormBase>
+  )
 }
+export const FormNumber34: FormControlFunc<{ required?: boolean }> = props => {
+  return (
+    <FormBase {...props}>
+      {({ value, onChange, ...field }) => (
+        <Input
+          type="number"
+          {...field}
+          value={value ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === "") {
+              onChange(undefined);
+            } else {
+              const num = Number(val);
+              onChange(Number.isNaN(num) ? undefined : num);
+            }
+          }}
+        />
+      )}
+    </FormBase>
+  )
+}
+
 
 
 
@@ -158,7 +198,8 @@ export function ArrayFields({
   control,
   name,
   fieldDef,
-}: { control: any; name: string; fieldDef: any }) {
+  required,
+}: { control: any; name: string; fieldDef: any; required?: boolean }) {
 
   const { fields, append, remove } = useFieldArray({ control, name });
 

@@ -66,32 +66,19 @@ function makeDefaultValues(formConfig: XFormDefinition, rowData: Record<string, 
     const sectionDefaultValue: Record<string, any> = {};
     Object.entries(section.fields ?? {}).forEach(([fieldKey, f]: [string, XFormField]) => {
       
-      let defaultValue;
-      switch (f.type) {
-        case "text":
-          defaultValue =  '';
-          break;
-        case "textarea":
-          defaultValue = '';
-          break;
-        case "checkbox":
-          defaultValue = 0;
-          break;
-        case "number":
-          defaultValue = '';
-          break;
-        case "select":
-          defaultValue = '';
-          break;
-        case "array_fields":
-          defaultValue = rowData[fieldKey] ?? [];
-          break;
-        default:
-          defaultValue = '';
-          break;
+      let fieldValue = null;
+      if(Object.keys(rowData).length > 0){
+        fieldValue = (f.type =='select' && rowData[fieldKey] !== undefined && rowData[fieldKey] !== null)? (rowData[fieldKey]).toString(): rowData[fieldKey];
+      }else{
+        if (f.type === 'checkbox' || f.type === 'boolean') fieldValue = false;
+      else if (f.type === 'number') fieldValue = '';
+      else if (f.type === 'multiselect') fieldValue = [];
+      else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = Array.isArray(fieldValue) ? fieldValue : [];
+      else fieldValue = '';
       }
-      let fieldValue = f.type =='select'? rowData[fieldKey]?.toString(): rowData[fieldKey];
-      sectionDefaultValue[fieldKey] = fieldValue ?? '';
+
+    
+      sectionDefaultValue[fieldKey] = fieldValue ;
       //defaultData[sectionKey + "." + fieldKey] = rowData[fieldKey] ?? defaultValue;
       
     });
@@ -102,74 +89,125 @@ function makeDefaultValues(formConfig: XFormDefinition, rowData: Record<string, 
 
 type XFormProps = {
   getItemUrl?: string;
-  formConfig: XFormDefinition;
+  formConfig?: XFormDefinition | null;
   resourceId?: number|string;
   resourceName?: string;
-  updateItemUrl?: string;
+  resourceApiUrl: string;
+  mode?: 'edit' | 'create';
 }
 
-export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, updateItemUrl }: XFormProps) 
+export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit' }: XFormProps) 
 {
 
-  //generate form schema from formDefinition
-  if (!formConfig) {
-    throw new Error("Form definition is required");
-  }
+  
+  
 
   //let [formDefaultValues, setFormDefaultValues] = useState<Record<string, any>>({});
   let [isLoading, setIsLoading] = useState(false);
+  let [formConfigState, setFormConfigState] = useState<XFormDefinition | null>(null);
 
-  //console.log("formDefaultValues", formDefaultValues);
+ 
   useEffect(() => {
-    if (!resourceId || !getItemUrl) return;
+   
     setIsLoading(true);
     const fetchItem = async () => {
       try {
-        let apiUrl = getItemUrl + "/" + resourceId;
-        const response = await apiClient<DynamicOption>(apiUrl, true);
-        if (response.success && response.data) {
-          console.log("response.data", response.data);
-          console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
-        
-         // setFormDefaultValues(makeDefaultValues(formConfig, response.data as any));
-            form.reset(makeDefaultValues(formConfig, response.data as any));
-
-        } else {
-          console.error("Failed to fetch item", response.message);
-          toast.error(response.message);
+        if(mode === 'create' ){
+          let formConfigApiUrl = resourceApiUrl + "/form-config";
+         
+          const response = await apiClient<XFormDefinition>(formConfigApiUrl, true);
+          
+          if(response.success && response.data){
+            setFormConfigState(response.data);
+          } else {
+            console.error("Failed to fetch form configuration", response.message);
+            toast.error("Failed to fetch form configuration");
+            
+          }
         }
+
+
+        if(mode === 'edit' && formConfig && getItemUrl && resourceId){
+          let apiUrl = getItemUrl + "/" + resourceId;
+          const response = await apiClient<DynamicOption>(apiUrl, true);
+
+          if (response.success && response.data) {
+            console.log("response.data", response.data);
+            console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
+            form.reset(makeDefaultValues(formConfig, response.data as any));
+          } else {
+            console.error("Failed to fetch item", response.message);
+            toast.error("Failed to fetch item");
+          }
+        }
+       
       } catch (err) {
         console.error("Failed to fetch item", err);
+        toast.error("Failed to load form data");
       } finally {
         setIsLoading(false);
       }
     };
+  
     fetchItem();
-  }, [resourceId, getItemUrl]);
+  }, [resourceId, getItemUrl,resourceApiUrl]);
+
+  if(mode === 'create'){
+    formConfig = formConfigState;
+  }
+
+  let formSchema: z.ZodSchema<any> | null = null;
+  if(formConfig){
+    formSchema = getFormSchema(formConfig);
+  }else{
+    formSchema = z.object({}) as z.ZodSchema<any>;
+  }
   
-  const formSchema = getFormSchema(formConfig);
-  
+  //==============Inspect the form schema==============
   //console.log(JSON.stringify(inspectZodObject(formSchema), null, 2));
 
-  
+  let defaultValues;
+  if(formConfig){
+    defaultValues = makeDefaultValues(formConfig, {});
+  }
  
+  //console.log("formSchema", formSchema);
+  //console.log("defaultValues", defaultValues);
  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: makeDefaultValues(formConfig, {}),
+   
+    defaultValues:  defaultValues??{},
   });
  
-
+  const { isDirty, isValid, isSubmitting } = form.formState;
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
    let formFlatData = flattenObject(data);
-   let apiUrl = updateItemUrl + "/" + resourceId;
-   const response = await apiClientPut<DynamicOption>(apiUrl, formFlatData, false);
+   let apiUrl : string;
+   let method : string;
+   if(mode === 'create'){
+    apiUrl = resourceApiUrl;
+    method = 'POST';
+   }else{
+    apiUrl = resourceApiUrl + "/" + resourceId;
+    method = 'PUT';
+   }
+   
+  
+   let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
+   console.log("json stringify data", jsonBody);
+  
+   const response = await apiClient<DynamicOption>(apiUrl, true, {
+    method: method,
+    body: jsonBody,
+   });
    if (response.success && response.data) {
-    console.log("response.data", response.data);
+   
     toast.success("Item updated successfully");
    } else {
-    console.error("Failed to update item", response.message);
+   
     toast.error(response.message);
    }
+   console.log("formData", data);
    console.log("formFlatData", formFlatData);
   }
 
@@ -182,7 +220,7 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
                       <span className="text-grey-100 text-lg font-medium tracking-wide">Loading...</span>
                     </div>
                   )}
-                 { !isLoading && <Form {...form}>
+                 { !isLoading && formConfig && <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit,(errors) => console.log('form errors:', errors))}>
                         {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, any]) => {
                           return (
@@ -196,22 +234,22 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
 
                                   switch (f?.type) {
                                     case "text":
-                                      return <FormInput key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} />
+                                      return <FormInput key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} required={f?.required} />
                                     case "textarea":
-                                      return <FormTextarea key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey } label={f?.label} />
+                                      return <FormTextarea key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey } label={f?.label} required={f?.required} />
                                     case "checkbox":
-                                      return <FormCheckbox key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey } label={f?.label} />
+                                      return <FormCheckbox key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey } label={f?.label} required={f?.required} />
                                     case "number":
-                                      return <FormNumber key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} />
+                                      return <FormNumber key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} required={f?.required} />
                                     case "select":
-                                      return <FormSelect key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} placeholder={f?.placeholder ?? "Select an option"}>
+                                      return <FormSelect key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} placeholder={f?.placeholder ?? "Select an option"} required={f?.required}>
                                         {f.options.map((option: {value: string|number, label: string}) => {
                                           return <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
                                         })}
                                       </FormSelect>
                                     
                                      case "array_fields":
-                                      return <ArrayFields key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} fieldDef={f} />
+                                      return <ArrayFields key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} fieldDef={f} required={f?.required} />
                                     default:
                                       return null;
                                   }
@@ -222,7 +260,7 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
                         })}
                         <div className="flex justify-center items-center mt-3 py-2 bg-gray-50">
 
-                        <Button variant="outline" className="text-green-700 hover:text-green-800 border-green-700 hover:border-green-800 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
+                        <Button disabled={!isDirty ||  isSubmitting} variant="outline" className="text-green-700 hover:text-green-800 border-green-700 hover:border-green-800 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
                         </div>
                       </form>
                  </Form>

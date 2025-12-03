@@ -83,11 +83,14 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
   ).toString();
 
   let url=`/broker-options/get-list?${queryString}`;
+  console.log("url", url);
  
  const optionDataResponse= await apiClient<DynamicOption>(url,true);
- if (!optionDataResponse.success || !optionDataResponse.data) {
-  log.error("Error fetching options list", { message: optionDataResponse.message });
-  throw new Error(optionDataResponse.message || "Error fetching options list");
+ //console.log("---------optionDataResponse", optionDataResponse);
+
+ if (!optionDataResponse?.success || !optionDataResponse?.data) {
+  //log.error("Error fetching options list", { message: optionDataResponse?.message });
+  throw new Error(optionDataResponse?.message || "Error fetching options list");
  }
  const optionData = optionDataResponse.data;
  const formConfig = optionDataResponse.form_config;
@@ -97,17 +100,7 @@ export default async function DynamicOptionsPage({ searchParams }: DynamicOption
   throw new Error("Form config not found");
  }
   
-//   const res = await apiClient<XFormDefinition>('/broker-options/form-data',true);
-//   if (!res.success || !res.data) {
-//     log.error("Error fetching form meta data", { message: res.message });
-//     throw new Error(res.message || "Error fetching form meta data");
-//   }
-//   const formDefinition = res.data!;
 
-//   log.info('formDefinition',{formDefinition});
-
-//  log.info('optionData',{optionDataResponse});
-//   log.info('optionDataResponse.pagination',{pagination: optionDataResponse.pagination});
 
   return (
     <div className="flex-1 space-y-4">
