@@ -104,9 +104,12 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
 
     //baseSchema = baseSchema.optional();
     // Apply preprocessing for string types at the very end
+    //empty inputs send empty string to the server, so we need to convert it to undefined to be rejected by the required validation
+    //empty string are converted to 0 when use z.coerce.number()
+    //z.string() also accept empty string, so we need to convert it to undefined to be rejected by the required validation
     if (field.type === "text" || field.type === "textarea" || 
         field.type === "select" ||field.type ==="number") {
-      baseSchema = preprocessEmptyString(baseSchema as z.ZodString);
+      baseSchema = preprocessEmptyString(baseSchema as z.ZodTypeAny);
     }
 
     schema[fieldKey] = baseSchema;
@@ -117,7 +120,7 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
 
 
 
-function preprocessEmptyString(schema: z.ZodString) {
+function preprocessEmptyString(schema: z.ZodTypeAny) {
   return z.preprocess(
     val => (val === "" || val === SelectIteNoneValue || val === null ? undefined : val),
     schema
