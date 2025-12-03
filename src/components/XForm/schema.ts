@@ -105,7 +105,7 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
     //baseSchema = baseSchema.optional();
     // Apply preprocessing for string types at the very end
     if (field.type === "text" || field.type === "textarea" || 
-        field.type === "select" ) {
+        field.type === "select" ||field.type ==="number") {
       baseSchema = preprocessEmptyString(baseSchema as z.ZodString);
     }
 
