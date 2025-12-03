@@ -16,6 +16,7 @@ import { FormBase, FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { ArrayFields } from "@/components/XForm/form-components";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Field,
   FieldContent,
@@ -99,7 +100,7 @@ type XFormProps = {
 export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit' }: XFormProps) 
 {
 
-  
+  const router = useRouter();
   
 
   //let [formDefaultValues, setFormDefaultValues] = useState<Record<string, any>>({});
@@ -203,6 +204,7 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
    if (response.success && response.data) {
    
     toast.success("Item updated successfully");
+    router.refresh();
    } else {
    
     toast.error(response.message);

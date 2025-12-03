@@ -21,7 +21,7 @@ export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceNam
   <DialogTrigger asChild>
     <Button
       onClick={() => setOpen(true)}
-      className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-md"
+      className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 "
       variant="ghost"
       size="sm"
       title={`Add ${resourceName ?? "item"}`}
