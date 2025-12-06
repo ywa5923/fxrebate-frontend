@@ -7,7 +7,7 @@ import logger from '@/lib/logger';
 import {BASE_URL} from '@/constants';
 import {DynamicOption} from '@/types';
 import XForm from '@/components/XForm/XForm';
-import { XFormDefinition } from '@/components/XForm';
+
 
 
 export const dynamic = 'force-dynamic';
