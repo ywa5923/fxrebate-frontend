@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { flattenObject } from "@/lib/flattenObject";
 import { Loader2 } from "lucide-react";
+import logger from "@/lib/logger";
 
 function buildDefaultValues(def: XFormDefinition, data?: any) {
   const out: Record<string, any> = { ...(data ?? {}) };
@@ -94,14 +95,15 @@ type XFormProps = {
   resourceId?: number|string;
   resourceName?: string;
   resourceApiUrl: string;
+  onSubmitted?: () => void;
   mode?: 'edit' | 'create';
 }
 
-export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit' }: XFormProps) 
+export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
 {
 
   const router = useRouter();
-  
+  const log = logger.child('components/XForm/XForm.tsx');
 
   //let [formDefaultValues, setFormDefaultValues] = useState<Record<string, any>>({});
   let [isLoading, setIsLoading] = useState(false);
@@ -182,6 +184,7 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
  
   const { isDirty, isValid, isSubmitting } = form.formState;
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    //if second param is true, it will skip empty values si empty values are not sent to the server
    let formFlatData = flattenObject(data);
    let apiUrl : string;
    let method : string;
@@ -195,22 +198,28 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
    
   
    let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
-   console.log("json stringify data", jsonBody);
   
+   log.debug("json stringify data", {jsonBody});
+
    const response = await apiClient<DynamicOption>(apiUrl, true, {
     method: method,
     body: jsonBody,
    });
    if (response.success && response.data) {
    
-    toast.success("Item updated successfully");
+    if(onSubmitted){
+      //call the onSubmitted function to cloase the modal form by setting the open state to false
+      onSubmitted();
+    }
+    toast.success(method === 'POST' ? "Item created successfully" : "Item updated successfully");
+
     router.refresh();
    } else {
    
     toast.error(response.message);
    }
-   console.log("formData", data);
-   console.log("formFlatData", formFlatData);
+   console.log("XFormData", data);
+   console.log("XFormFlatData", formFlatData);
   }
 
     return (

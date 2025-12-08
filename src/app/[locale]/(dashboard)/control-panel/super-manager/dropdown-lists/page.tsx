@@ -56,7 +56,7 @@ export default async function DropdownListsPage({ searchParams }: DropdownListsP
   ).toString();
 
   let url=`/dropdown-lists?${queryString}`;
-  const optionDataResponse= await apiClient<Zone>(url,true);
+  const optionDataResponse= await apiClient<DropdownList>(url,true);
  //console.log("---------optionDataResponse", optionDataResponse);
 
  if (!optionDataResponse?.success || !optionDataResponse?.data) {
@@ -76,14 +76,14 @@ export default async function DropdownListsPage({ searchParams }: DropdownListsP
    
    
     <FilterableTable
-     data={optionDataResponse.data as unknown as Zone[]} 
+     data={optionDataResponse.data as unknown as DropdownList[]} 
      pagination={optionDataResponse.pagination as unknown as FTPagination}
-     columnsConfig={optionDataResponse.table_columns_config as unknown as FTColumnsConfig<Zone>} 
-     filters={optionDataResponse.filters_config as unknown as FTFilters<Zone>}
-     LOCAL_STORAGE_KEY="zones-filters"
+     columnsConfig={optionDataResponse.table_columns_config as unknown as FTColumnsConfig<DropdownList>} 
+     filters={optionDataResponse.filters_config as unknown as FTFilters<DropdownList>}
+     LOCAL_STORAGE_KEY="dropdown-lists-filters"
      formConfig={formConfig}
-     getItemUrl={`/zones`}
-     updateItemUrl={`/zones`}
+     getItemUrl={`/dropdown-lists`}
+     updateItemUrl={`/dropdown-lists`}
      />
      
   </div>);

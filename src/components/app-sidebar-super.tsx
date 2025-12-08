@@ -320,31 +320,10 @@ export function AppSidebarSuper({
                         )}
                         
                         {isDropdownLists && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56">
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/dropdown-lists" className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Dropdown Lists
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/dropdown-lists/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create New Dropdown List
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <AddActionBtn
+                          resourceName="Dropdown Lists"
+                          addApiUrl="/dropdown-lists"
+                        />
                         )}
                         
                         {isCountries && (

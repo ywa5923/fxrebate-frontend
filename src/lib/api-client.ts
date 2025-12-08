@@ -21,6 +21,7 @@ export interface ServerJsonResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
+  error?: string;
   errors?: Record<string, string[]>;
   pagination?: FTPagination;
   table_columns_config?: FTColumnsConfig<T>;
@@ -60,16 +61,20 @@ export async function apiClient<T>(
       return null;
     });
 
+    
     if (!response.ok ) {
      
       let message = serverJsonResponse?.message ?? `Request failed with status ${status}`;
+    
 
       if (serverJsonResponse?.errors && typeof serverJsonResponse.errors === "object") {
         const validationErrors = Object.entries(serverJsonResponse.errors)
           .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(", ") : String(errs)}`)
-          .join(" | ");
+          .join(" |** ");
         message += ` → ${validationErrors}`;
+        
       }
+      message +='***' + (serverJsonResponse?.error ?? '');
 
       log.error("API request failed", { url: requestUrl, status, message, serverJsonResponse });
       return { success: false, message, status };

@@ -101,11 +101,11 @@ export const FormInput: FormControlFunc<{ required?: boolean }> = props => {
  
   */}
 export const FormInputGroup: FormControlFunc<{ remove: () => void; required?: boolean }> = props => {
-  return <FormBase {...props}>{field => {
+  return <FormBase {...props}>{({ value, ...field }) => {
     return (
       <InputGroup  >
         
-        <InputGroupInput  {...field} />
+        <InputGroupInput  value={value ?? ""} {...field} />
         <InputGroupAddon align="inline-end">
           <InputGroupButton type="button"  variant="ghost" size="icon-xs"  onClick={() => props.remove()}>
           <XIcon />

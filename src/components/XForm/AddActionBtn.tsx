@@ -31,13 +31,18 @@ export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceNam
   </DialogTrigger>
   <DialogContent className="max-h-[85vh] p-2 overflow-y-none">
     <DialogHeader className="p-2">
-      <DialogTitle>Edit {resourceName}</DialogTitle>
+      <DialogTitle>Add {resourceName}</DialogTitle>
       <DialogDescription>
         Add the resource form data.
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-      <XForm  resourceName={resourceName} resourceApiUrl={addApiUrl} mode="create"  />
+      <XForm
+        resourceName={resourceName}
+        resourceApiUrl={addApiUrl}
+        mode="create"
+        onSubmitted={() => setOpen(false)}
+      />
     </ScrollArea>
     
   </DialogContent>
