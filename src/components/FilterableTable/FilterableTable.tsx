@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronsRight,
   Sliders,
+  ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,9 @@ import FilterSection2 from "./FilterSection2";
 import { FTProps, FTColumnConfig } from "./types";
 import EditActionBtn from "./EditActionBtn";
 import DeleteActionBtn from "./DeleteActionBtn";
+import ToggleActiveBtn from "./ToggleActiveBtn";
+import type { Broker } from "@/lib/broker-management";
+import Image from "next/image";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
@@ -66,6 +70,7 @@ import DeleteActionBtn from "./DeleteActionBtn";
 
 export default function FilterableTable<T>({
   data,
+  propertyNameToDisplay="name",
   pagination,
   columnsConfig,
   filters,
@@ -74,6 +79,8 @@ export default function FilterableTable<T>({
   getItemUrl,
   deleteUrl,
   updateItemUrl,
+  toggleActiveUrl,
+  dashboardUrl,
 }: FTProps<T>) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -183,7 +190,7 @@ export default function FilterableTable<T>({
     } else {
       const displayValue = colType === "json" ? JSON.stringify(value) : value;
       return (
-        <span className=" text-sm text-gray-800 break-all">
+        <span className=" text-sm text-gray-800 block max-w-[28ch] break-all">
           {displayValue}
         </span>
       );
@@ -238,6 +245,7 @@ export default function FilterableTable<T>({
     (Object.entries(columnsConfig) as Array<[string, FTColumnConfig]>).forEach(
       ([columnKey, config]) => {
         const isSortable = config.sortable;
+        const isImage = config.type === "image";
         const colDef: ColumnDef<T> = {
           id: columnKey, // e.g., "form_type"
           accessorKey: columnKey, // Accesses row.original[columnKey]
@@ -258,7 +266,28 @@ export default function FilterableTable<T>({
             : config.label, // Use config.label if not sortable
           cell: ({ row }) => {
             const value = row.original[columnKey as keyof T]; // Get value from data using columnKey
-
+            if (isImage) {
+              const srcStr = typeof value === "string" ? value : "";
+              const startsWithHttp =
+                srcStr.startsWith("http://") || srcStr.startsWith("https://");
+              if (!startsWithHttp) {
+                return (
+                  <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                    No logo
+                  </div>
+                );
+              }
+              return (
+                <div className="relative w-12 h-12">
+                  <Image
+                    src={srcStr}
+                    alt="Broker logo"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              );
+            }
             return formatCellValue(columnKey, value);
           },
         };
@@ -271,36 +300,47 @@ export default function FilterableTable<T>({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const item = (row.original as unknown) as { id: string };
+        const item = (row.original as unknown) as { id: string; [propertyNameToDisplay]: string };
+       if(dashboardUrl){
+        dashboardUrl = dashboardUrl.replace('#dashboard_id#', item.id);
+       }
         return (
           <div className="flex items-center gap-2">
-           {/* <Button
-              variant="ghost"
+           
+            
+            {toggleActiveUrl && (
+                <ToggleActiveBtn url={toggleActiveUrl+`/${item.id}`} broker={row.original as unknown as Broker} />
+            )}
+            {getItemUrl && updateItemUrl && (
+              <EditActionBtn
+                getItemUrl={getItemUrl}
+                updateItemUrl={updateItemUrl}
+                formConfig={formConfig}
+                resourceId={item.id}
+                resourceName={item[propertyNameToDisplay] ?? "Item"}
+              />
+            )}
+            {dashboardUrl && (
+              <Button
+              variant="outline"
               size="sm"
-              onClick={() =>
-                router.push(
-                  `/${locale}/control-panel/super-manager/dynamic-options/${item.id}/edit`
-                )
-              }
-              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              title="Edit dynamic option"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>*/}
-            <EditActionBtn getItemUrl={getItemUrl} updateItemUrl={updateItemUrl} formConfig={formConfig} resourceId={item.id}  resourceName="Dynamic Option" />
-            <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={item.name} />
-            {/*<Button
-              variant="ghost"
-              size="sm"
+              className="h-7 w-7 p-0 shrink-0 border-gray-300 hover:bg-orange-400"
+              style={{ color: '#1f2937' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
               onClick={() => {
-                setOptionToDelete({ id: item.id, name: item.name });
-                setDeleteDialogOpen(true);
+                if (!dashboardUrl) return;
+                window.location.href = dashboardUrl;
               }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-              title="Delete dynamic option"
+              title="Go to broker dashboard"
             >
-              <Trash2 className="h-4 w-4" />
-            </Button>*/}
+              <ArrowUpRight className="h-4 w-4" style={{ color: 'inherit' }} />
+            </Button>
+            )}
+            {deleteUrl && (
+              <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={item[propertyNameToDisplay] ?? "Item"} />
+            )}
+           
           </div>
         );
       },
@@ -314,8 +354,8 @@ export default function FilterableTable<T>({
     currentPage,
     perPage,
     searchParams,
-  ]);
-
+  ]);//end of useMemo
+  //start of useReactTable
   const table = useReactTable({
     data,
     columns,

@@ -43,6 +43,7 @@ export type FTFilters<T> = {
 
 export interface FTProps<T> {
   data: T[];
+  propertyNameToDisplay: string;
   pagination: FTPagination;
   columnsConfig: FTColumnsConfig<T>;
   filters: FTFilters<T>;
@@ -51,4 +52,6 @@ export interface FTProps<T> {
   getItemUrl?: string;
   deleteUrl?: string;
   updateItemUrl?: string;
+  toggleActiveUrl?: string;
+  dashboardUrl?: string;
 }
