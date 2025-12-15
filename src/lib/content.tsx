@@ -213,7 +213,7 @@ export const navItems: NavItem[] = [
                 id: generateRandomId(),
                 name: 'forex_brokers_list',
                 href: '/brokers',
-                external: true,
+                external: false,
             },
             { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
             { id: generateRandomId(), name: 'guides', href: '#' },
@@ -266,7 +266,8 @@ export const navItems: NavItem[] = [
         ],
     },
     { id: generateRandomId(), name: 'charts', href: '#' },
-    { id: generateRandomId(), name: 'affiliate_program', href: '#' },
+    { id: generateRandomId(), name: 'affiliate_program', href: '/#affiliate' },
+    { id: generateRandomId(), name: 'help_center', href: '/help/about' },
     {
         id: generateRandomId(),
         name: 'academy',
