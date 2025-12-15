@@ -215,6 +215,12 @@ export const navItems: NavItem[] = [
                 href: '/brokers',
                 external: false,
             },
+            {
+                id: generateRandomId(),
+                name: 'forex_brokers_list2',
+                href: 'https://fxrebate.eu/brokers',
+                external: true,
+            },
             { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
             { id: generateRandomId(), name: 'guides', href: '#' },
             { id: generateRandomId(), name: 'best_brokers_2025', href: '#' },
