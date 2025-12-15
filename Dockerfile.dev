@@ -25,7 +25,7 @@ RUN pnpm install
 COPY . .
 
 # Install Next.js globally
-RUN pnpm add -g next
+#RUN pnpm add -g next
 
 # Expose development port
 EXPOSE 3000

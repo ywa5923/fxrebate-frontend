@@ -1,0 +1,826 @@
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/AccountLinks.tsx
+15:3  Error: 'Select' is defined but never used.  @typescript-eslint/no-unused-vars
+16:3  Error: 'SelectTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+17:3  Error: 'SelectContent' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Error: 'SelectItem' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Error: 'SelectValue' is defined but never used.  @typescript-eslint/no-unused-vars
+38:3  Error: 'DialogTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+102:31  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+103:38  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+135:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+169:13  Error: 'response' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+206:13  Error: 'response' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/Accounts.tsx
+3:33  Error: 'OptionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+3:46  Error: 'Url' is defined but never used.  @typescript-eslint/no-unused-vars
+10:29  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+10:41  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+13:18  Error: 'DialogTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+67:13  Error: 'response' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+272:78  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+272:94  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/ChallengeCategories.tsx
+62:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/Companies.tsx
+3:27  Error: 'OptionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'Card' is defined but never used.  @typescript-eslint/no-unused-vars
+10:16  Error: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+10:29  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+10:41  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+179:78  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+179:94  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/Company.tsx
+3:37  Error: 'OptionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+125:78  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+125:90  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/Contests.tsx
+3:18  Error: 'OptionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+10:29  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+10:41  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+11:18  Error: 'DialogTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+51:13  Error: 'response' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+250:78  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+250:94  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/Promotions.tsx
+3:18  Error: 'OptionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+10:29  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+10:41  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+11:18  Error: 'DialogTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+50:13  Error: 'response' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+247:78  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+247:96  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/page.tsx
+4:20  Error: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Error: 'DynamicForm' is defined but never used.  @typescript-eslint/no-unused-vars
+6:10  Error: 'AuthUser' is defined but never used.  @typescript-eslint/no-unused-vars
+9:8  Error: 'Companies' is defined but never used.  @typescript-eslint/no-unused-vars
+16:10  Error: 'DynamicMatrix' is defined but never used.  @typescript-eslint/no-unused-vars
+25:11  Error: 'isAuthenticated' is defined but never used.  @typescript-eslint/no-unused-vars
+26:10  Error: 'hasPermission' is defined but never used.  @typescript-eslint/no-unused-vars
+51:7  Error: 'is_admin' is never reassigned. Use 'const' instead.  prefer-const
+52:7  Error: 'broker_type' is never reassigned. Use 'const' instead.  prefer-const
+53:7  Error: 'language_code' is never reassigned. Use 'const' instead.  prefer-const
+54:7  Error: 'zone_code' is never reassigned. Use 'const' instead.  prefer-const
+56:6  Error: 'pageLogger' is never reassigned. Use 'const' instead.  prefer-const
+56:6  Error: 'pageLogger' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+127:12  Error: 'companies' is never reassigned. Use 'const' instead.  prefer-const
+149:11  Error: 'accountTypesLinks' is never reassigned. Use 'const' instead.  prefer-const
+150:11  Error: 'accountType' is never reassigned. Use 'const' instead.  prefer-const
+168:11  Error: 'promotions' is never reassigned. Use 'const' instead.  prefer-const
+183:11  Error: 'contests' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/layout.tsx
+13:10  Error: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+29:10  Error: 'Frame' is defined but never used.  @typescript-eslint/no-unused-vars
+32:16  Error: 'getBrokerOptions2' is defined but never used.  @typescript-eslint/no-unused-vars
+63:7  Error: 'layoutLogger' is never reassigned. Use 'const' instead.  prefer-const
+71:7  Error: 'isBrokerManager' is never reassigned. Use 'const' instead.  prefer-const
+82:7  Error: 'sidebarOptionsLinks' is never reassigned. Use 'const' instead.  prefer-const
+82:73  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+83:9  Error: 'categoryName' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/team-management/EditMemberDialog.tsx
+130:39  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+207:45  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/team-management/UserActions.tsx
+12:30  Error: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/team-management/page.tsx
+7:29  Error: 'CardDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+7:46  Error: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+7:58  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+13:3  Error: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+25:10  Error: 'hasPermission' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/platform-manager/layout.tsx
+7:10  Error: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/brokers/BrokersTable.tsx
+21:121  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+52:16  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+386:9  Error: 'formatDateUTC' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+396:10  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+742:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+823:102  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+841:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/brokers/page.tsx
+1:18  Error: 'getBrokerList' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'BrokersTable' is defined but never used.  @typescript-eslint/no-unused-vars
+73:7  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+77:7  Error: 'dashboardUrl' is never reassigned. Use 'const' instead.  prefer-const
+78:7  Error: 'toggleActiveUrl' is never reassigned. Use 'const' instead.  prefer-const
+87:8  Error: 'optionData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/brokers/register/RegisterBrokerForm.tsx
+36:15  Error: 'Country' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/countries/CountriesTable.tsx
+10:3  Error: 'SortingState' is defined but never used.  @typescript-eslint/no-unused-vars
+43:3  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+204:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+219:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+234:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+264:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+299:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+323:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/countries/add/FormSkeleton.tsx
+4:3  Error: 'CardDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Error: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/countries/edit/EditCountryFormWrapper.tsx
+25:12  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/countries/edit/[id]/page.tsx
+38:12  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/countries/page.tsx
+1:10  Error: 'getCountryList' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'CountriesTable' is defined but never used.  @typescript-eslint/no-unused-vars
+42:7  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+52:8  Error: 'optionData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dropdown-lists/DropdownListForm.tsx
+111:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+187:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dropdown-lists/DropdownListsTable.tsx
+161:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+176:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+191:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+216:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+235:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+257:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dropdown-lists/[id]/edit/page.tsx
+32:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dropdown-lists/page.tsx
+1:10  Error: 'getDropdownLists' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'DropdownListsTable' is defined but never used.  @typescript-eslint/no-unused-vars
+58:7  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+66:8  Error: 'optionData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/DynamicOptionForm.tsx
+10:10  Error: 'Label' is defined but never used.  @typescript-eslint/no-unused-vars
+88:7  Error: 'categoryId' is never reassigned. Use 'const' instead.  prefer-const
+90:7  Error: 'dropdownListId' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/DynamicOptionsTable.tsx
+10:3  Error: 'SortingState' is defined but never used.  @typescript-eslint/no-unused-vars
+133:58  Error: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+150:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+237:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+317:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+356:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/FilterSection.tsx
+18:36  Error: 'Trash' is defined but never used.  @typescript-eslint/no-unused-vars
+20:31  Error: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+32:7  Error: 'searchParams' is never reassigned. Use 'const' instead.  prefer-const
+33:7  Error: 'router' is never reassigned. Use 'const' instead.  prefer-const
+34:7  Error: 'pathname' is never reassigned. Use 'const' instead.  prefer-const
+36:8  Error: 'filtersCount' is never reassigned. Use 'const' instead.  prefer-const
+36:22  Error: 'setFiltersCount' is never reassigned. Use 'const' instead.  prefer-const
+37:8  Error: 'showFilters' is never reassigned. Use 'const' instead.  prefer-const
+37:21  Error: 'setShowFilters' is never reassigned. Use 'const' instead.  prefer-const
+38:8  Error: 'isPending' is never reassigned. Use 'const' instead.  prefer-const
+38:8  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+38:19  Error: 'startTransition' is never reassigned. Use 'const' instead.  prefer-const
+50:6  Warning: React Hook useEffect has a missing dependency: 'filters'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+53:7  Error: 'handleClearFilters' is never reassigned. Use 'const' instead.  prefer-const
+54:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+64:7  Error: 'handleFilterDelete' is never reassigned. Use 'const' instead.  prefer-const
+65:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+70:7  Error: 'handleFilterChange' is never reassigned. Use 'const' instead.  prefer-const
+72:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+243:7  Error: 'searchParams' is never reassigned. Use 'const' instead.  prefer-const
+244:7  Error: 'router' is never reassigned. Use 'const' instead.  prefer-const
+245:7  Error: 'pathname' is never reassigned. Use 'const' instead.  prefer-const
+248:8  Error: 'showFilters' is never reassigned. Use 'const' instead.  prefer-const
+248:21  Error: 'setShowFilters' is never reassigned. Use 'const' instead.  prefer-const
+249:8  Error: 'isPending' is never reassigned. Use 'const' instead.  prefer-const
+249:8  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+249:19  Error: 'startTransition' is never reassigned. Use 'const' instead.  prefer-const
+251:8  Error: 'activeFilters' is never reassigned. Use 'const' instead.  prefer-const
+251:23  Error: 'setActiveFilters' is never reassigned. Use 'const' instead.  prefer-const
+276:7  Error: 'handleClearFilters' is never reassigned. Use 'const' instead.  prefer-const
+277:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+287:7  Error: 'handleFilterDelete' is never reassigned. Use 'const' instead.  prefer-const
+288:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+293:7  Error: 'handleFilterChange' is never reassigned. Use 'const' instead.  prefer-const
+294:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+307:7  Error: 'handleFilterChangeDebounced' is never reassigned. Use 'const' instead.  prefer-const
+309:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+435:25  Error: 'value' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/dynamic-options/page.tsx
+1:10  Error: 'getDynamicOptionList' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'DynamicOptionsTable' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Error: 'getBearerToken' is defined but never used.  @typescript-eslint/no-unused-vars
+7:9  Error: 'BASE_URL' is defined but never used.  @typescript-eslint/no-unused-vars
+9:8  Error: 'XForm' is defined but never used.  @typescript-eslint/no-unused-vars
+42:9  Error: 'page' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+43:9  Error: 'perPage' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+44:9  Error: 'orderBy' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+45:9  Error: 'orderDirection' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+60:9  Error: 'filters' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+85:7  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+95:8  Error: 'optionData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/layout.tsx
+7:10  Error: 'isSuperAdmin' is defined but never used.  @typescript-eslint/no-unused-vars
+9:10  Error: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/page.tsx
+1:10  Error: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/platform-users/PlatformUsersTable.tsx
+23:146  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+58:10  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+286:16  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+468:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+530:102  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+546:90  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/platform-users/add/AddPlatformUserForm.tsx
+35:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/platform-users/edit/[id]/EditPlatformUserForm.tsx
+45:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/PermissionsTable.tsx
+23:107  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+23:124  Error: 'Columns3' is defined but never used.  @typescript-eslint/no-unused-vars
+51:10  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+185:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+551:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+668:102  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+684:90  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/broker-permission/add/page.tsx
+8:7  Error: 'log' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/broker-permission/edit/[id]/EditBrokerPermissionForm.tsx
+3:10  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+31:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/country-permission/add/page.tsx
+21:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/country-permission/edit/[id]/EditCountryPermissionForm.tsx
+34:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/country-permission/edit/[id]/page.tsx
+18:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/seo-permission/add/page.tsx
+21:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/seo-permission/edit/[id]/EditSeoPermissionForm.tsx
+34:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/seo-permission/edit/[id]/page.tsx
+18:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/translator-permission/add/page.tsx
+21:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/translator-permission/edit/[id]/EditTranslatorPermissionForm.tsx
+34:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/translator-permission/edit/[id]/page.tsx
+18:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/zone-permission/add/page.tsx
+21:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/zone-permission/edit/[id]/EditZonePermissionForm.tsx
+34:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/user-permissions/zone-permission/edit/[id]/page.tsx
+18:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/zones/ZonesTable.tsx
+10:3  Error: 'SortingState' is defined but never used.  @typescript-eslint/no-unused-vars
+44:3  Error: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+166:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+181:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+196:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+265:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+289:18  Error: 'column' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(dashboard)/control-panel/super-manager/zones/page.tsx
+1:10  Error: 'getZoneList' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'ZonesTable' is defined but never used.  @typescript-eslint/no-unused-vars
+43:7  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+51:8  Error: 'optionData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/[locale]/(site)/brokers/AutoTable.tsx
+11:10  Error: 'RatingDisplay' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Error: 'getSortedRowModel' is defined but never used.  @typescript-eslint/no-unused-vars
+34:33  Error: 'TValue' is defined but never used.  @typescript-eslint/no-unused-vars
+37:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:7  Error: 'sortableKeys' is never reassigned. Use 'const' instead.  prefer-const
+68:8  Error: 'columnsURL' is never reassigned. Use 'const' instead.  prefer-const
+68:8  Error: 'columnsURL' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+70:8  Error: 'tableColumns' is never reassigned. Use 'const' instead.  prefer-const
+70:60  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+71:8  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+154:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+161:24  Error: 'href' is never reassigned. Use 'const' instead.  prefer-const
+176:23  Error: 'urlsText' is never reassigned. Use 'const' instead.  prefer-const
+180:22  Error: 'links' is never reassigned. Use 'const' instead.  prefer-const
+182:25  Error: 'httpIndex' is never reassigned. Use 'const' instead.  prefer-const
+184:27  Error: 'name' is never reassigned. Use 'const' instead.  prefer-const
+185:27  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+205:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+211:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/[locale]/(site)/brokers/ColumnsSelector.tsx
+2:29  Error: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+6:9  Error: 'ColumnDef' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'DataTableViewOptionsProps' is defined but never used.  @typescript-eslint/no-unused-vars
+23:3  Error: 'table' is defined but never used.  @typescript-eslint/no-unused-vars
+33:8  Error: 'staticColumns' is never reassigned. Use 'const' instead.  prefer-const
+35:8  Error: 'brokerColumns' is never reassigned. Use 'const' instead.  prefer-const
+52:11  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+52:11  Error: 'columns' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+64:7  Warning: React Hook useEffect has missing dependencies: 'firstRender', 'pathname', 'replace', and 'searchParams'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+68:10  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+72:7  Warning: React Hook useEffect has a missing dependency: 'searchParams'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+101:17  Error: 'col' is never reassigned. Use 'const' instead.  prefer-const
+102:17  Error: 'checkedValue' is never reassigned. Use 'const' instead.  prefer-const
+114:37  Error: 'value' is defined but never used.  @typescript-eslint/no-unused-vars
+118:29  Error: 'found' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/_pages/broker/BrokerPage.tsx
+4:44  Error: 'zone' is defined but never used.  @typescript-eslint/no-unused-vars
+4:49  Error: 'searchParams' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/_pages/brokers/AutoTable.tsx
+18:3  Error: 'getSortedRowModel' is defined but never used.  @typescript-eslint/no-unused-vars
+33:33  Error: 'TValue' is defined but never used.  @typescript-eslint/no-unused-vars
+36:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:7  Error: 'sortableKeys' is never reassigned. Use 'const' instead.  prefer-const
+67:8  Error: 'columnsURL' is never reassigned. Use 'const' instead.  prefer-const
+67:8  Error: 'columnsURL' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+69:8  Error: 'tableColumns' is never reassigned. Use 'const' instead.  prefer-const
+69:60  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+70:8  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+153:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+160:24  Error: 'href' is never reassigned. Use 'const' instead.  prefer-const
+175:23  Error: 'urlsText' is never reassigned. Use 'const' instead.  prefer-const
+179:22  Error: 'links' is never reassigned. Use 'const' instead.  prefer-const
+181:25  Error: 'httpIndex' is never reassigned. Use 'const' instead.  prefer-const
+183:27  Error: 'name' is never reassigned. Use 'const' instead.  prefer-const
+184:27  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+204:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+210:23  Error: 'cellValue' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/_pages/brokers/BrokersPage.tsx
+1:8  Error: 'MyComponent' is defined but never used.  @typescript-eslint/no-unused-vars
+2:10  Error: 'TranslationProvider' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'getZoneFromCookie' is defined but never used.  @typescript-eslint/no-unused-vars
+12:6  Error: 'Params' is defined but never used.  @typescript-eslint/no-unused-vars
+34:7  Error: 'filter_options' is never reassigned. Use 'const' instead.  prefer-const
+66:38  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+82:9  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/_pages/brokers/ColumnsSelector.tsx
+2:29  Error: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+6:9  Error: 'ColumnDef' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'DataTableViewOptionsProps' is defined but never used.  @typescript-eslint/no-unused-vars
+23:3  Error: 'table' is defined but never used.  @typescript-eslint/no-unused-vars
+33:8  Error: 'staticColumns' is never reassigned. Use 'const' instead.  prefer-const
+35:8  Error: 'brokerColumns' is never reassigned. Use 'const' instead.  prefer-const
+52:11  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+52:11  Error: 'columns' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+64:7  Warning: React Hook useEffect has missing dependencies: 'firstRender', 'pathname', 'replace', and 'searchParams'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+68:10  Error: 'columns' is never reassigned. Use 'const' instead.  prefer-const
+72:7  Warning: React Hook useEffect has a missing dependency: 'searchParams'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+101:17  Error: 'col' is never reassigned. Use 'const' instead.  prefer-const
+102:17  Error: 'checkedValue' is never reassigned. Use 'const' instead.  prefer-const
+114:37  Error: 'value' is defined but never used.  @typescript-eslint/no-unused-vars
+118:29  Error: 'found' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/app/_pages/home/Home.tsx
+15:37  Error: 'children' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/AnimatedTestimonials.tsx
+54:6  Warning: React Hook useEffect has a missing dependency: 'handleNext'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/CreateMultiSelect.tsx
+3:20  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+158:23  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+158:36  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/components/CreateSelect.tsx
+111:23  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+111:36  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/components/DynamicForm.tsx
+31:10  Error: 'Switch' is defined but never used.  @typescript-eslint/no-unused-vars
+32:10  Error: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+34:3  Error: 'Popover' is defined but never used.  @typescript-eslint/no-unused-vars
+35:3  Error: 'PopoverContent' is defined but never used.  @typescript-eslint/no-unused-vars
+36:3  Error: 'PopoverTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+39:10  Error: 'format' is defined but never used.  @typescript-eslint/no-unused-vars
+40:10  Error: 'CalendarIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+81:10  Error: 'isSubmitting' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+110:11  Error: 'option' is never reassigned. Use 'const' instead.  prefer-const
+111:11  Error: 'isMultiSelect' is never reassigned. Use 'const' instead.  prefer-const
+112:11  Error: 'isCheckbox' is never reassigned. Use 'const' instead.  prefer-const
+113:11  Error: 'isNotes' is never reassigned. Use 'const' instead.  prefer-const
+115:11  Error: 'isNumberWithUnit' is never reassigned. Use 'const' instead.  prefer-const
+203:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+349:11  Error: 'optionValue' is never reassigned. Use 'const' instead.  prefer-const
+363:13  Error: 'fieldValue' is never reassigned. Use 'const' instead.  prefer-const
+365:13  Error: 'metadata' is never reassigned. Use 'const' instead.  prefer-const
+395:9  Error: 'formValues' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+414:6  Warning: React Hook React.useEffect has missing dependencies: 'form' and 'is_admin'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+491:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+495:113  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+577:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+644:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/FilterableTable/DeleteActionBtn.tsx
+20:11  Error: 'handleDelete' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+22:13  Error: 'apiUrl' is never reassigned. Use 'const' instead.  prefer-const
+22:13  Error: 'apiUrl' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+53:53  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+53:72  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/components/FilterableTable/EditActionBtn.tsx
+14:22  Error: 'PlusIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/FilterableTable/FilterSection2.tsx
+19:20  Error: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+19:28  Error: 'Eraser' is defined but never used.  @typescript-eslint/no-unused-vars
+19:36  Error: 'Trash' is defined but never used.  @typescript-eslint/no-unused-vars
+22:31  Error: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+24:33  Error: 'FTSelectOption' is defined but never used.  @typescript-eslint/no-unused-vars
+34:7  Error: 'searchParams' is never reassigned. Use 'const' instead.  prefer-const
+35:7  Error: 'router' is never reassigned. Use 'const' instead.  prefer-const
+36:7  Error: 'pathname' is never reassigned. Use 'const' instead.  prefer-const
+38:8  Error: 'isPending' is never reassigned. Use 'const' instead.  prefer-const
+38:8  Error: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+38:19  Error: 'startTransition' is never reassigned. Use 'const' instead.  prefer-const
+40:8  Error: 'activeFilters' is never reassigned. Use 'const' instead.  prefer-const
+40:23  Error: 'setActiveFilters' is never reassigned. Use 'const' instead.  prefer-const
+50:11  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+66:6  Warning: React Hook useEffect has missing dependencies: 'LOCAL_STORAGE_KEY', 'pathname', 'router', and 'searchParams'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+93:6  Warning: React Hook useEffect has a missing dependency: 'LOCAL_STORAGE_KEY'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+97:7  Error: 'handleFilterDelete' is never reassigned. Use 'const' instead.  prefer-const
+98:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+103:7  Error: 'handleFilterChange' is never reassigned. Use 'const' instead.  prefer-const
+104:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+118:7  Error: 'handleFilterChangeDebounced' is never reassigned. Use 'const' instead.  prefer-const
+119:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+219:25  Error: 'value' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/components/FilterableTable/FilterableTable.tsx
+9:3  Error: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Error: 'Edit' is defined but never used.  @typescript-eslint/no-unused-vars
+25:3  Error: 'SortingState' is defined but never used.  @typescript-eslint/no-unused-vars
+89:9  Error: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+99:8  Error: 'showFilters' is never reassigned. Use 'const' instead.  prefer-const
+99:21  Error: 'setShowFilters' is never reassigned. Use 'const' instead.  prefer-const
+123:7  Error: 'handleClearFilters' is never reassigned. Use 'const' instead.  prefer-const
+124:9  Error: 'newSearchParams' is never reassigned. Use 'const' instead.  prefer-const
+171:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/FilterableTable/ToggleActiveBtn.tsx
+26:18  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/LocalizedLink.tsx
+12:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+15:11  Error: 'Translations' is defined but never used.  @typescript-eslint/no-unused-vars
+66:14  Error: React Hook "useTranslation" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./src/components/MyComponent.tsx
+3:10  Error: 'useTranslation' is defined but never used.  @typescript-eslint/no-unused-vars
+4:10  Error: 'Translations' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Testimonials.tsx
+31:6  Warning: React Hook useEffect has a missing dependency: 'items'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/XForm/AddActionBtn.tsx
+13:10  Error: 'XFormDefinition' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/XForm/XForm.tsx
+3:3  Error: 'Controller' is defined but never used.  @typescript-eslint/no-unused-vars
+4:3  Error: 'ControllerProps' is defined but never used.  @typescript-eslint/no-unused-vars
+5:3  Error: 'FieldPath' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Error: 'FieldValues' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Error: 'useFieldArray' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Error: 'FormBase' is defined but never used.  @typescript-eslint/no-unused-vars
+16:10  Error: 'FormField' is defined but never used.  @typescript-eslint/no-unused-vars
+16:21  Error: 'FormItem' is defined but never used.  @typescript-eslint/no-unused-vars
+16:31  Error: 'FormLabel' is defined but never used.  @typescript-eslint/no-unused-vars
+16:42  Error: 'FormControl' is defined but never used.  @typescript-eslint/no-unused-vars
+16:55  Error: 'FormMessage' is defined but never used.  @typescript-eslint/no-unused-vars
+21:3  Error: 'Field' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Error: 'FieldContent' is defined but never used.  @typescript-eslint/no-unused-vars
+24:3  Error: 'FieldError' is defined but never used.  @typescript-eslint/no-unused-vars
+26:3  Error: 'FieldLabel' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Error: 'FieldSeparator' is defined but never used.  @typescript-eslint/no-unused-vars
+31:10  Error: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+35:10  Error: 'inspectZodObject' is defined but never used.  @typescript-eslint/no-unused-vars
+36:21  Error: 'apiClientPut' is defined but never used.  @typescript-eslint/no-unused-vars
+39:10  Error: 'BASE_URL' is defined but never used.  @typescript-eslint/no-unused-vars
+46:10  Error: 'buildDefaultValues' is defined but never used.  @typescript-eslint/no-unused-vars
+46:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+47:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:81  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:103  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+65:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+109:8  Error: 'isLoading' is never reassigned. Use 'const' instead.  prefer-const
+109:19  Error: 'setIsLoading' is never reassigned. Use 'const' instead.  prefer-const
+110:8  Error: 'formConfigState' is never reassigned. Use 'const' instead.  prefer-const
+110:25  Error: 'setFormConfigState' is never reassigned. Use 'const' instead.  prefer-const
+119:15  Error: 'formConfigApiUrl' is never reassigned. Use 'const' instead.  prefer-const
+134:15  Error: 'apiUrl' is never reassigned. Use 'const' instead.  prefer-const
+139:127  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+140:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:6  Warning: React Hook useEffect has missing dependencies: 'form', 'formConfig', and 'mode'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+162:31  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+166:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+185:20  Error: 'isValid' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+188:8  Error: 'formFlatData' is never reassigned. Use 'const' instead.  prefer-const
+200:8  Error: 'jsonBody' is never reassigned. Use 'const' instead.  prefer-const
+236:105  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+244:101  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/XForm/form-components.tsx
+3:3  Error: 'ControllerProps' is defined but never used.  @typescript-eslint/no-unused-vars
+201:3  Error: 'required' is defined but never used.  @typescript-eslint/no-unused-vars
+202:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+202:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+210:79  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+214:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/XForm/schema.ts
+5:72  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+15:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:90  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:13  Error: 'gtMessage' is never reassigned. Use 'const' instead.  prefer-const
+73:13  Error: 'ltMessage' is never reassigned. Use 'const' instead.  prefer-const
+77:13  Error: 'gteMessage' is never reassigned. Use 'const' instead.  prefer-const
+81:13  Error: 'lteMessage' is never reassigned. Use 'const' instead.  prefer-const
+85:13  Error: 'emailMessage' is never reassigned. Use 'const' instead.  prefer-const
+90:13  Error: 'positiveMessage' is never reassigned. Use 'const' instead.  prefer-const
+95:13  Error: 'negativeMessage' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/components/XForm/types/hook-form-extended.ts
+2:5  Error: 'Controller' is defined but never used.  @typescript-eslint/no-unused-vars
+6:5  Error: 'useFieldArray' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/app-sidebar-super.tsx
+7:3  Error: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+100:3  Error: 'userEmail' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/app-sidebar.tsx
+5:3  Error: 'AudioWaveform' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Error: 'BookOpen' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Error: 'Bot' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Error: 'Command' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Error: 'GalleryVerticalEnd' is defined but never used.  @typescript-eslint/no-unused-vars
+13:3  Error: 'Settings2' is defined but never used.  @typescript-eslint/no-unused-vars
+14:3  Error: 'SquareTerminal' is defined but never used.  @typescript-eslint/no-unused-vars
+17:10  Error: 'NavMain' is defined but never used.  @typescript-eslint/no-unused-vars
+19:10  Error: 'NavUser' is defined but never used.  @typescript-eslint/no-unused-vars
+20:10  Error: 'TeamSwitcher' is defined but never used.  @typescript-eslint/no-unused-vars
+25:3  Error: 'SidebarHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+30:7  Error: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/nav-projects.tsx
+4:3  Error: 'Folder' is defined but never used.  @typescript-eslint/no-unused-vars
+5:3  Error: 'Forward' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Error: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+14:3  Error: 'DropdownMenu' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Error: 'DropdownMenuContent' is defined but never used.  @typescript-eslint/no-unused-vars
+16:3  Error: 'DropdownMenuItem' is defined but never used.  @typescript-eslint/no-unused-vars
+17:3  Error: 'DropdownMenuSeparator' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Error: 'DropdownMenuTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+24:3  Error: 'SidebarMenuAction' is defined but never used.  @typescript-eslint/no-unused-vars
+47:7  Error: 'iconMap' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+77:11  Error: 'isMobile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/sections/Header/components/CustomDesktopMenuBar.tsx
+70:6  Warning: React Hook useEffect has a missing dependency: 'handleClickOutside'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+116:6  Warning: React Hook useEffect has a missing dependency: 'adjustSubMenuPosition'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/sections/Header/components/LanguageSelector.tsx
+13:10  Error: 'languageItems' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Error: 'use' is defined but never used.  @typescript-eslint/no-unused-vars
+17:10  Error: 'to' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/BentoGrid.tsx
+51:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ui/CardsCarousel.tsx
+60:6  Warning: React Hook useEffect has an unnecessary dependency: 'carouselRef.current'. Either exclude it or remove the dependency array. Mutable values like 'carouselRef.current' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+220:6  Warning: React Hook useEffect has a missing dependency: 'handleClose'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ui/DynamicMatrix.tsx
+6:16  Error: 'Minus' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Error: 'Tooltip' is defined but never used.  @typescript-eslint/no-unused-vars
+20:3  Error: 'TooltipContent' is defined but never used.  @typescript-eslint/no-unused-vars
+21:3  Error: 'TooltipProvider' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Error: 'TooltipTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+24:10  Error: 'InfoIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+26:24  Error: 'MatrixData' is defined but never used.  @typescript-eslint/no-unused-vars
+91:10  Error: 'existingColumnHeaders' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+91:33  Error: 'setExistingColumnHeaders' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+399:6  Warning: React Hook useEffect has missing dependencies: 'addRow' and 'loadDefaultPublicValues'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+562:62  Error: 'itemIndex' is defined but never used.  @typescript-eslint/no-unused-vars
+563:39  Error: 'public_value' is never reassigned. Use 'const' instead.  prefer-const
+565:39  Error: 'broker_value' is never reassigned. Use 'const' instead.  prefer-const
+567:39  Error: 'previous_value' is never reassigned. Use 'const' instead.  prefer-const
+568:39  Error: 'value' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/components/ui/StaticMatrix.tsx
+10:35  Error: 'MatrixCellValue' is defined but never used.  @typescript-eslint/no-unused-vars
+70:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:13  Error: 'initialData' is never reassigned. Use 'const' instead.  prefer-const
+125:9  Error: 'affiliate_master_link' is never reassigned. Use 'const' instead.  prefer-const
+126:9  Error: 'affiliate_link' is never reassigned. Use 'const' instead.  prefer-const
+127:9  Error: 'evaluation_cost_discount' is never reassigned. Use 'const' instead.  prefer-const
+128:9  Error: 'matrix_placeholders_array' is never reassigned. Use 'const' instead.  prefer-const
+129:9  Error: 'affiliate_master_link_placeholder' is never reassigned. Use 'const' instead.  prefer-const
+130:9  Error: 'affiliate_link_placeholder' is never reassigned. Use 'const' instead.  prefer-const
+131:9  Error: 'evaluation_cost_discount_placeholder' is never reassigned. Use 'const' instead.  prefer-const
+150:12  Error: 'publicAffiliateLink' is never reassigned. Use 'const' instead.  prefer-const
+151:12  Error: 'publicEvaluationCostDiscount' is never reassigned. Use 'const' instead.  prefer-const
+152:12  Error: 'publicMasterAffiliateLink' is never reassigned. Use 'const' instead.  prefer-const
+181:74  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+183:25  Error: 'isNewEntry' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+188:25  Error: 'publicValue' is never reassigned. Use 'const' instead.  prefer-const
+237:6  Warning: React Hook useEffect has missing dependencies: 'brokerId', 'is_admin', 'stepSlug', and 'type'. Either include them or remove the dependency array. If 'setIsPlaceholder' needs the current value of 'type', you can also switch to useReducer instead of useState and read 'type' in the reducer.  react-hooks/exhaustive-deps
+241:90  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+283:9  Error: 'placeholderText' is never reassigned. Use 'const' instead.  prefer-const
+545:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+559:20  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+559:95  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+566:20  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+595:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+609:22  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+609:85  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+616:22  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+652:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+664:22  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+664:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+671:22  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+
+./src/components/ui/VideoDialog.tsx
+1:1  Warning: Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element').
+
+./src/lib/accountType-request.tsx
+9:10  Error: 'urlable_id' is never reassigned. Use 'const' instead.  prefer-const
+14:13  Error: 'validatedUrlableId' is never reassigned. Use 'const' instead.  prefer-const
+33:91  Error: 'broker_id' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/auth-actions.ts
+71:9  Error: 'user' is never reassigned. Use 'const' instead.  prefer-const
+82:11  Error: 'brokerContext' is never reassigned. Use 'const' instead.  prefer-const
+319:7  Error: 'log' is never reassigned. Use 'const' instead.  prefer-const
+448:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+463:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/broker-requests.ts
+73:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+88:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/buildBrokerUrl.ts
+15:9  Error: 'page' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/challenge-requests.ts
+3:10  Error: 'type' is defined but never used.  @typescript-eslint/no-unused-vars
+39:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/content.tsx
+1:8  Error: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/country-requests.ts
+385:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/dynamic-option-requests.ts
+6:149  Error: 'FormMetaData' is defined but never used.  @typescript-eslint/no-unused-vars
+145:73  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+236:11  Error: 'dynamicOption' is never reassigned. Use 'const' instead.  prefer-const
+267:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+284:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+328:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+346:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/flattenObject.ts
+14:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+14:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+15:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/getAccountTypes.ts
+4:10  Error: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/getOptionsValues.ts
+11:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/getTranslations.ts
+9:5  Error: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+
+./src/lib/inspectZodObject.ts
+2:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/logger.tsx
+86:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+103:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+118:57  Error: 'meta' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/optionValues-requests.tsx
+88:12  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+115:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+116:7  Error: 'files' is never reassigned. Use 'const' instead.  prefer-const
+232:9  Error: 'url' is never reassigned. Use 'const' instead.  prefer-const
+249:16  Error: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+255:11  Error: 'result' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/permissions.ts
+19:9  Error: 'log' is never reassigned. Use 'const' instead.  prefer-const
+73:11  Error: 'superAdminEmail' is never reassigned. Use 'const' instead.  prefer-const
+74:11  Error: 'superAdminName' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/lib/platform-user-requests.ts
+73:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:110  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+99:91  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+119:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+119:122  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+157:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+178:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/types.ts
+2:10  Error: 'ReactNode' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/user-permission-requests.ts
+64:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+85:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+108:136  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+133:93  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+154:148  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/utils.ts
+54:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+54:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/zone-requests.ts
+9:3  Error: 'Zone' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/middleware.ts
+4:10  Error: 'getZoneByCountry' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Error: 'getOriginalPath' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/providers/translations.tsx
+4:6  Error: 'NestedTranslations' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/types/Broker.ts
+28:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/types/OptionValue.ts
+17:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/types/TeamManagement.ts
+9:13  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:16  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
