@@ -24,11 +24,14 @@ RUN pnpm install
 # Copy the rest of the app
 COPY . .
 
-# Install Next.js globally
-#RUN pnpm add -g next
+# Set production environment
+ENV NODE_ENV=production
 
-# Expose development port
+# Build the app
+RUN pnpm build
+
+# Expose application port
 EXPOSE 3000
 
-# Default command (overridden in docker-compose for dev)
-CMD ["pnpm", "dev"]
+# Start the production server
+CMD ["pnpm", "start"]
