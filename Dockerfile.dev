@@ -7,11 +7,6 @@ ENV SHELL=/bin/bash
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Set up PNPM
-RUN pnpm setup
-ENV PNPM_HOME="/root/.local/share/pnpm"
-ENV PATH="${PNPM_HOME}:${PATH}"
-
 # Set working directory
 WORKDIR /app
 
@@ -24,14 +19,11 @@ RUN pnpm install
 # Copy the rest of the app
 COPY . .
 
-# Set production environment
-ENV NODE_ENV=production
-
 # Build the app
 RUN pnpm build
 
 # Expose application port
 EXPOSE 3000
 
-# Start the production server
-CMD ["pnpm", "start"]
+# Use pnpm exec to ensure it finds local binaries like 'next'
+CMD ["pnpm", "exec", "next", "start"]
