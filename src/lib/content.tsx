@@ -213,7 +213,7 @@ export const navItems: NavItem[] = [
                 id: generateRandomId(),
                 name: 'forex_brokers_list',
                 href: '/brokers',
-                external: false,
+                external: true,
             },
             {
                 id: generateRandomId(),

@@ -72,7 +72,7 @@ export default async function BrokersPage({ searchParams }: BrokersPageProps) {
 
   let url=`/brokers/broker-list?${queryString}`;
 
-  console.log("url", url);
+  log.info("url", { url });
 
   let dashboardUrl = `/en/control-panel/#dashboard_id#/broker-profile/1/general-information`;
   let toggleActiveUrl = `/brokers/toggle-active-status`;

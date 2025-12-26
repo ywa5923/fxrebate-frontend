@@ -162,31 +162,10 @@ export function AppSidebarSuper({
                         </SidebarMenuButton>
                         
                         {isManageBrokers && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56">
-                              <DropdownMenuItem asChild>
-                                <Link href={`${basePath}/brokers`} className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Brokers List
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`${basePath}/brokers/register`} className="flex items-center cursor-pointer">
-                                  <UserPlus className="mr-2 h-4 w-4" />
-                                  Register New Broker
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <AddActionBtn
+                          resourceName="Brokers"
+                          addApiUrl="/brokers"
+                        />
                         )}
 
                         {isPlatformUsers && (
