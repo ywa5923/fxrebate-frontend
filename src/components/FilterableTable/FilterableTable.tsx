@@ -317,7 +317,7 @@ export default function FilterableTable<T>({
                 updateItemUrl={updateItemUrl}
                 formConfig={formConfig}
                 resourceId={item.id}
-                resourceName={item[propertyNameToDisplay] ?? "Item"}
+                resourceName={propertyNameToDisplay ?? "Item"}
               />
             )}
             {dashboardUrl && (
@@ -338,7 +338,7 @@ export default function FilterableTable<T>({
             </Button>
             )}
             {deleteUrl && (
-              <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={item[propertyNameToDisplay] ?? "Item"} />
+              <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={propertyNameToDisplay ?? "Item"} />
             )}
            
           </div>
