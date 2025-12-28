@@ -38,7 +38,7 @@ export async function getPlatformUserList(
     if (filters?.order_by) params.set('order_by', filters.order_by);
     if (filters?.order_direction) params.set('order_direction', filters.order_direction);
 
-   
+   log.info("Fetching platform users list", { url: `${BASE_URL}/platform-users?${params.toString()}` });
     const response = await fetch(`${BASE_URL}/platform-users?${params.toString()}`, {
       method: 'GET',
       headers: {
@@ -63,7 +63,7 @@ export async function getPlatformUserList(
       log.error('API returned success: false', { data });
       throw new Error('Failed to fetch platform users');
     }
-    return data;
+    return data.data;
   } catch (err) {
     log.error('Exception fetching platform users', { error: err instanceof Error ? err.message : err });
     throw err;

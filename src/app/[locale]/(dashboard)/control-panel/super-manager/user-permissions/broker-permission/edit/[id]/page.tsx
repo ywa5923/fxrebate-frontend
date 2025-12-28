@@ -12,8 +12,8 @@ export default async function EditBrokerPermissionPage({ params }: { params: Pro
   const permission = permRes.data;
   if (permission.permission_type !== 'broker') return notFound();
 
-  const platformUsersRes = await getPlatformUserList(1, 1000);
-  const brokersRes = await getBrokerList(1, 10000000);
+  const platformUsersRes = await getPlatformUserList(1, 100000);
+  const brokersRes = await getBrokerList(1, 100);
 
   return (
     <div className="min-h-[60vh] flex items-start sm:items-center justify-center">

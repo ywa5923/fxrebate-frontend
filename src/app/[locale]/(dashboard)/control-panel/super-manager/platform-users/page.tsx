@@ -8,30 +8,9 @@ import { PlatformUser } from '@/types/PlatformUser';
 import logger from '@/lib/logger';
 
 export default async function PlatformUsersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
-  // const sp = await searchParams;
-  // const pageParam = Number((sp?.page as string) || 1);
-  // const perPageParam = Number((sp?.per_page as string) || 15);
-  // const name = (sp?.name as string) || undefined;
-  // const email = (sp?.email as string) || undefined;
-  // const role = (sp?.role as string) || undefined;
-  // const order_by = (sp?.order_by as string) || undefined;
-  // const order_direction = ((sp?.order_direction as string) as 'asc' | 'desc') || undefined;
-  // const is_active = (sp?.is_active as string) || undefined;
-
-  // const data = await getPlatformUserList(pageParam, perPageParam, {
-  //   name,
-  //   email,
-  //   role,
-  //   order_by,
-  //   order_direction,
-  //   is_active,
-  // });
-
-  // return <PlatformUsersTable data={data.data || []} meta={data.pagination} />;
-
-  //   //=========================
+  
   const params = await searchParams;
-  const log = logger.child('control-panel/super-manager/countries/page.tsx');
+  const log = logger.child('control-panel/super-manager/platform-users/page.tsx');
   
 
   const queryString = new URLSearchParams(
@@ -42,7 +21,7 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
 
   let url=`/platform-users?${queryString}`;
 
-  log.info("url", { url });
+  log.info("Fetching platform users list", { url });
 
  
   let toggleActiveUrl = '/platform-users/toggle-active-status';
@@ -51,21 +30,19 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
  //console.log("---------optionDataResponse", optionDataResponse);
 
  if (! platformUsersResponse?.success || !platformUsersResponse?.data) {
-  //log.error("Error fetching options list", { message: optionDataResponse?.message });
-  throw new Error(platformUsersResponse?.message || "Error fetching options list");
+  log.error("Error fetching platform users list", { url,message: platformUsersResponse?.message });
+  throw new Error(platformUsersResponse?.message || "Error fetching platform users list");
  }
  const platformUsers = platformUsersResponse.data;
  const formConfig = platformUsersResponse.form_config;
  
  if (!formConfig) {
-  log.error("Error fetching form config", { message: "Form config not found" });
+  log.error("Error fetching form config for platform users", { url, message: "Form config not found" });
   throw new Error("Form config not found");
  }
 
  return (
   <div className="flex-1 space-y-4">
-   
-   
     <FilterableTable
      data={platformUsers as unknown as PlatformUser[]} 
      pagination={platformUsersResponse.pagination as unknown as FTPagination}

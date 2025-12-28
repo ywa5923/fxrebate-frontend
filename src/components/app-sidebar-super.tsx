@@ -169,31 +169,10 @@ export function AppSidebarSuper({
                         )}
 
                         {isPlatformUsers && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-56">
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/platform-users" className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Platform Users
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/platform-users/add" className="flex items-center cursor-pointer">
-                                  <UserPlus className="mr-2 h-4 w-4" />
-                                  Add Platform User
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <AddActionBtn
+                          resourceName="Platform Users"
+                          addApiUrl="/platform-users"
+                        />
                         )}
 
                         {isUserPermissions && (
