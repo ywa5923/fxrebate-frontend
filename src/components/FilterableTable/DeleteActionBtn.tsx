@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import {
     Dialog,
     DialogContent,
@@ -10,29 +10,45 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Trash } from "lucide-react"
+import { Loader2, Trash } from "lucide-react"
 import { toast } from "sonner"
-import { BASE_URL } from "@/constants"
+
 import { useRouter } from "next/navigation"
+import { apiClient } from "@/lib/api-client"
 export default function DeleteActionBtn( { deleteUrl, resourceId, resourcetoDelete }: { deleteUrl?: string, resourceId?: number|string, resourcetoDelete?: string} ) {
+    
+    const [isPending, startTransition] = useTransition();
+    
     const [open, setOpen] = useState(false)
     const router = useRouter()
     const handleDelete = async () => {
 
-        let apiUrl=BASE_URL + deleteUrl + "/" + resourceId;
-        //to do: make an universal server action to delete the resource
-        //const res = await deleteResource(resourceId, resourceApiUrl)
-        const res = { success: true }
-        if (res.success) {
-            toast.success(`${resourcetoDelete} deleted successfully`)
-            setOpen(false)
-            router.refresh()
-        } else {
-            toast.error(`Failed to delete ${resourcetoDelete}`)
-        }
+        let apiUrl=deleteUrl + "/" + resourceId;
+        startTransition(async () => {
+            try {
+                console.log("apiUrl", apiUrl);
+              const result = await apiClient(apiUrl, true, {
+                method: 'DELETE',
+              });
+              console.log("result", result);
+              if (result.success) {
+                toast.success(`${resourcetoDelete} deleted successfully`);
+                router.refresh();
+              } else {
+                toast.error(result.message || `Failed to delete ${resourcetoDelete}`);
+              }
+            } catch (error) {
+              toast.error(`An error occurred while deleting ${resourcetoDelete}`);
+            }
+          });
+
+
+
     }
     
     return (
+        <>
+       
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
@@ -55,10 +71,20 @@ export default function DeleteActionBtn( { deleteUrl, resourceId, resourcetoDele
                 </DialogHeader>
                 <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => setOpen(false)}>Delete</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+                  {isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </Button>
             </DialogFooter>
             </DialogContent>
             
         </Dialog>
+        </>
     )
 }
