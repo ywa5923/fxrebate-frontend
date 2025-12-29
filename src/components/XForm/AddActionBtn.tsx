@@ -15,12 +15,17 @@ import {  PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceName: string,addApiUrl: string } ) {
     const [open, setOpen] = useState(false)
-        
+
+    const handleOpen = () => {
+      // if XForm uses react-hook-form internally, expose a reset method later or via key remount
+      setOpen(true);
+    };
+    
   return (
  <Dialog open={open} modal={false} onOpenChange={setOpen}>
   <DialogTrigger asChild>
     <Button
-      onClick={() => setOpen(true)}
+      onClick={handleOpen}
       className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 "
       variant="ghost"
       size="sm"

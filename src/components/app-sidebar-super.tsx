@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState } from "react"
 import AddActionBtn from "@/components/XForm/AddActionBtn"
 import { 
   Settings2, 
@@ -51,6 +52,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { logoutUser } from "@/lib/auth-actions"
+import DialogAddBtn from "./XForm/DialogAddBtn"
 
 interface SidebarLink {
   name: string;
@@ -92,6 +94,8 @@ const iconMap: Record<string, LucideIcon> = {
   Translate: Languages,
 }
 
+type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission';
+
 export function AppSidebarSuper({ 
   userLinks = [], 
   settingsLinks = [], 
@@ -105,6 +109,7 @@ export function AppSidebarSuper({
   ...props 
 }: AppSidebarSuperProps) {
   const pathname = usePathname();
+  const [activeDialog, setActiveDialog] = useState<DialogType | null>(null);
   
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -187,42 +192,76 @@ export function AppSidebarSuper({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-56">
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions" className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Permissions
-                                </Link>
+                              
+                              <DropdownMenuItem onSelect={(e) => {
+                                   e.preventDefault();
+                                  setActiveDialog("brokerTypePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Broker Type Permission
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions/broker-permission/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create Broker Type Permission
-                                </Link>
+                              <DialogAddBtn
+                                  resourceName="Broker Type Permission"
+                                  addApiUrl="/user-permissions/broker"
+                                  formConfigApiUrl="/user-permissions/form-config/broker"
+                                  open={activeDialog === "brokerTypePermission"}
+                                  onOpenClose={() => setActiveDialog( null)}
+                                />
+                                <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("countryTypePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Country Type Permission
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions/country-permission/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create Country Type Permission
-                                </Link>
+                              <DialogAddBtn
+                                  resourceName="Country Type Permission"
+                                  addApiUrl="/user-permissions/country"
+                                  formConfigApiUrl="/user-permissions/form-config/country"
+                                  open={activeDialog === "countryTypePermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+
+                            <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("zoneTypePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Zone Type Permission
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions/zone-permission/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create Zone Type Permission
-                                </Link>
+                              <DialogAddBtn
+                                  resourceName="Zone Type Permission"
+                                  addApiUrl="/user-permissions/zone"
+                                  formConfigApiUrl="/user-permissions/form-config/zone"
+                                  open={activeDialog === "zoneTypePermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+
+                                 <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("seoTypePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create SEO Type Permission
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions/seo-permission/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create SEO Type Permission
-                                </Link>
+                              <DialogAddBtn
+                                  resourceName="SEO Type Permission"
+                                  addApiUrl="/user-permissions/seo"
+                                  formConfigApiUrl="/user-permissions/form-config/seo"
+                                  open={activeDialog === "seoTypePermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+
+                                 <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("translatorTypePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Translator Type Permission
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/en/control-panel/super-manager/user-permissions/translator-permission/add" className="flex items-center cursor-pointer">
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Create Translator Type Permission
-                                </Link>
-                              </DropdownMenuItem>
+                              <DialogAddBtn 
+                                  resourceName="Translator Type Permission"
+                                  addApiUrl="/user-permissions/translator"
+                                  formConfigApiUrl="/user-permissions/form-config/translator"
+                                  open={activeDialog === "translatorTypePermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+                              
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}

@@ -51,11 +51,11 @@ export default async function UserPermissionsPage({ searchParams }: { searchPara
   throw new Error(userPermissionsResponse?.message || "Error fetching user permissions list");
  }
  const userPermissions = userPermissionsResponse.data;
- const formConfig = userPermissionsResponse.form_config;
- if (!formConfig) {
-  log.error("Error fetching form config for user permissions", { url, message: "Form config not found" });
-  throw new Error("Form config not found");
- }
+//  const formConfig = userPermissionsResponse.form_config;
+//  if (!formConfig) {
+//   log.error("Error fetching form config for user permissions", { url, message: "Form config not found" });
+//   throw new Error("Form config not found");
+//  }
  
  return (
   <div className="flex-1 space-y-4">
@@ -65,7 +65,7 @@ export default async function UserPermissionsPage({ searchParams }: { searchPara
      columnsConfig={userPermissionsResponse.table_columns_config as unknown as FTColumnsConfig<UserPermission>} 
      filters={userPermissionsResponse.filters_config as unknown as FTFilters<UserPermission>}
      LOCAL_STORAGE_KEY="user-permissions-filters"
-     formConfig={formConfig}
+    // formConfig={formConfig}
      propertyNameToDisplay="User Permission"
      toggleActiveUrl={toggleActiveUrl}
      //getItemUrl={'/user-permissions'}

@@ -92,6 +92,7 @@ function makeDefaultValues(formConfig: XFormDefinition, rowData: Record<string, 
 type XFormProps = {
   getItemUrl?: string;
   formConfig?: XFormDefinition | null;
+  formConfigApiUrl?: string;
   resourceId?: number|string;
   resourceName?: string;
   resourceApiUrl: string;
@@ -99,7 +100,7 @@ type XFormProps = {
   mode?: 'edit' | 'create';
 }
 
-export default function XForm( { formConfig,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
+export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
 {
 
   const router = useRouter();
@@ -116,23 +117,25 @@ export default function XForm( { formConfig,  resourceId, resourceName,getItemUr
     const fetchItem = async () => {
       try {
         if(mode === 'create' ){
-          let formConfigApiUrl = resourceApiUrl + "/form-config";
          
-          const response = await apiClient<XFormDefinition>(formConfigApiUrl, true);
+          let formDefUrl = formConfigApiUrl ?? resourceApiUrl + "/form-config";
+          log.debug("fetching form configuration", {formDefUrl: formDefUrl});
+          const response = await apiClient<XFormDefinition>(formDefUrl, true);
           
           if(response.success && response.data){
             setFormConfigState(response.data);
           } else {
-            console.error("Failed to fetch form configuration", response.message);
+            log.error("Failed to fetch form configuration", {formDefUrl: formDefUrl, message: response.message});
             toast.error("Failed to fetch form configuration");
             
           }
         }
 
 
+        //in edit mode the formconfig is already fetched in table data fetch, so we need to fetch the item data
         if(mode === 'edit' && formConfig && getItemUrl && resourceId){
           let apiUrl = getItemUrl + "/" + resourceId;
-          const response = await apiClient<DynamicOption>(apiUrl, true);
+          const response = await apiClient<T>(apiUrl, true);
 
           if (response.success && response.data) {
             console.log("response.data", response.data);
