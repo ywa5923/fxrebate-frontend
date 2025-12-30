@@ -1,4 +1,4 @@
-import { TableSkeleton } from './skeleton';
+import { TableSkeleton } from '@/components/FilterableTable/TableSkeleton';
 
 export default function PlatformUsersLoading() {
   return (
