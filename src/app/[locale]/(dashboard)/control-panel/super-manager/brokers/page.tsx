@@ -1,32 +1,24 @@
 
-//export const dynamic = 'force-dynamic';
-//export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import logger from '@/lib/logger';
 import { apiClient } from '@/lib/api-client';
 import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';
 import { Broker } from '@/types';
+import {  SearchParams } from '@/types/SearchParams';
+import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 
 
 interface BrokersPageProps {
-  searchParams: Promise<{ 
-    page?: string; 
-    per_page?: string;
-    order_by?: string;
-    order_direction?: 'asc' | 'desc';
-   
-  }&Partial<Broker>>;
+  searchParams: Promise<SearchParams<Broker>>;
 }
 
 export default async function BrokersPage({ searchParams }: BrokersPageProps) {
  
+  const log = logger.child('control-panel/super-manager/brokers/page.tsx');
   const params = await searchParams;
-  const log = logger.child('control-panel/super-manager/countries/page.tsx');
   
-  const queryString = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v != null && v !== "")
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
+  const queryString = getQueryStringFromSearchParams(params);
 
   let url=`/brokers/broker-list?${queryString}`;
 

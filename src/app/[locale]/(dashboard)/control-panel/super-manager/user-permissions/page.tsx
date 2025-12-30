@@ -2,20 +2,21 @@
 import logger from '@/lib/logger';
 import { apiClient } from '@/lib/api-client';
 import { UserPermission } from '@/types';
+import {  SearchParams } from '@/types/SearchParams';
+import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 import { FilterableTable } from '@/components/FilterableTable';
 import { FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable/types';
 
-export default async function UserPermissionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
-  
- const params = await searchParams;
- const log = logger.child('control-panel/super-manager/user-permissions/page.tsx');
-  
+interface UserPermissionsPageProps {
+  searchParams: Promise<SearchParams<UserPermission>>;
+}
 
-  const queryString = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v != null && v !== "")
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
+export default async function UserPermissionsPage({ searchParams }: UserPermissionsPageProps) {
+  
+  const log = logger.child('control-panel/super-manager/user-permissions/page.tsx');
+  const params = await searchParams;
+  
+  const queryString = getQueryStringFromSearchParams(params);
 
   let url=`/user-permissions?${queryString}`;
 

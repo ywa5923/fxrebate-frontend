@@ -4,8 +4,8 @@
 import { BASE_URL } from '@/constants';
 import logger from './logger';
 import { MagicLinkAuthResponse, AuthUserResponse, BrokerInfoResponse } from '@/types';
-import { BrokerInfoSchema,BrokerInfo,AuthUser, AuthUserSchema } from '@/app/schemas/auth-schema';
 
+import { BrokerInfoSchema,BrokerInfo,AuthUser, AuthUserSchema } from '@/app/schemas/auth-schema';
 
 
 /**

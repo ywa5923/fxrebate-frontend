@@ -1,39 +1,29 @@
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import logger from '@/lib/logger';
 import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';
 import {apiClient} from '@/lib/api-client';
 import { Country } from '@/types';
-//export const dynamic = 'force-dynamic';
-//export const revalidate = 0;
+import {  SearchParams } from '@/types/SearchParams';
+import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 
 interface CountriesPageProps {
-  searchParams: Promise<{ 
-    page?: string; 
-    per_page?: string;
-    order_by?: string;
-    order_direction?: 'asc' | 'desc';
-    
-  }&Partial<Country>>;
+  searchParams: Promise<SearchParams<Country>>;
 }
 
 
-
 export default async function CountriesPage({ searchParams }: CountriesPageProps) {
-  const params = await searchParams;
   const log = logger.child('control-panel/super-manager/countries/page.tsx');
+  const params = await searchParams;
   
-
-  const queryString = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v != null && v !== "")
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
+  const queryString = getQueryStringFromSearchParams(params);
 
   let url=`/countries?${queryString}`;
-  console.log("url", url);
+  log.debug("Fetching countries list", { url });
  
  const optionDataResponse= await apiClient<Country>(url,true);
- //console.log("---------optionDataResponse", optionDataResponse);
 
  if (!optionDataResponse?.success || !optionDataResponse?.data) {
   log.error("Error fetching countries list", { url,message: optionDataResponse?.message });
@@ -58,8 +48,9 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
      filters={optionDataResponse.filters_config as unknown as FTFilters<Country>}
      LOCAL_STORAGE_KEY="countries-filters"
      formConfig={formConfig}
-     getItemUrl={`/countries`}
-     updateItemUrl={`/countries`}
+     getItemUrl={'/countries'}
+     updateItemUrl={'/countries'}
+     deleteUrl={'/countries'}
      />
      
   </div>

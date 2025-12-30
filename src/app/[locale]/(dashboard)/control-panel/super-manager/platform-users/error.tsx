@@ -9,7 +9,7 @@ export default function Error({
 }) {
   return (
     <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-      <h2 className="font-semibold text-red-700">Error loading permissions</h2>
+      <h2 className="font-semibold text-red-700">Error loading platform users</h2>
       <p className="text-sm text-red-600 mt-1">
         {error?.message || 'Unexpected error'}
       </p>

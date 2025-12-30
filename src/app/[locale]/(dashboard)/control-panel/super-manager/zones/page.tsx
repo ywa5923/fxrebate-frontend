@@ -1,32 +1,24 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import logger from '@/lib/logger';
 import { apiClient } from '@/lib/api-client';
 import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';
 import { Zone } from '@/types';
-//export const dynamic = 'force-dynamic';
-//export const revalidate = 0;
+import {  SearchParams } from '@/types/SearchParams';
+import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 
 interface ZonesPageProps {
-  searchParams: Promise<{ 
-    page?: string; 
-    per_page?: string;
-    order_by?: string;
-    order_direction?: 'asc' | 'desc';
-    
-  }&Partial<Zone>>;
+  searchParams: Promise<SearchParams<Zone>>;
 }
 
 
 
 export default async function ZonesPage({ searchParams }: ZonesPageProps) {
-  const params = await searchParams;
   const log = logger.child('control-panel/super-manager/zones/page.tsx');
+  const params = await searchParams;
   
-  const queryString = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v != null && v !== "")
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
+  const queryString = getQueryStringFromSearchParams(params);
 
   let url=`/zones?${queryString}`;
   const optionDataResponse= await apiClient<Zone>(url,true);
@@ -54,8 +46,9 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
      filters={optionDataResponse.filters_config as unknown as FTFilters<Zone>}
      LOCAL_STORAGE_KEY="zones-filters"
      formConfig={formConfig}
-     getItemUrl={`/zones`}
-     updateItemUrl={`/zones`}
+     getItemUrl={'/zones'}
+     updateItemUrl={'/zones'}
+     deleteUrl={'/zones'}
      />
      
   </div>);

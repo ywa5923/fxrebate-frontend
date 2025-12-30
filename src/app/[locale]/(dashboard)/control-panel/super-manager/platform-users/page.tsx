@@ -3,32 +3,31 @@ import { FTColumnsConfig, FTFilters, FTPagination } from '@/components/Filterabl
 import { FilterableTable } from '@/components/FilterableTable';
 import { apiClient } from '@/lib/api-client';
 import { PlatformUser } from '@/types/PlatformUser';
+import {  SearchParams } from '@/types/SearchParams';
+import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 import logger from '@/lib/logger';
 
-export default async function PlatformUsersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
-  
-  const params = await searchParams;
-  const log = logger.child('control-panel/super-manager/platform-users/page.tsx');
-  
+interface PlatformUsersPageProps {
+  searchParams: Promise<SearchParams<PlatformUser>>;
+}
 
-  const queryString = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v != null && v !== "")
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
+export default async function PlatformUsersPage({ searchParams }: PlatformUsersPageProps) {
+  const log = logger.child('control-panel/super-manager/platform-users/page.tsx');
+  const params = await searchParams;
+  
+  const queryString = getQueryStringFromSearchParams(params);
 
   let url=`/platform-users?${queryString}`;
 
-  log.info("Fetching platform users list", { url });
+  log.debug("Fetching platform users list", { url });
 
  
   let toggleActiveUrl = '/platform-users/toggle-active-status';
  
  const platformUsersResponse= await apiClient<PlatformUser>(url,true);
- //console.log("---------optionDataResponse", optionDataResponse);
 
  if (! platformUsersResponse?.success || !platformUsersResponse?.data) {
-  log.error("Error fetching platform users list", { url,message: platformUsersResponse?.message });
+  log.error("Error fetching platform users list", { url, message: platformUsersResponse?.message });
   throw new Error(platformUsersResponse?.message || "Error fetching platform users list");
  }
  const platformUsers = platformUsersResponse.data;

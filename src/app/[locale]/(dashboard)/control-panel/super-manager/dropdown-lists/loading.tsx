@@ -1,4 +1,4 @@
-import { TableSkeleton } from './TableSkeleton';
+import { TableSkeleton } from '@/components/FilterableTable/TableSkeleton';
 
 export default function DropdownListsLoading() {
   return (
