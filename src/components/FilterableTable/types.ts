@@ -49,7 +49,7 @@ export interface FTProps<T> {
   columnsConfig: FTColumnsConfig<T>;
   filters: FTFilters<T>;
   LOCAL_STORAGE_KEY: string;
-  formConfig: XFormDefinition;
+  formConfig?: XFormDefinition;
   getItemUrl?: string;
   deleteUrl?: string;
   updateItemUrl?: string;

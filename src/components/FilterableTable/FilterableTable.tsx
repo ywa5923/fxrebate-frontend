@@ -110,7 +110,7 @@ export default function FilterableTable<T>({
     } catch (e) {
       console.warn("Failed to load saved filters:", e);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, []);
 
  
@@ -311,7 +311,7 @@ export default function FilterableTable<T>({
             {toggleActiveUrl && (
                 <ToggleActiveBtn url={toggleActiveUrl+`/${item.id}`} broker={row.original as unknown as Broker} />
             )}
-            {getItemUrl && updateItemUrl && (
+            {getItemUrl && updateItemUrl && formConfig && (
               <EditActionBtn
                 getItemUrl={getItemUrl}
                 updateItemUrl={updateItemUrl}
