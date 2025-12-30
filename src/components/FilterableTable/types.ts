@@ -33,6 +33,7 @@ export interface FTFilterType {
   label: string;
   tooltip?: string;
   options?: FTSelectOption[];
+  placeholder?: string;
 }
 
 export type FTFilters<T> = {

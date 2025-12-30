@@ -16,12 +16,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { InfoIcon, Filter, Eraser, Trash } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useRef, useTransition} from "react";
+import { useEffect, useState,  useTransition} from "react";
 import { shallowEqual } from "@/lib/utils";
-import { FTFilters,FTFilterType,FTSelectOption } from "./types";
+import { FTFilters,FTFilterType } from "./types";
 
  interface FilterSection2Props<T> {
   filters: FTFilters<T>;
@@ -199,7 +199,7 @@ export default function FilterSection2<T>({
           return (
             <div key={key} >
               <Label htmlFor={key} className="flex items-center gap-2 pb-2">
-                {key.charAt(0).toUpperCase() + key.slice(1)}
+                {filterConfig.label}
                 {filterConfig.tooltip && (
                   <Tooltip>
                     <TooltipTrigger>
