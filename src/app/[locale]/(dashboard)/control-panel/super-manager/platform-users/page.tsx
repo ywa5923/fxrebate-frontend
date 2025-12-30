@@ -1,8 +1,6 @@
-import { getPlatformUserList } from '@/lib/platform-user-requests';
-import { PlatformUsersTable } from './PlatformUsersTable';
+
 import { FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable/types';
 import { FilterableTable } from '@/components/FilterableTable';
-import { Broker } from '../brokers/page';
 import { apiClient } from '@/lib/api-client';
 import { PlatformUser } from '@/types/PlatformUser';
 import logger from '@/lib/logger';

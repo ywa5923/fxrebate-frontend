@@ -1,11 +1,10 @@
-import { getCountryList } from '@/lib/country-requests';
-import { CountriesTable } from './CountriesTable';
+
 import logger from '@/lib/logger';
 import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';
 import {apiClient} from '@/lib/api-client';
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+import { Country } from '@/types';
+//export const dynamic = 'force-dynamic';
+//export const revalidate = 0;
 
 interface CountriesPageProps {
   searchParams: Promise<{ 
@@ -17,16 +16,7 @@ interface CountriesPageProps {
   }&Partial<Country>>;
 }
 
-interface Country {
-  id: number;
-  name: string;
-  country_code: string;
-  zone_name: string;
-  zone_code: string;
-  brokers_count: number;
-  created_at: string | null;
-  updated_at?: string | null;
-}
+
 
 export default async function CountriesPage({ searchParams }: CountriesPageProps) {
   const params = await searchParams;
@@ -46,22 +36,22 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
  //console.log("---------optionDataResponse", optionDataResponse);
 
  if (!optionDataResponse?.success || !optionDataResponse?.data) {
-  //log.error("Error fetching options list", { message: optionDataResponse?.message });
+  log.error("Error fetching countries list", { url,message: optionDataResponse?.message });
   throw new Error(optionDataResponse?.message || "Error fetching options list");
  }
  const optionData = optionDataResponse.data;
  const formConfig = optionDataResponse.form_config;
  
  if (!formConfig) {
-  log.error("Error fetching form config", { message: "Form config not found" });
+  log.error("Error fetching form config for countries", { url, message: "Form config not found" });
   throw new Error("Form config not found");
  }
 
  return (
   <div className="flex-1 space-y-4">
    
-   
     <FilterableTable
+     propertyNameToDisplay="Country"
      data={optionDataResponse.data as unknown as Country[]} 
      pagination={optionDataResponse.pagination as unknown as FTPagination}
      columnsConfig={optionDataResponse.table_columns_config as unknown as FTColumnsConfig<Country>} 

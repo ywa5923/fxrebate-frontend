@@ -1,5 +1,4 @@
-import { getUserPermissionList } from '@/lib/user-permission-requests';
-import { PermissionsTable } from './PermissionsTable';
+
 import logger from '@/lib/logger';
 import { apiClient } from '@/lib/api-client';
 import { UserPermission } from '@/types';
