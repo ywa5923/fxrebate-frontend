@@ -58,7 +58,8 @@ import { FTProps, FTColumnConfig } from "./types";
 import EditActionBtn from "./EditActionBtn";
 import DeleteActionBtn from "./DeleteActionBtn";
 import ToggleActiveBtn from "./ToggleActiveBtn";
-import type { Broker } from "@/lib/broker-management";
+//import type { Broker } from "@/lib/broker-management";
+import { Broker } from '@/types';
 import Image from "next/image";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
@@ -301,9 +302,7 @@ export default function FilterableTable<T>({
       header: "Actions",
       cell: ({ row }) => {
         const item = (row.original as unknown) as { id: string; [propertyNameToDisplay]: string };
-       if(dashboardUrl){
-        dashboardUrl = dashboardUrl.replace('#dashboard_id#', item.id);
-       }
+       
         return (
           <div className="flex items-center gap-2">
            
@@ -330,9 +329,9 @@ export default function FilterableTable<T>({
               onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
               onClick={() => {
                 if (!dashboardUrl) return;
-                window.location.href = dashboardUrl;
+                window.location.href = dashboardUrl.replace('#dashboard_id#', item.id);
               }}
-              title="Go to broker dashboard"
+              title={`Go to broker dashboard: ${item.id}`}
             >
               <ArrowUpRight className="h-4 w-4" style={{ color: 'inherit' }} />
             </Button>

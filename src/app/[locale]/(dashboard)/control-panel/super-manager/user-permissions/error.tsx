@@ -1,5 +1,8 @@
 'use client';
 
+import logger from "@/lib/logger";
+import { useEffect } from "react";
+
 export default function Error({
   error,
   reset,
@@ -7,9 +10,17 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const errorLogger = logger.child('user-permissions-error');
+    errorLogger.error('User permissions list error', {
+      message: error.message,
+      digest: error.digest,
+      stack: error.stack,
+    });
+  }, [error]);
   return (
     <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-      <h2 className="font-semibold text-red-700">Error loading permissions</h2>
+      <h2 className="font-semibold text-red-700">Error loading user permissions</h2>
       <p className="text-sm text-red-600 mt-1">
         {error?.message || 'Unexpected error'}
       </p>

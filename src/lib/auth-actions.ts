@@ -384,12 +384,13 @@ export async function getBrokerInfo(brokerId: number): Promise<BrokerInfo> {
     }
     log.debug("Broker info fetched successfully", { data: data.data });
    // const brokerInfo: BrokerInfo = BrokerInfoSchema.parse(data.data);
-   const parsed = BrokerInfoSchema.safeParse(data.data);
-   if (!parsed.success) {
-    log.error('!!================!! Invalid BrokerInfo shape', { errors: parsed.error.issues });
-    throw new Error('Invalid BrokerInfo shape'); // or throw depending on your policy
-   }
-  return parsed.data;
+  //  const parsed = BrokerInfoSchema.safeParse(data.data);
+  //  if (!parsed.success) {
+  //   log.error('!!================!! Invalid BrokerInfo shape', { errors: parsed.error.issues });
+  //   throw new Error('Invalid BrokerInfo shape'); // or throw depending on your policy
+  //  }
+  // return parsed.data;
+  return data.data;
   } catch (err) {
     log.error('!!================!!Error fetching broker info', { error: err instanceof Error ? err.message : err });
     throw err; // rethrow so error.tsx can handle UI

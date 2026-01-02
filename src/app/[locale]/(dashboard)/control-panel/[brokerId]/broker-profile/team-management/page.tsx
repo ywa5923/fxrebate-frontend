@@ -52,7 +52,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
       userId: loggedUser.id,
       brokerId
     });
-    redirect(`/en/control-panel/${brokerId}/broker-profile/1/general-information`);
+    //redirect(`/en/control-panel/${brokerId}/broker-profile/1/general-information`);
   }
   
 

@@ -14,8 +14,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    const errorLogger = logger.child('countries-list-error');
-    errorLogger.error('Countries list error', {
+    const errorLogger = logger.child('dropdown-lists-error');
+    errorLogger.error('Dropdown lists list error', {
       message: error.message,
       digest: error.digest,
       stack: error.stack,
@@ -30,7 +30,7 @@ export default function Error({
             <XCircle className="h-8 w-8 text-red-500" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-red-600 mb-2">
-            Error Loading Dropdown Lists
+            Error Loading Dropdown Lists 
           </h2>
           <p className="text-sm sm:text-base text-gray-600 mb-2">
             {error.message || 'An unexpected error occurred while loading the dropdown lists list.'}

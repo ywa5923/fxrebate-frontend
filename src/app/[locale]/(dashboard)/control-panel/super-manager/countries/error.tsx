@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect } from "react";
+import logger from "@/lib/logger";
+
 export default function Error({
   error,
   reset,
@@ -7,6 +10,14 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const errorLogger = logger.child('countries-error');
+    errorLogger.error('Countries list error', {
+      message: error.message,
+      digest: error.digest,
+      stack: error.stack,
+    });
+  }, [error]);
   return (
     <div className="p-4 bg-red-50 border border-red-200 rounded-md">
       <h2 className="font-semibold text-red-700">Error loading countries</h2>
