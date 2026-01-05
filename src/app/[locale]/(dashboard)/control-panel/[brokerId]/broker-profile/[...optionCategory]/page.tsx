@@ -48,7 +48,7 @@ export default async function BrokerProfilePage({
   // console.log("user========================================", user);
   // let brokerId = brokerContext.broker_id;
   //let brokerId = 181;
-  let is_admin = false;
+  let is_admin = true;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
@@ -212,7 +212,11 @@ export default async function BrokerProfilePage({
      
      // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
 
-      return <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin} brokerId={brokerId}/>
+      return (<>
+        <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin} brokerId={brokerId}/>
+        {is_admin && <Rebates  rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={false} brokerId={brokerId}/>}
+      </>
+      );
     } else {
 
       return (

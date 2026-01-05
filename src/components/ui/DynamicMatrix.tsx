@@ -379,6 +379,7 @@ export function DynamicMatrix({
         "Matrix-1",
         matrix as MatrixCell[][]
       );
+      console.log("data========================================",JSON.stringify(matrix,null,2));
       setStatus("success");
       toast.success("Matrix data saved successfully");
       console.log("Matrix data saved successfully:", data);
