@@ -1,5 +1,5 @@
 import { DynamicMatrix } from "@/components/ui/DynamicMatrix";
-import { ColumnHeader, MatrixData, RowHeader } from "@/types";
+import { ColumnHeader, MatrixData, RowHeader, MatrixCell } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, TrendingUp, DollarSign, Users } from "lucide-react";
 import { cn } from "@/lib/utils"
@@ -15,7 +15,7 @@ export default function Rebates({
   
   rowHeaders: RowHeader[], 
   columnHeaders: ColumnHeader[], 
-  initialMatrixData: MatrixData, 
+  initialMatrixData: MatrixCell[][], 
   is_admin: boolean,
   brokerId: number
 }) {

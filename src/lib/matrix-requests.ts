@@ -26,7 +26,7 @@ export async function getMatrixHeaders(
     }
   }
 
-  export async function getMatrixData(brokerId: number, matrixName: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixData> {
+  export async function getMatrixData(brokerId: number, matrixName: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixCell[][]> {
     const url =new URL(BASE_URL+"/matrix")
     url.searchParams.set("broker_id", brokerId.toString())
     url.searchParams.set("matrix_name", matrixName)
