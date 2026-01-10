@@ -7,7 +7,7 @@ import StaticMatrix from "@/components/ui/StaticMatrix";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
-  brokerId: number;
+  brokerId?: number ;
   type: "challenge" | "placeholder";
   is_admin: boolean;
 }

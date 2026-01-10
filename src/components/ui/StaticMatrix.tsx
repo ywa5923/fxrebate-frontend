@@ -12,9 +12,10 @@ import { BASE_URL } from "@/constants";
 import { toast } from "sonner";
 import { getChallengeData } from "@/lib/challenge-requests";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface StaticMatrixProps {
-  brokerId: number ;
+  brokerId?: number|undefined ;
   categoryId: number ;
   stepId: number ;
   stepSlug: string;
@@ -65,7 +66,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   // Track which cells were copied so the copy button remains visible and green
   // Key format: `${rowIndex}-${colIndex}`
   const [copiedCells, setCopiedCells] = useState<Set<string>>(new Set());
-
+  const router = useRouter();
 
   const formatText = (value: any): string => {
     if (value == null) return "";
@@ -129,7 +130,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         affiliate_master_link_placeholder,
         affiliate_link_placeholder,
         evaluation_cost_discount_placeholder} = await getChallengeData(
-          brokerId.toString(),
+          brokerId ? brokerId.toString() : null,
           type === "placeholder" ? "1" : "0", 
           categoryId.toString(), 
           stepId.toString(), 
@@ -199,7 +200,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 });
               }
             });
-            console.log("------------Processed data for admin:", processedData);
+            console.log("------------Processed data for admin:", JSON.stringify(processedData,null,2));
             setMatrixData(processedData);
           } else {
             setMatrixData(initialData);
@@ -398,7 +399,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         category_id: categoryId,
         step_id: stepId,
         step_slug: stepSlug,
-        broker_id: brokerId,
+        broker_id: brokerId??null,
         is_placeholder: type === "placeholder",
         ...(type === "challenge") ? {
           amount_id: amountId,
@@ -424,8 +425,10 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
       const data = await res.json();
+      router.refresh();
       toast.success("Matrix data saved successfully");
       console.log("Saved successfully:", data);
+     
     } catch (e) {
       console.error("Failed to save", e);
       toast.error("Error saving matrix data");
@@ -546,8 +549,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                         ...prev,
                         evaluationCostDiscount: {
                           ...prev.evaluationCostDiscount,
-                          [(is_admin && type === "challenge") ? "public_value" : "value"]: e.target.value
-
+                          [(is_admin && type === "challenge") ? "public_value" : "value"]: e.target.value,
+                          is_updated_entry: false
                         },
                       }))
                     }
@@ -560,7 +563,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                      ...prev,
                      evaluationCostDiscount: {
                        ...prev.evaluationCostDiscount,
-                       public_value: prev.evaluationCostDiscount.value
+                       public_value: prev.evaluationCostDiscount.value,
+                       is_updated_entry: false
                      },
                    }));
                    matrixExtraData?.evaluationCostDiscount?.value && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");

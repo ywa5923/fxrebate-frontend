@@ -5,7 +5,6 @@ import { useState } from "react"
 import AddActionBtn from "@/components/XForm/AddActionBtn"
 import { 
   Settings2, 
-  ChevronRight,
   Building,
   Users,
   Globe,
@@ -24,8 +23,7 @@ import {
   Crown,
   LogOut,
   MoreVertical,
-  Eye,
-  UserPlus,
+  LayoutTemplate,
   Plus,
   type LucideIcon
 } from "lucide-react"
@@ -92,6 +90,7 @@ const iconMap: Record<string, LucideIcon> = {
   Options: Sliders,
   Cog: Settings2,
   Translate: Languages,
+  LayoutTemplate,
 }
 
 type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission';

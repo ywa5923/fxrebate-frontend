@@ -1,6 +1,6 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 import { getOptionsValues } from "@/lib/getOptionsValues";
-
+import { MatrixCell } from "@/types";
 import { notFound, redirect } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
@@ -193,6 +193,7 @@ export default async function BrokerProfilePage({
     }
 
     if(categorySlug=='challenge-placeholders' ){
+      //receive the json with challenge categories and steps and amounts
       const categories:ChallengeType[] = await getChallengeCategories('en');
     
       return <ChallengeCategories key={brokerId} categories={categories} brokerId={brokerId} type="placeholder" is_admin={false}/>
@@ -207,8 +208,7 @@ export default async function BrokerProfilePage({
       
       const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
       
-
-      const initialMatrixData = await getMatrixData(brokerId, 'Matrix-1', is_admin)
+      const initialMatrixData: MatrixCell[][] = await getMatrixData(brokerId, 'Matrix-1', is_admin)
      
      // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
 

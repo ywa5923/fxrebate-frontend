@@ -1,6 +1,7 @@
+'use server'
 import { BASE_URL } from "@/constants"
 import { MatrixHeaders } from "@/types/Matrix"
-import { type } from "os"
+
 
 export async function getChallengeHeaders(
     language:string,
@@ -29,7 +30,7 @@ export async function getChallengeHeaders(
     }
 
 export async function getChallengeData(
-    broker_id:string,
+    broker_id:string|null,
     is_placeholder:string,
     category_id:string,
     step_id:string,
@@ -37,19 +38,33 @@ export async function getChallengeData(
     language:string,
     zone_id:string|null,
    ) :Promise<any> {
+    // const params = new URLSearchParams({
+    //     broker_id: broker_id,
+    //     is_placeholder: is_placeholder,
+    //     category_id: category_id,
+    //     step_id: step_id,
+    //     language: language,
+    //     ...(amount_id && { amount_id }),
+    //     ...(zone_id && { zone_id }),
+    //   });
+  //  const broker_id_param = broker_id ? broker_id : null;
     const params = new URLSearchParams({
-        broker_id: broker_id,
-        is_placeholder: is_placeholder,
-        category_id: category_id,
-        step_id: step_id,
-        language: language,
-        ...(amount_id && { amount_id }),
-        ...(zone_id && { zone_id }),
-      });
+      ...(broker_id ? { broker_id } : {}),
+      is_placeholder: is_placeholder,
+      category_id,
+      step_id,
+      language,
+      ...(amount_id ? { amount_id } : {}),
+      ...(zone_id !== null && zone_id !== undefined ? { zone_id } : {}),
+    });
+
+    const url = `${BASE_URL}/challenges?${params.toString()}`;
+   console.log("Fetch URL22:", url); // <- Așa verifici dacă e corec
 
       try {
-      const response = await fetch(`${BASE_URL}/challenges?${params}`);
-      console.log("Fetching initial data from:", `${BASE_URL}/challenges?${params}`);
+     // const response = await fetch(`${BASE_URL}/challenges?${params}`);
+     const response = await fetch(url, { cache: "no-store" });
+      console.log("==========================================Fetching initial CHALLENGE MATRIX data from:", `${BASE_URL}/challenges?${params}`);
       if (response.ok) {
         const result = await response.json();
         console.log("API response:", result);
@@ -62,6 +77,7 @@ export async function getChallengeData(
               "affiliate_master_link": result.data?.affiliate_master_link,
               "affiliate_link": result.data?.affiliate_link,
               "evaluation_cost_discount": result.data?.evaluation_cost_discount,
+              
               "matrix_placeholders_array": result.data?.matrix_placeholders_array,
               "affiliate_master_link_placeholder": result.data?.affiliate_master_link_placeholder,
               "affiliate_link_placeholder": result.data?.affiliate_link_placeholder,

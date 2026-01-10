@@ -14,6 +14,7 @@ export async function getMatrixHeaders(
     
     try {
       const response = await fetch(url.toString() ,  { cache: "no-store" } )
+     
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

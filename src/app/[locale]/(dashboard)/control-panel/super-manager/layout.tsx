@@ -74,6 +74,11 @@ export default async function SuperManagerLayout({
     name: 'Dynamic Options',
     url: '/en/control-panel/super-manager/dynamic-options',
     icon: 'Options'
+  },
+  {
+    name: 'Challenge Placeholders',
+    url: '/en/control-panel/super-manager/challenge-placeholders',
+    icon: 'LayoutTemplate'
   }
 ]
 
