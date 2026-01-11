@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { getChallengeHeaders } from "@/lib/challenge-requests";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FiCopy } from "react-icons/fi";
-import { ColumnHeader, RowHeader, MatrixCellValue, MatrixCell, MatrixData } from "@/types/Matrix";
+import { ColumnHeader, RowHeader,  MatrixCell, MatrixData } from "@/types/Matrix";
 import { BASE_URL } from "@/constants";
 import { toast } from "sonner";
 import { getChallengeData } from "@/lib/challenge-requests";
+import { ChallengeMatrixExtraData, ChalengeData } from "@/types";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 
 interface StaticMatrixProps {
   brokerId?: number|undefined ;
@@ -26,33 +28,33 @@ interface StaticMatrixProps {
   is_admin: boolean;
 }
 
-interface MatrixExtraData {
-  affiliateLink: AffiliateLink;
-  evaluationCostDiscount: EvaluationCostDiscount;
-  masterAffiliateLink: AffiliateLink;
-}
+// interface MatrixExtraData {
+//   affiliateLink: AffiliateLink;
+//   evaluationCostDiscount: EvaluationCostDiscount;
+//   masterAffiliateLink: AffiliateLink;
+// }
 
-interface AffiliateLink {
-  id?: number;
-  url: string;
-  public_url: string | null;
-  previous_url: string | null;
-  is_updated_entry: number; // 1 or 0
-  name: string;
-  slug: string;
-  zone_id?: number | null;
-  placeholder?: string | null;
-}
+// interface AffiliateLink {
+//   id?: number;
+//   url: string;
+//   public_url: string | null;
+//   previous_url: string | null;
+//   is_updated_entry: number; // 1 or 0
+//   name: string;
+//   slug: string;
+//   zone_id?: number | null;
+//   placeholder?: string | null;
+// }
 
-interface EvaluationCostDiscount {
-  id?: number;
-  public_value: string;
-  value: string;
-  previous_value: string;
-  is_updated_entry: number; // 1 or 0
-  zone_id?: number | null;
-  placeholder?: string | null;
-}
+// interface EvaluationCostDiscount {
+//   id?: number;
+//   public_value: string;
+//   value: string;
+//   previous_value: string;
+//   is_updated_entry: number; // 1 or 0
+//   zone_id?: number | null;
+//   placeholder?: string | null;
+// }
 
 export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, amountId, language = "en", type = "challenge", zoneId=null, is_admin=false }: StaticMatrixProps) {
   const [columnHeaders, setColumnHeaders] = useState<ColumnHeader[]>([]);
@@ -62,7 +64,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
-  const [matrixExtraData, setMatrixExtraData] = useState<MatrixExtraData|null>(null);
+  const [matrixExtraData, setMatrixExtraData] = useState<ChallengeMatrixExtraData|null>(null);
   // Track which cells were copied so the copy button remains visible and green
   // Key format: `${rowIndex}-${colIndex}`
   const [copiedCells, setCopiedCells] = useState<Set<string>>(new Set());
@@ -410,17 +412,28 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         }
       };
       console.log("Saving payload:", payload);
-      const res = await fetch(BASE_URL+"/challenges", {
+
+      const response = await apiClient<ChalengeData>("/challenges", true, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      if (!response.success) {
+        toast.error(response.message);
+        return;
+      }
+
+      // const res = await fetch(BASE_URL+"/challenges", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(payload),
+      // });
+      // if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
-      const data = await res.json();
+      // const data = await res.json();
       router.refresh();
       toast.success("Matrix data saved successfully");
-      console.log("Saved successfully:", data);
+      console.log("Saved successfully:", response.data);
      
     } catch (e) {
       console.error("Failed to save", e);
