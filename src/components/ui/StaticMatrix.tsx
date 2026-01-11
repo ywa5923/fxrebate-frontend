@@ -600,7 +600,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                           ...prev,
                           affiliateLink: {
                             ...prev.affiliateLink,
-                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value,
+                            is_updated_entry: false
                           },
                         }))
                       }
@@ -614,7 +615,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                        ...prev,
                        affiliateLink: {
                          ...prev.affiliateLink,
-                         public_url: prev.affiliateLink.url
+                         public_url: prev.affiliateLink.url,
+                         is_updated_entry: false
                        },
                      }));
                      matrixExtraData?.affiliateLink.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
@@ -657,7 +659,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                           ...prev,
                           masterAffiliateLink: {
                             ...prev.masterAffiliateLink,
-                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value
+                            [(is_admin && type === "challenge") ? "public_url" : "url"]: e.target.value,
+                            is_updated_entry: false,
                           },
                         }))
                       }
@@ -669,7 +672,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                        ...prev,
                        masterAffiliateLink: {
                          ...prev.masterAffiliateLink,
-                         public_url: prev.masterAffiliateLink.url
+                         public_url: prev.masterAffiliateLink.url,
+                         is_updated_entry: false,
                        },
                      }));
                      matrixExtraData?.masterAffiliateLink?.url && e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
