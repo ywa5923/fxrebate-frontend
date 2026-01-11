@@ -193,9 +193,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                     ...cell,
                     public_value: publicValue,
                     placeholder: matrix_placeholders_array?.[cell.rowHeader+'-'+cell.colHeader]??null
-                    //public_value: hasPublicValue ? (isNewEntry ? cell.value : cell.public_value) : cell.value
-                    //public_value: isNewEntry ? cell.value : (hasPublicValue ? cell.public_value : cell.value),
-                    //...(isNewEntry ? { old_public_value: cell.public_value } : {})
+                   
                   };
                 });
               }
@@ -293,12 +291,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       }
     }
     
-    // If is_placeholder=true and type="challenge", use originalValue as placeholder
-    // if (isPlaceholder && type === "challenge" && (cell as any).originalValue && typeof (cell as any).originalValue === "object" && "text" in (cell as any).originalValue) {
-    //   placeholderText = String((cell as any).originalValue.text || "Enter text");
-    //   // Don't clear rawValue here - let the user type normally
-    //   // rawValue = ""; // This was causing the issue!
-    // }
+    
     
     const asString = (v: unknown) => (v === undefined || v === null ? "" : String(v));
 
@@ -492,19 +485,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               }}
             >
             <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b min-h-[2.5rem] flex items-center">Row / Column</div>
-            {columnHeaders.length > 0 ? (
+            {columnHeaders.length > 0 && (
               columnHeaders.map((header, index) => (
                 <div key={index} className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b text-center min-h-[2.5rem] flex items-center justify-center">
                   {header.name}
                 </div>
               ))
-            ) : (
-              // Show skeleton headers when loading
-              [1, 2, 3].map((i) => (
-                <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              ))
             )}
-            {rowHeaders.length > 0 ? (
+            {rowHeaders.length > 0 && (
               rowHeaders.map((rowHeader, rowIndex) => (
                 <div key={`row-${rowIndex}`} className="contents">
                   <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">{rowHeader.name}</div>
@@ -518,16 +506,6 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                       </div>
                     );
                   })}
-                </div>
-              ))
-            ) : (
-              // Show skeleton rows when loading
-              [1, 2, 3, 4].map((row) => (
-                <div key={`skeleton-row-${row}`} className="contents">
-                  <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                  {[1, 2, 3].map((col) => (
-                    <div key={`skeleton-cell-${row}-${col}`} className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                  ))}
                 </div>
               ))
             )}
