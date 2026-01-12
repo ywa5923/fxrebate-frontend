@@ -53,7 +53,12 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
         resourceId={resourceId} 
         resourceName={resourceName} 
         mode="edit" 
-        onSubmitted={() => setOpen(false)}
+        onSubmitted={() => {
+          console.log('⚠️ onSubmitted was called!');
+          setTimeout(() => {
+            setOpen(false);
+          }, 5000); // Wait 5 seconds
+        }}
       />
     </ScrollArea>
     
