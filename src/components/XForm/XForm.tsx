@@ -113,7 +113,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
  
   useEffect(() => {
     // Don't run if we don't have the necessary data
-  if ( !formConfig) return;
+ // if ( !formConfig) return;
     setIsLoading(true);
     const fetchItem = async () => {
       try {
