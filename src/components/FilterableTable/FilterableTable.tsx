@@ -304,7 +304,12 @@ export default function FilterableTable<T>({
         const item = (row.original as unknown) as { id: string; [propertyNameToDisplay]: string };
        
         return (
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
            
             
             {toggleActiveUrl && (
