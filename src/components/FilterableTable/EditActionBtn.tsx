@@ -25,9 +25,10 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
     const [open, setOpen] = useState(false)
         
   return (
- <Dialog open={open} modal={false} onOpenChange={setOpen}>
+<Dialog open={open} onOpenChange={setOpen}>
   <DialogTrigger asChild>
     <Button
+      type="button"
       onClick={() => setOpen(true)}
       className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-md"
       variant="ghost"
@@ -45,7 +46,15 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-      <XForm getItemUrl={getItemUrl} resourceApiUrl={updateItemUrl} formConfig={formConfig} resourceId={resourceId} resourceName={resourceName} mode="edit" />
+      <XForm 
+        getItemUrl={getItemUrl} 
+        resourceApiUrl={updateItemUrl} 
+        formConfig={formConfig} 
+        resourceId={resourceId} 
+        resourceName={resourceName} 
+        mode="edit" 
+        onSubmitted={() => setOpen(false)}
+      />
     </ScrollArea>
     
   </DialogContent>
