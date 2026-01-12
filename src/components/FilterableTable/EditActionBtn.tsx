@@ -46,11 +46,8 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-         <div className="p-4">
-            <p>Dialog is working! Resource ID: {resourceId}</p>
-            <p>This should stay open until you click outside or press ESC</p>
-          </div>
-      {/*<XForm 
+         
+      <XForm 
         getItemUrl={getItemUrl} 
         resourceApiUrl={updateItemUrl} 
         formConfig={formConfig} 
@@ -63,7 +60,7 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
             setOpen(false);
           }, 5000); // Wait 5 seconds
         }}
-      />*/}
+      />
     </ScrollArea>
     
   </DialogContent>

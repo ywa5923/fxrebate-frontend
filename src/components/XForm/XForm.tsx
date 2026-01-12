@@ -112,7 +112,8 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
 
  
   useEffect(() => {
-   
+    // Don't run if we don't have the necessary data
+  if ( !formConfig) return;
     setIsLoading(true);
     const fetchItem = async () => {
       try {
@@ -156,7 +157,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
     };
   
     fetchItem();
-  }, [resourceId, getItemUrl,resourceApiUrl]);
+  }, [resourceId, getItemUrl,formConfig,resourceApiUrl]);
 
   if(mode === 'create'){
     formConfig = formConfigState;
