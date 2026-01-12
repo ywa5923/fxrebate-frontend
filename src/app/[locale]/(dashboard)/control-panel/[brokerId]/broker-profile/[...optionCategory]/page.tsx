@@ -52,7 +52,7 @@ export default async function BrokerProfilePage({
   // console.log("user========================================", user);
   // let brokerId = brokerContext.broker_id;
   //let brokerId = 181;
-  let is_admin = true;
+  let is_admin = false;
   let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';

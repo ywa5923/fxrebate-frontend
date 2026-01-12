@@ -1,42 +1,35 @@
 'use client';
-import {
-  Controller,
-  ControllerProps,
-  FieldPath,
-  FieldValues,
-  useFieldArray,
-} from "react-hook-form"
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 //import { generateXFormSchema } from "@/components/XForm/schema";
 import { getFormSchema } from "@/components/XForm/schema";
 import { Form } from "@/components/ui/form";
-import { FormBase, FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {  FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
+
 import { ArrayFields } from "@/components/XForm/form-components";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Field,
-  FieldContent,
+ 
   FieldDescription,
-  FieldError,
+
   FieldGroup,
-  FieldLabel,
+ 
   FieldLegend,
-  FieldSeparator,
+ 
   FieldSet,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input";
+
 import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { XFormDefinition, XFormSection, XFormField } from "@/types";
-import { inspectZodObject } from "@/lib/inspectZodObject";
-import { apiClient, apiClientPut } from "@/lib/api-client";
+
+import { apiClient} from "@/lib/api-client";
 import { DynamicOption } from "@/types";
 
-import { BASE_URL } from "@/constants";
+
 import { toast } from "sonner";
 import { useState } from "react";
 import { flattenObject } from "@/lib/flattenObject";
@@ -157,7 +150,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
     };
   
     fetchItem();
-  }, [resourceId, getItemUrl,formConfig,resourceApiUrl]);
+  }, [resourceId, mode,getItemUrl,formConfig,resourceApiUrl]);
 
   if(mode === 'create'){
     formConfig = formConfigState;
