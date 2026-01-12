@@ -56,6 +56,7 @@ interface SidebarLink {
   name: string;
   url: string;
   icon: string;
+  prefetch?: boolean;
 }
 
 interface AppSidebarSuperProps extends React.ComponentProps<typeof Sidebar> {
@@ -154,6 +155,7 @@ export function AppSidebarSuper({
                         <SidebarMenuButton asChild className="flex-1">
                           <Link
                             href={link.url}
+                            {...(link.prefetch === false ? { prefetch: false } : {})}
                             className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
                                 ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
@@ -297,6 +299,7 @@ export function AppSidebarSuper({
                         <SidebarMenuButton asChild className="flex-1">
                           <Link
                             href={link.url}
+                            {...(link.prefetch === false ? { prefetch: false } : {})}
                             className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
                                 ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
@@ -361,6 +364,7 @@ export function AppSidebarSuper({
                       <SidebarMenuButton asChild className="flex-1">
                         <Link
                           href={link.url}
+                          {...(link.prefetch === false ? { prefetch: false } : {})}
                           className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                             isActive 
                               ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-3' 

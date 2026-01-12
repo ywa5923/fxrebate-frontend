@@ -86,12 +86,14 @@ export default async function SuperManagerLayout({
     {
       name: 'System Languages',
       url: '/en/control-panel/super-manager/system-languages',
-      icon: 'Flag'
+      icon: 'Flag',
+      prefetch: false
     },
     {
       name: 'Translations',
       url: '/en/control-panel/super-manager/translations',
-      icon: 'FileText'
+      icon: 'FileText',
+      prefetch: false
     },
   ]
 
