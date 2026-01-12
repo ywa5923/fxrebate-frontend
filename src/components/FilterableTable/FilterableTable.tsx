@@ -98,6 +98,7 @@ export default function FilterableTable<T>({
 
   const [hydrated, setHydrated] = useState(false);
   let [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     setHydrated(true);
     try {
@@ -111,6 +112,11 @@ export default function FilterableTable<T>({
     } catch (e) {
       console.warn("Failed to load saved filters:", e);
     }
+
+    console.log("🟢 FilterableTable mounted");
+  return () => {
+    console.log("🔴 FilterableTable unmounted");
+  };
   
   }, []);
 

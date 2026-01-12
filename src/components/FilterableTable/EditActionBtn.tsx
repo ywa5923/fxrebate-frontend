@@ -9,7 +9,7 @@ import {
   } from "@/components/ui/dialog"
   import { Button } from "@/components/ui/button"
   import XForm from "@/components/XForm/XForm"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { XFormDefinition } from "@/types"
 import { PencilIcon, PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -23,6 +23,13 @@ interface EditActionBtnProps {
 }
 export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,resourceId,resourceName}: EditActionBtnProps ) {
     const [open, setOpen] = useState(false)
+
+    useEffect(() => {
+      console.log(`🟢 EditActionBtn mounted`);
+      return () => {
+        console.log(`🔴 EditActionBtn unmounted`);
+      };
+    }, []);
         
   return (
 <Dialog open={open} onOpenChange={setOpen}>
