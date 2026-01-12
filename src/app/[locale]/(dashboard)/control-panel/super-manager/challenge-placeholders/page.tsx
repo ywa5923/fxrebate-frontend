@@ -1,6 +1,6 @@
 import { ChallengeType } from "@/types/ChallengeType";
 import { getChallengeCategories } from "@/lib/getChallengeCategories";
-import ChallengeCategories from "@/app/[locale]/(dashboard)/control-panel/[brokerId]/broker-profile/[...optionCategory]/ChallengeCategories";
+import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 export default async function ChallengePlaceholdersPage() {
 
     const categories:ChallengeType[] = await getChallengeCategories('en');

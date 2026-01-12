@@ -72,9 +72,9 @@ export async function authenticateWithMagicLink(token: string): Promise<{
 
 
     let redirectTo: string = '#'; // Default fallback
-
-    if (user.email === 'admin@admin.com') {
-      redirectTo = '/en/control-panel';
+    console.log("user permissions", user.permissions);
+    if (user.user_type === 'platform_user' && user.permissions?.some(p => p.type === 'super-admin' && p.action === 'manage')) {
+      redirectTo = '/en/control-panel/super-manager';
 
     } else if (user.user_type === 'platform_user') {
       redirectTo = '/en/control-panel/platform-manager';

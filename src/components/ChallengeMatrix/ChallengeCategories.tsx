@@ -1,9 +1,9 @@
 "use client";
 
-import { ChallengeType } from "@/types/ChallengeType";
-import React, { useState, useMemo, useCallback } from "react";
+import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import StaticMatrix from "@/components/ui/StaticMatrix";
+import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
@@ -32,34 +32,29 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
   });
 
 
-  const derivedState = useMemo(() => {
-  
-    const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
-    const steps = selectedCategory?.steps || [];
-    const amounts = selectedCategory?.amounts || [];
-    const stepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
-    
-    return {
-      selectedCategory,
-      steps,
-      amounts,
-      stepSlug,
-      canShowMatrix: Boolean(stepSlug && challengeState.stepId && challengeState.amountId && challengeState.categoryId)
-    };
-  }, [categories, challengeState]);
+ 
 
-  const handleCategoryClick = useCallback((category: ChallengeType) => {
+  const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
+  const selectedStepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
+  const derivedState = {
+    selectedCategory: selectedCategory,
+    steps: selectedCategory?.steps || [],
+    amounts: selectedCategory?.amounts || [],
+    stepSlug: selectedStepSlug,
+    canShowMatrix: Boolean(selectedStepSlug && challengeState.stepId && challengeState.amountId && challengeState.categoryId)
+  };
+
+  const handleCategoryClick = (category: ChallengeType) => {
     if (category.id === challengeState.categoryId) return;
     
-   
     setChallengeState({
       categoryId: category.id,
       stepId: category.steps[0]?.id || null,
       amountId: category.amounts[0]?.id || null,
     });
-  }, [challengeState.categoryId]);
+  };
 
-  const handleStepClick = useCallback((step: any) => {
+  const handleStepClick = (step: ChallengeStep) => {
     if (step.id === challengeState.stepId) return;
     
     setChallengeState(prev => ({
@@ -67,14 +62,12 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
       stepId: step.id,
       amountId: derivedState.selectedCategory?.amounts[0]?.id || null,
     }));
-  }, [challengeState.stepId, derivedState.selectedCategory]);
+  };
 
-  const handleAmountClick = useCallback((amount: any) => {
+  const handleAmountClick = (amount: ChallengeAmount) => {
     if (amount.id === challengeState.amountId) return;
-    
-   
     setChallengeState(prev => ({ ...prev, amountId: amount.id }));
-  }, [challengeState.amountId]);
+  };
 
   if (!categories.length) {
     return (
@@ -162,7 +155,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
 
           {/* STEP 3: Amounts */}
           <div className="min-h-[40px] md:min-h-[48px] flex items-center">
-            {derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
+            {type === "challenge" && derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2 w-full">
                 {derivedState.amounts.map((amount) => (
                   <button

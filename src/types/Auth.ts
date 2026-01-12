@@ -3,6 +3,7 @@ export interface AuthUser {
     name: string;
     email: string;
     user_type: string;
+    role: string;
     broker_context?: BrokerContext;
     permissions?: Array<Permission>
   }

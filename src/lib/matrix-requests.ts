@@ -19,8 +19,10 @@ export async function getMatrixHeaders(
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const responseData = await response.json()
-      
-      return responseData
+      if (!responseData.success || !responseData.data) {
+        throw new Error(`HTTP error! status: ${responseData.status}`)
+      }
+      return responseData.data as MatrixHeaders
     } catch (error) {
       console.error('Error fetching matrix headers:', error)
       throw error

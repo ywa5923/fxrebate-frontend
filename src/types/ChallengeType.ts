@@ -26,10 +26,16 @@ export interface ChallengeTypesResponse {
   data: ChallengeType[];
 }
 
+// export interface ChallengeMatrixExtraData {
+//   affiliateLink: AffiliateLink;
+//   evaluationCostDiscount: EvaluationCostDiscount;
+//   masterAffiliateLink: AffiliateLink;
+// }
+
 export interface ChallengeMatrixExtraData {
-  affiliateLink: AffiliateLink;
-  evaluationCostDiscount: EvaluationCostDiscount;
-  masterAffiliateLink: AffiliateLink;
+  affiliate_link: AffiliateLink;
+  evaluation_cost_discount: EvaluationCostDiscount;
+  affiliate_master_link: AffiliateLink;
 }
 
 export interface AffiliateLink {
@@ -68,7 +74,7 @@ export interface ChalengeData extends ChallengeMatrixExtraData {
 }
 
 export interface ChallengePlaceholders{
-  matrix_placeholders_array: string[] | null;
+  matrix_placeholders_array: Record<string, string> | null;
   affiliate_master_link_placeholder: string | null;
   affiliate_link_placeholder: string | null;
   evaluation_cost_discount_placeholder: string | null;

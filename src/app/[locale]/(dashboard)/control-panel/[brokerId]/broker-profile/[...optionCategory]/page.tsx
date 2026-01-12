@@ -19,11 +19,15 @@ import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
 import { getChallengeCategories } from "@/lib/getChallengeCategories";
-import ChallengeCategories from "./ChallengeCategories";
+import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
 import {  isAuthenticated} from "@/lib/auth-actions";
 import { hasPermission } from "@/lib/permissions";
+import { apiClient } from "@/lib/api-client";
+import { toast } from "sonner";
+import { MatrixHeaders } from "@/types/Matrix";
+
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -53,7 +57,7 @@ export default async function BrokerProfilePage({
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
- let pageLogger = logger.child('Broker profilepage');
+ let pageLogger = logger.child('Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx');
  
  // Add a small delay to ensure cookies are available after redirect
  await new Promise(resolve => setTimeout(resolve, 100));
@@ -192,12 +196,7 @@ export default async function BrokerProfilePage({
       );
     }
 
-    if(categorySlug=='challenge-placeholders' ){
-      //receive the json with challenge categories and steps and amounts
-      const categories:ChallengeType[] = await getChallengeCategories('en');
-    
-      return <ChallengeCategories key={brokerId} categories={categories} brokerId={brokerId} type="placeholder" is_admin={false}/>
-    }
+   
     if(categorySlug=='challenge-matrix' ){
       const categories:ChallengeType[] = await getChallengeCategories('en');
     
@@ -205,6 +204,28 @@ export default async function BrokerProfilePage({
     }
     
     if(categorySlug=='rebates'){
+
+      // const searchParams = new URLSearchParams({
+      //   "language[eq]": "en",
+      //   "broker_id[eq]": brokerId.toString(),
+      //   "matrix_id[eq]": "Matrix-1",
+      //   "broker_id_strict[eq]": "0",
+      // }).toString();
+      // const headersUrl = `/matrix/headers?${searchParams.toString()}`;
+
+      // pageLogger.debug("Fetching headers from:", { url: headersUrl });
+
+      // const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, true, {
+      //   method: "GET",
+      //   cache: "no-store",
+      // });
+
+      // if (!headearsResponse.success || !headearsResponse.data) {
+      //   toast.error(headearsResponse.message);
+      //   return;
+      // }
+
+      // const {columnHeaders, rowHeaders}= headearsResponse.data;
       
       const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
       

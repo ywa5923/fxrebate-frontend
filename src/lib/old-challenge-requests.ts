@@ -13,7 +13,7 @@ export async function getChallengeHeaders(
       url.searchParams.set("col_group[eq]", col_group)
       url.searchParams.set("row_group[eq]", row_group)
     
-  
+ 
       
       try {
         const response = await fetch(url.toString() ,  { cache: "no-store" } )
