@@ -29,7 +29,8 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
   <DialogTrigger asChild>
     <Button
       type="button"
-      onClick={() => setOpen(true)}
+      onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+      onPointerDown={(e) => e.stopPropagation()}
       className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-md"
       variant="ghost"
       size="sm"
@@ -58,7 +59,7 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
           console.log('⚠️ onSubmitted was called!');
           setTimeout(() => {
             setOpen(false);
-          }, 5000); // Wait 5 seconds
+          }, 2000); // Wait 5 seconds
         }}
       />
     </ScrollArea>
