@@ -26,11 +26,11 @@ interface EditActionBtnProps {
 }
 export default function EditDialogForm( { open, onOpenClose, getItemUrl, updateItemUrl, formConfig,resourceId,resourceName}: EditActionBtnProps ) {
   
-const router = useRouter();
+
 
 const onSubmitted = () => {
   onOpenClose();
-  router.refresh();
+ 
 }
 
     useEffect(() => {
@@ -52,7 +52,6 @@ const onSubmitted = () => {
       </DialogDescription>
     </DialogHeader>
     <ScrollArea className="max-h-[70vh] p-1">
-         
       <XForm 
         getItemUrl={getItemUrl} 
         resourceApiUrl={updateItemUrl} 
