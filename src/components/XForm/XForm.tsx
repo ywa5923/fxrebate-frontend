@@ -128,17 +128,18 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
 
         //in edit mode the formconfig is already fetched in table data fetch, so we need to fetch the item data
         if(mode === 'edit' && formConfig && getItemUrl && resourceId){
-          // let apiUrl = getItemUrl + "/" + resourceId;
-          // const response = await apiClient<T>(apiUrl, true);
+          let apiUrl = getItemUrl + "/" + resourceId;
+          const response = await apiClient<T>(apiUrl, true);
 
-          // if (response.success && response.data) {
-          //   console.log("response.data", response.data);
-          //   console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
-          //   form.reset(makeDefaultValues(formConfig, response.data as any));
-          // } else {
-          //   console.error("Failed to fetch item", response.message);
-          //   toast.error("Failed to fetch item");
-          // }
+          if (response.success && response.data) {
+            console.log("response.data", response.data);
+            console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
+            let defaultValues = makeDefaultValues(formConfig, response.data as any);
+            requestAnimationFrame(() => form.reset(defaultValues));
+          } else {
+            console.error("Failed to fetch item", response.message);
+            toast.error("Failed to fetch item");
+          }
         }
        
       } catch (err) {
