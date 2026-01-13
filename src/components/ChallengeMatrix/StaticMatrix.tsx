@@ -99,7 +99,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         }).toString();
         const headersUrl = `/matrix/headers?${searchParams.toString()}`;
 
-        log.debug("Fetching headers from:", { url: headersUrl });
+        log.info("Fetching headers from:", { url: headersUrl });
+        console.log("Fetching challenges headers from:", { url: headersUrl });
 
         const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, true, {
           method: "GET",
@@ -116,7 +117,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       
       
       
-        log.debug("Headers:", { columnHeaders, rowHeaders });
+        log.info("Headers:", { columnHeaders, rowHeaders });
+        console.log("challenges Headers:", { columnHeaders, rowHeaders });
         
         // Set headers immediately to prevent layout shift
         setColumnHeaders(columnHeaders);
