@@ -37,7 +37,6 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
     <Button
       type="button"
       onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-      onPointerDown={(e) => e.stopPropagation()}
       className="h-8 w-8 p-0 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-md"
       variant="ghost"
       size="sm"
@@ -47,7 +46,6 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
     </Button>
   </DialogTrigger>
   <DialogContent className="max-h-[85vh] p-2 overflow-y-none"   
-  onOpenAutoFocus={(e) => e.preventDefault()}
   onInteractOutside={(e) => e.preventDefault()}
   onPointerDownOutside={(e) => e.preventDefault()}>
     <DialogHeader className="p-2">
