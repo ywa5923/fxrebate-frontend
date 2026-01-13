@@ -13,6 +13,7 @@ import { useEffect, useState } from "react"
 import { XFormDefinition } from "@/types"
 import { PencilIcon, PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useRouter } from "next/navigation"
 
 interface EditActionBtnProps {
   open: boolean;
@@ -25,6 +26,12 @@ interface EditActionBtnProps {
 }
 export default function EditDialogForm( { open, onOpenClose, getItemUrl, updateItemUrl, formConfig,resourceId,resourceName}: EditActionBtnProps ) {
   
+const router = useRouter();
+
+const onSubmitted = () => {
+  onOpenClose();
+  router.refresh();
+}
 
     useEffect(() => {
       console.log(`🟢 EditActionBtn mounted`);
@@ -54,9 +61,7 @@ export default function EditDialogForm( { open, onOpenClose, getItemUrl, updateI
         resourceId={resourceId} 
         resourceName={resourceName} 
         mode="edit" 
-        onSubmitted={() => {
-          onOpenClose();
-        }}
+        onSubmitted={onSubmitted}
       />
     </ScrollArea>
     

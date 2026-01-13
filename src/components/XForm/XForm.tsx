@@ -205,13 +205,15 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
    });
    if (response.success && response.data) {
    
+   
+    toast.success(method === 'POST' ? "Item created successfully" : "Item updated successfully");
+
+    mode=='create'&&router.refresh();
+
     if(onSubmitted){
       //call the onSubmitted function to cloase the modal form by setting the open state to false
       onSubmitted();
     }
-    toast.success(method === 'POST' ? "Item created successfully" : "Item updated successfully");
-
-    router.refresh();
    } else {
    
     toast.error(response.message);
