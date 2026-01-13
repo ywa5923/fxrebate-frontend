@@ -343,7 +343,10 @@ export default function FilterableTable<T extends { id: number | string }>({
                 variant="outline"
                 size="sm"
                 className="h-7 w-7 p-0 shrink-0 border-blue-300 hover:bg-blue-50"
-                onClick={() => setDialogFormState({ mode: 'edit', id: item.id })}
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  dialogFormState.mode === null && setDialogFormState({ mode: 'edit', id: item.id });
+                }}
                 title={`Edit ${propertyNameToDisplay ?? "Item"}`}
                >
                 <PencilIcon className="h-4 w-4 text-blue-700" />
