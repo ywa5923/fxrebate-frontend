@@ -289,9 +289,7 @@ export default function FilterableTable<T extends { id: number | string }>({
         return (
           <div
             className="flex items-center gap-2"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
+         
           >
             {toggleActiveUrl && (
               <ToggleActiveBtn
@@ -306,8 +304,8 @@ export default function FilterableTable<T extends { id: number | string }>({
                 size="sm"
                 className="h-7 w-7 p-0 shrink-0 border-blue-300 hover:bg-blue-50"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  dialogFormState.mode === null &&
+                 // e.stopPropagation();
+                  //dialogFormState.mode === null &&
                     setDialogFormState({ mode: "edit", id: item.id });
                 }}
                 title={`Edit ${propertyNameToDisplay ?? "Item"}`}
