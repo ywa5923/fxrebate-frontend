@@ -46,7 +46,10 @@ export default function EditActionBtn( { getItemUrl, updateItemUrl, formConfig,r
       <PencilIcon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
     </Button>
   </DialogTrigger>
-  <DialogContent className="max-h-[85vh] p-2 overflow-y-none">
+  <DialogContent className="max-h-[85vh] p-2 overflow-y-none"   
+  onOpenAutoFocus={(e) => e.preventDefault()}
+  onInteractOutside={(e) => e.preventDefault()}
+  onPointerDownOutside={(e) => e.preventDefault()}>
     <DialogHeader className="p-2">
       <DialogTitle>Edit {resourceName}</DialogTitle>
       <DialogDescription>
