@@ -43,9 +43,8 @@ const onSubmitted = () => {
   return (
 <Dialog open={open} onOpenChange={onOpenClose}>
  
-  <DialogContent className="max-h-[85vh] p-2 overflow-y-none"   
-  onInteractOutside={(e) => e.preventDefault()}
-  onPointerDownOutside={(e) => e.preventDefault()}>
+  <DialogContent className="max-h-[85vh] p-2 overflow-y-none"> 
+ 
     <DialogHeader className="p-2">
       <DialogTitle>Edit {resourceName}</DialogTitle>
       <DialogDescription>
