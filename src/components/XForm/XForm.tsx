@@ -135,9 +135,9 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
             console.log("response.data", response.data);
             console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
             let defaultValues = makeDefaultValues(formConfig, response.data as any);
-            requestAnimationFrame(() => form.reset(defaultValues));
+            //requestAnimationFrame(() => form.reset(defaultValues));
           } else {
-            console.error("Failed to fetch item", response.message);
+            //console.error("Failed to fetch item", response.message);
             toast.error("Failed to fetch item");
           }
         }
