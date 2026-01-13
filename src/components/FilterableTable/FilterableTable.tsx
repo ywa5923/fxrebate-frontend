@@ -6,8 +6,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Trash2,
-  Edit,
   ChevronsLeft,
   ChevronLeft,
   ChevronRight,
@@ -16,14 +14,13 @@ import {
   ArrowUpRight,
   PencilIcon,
 } from "lucide-react";
-import { toast } from "sonner";
+
 import { cn } from "@/lib/utils";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  SortingState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -37,17 +34,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Filter, Eraser } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { deleteDynamicOption } from "@/lib/dynamic-option-requests";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -56,27 +43,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import FilterSection2 from "./FilterSection2";
 import { FTProps, FTColumnConfig } from "./types";
-import EditActionBtn from "./EditActionBtn";
+
 import DeleteActionBtn from "./DeleteActionBtn";
 import ToggleActiveBtn from "./ToggleActiveBtn";
-//import type { Broker } from "@/lib/broker-management";
-import { Broker } from '@/types';
+import { Broker } from "@/types";
 import Image from "next/image";
 import EditDialogForm from "./EditDialogForm";
-// export type FTRowValue = string | boolean | number | null | undefined;
 
-// export interface FTRowData{
-//     [key: string]: FTRowValue;
-// }
 type DialogFormState =
   | { mode: null }
-  | { mode: 'create' }
-  | { mode: 'edit'; id: string | number };
-
+  | { mode: "create" }
+  | { mode: "edit"; id: string | number };
 
 export default function FilterableTable<T extends { id: number | string }>({
   data,
-  propertyNameToDisplay="name",
+  propertyNameToDisplay = "name",
   pagination,
   columnsConfig,
   filters,
@@ -95,20 +76,14 @@ export default function FilterableTable<T extends { id: number | string }>({
   const locale = (params?.locale as string) || "en";
 
   //======State for edit/create dialog form===============//
-  const [dialogFormState, setDialogFormState] = useState<DialogFormState>({ mode: null });
+  const [dialogFormState, setDialogFormState] = useState<DialogFormState>({
+    mode: null,
+  });
   const openEditForm = dialogFormState.mode !== null;
-  //======State for delete dialog===============//
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [optionToDelete, setOptionToDelete] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
 
-  const [hydrated, setHydrated] = useState(false);
   let [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
@@ -120,15 +95,7 @@ export default function FilterableTable<T extends { id: number | string }>({
     } catch (e) {
       console.warn("Failed to load saved filters:", e);
     }
-
-    console.log("🟢 FilterableTable mounted");
-  return () => {
-    console.log("🔴 FilterableTable unmounted");
-  };
-  
   }, []);
-
- 
 
   const filtersCount = useMemo(() => {
     return Object.keys(filters ?? {}).filter((key) => searchParams.has(key))
@@ -141,7 +108,6 @@ export default function FilterableTable<T extends { id: number | string }>({
       newSearchParams.delete(key);
     });
 
-    //setShowFilters(false);
     startTransition(() => {
       router.push(`?${newSearchParams.toString()}`);
     });
@@ -315,64 +281,70 @@ export default function FilterableTable<T extends { id: number | string }>({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const item = (row.original as unknown) as { id: string; [propertyNameToDisplay]: string };
-       
+        const item = (row.original as unknown) as {
+          id: string;
+          [propertyNameToDisplay]: string;
+        };
+
         return (
           <div
-         
             className="flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-           
-            
             {toggleActiveUrl && (
-                <ToggleActiveBtn url={toggleActiveUrl+`/${item.id}`} broker={row.original as unknown as Broker} />
+              <ToggleActiveBtn
+                url={toggleActiveUrl + `/${item.id}`}
+                broker={(row.original as unknown) as Broker}
+              />
             )}
-            {/*<EditActionBtn
-                getItemUrl={getItemUrl}
-                updateItemUrl={updateItemUrl}
-                formConfig={formConfig}
-                resourceId={item.id}
-                resourceName={propertyNameToDisplay ?? "Item"}
-              />*/}
+
             {getItemUrl && updateItemUrl && formConfig && (
-              
               <Button
                 variant="outline"
                 size="sm"
                 className="h-7 w-7 p-0 shrink-0 border-blue-300 hover:bg-blue-50"
                 onClick={(e) => {
-                  e.stopPropagation(); 
-                  dialogFormState.mode === null && setDialogFormState({ mode: 'edit', id: item.id });
+                  e.stopPropagation();
+                  dialogFormState.mode === null &&
+                    setDialogFormState({ mode: "edit", id: item.id });
                 }}
                 title={`Edit ${propertyNameToDisplay ?? "Item"}`}
-               >
+              >
                 <PencilIcon className="h-4 w-4 text-blue-700" />
               </Button>
             )}
             {dashboardUrl && (
               <Button
-              variant="outline"
-              size="sm"
-              className="h-7 w-7 p-0 shrink-0 border-gray-300 hover:bg-orange-400"
-              style={{ color: '#1f2937' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
-              onClick={() => {
-                if (!dashboardUrl) return;
-                window.location.href = dashboardUrl.replace('#dashboard_id#', item.id);
-              }}
-              title={`Go to broker dashboard: ${item.id}`}
-            >
-              <ArrowUpRight className="h-4 w-4" style={{ color: 'inherit' }} />
-            </Button>
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0 border-gray-300 hover:bg-orange-400"
+                style={{ color: "#1f2937" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#111827")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#1f2937")}
+                onClick={() => {
+                  if (!dashboardUrl) return;
+                  window.location.href = dashboardUrl.replace(
+                    "#dashboard_id#",
+                    item.id
+                  );
+                }}
+                title={`Go to broker dashboard: ${item.id}`}
+              >
+                <ArrowUpRight
+                  className="h-4 w-4"
+                  style={{ color: "inherit" }}
+                />
+              </Button>
             )}
             {deleteUrl && (
-              <DeleteActionBtn deleteUrl={deleteUrl} resourceId={item.id} resourcetoDelete={propertyNameToDisplay ?? "Item"} />
+              <DeleteActionBtn
+                deleteUrl={deleteUrl}
+                resourceId={item.id}
+                resourcetoDelete={propertyNameToDisplay ?? "Item"}
+              />
             )}
-           
           </div>
         );
       },
@@ -386,7 +358,7 @@ export default function FilterableTable<T extends { id: number | string }>({
     currentPage,
     perPage,
     searchParams,
-  ]);//end of useMemo
+  ]); //end of useMemo
   //start of useReactTable
   const table = useReactTable({
     data,
@@ -396,22 +368,25 @@ export default function FilterableTable<T extends { id: number | string }>({
     manualPagination: true,
     pageCount: totalPages,
     state: { columnVisibility },
-    onColumnVisibilityChange: setColumnVisibility
-    
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   return (
     <div className="space-y-4 text-base">
-      <AnimatePresence>
-        {hydrated && showFilters && (
-          <motion.div
-            initial={false}
+      <AnimatePresence initial={false} mode="wait">
+        {showFilters && (
+          <motion.section
+            key="filters"
+            initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.25 }}
           >
-            <FilterSection2 filters={filters} LOCAL_STORAGE_KEY={LOCAL_STORAGE_KEY} />
-          </motion.div>
+            <FilterSection2
+              filters={filters}
+              LOCAL_STORAGE_KEY={LOCAL_STORAGE_KEY}
+            />
+          </motion.section>
         )}
       </AnimatePresence>
 
@@ -615,55 +590,23 @@ export default function FilterableTable<T extends { id: number | string }>({
           </Button>
         </div>
       </div>
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete dynamic option</AlertDialogTitle>
-            <AlertDialogDescription>
-              {`Are you sure you want to delete "${
-                optionToDelete?.name ?? ""
-              }"? This action cannot be undone.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isPending}
-              onClick={() => {
-                if (!optionToDelete) return;
-                const { id } = optionToDelete;
-                startTransition(async () => {
-                  const res = await deleteDynamicOption(id);
-                  if (res.success) {
-                    toast.success("Dynamic option deleted");
-                    setDeleteDialogOpen(false);
-                    setOptionToDelete(null);
-                    router.refresh();
-                  } else {
-                    toast.error("Failed to delete dynamic option", {
-                      description: res.message,
-                    });
-                  }
-                });
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {openEditForm && dialogFormState.mode === 'edit' && getItemUrl && updateItemUrl && formConfig && (
-        <EditDialogForm
-          open={openEditForm}
-          onOpenClose={() => setDialogFormState({ mode: null })}
-          getItemUrl={getItemUrl}
-          updateItemUrl={updateItemUrl}
-          formConfig={formConfig}
-          resourceId={dialogFormState.id}
-          resourceName={propertyNameToDisplay ?? "Item"}
-        />
-      )}
+      {/*End pagination*/}
+
+      {openEditForm &&
+        dialogFormState.mode === "edit" &&
+        getItemUrl &&
+        updateItemUrl &&
+        formConfig && (
+          <EditDialogForm
+            open={openEditForm}
+            onOpenClose={() => setDialogFormState({ mode: null })}
+            getItemUrl={getItemUrl}
+            updateItemUrl={updateItemUrl}
+            formConfig={formConfig}
+            resourceId={dialogFormState.id}
+            resourceName={propertyNameToDisplay ?? "Item"}
+          />
+        )}
     </div>
   );
 }
