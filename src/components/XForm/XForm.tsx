@@ -151,7 +151,8 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
     };
   
     fetchItem();
-  }, [resourceId, mode,getItemUrl,formConfig,resourceApiUrl]);
+  }, []);
+  //resourceId, mode,getItemUrl,formConfig,resourceApiUrl
 
   if(mode === 'create'){
     formConfig = formConfigState;
