@@ -42,7 +42,7 @@ export type FTFilters<T> = {
 
 //export type FTFilters<T> = Partial<Record<keyof T, string | boolean>>;
 
-export interface FTProps<T> {
+export interface FTProps<T extends { id: number | string }> {
   data: T[];
   propertyNameToDisplay: string;
   pagination: FTPagination;

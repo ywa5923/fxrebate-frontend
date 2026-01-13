@@ -69,7 +69,7 @@ import Image from "next/image";
 
 
 
-export default function FilterableTable<T>({
+export default function FilterableTable<T extends { id: number | string }>({
   data,
   propertyNameToDisplay="name",
   pagination,
@@ -311,6 +311,7 @@ export default function FilterableTable<T>({
        
         return (
           <div
+          key={row.original.id}
             className="flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
@@ -508,7 +509,7 @@ export default function FilterableTable<T>({
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
-                    key={row.id}
+                    key={row.original.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {row.getVisibleCells().map((cell, index) => (
