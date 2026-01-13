@@ -107,7 +107,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
   useEffect(() => {
     // Don't run if we don't have the necessary data
  // if ( !formConfig) return;
-   // setIsLoading(true);
+    setIsLoading(true);
     const fetchItem = async () => {
       try {
         if(mode === 'create' ){
@@ -135,9 +135,9 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
             console.log("response.data", response.data);
             console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
             let defaultValues = makeDefaultValues(formConfig, response.data as any);
-            //requestAnimationFrame(() => form.reset(defaultValues));
+            requestAnimationFrame(() => form.reset(defaultValues));
           } else {
-            //console.error("Failed to fetch item", response.message);
+            console.error("Failed to fetch item", response.message);
             toast.error("Failed to fetch item");
           }
         }
@@ -146,7 +146,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
         console.error("Failed to fetch item", err);
         toast.error("Failed to load form data");
       } finally {
-       // setIsLoading(false);
+        setIsLoading(false);
       }
     };
   

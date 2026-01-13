@@ -14,6 +14,7 @@ import {
   ChevronsRight,
   Sliders,
   ArrowUpRight,
+  PencilIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -61,12 +62,16 @@ import ToggleActiveBtn from "./ToggleActiveBtn";
 //import type { Broker } from "@/lib/broker-management";
 import { Broker } from '@/types';
 import Image from "next/image";
+import EditDialogForm from "./EditDialogForm";
 // export type FTRowValue = string | boolean | number | null | undefined;
 
 // export interface FTRowData{
 //     [key: string]: FTRowValue;
 // }
-
+type DialogFormState =
+  | { mode: null }
+  | { mode: 'create' }
+  | { mode: 'edit'; id: string | number };
 
 
 export default function FilterableTable<T extends { id: number | string }>({
@@ -89,6 +94,9 @@ export default function FilterableTable<T extends { id: number | string }>({
   const params = useParams();
   const locale = (params?.locale as string) || "en";
 
+  //======State for edit/create dialog form===============//
+  const [dialogFormState, setDialogFormState] = useState<DialogFormState>({ mode: null });
+  const openEditForm = dialogFormState.mode !== null;
   //======State for delete dialog===============//
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [optionToDelete, setOptionToDelete] = useState<{
@@ -322,14 +330,24 @@ export default function FilterableTable<T extends { id: number | string }>({
             {toggleActiveUrl && (
                 <ToggleActiveBtn url={toggleActiveUrl+`/${item.id}`} broker={row.original as unknown as Broker} />
             )}
-            {getItemUrl && updateItemUrl && formConfig && (
-              <EditActionBtn
+            {/*<EditActionBtn
                 getItemUrl={getItemUrl}
                 updateItemUrl={updateItemUrl}
                 formConfig={formConfig}
                 resourceId={item.id}
                 resourceName={propertyNameToDisplay ?? "Item"}
-              />
+              />*/}
+            {getItemUrl && updateItemUrl && formConfig && (
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0 border-blue-300 hover:bg-blue-50"
+                onClick={() => setDialogFormState({ mode: 'edit', id: item.id })}
+                title={`Edit ${propertyNameToDisplay ?? "Item"}`}
+               >
+                <PencilIcon className="h-4 w-4 text-blue-700" />
+              </Button>
             )}
             {dashboardUrl && (
               <Button
@@ -632,6 +650,17 @@ export default function FilterableTable<T extends { id: number | string }>({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {openEditForm && dialogFormState.mode === 'edit' && getItemUrl && updateItemUrl && formConfig && (
+        <EditDialogForm
+          open={openEditForm}
+          onOpenClose={() => setDialogFormState({ mode: null })}
+          getItemUrl={getItemUrl}
+          updateItemUrl={updateItemUrl}
+          formConfig={formConfig}
+          resourceId={dialogFormState.id}
+          resourceName={propertyNameToDisplay ?? "Item"}
+        />
+      )}
     </div>
   );
 }
