@@ -311,7 +311,7 @@ export default function FilterableTable<T extends { id: number | string }>({
        
         return (
           <div
-          key={row.original.id}
+         
             className="flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
@@ -371,10 +371,12 @@ export default function FilterableTable<T extends { id: number | string }>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row: T) => String(row.id),
     manualPagination: true,
     pageCount: totalPages,
     state: { columnVisibility },
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: setColumnVisibility
+    
   });
 
   return (
@@ -509,7 +511,7 @@ export default function FilterableTable<T extends { id: number | string }>({
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
-                    key={row.original.id}
+                    key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {row.getVisibleCells().map((cell, index) => (
