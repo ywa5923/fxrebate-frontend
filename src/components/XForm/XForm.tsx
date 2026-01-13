@@ -36,25 +36,10 @@ import { flattenObject } from "@/lib/flattenObject";
 import { Loader2 } from "lucide-react";
 import logger from "@/lib/logger";
 
-function buildDefaultValues(def: XFormDefinition, data?: any) {
-  const out: Record<string, any> = { ...(data ?? {}) };
-  const sections = def.sections ?? {};
-  for (const [sectionKey, section] of Object.entries(sections)) {
-    const secDefaults: Record<string, any> = { ...(out[sectionKey] ?? {}) };
-    for (const [fieldKey, f] of Object.entries(section.fields ?? {})) {
-      if (secDefaults[fieldKey] !== undefined) continue;
-      if (f.type === 'checkbox' || f.type === 'boolean') secDefaults[fieldKey] = false;
-      else if (f.type === 'number') secDefaults[fieldKey] = '';
-      else if (f.type === 'multiselect') secDefaults[fieldKey] = [];
-      else if (f.type === 'array_field' || f.type === 'array_fields') secDefaults[fieldKey] = Array.isArray(secDefaults[fieldKey]) ? secDefaults[fieldKey] : [];
-      else secDefaults[fieldKey] = '';
-    }
-    out[sectionKey] = secDefaults;
-  }
-  return out;
-}
 
-function makeDefaultValues(formConfig: XFormDefinition, rowData: Record<string, any>): Record<string, any> {
+//==============Make default values for the form==============//
+//Generate default values for empty form or form with data
+function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefinition, rowData: T): Record<string, any> {
   const defaultData: Record<string, any> = {};
   Object.entries(formConfig.sections ?? {}).forEach(([sectionKey, section]: [string, XFormSection]) => {
     
@@ -71,11 +56,7 @@ function makeDefaultValues(formConfig: XFormDefinition, rowData: Record<string, 
       else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = Array.isArray(fieldValue) ? fieldValue : [];
       else fieldValue = '';
       }
-
-    
       sectionDefaultValue[fieldKey] = fieldValue ;
-      //defaultData[sectionKey + "." + fieldKey] = rowData[fieldKey] ?? defaultValue;
-      
     });
     defaultData[sectionKey] = sectionDefaultValue;
   });
@@ -93,7 +74,7 @@ type XFormProps = {
   mode?: 'edit' | 'create';
 }
 
-export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
+export default function XForm<T extends Record<string, any>>({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
 {
 
   const router = useRouter();
@@ -105,8 +86,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
 
  
   useEffect(() => {
-    // Don't run if we don't have the necessary data
- // if ( !formConfig) return;
+ 
     setIsLoading(true);
     const fetchItem = async () => {
       try {
@@ -133,8 +113,8 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
 
           if (response.success && response.data) {
             console.log("response.data", response.data);
-            console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as any));
-            let defaultValues = makeDefaultValues(formConfig, response.data as any);
+            console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as T));
+            let defaultValues = makeDefaultValues(formConfig, response.data as T);
             requestAnimationFrame(() => form.reset(defaultValues));
           } else {
             console.error("Failed to fetch item", response.message);
@@ -173,8 +153,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
     defaultValues = makeDefaultValues(formConfig, {});
   }
  
-  //console.log("formSchema", formSchema);
-  //console.log("defaultValues", defaultValues);
+ 
  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
    
@@ -198,7 +177,7 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
   
    let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
   
-   log.debug("json stringify data", {jsonBody});
+   log.debug("Xform json submitted data", {jsonBody});
 
    const response = await apiClient<DynamicOption>(apiUrl, true, {
     method: method,
@@ -279,5 +258,4 @@ export default function XForm<T>({ formConfig,formConfigApiUrl,  resourceId, res
                  }
           </div>
          );
-    
  }
