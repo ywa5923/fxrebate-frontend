@@ -21,7 +21,7 @@ interface StaticMatrixProps {
   categoryId: number ;
   stepId: number ;
   stepSlug: string;
-  amountId: number ;
+  amountId: number | null;
   zoneId: string | null;
   language: string;
   type: "challenge" | "placeholder";
@@ -97,11 +97,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           "col_group[eq]": stepSlug,
           "row_group[eq]": "challenge",
         }).toString();
-        const headersUrl = `/matrix/headers?${searchParams.toString()}`;
+        const headersUrl = `/matrix/headers?${searchParams}`;
 
         log.info("Fetching headers from:", { url: headersUrl });
         console.log("Fetching challenges headers from:", { url: headersUrl });
-
+       console.log("ssssssssssssstepslug:", stepSlug);
         const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, true, {
           method: "GET",
         });

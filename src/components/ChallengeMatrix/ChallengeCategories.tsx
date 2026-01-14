@@ -32,7 +32,6 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
   });
 
 
- 
 
   const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
   const selectedStepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
@@ -44,6 +43,8 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
     canShowMatrix: Boolean(selectedStepSlug && challengeState.stepId && challengeState.amountId && challengeState.categoryId)
   };
 
+  console.log("selected category:", selectedCategory);
+  console.log("selected step slug:", selectedStepSlug);
   const handleCategoryClick = (category: ChallengeType) => {
     if (category.id === challengeState.categoryId) return;
     
@@ -197,7 +198,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
                   categoryId={challengeState.categoryId!}
                   stepId={challengeState.stepId!}
                   stepSlug={derivedState.stepSlug!}
-                  amountId={challengeState.amountId!}
+                  amountId={challengeState.amountId??null}
                   zoneId={null}
                   language="en"
                   type={type}

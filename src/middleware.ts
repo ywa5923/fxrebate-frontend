@@ -37,11 +37,11 @@ export async function middleware(req: NextRequest) {
     //Get country from IP
     //const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.ip;
     const ip = "78.96.85.163";
-    const country = await getCountryByIP(ip);
+   // const country = await getCountryByIP(ip);
 
-    if (!country) {
-      return new NextResponse("Access Denied", { status: 403 });
-    }
+    // if (!country) {
+    //   return new NextResponse("Access Denied", { status: 403 });
+    // }
 
     //Get zone code
     //zone = await getZoneByCountry(country) ?? undefined;

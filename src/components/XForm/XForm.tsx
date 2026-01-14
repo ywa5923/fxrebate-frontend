@@ -177,7 +177,7 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
   
    let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
   
-   log.debug("Xform json submitted data", {jsonBody});
+   log.debug("Xform json submitted data", {apiUrl,jsonBody});
 
    const response = await apiClient<DynamicOption>(apiUrl, true, {
     method: method,
