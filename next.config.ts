@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     optimizePackageImports: ['framer-motion']
   },
+  output: 'standalone',
   async rewrites() {
     return [
         // {

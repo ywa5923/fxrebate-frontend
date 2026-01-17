@@ -2,7 +2,7 @@
 export const getCountryByIP = async (ip: string): Promise<string | null> => {
 
     // const apiKey = process.env.IPREGISTRY_API_KEY;
-    const apiKey = 'ira_Yqs7i0q8xk09d6HPG9De8cqBLmU8bZ4RIHgc';
+    const apiKey = 'ira_z99SJvg7sUzbT8uatA83jR2TXzy5Px0IsWac';
 
     if (!apiKey) {
         console.error('IPREGISTRY_API_KEY is not defined');
