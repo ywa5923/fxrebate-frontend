@@ -25,6 +25,7 @@ export default function Error({
         <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-4">
           Sorry, an unexpected error occurred while loading this section.<br />
           Please try again or contact support if the problem persists.
+          {error.message}
         </p>
         <Button
           onClick={() => reset()}

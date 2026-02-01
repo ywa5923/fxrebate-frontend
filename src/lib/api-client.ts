@@ -4,6 +4,7 @@ import logger from "./logger";
 import { BASE_URL } from "@/constants";
 import { getBearerToken } from "./auth-actions";
 import { XFormDefinition } from "@/types";
+import { ErrorMode, UseTokenAuth } from "./enums";
 
 
 export interface ApiClientResponse<T> extends ServerJsonResponse<T>{
@@ -24,17 +25,18 @@ export interface ServerJsonResponse<T> {
 
 export async function apiClient<T>(
   url: string,
-  useCookieToken: boolean = false,
-  options: RequestInit = {}
+  useCookieToken: UseTokenAuth | boolean = UseTokenAuth.No,
+  options: RequestInit = {},
+  errorMode: ErrorMode = ErrorMode.Return
 ): Promise<ApiClientResponse<T>> {
   
   const log = logger.child("lib/api-client/apiClient");
   const requestUrl = `${BASE_URL}${url}`;
 
-  log.debug('##############requestUrl',{requestUrl});
+  log.debug('##############ApiClient requestUrl',{requestUrl});
 
   let token = null;
-  if (useCookieToken) {
+  if (useCookieToken === UseTokenAuth.Yes || useCookieToken === true) {
     token = await getBearerToken();
   }
 
@@ -71,6 +73,7 @@ export async function apiClient<T>(
       message +='***' + (serverJsonResponse?.error ?? '');
 
       log.error("API request failed", { url: requestUrl, status, message, serverJsonResponse });
+      if (errorMode === ErrorMode.Throw) throw new Error(message);
       return { success: false, message, status };
     }
 
@@ -95,7 +98,9 @@ export async function apiClient<T>(
 
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
-    log.error("Network exception", { url: requestUrl, message });
+    log.error("ApiClient Network exception", { url: requestUrl, message });
+   
+    if (errorMode === ErrorMode.Throw) throw new Error(message);
     return { success: false, message, status: 500 };
   }
 }

@@ -1,6 +1,7 @@
 import { BASE_URL } from "@/constants";
 import { LinksGroupedByAccountId, LinksGroupedByType } from "@/types/AccountTypeLinks";
 import logger from "./logger";
+import { getBearerToken } from "./auth-actions";
 
 
 export async function getAccountTypeUrls(
@@ -27,7 +28,13 @@ export async function getAccountTypeUrls(
     }
     
     try{
-        const response=await fetch(url.toString(),{cache:"no-store"});
+        const token = await getBearerToken();
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        };
+        const response=await fetch(url.toString(),{cache:"no-store", headers});
         if(!response.ok){
             urlLogger.error('Failed to fetch account type urls', { error:response.status, context: {url:url.toString(), broker_id,accountType,zone_code,language_code} });
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -42,7 +49,7 @@ export async function getAccountTypeUrls(
 
           
     }catch(error){
-       // urlLogger.error('Failed to fetch account type urls', { error, context: {url: url.toString(), broker_id, accountType } });   
+        urlLogger.error('Failed to fetch account type urls', { error, context: {url: url.toString(), broker_id, accountType } });   
         throw error;
     }
 }

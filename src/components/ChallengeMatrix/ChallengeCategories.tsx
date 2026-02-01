@@ -4,6 +4,8 @@ import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
+import { X } from "lucide-react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
@@ -18,7 +20,15 @@ type ChallengeState = {
   amountId: number | null;
 };
 
+type HiddenState = {
+  categories: number[];
+  steps: number[];
+  amounts: number[];
+};
+
 function ChallengeCategories({ categories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
+  const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
+  const [isEditingHiddenState, setIsEditingHiddenState] = useState(false);
   const [challengeState, setChallengeState] = useState<ChallengeState>(() => {
     const firstCategory = categories[0];
     if (!firstCategory) {
@@ -31,8 +41,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
     };
   });
 
-
-
+  
   const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
   const selectedStepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
   const derivedState = {
@@ -70,6 +79,37 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
     setChallengeState(prev => ({ ...prev, amountId: amount.id }));
   };
 
+  const handleCategoryHide = (categoryId: number) => {
+    const selectedCategory = categories.find((cat) => cat.id === categoryId);
+    if (!selectedCategory) return;
+    let categoryStepsArray = selectedCategory.steps.map((step) => step.id);
+    let categoryAmountsArray = selectedCategory.amounts.map((amount) => amount.id);
+   
+    setHiddenState((prev: HiddenState) => ({
+      ...prev,
+      categories: [...prev.categories, categoryId],
+      steps: [...prev.steps, ...categoryStepsArray],
+      amounts: [...prev.amounts, ...categoryAmountsArray],
+    } as HiddenState));
+    setChallengeState({
+      categoryId: categories[0].id,
+      stepId: categories[0].steps[0]?.id || null,
+      amountId: categories[0].amounts[0]?.id || null,
+    });
+  };
+  const handleStepHide = (stepId: number) => {
+    setHiddenState((prev: HiddenState) => ({
+      ...prev,
+      steps: [...prev.steps, stepId],
+    } as HiddenState));
+  };
+  const handleAmountHide = (amountId: number) => {
+    setHiddenState((prev: HiddenState) => ({
+      ...prev,
+      amounts: [...prev.amounts, amountId],
+    } as HiddenState));
+  };
+
   if (!categories.length) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -90,6 +130,22 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
             Select a challenge category to get started
           </p>
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditingHiddenState(!isEditingHiddenState)}
+              className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-sky-600 text-sky-700 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300"
+            >
+              {isEditingHiddenState ? "Save current state" : "Edit tabs visibility"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setHiddenState({ categories: [], steps: [], amounts: [] })}
+              className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-orange-300 text-orange-700 bg-white hover:bg-orange-50 dark:bg-orange-900/10 dark:text-orange-300 dark:border-orange-700 dark:hover:bg-orange-900/20 focus:outline-none focus:ring-2 focus:ring-orange-300"
+            >
+              Reset tabs
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4 md:space-y-6">
@@ -97,7 +153,8 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           {/* STEP 1: Category Tabs */}
           <div className="min-h-[60px] md:min-h-[72px] flex items-center">
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full">
-              {categories.map((category) => (
+              {categories.filter(c => !hiddenState.categories.includes(c.id)).map((category) => (
+                <div key={category.id} className="relative inline-block">
                 <button
                   key={category.id}
                   type="button"
@@ -116,6 +173,18 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
                 >
                   {category.name}
                 </button>
+                {isEditingHiddenState && (
+                  <button
+                    type="button"
+                    aria-label="Hide category"
+                    onClick={() => handleCategoryHide(category.id)}
+                    title="Hide this category"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                </div>
               ))}
             </div>
           </div>
@@ -124,7 +193,8 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           <div className="min-h-[48px] md:min-h-[56px] flex items-center">
             {derivedState.selectedCategory && derivedState.steps.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.steps.map((step) => (
+                {derivedState.steps.filter(s => !hiddenState.steps.includes(s.id)).map((step) => (
+                   <div key={step.id} className="relative inline-block">
                   <button
                     key={step.id}
                     type="button"
@@ -143,6 +213,16 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
                   >
                     {step.name}
                   </button>
+                  {isEditingHiddenState && (<button
+                    type="button"
+                    aria-label="Hide step"
+                    onClick={() => handleStepHide(step.id)}
+                    title="Hide this step"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>)}
+                  </div>
                 ))}
               </div>
             ) : (
@@ -158,7 +238,8 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           <div className="min-h-[40px] md:min-h-[48px] flex items-center">
             {type === "challenge" && derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.amounts.map((amount) => (
+                {derivedState.amounts.filter(a => !hiddenState.amounts.includes(a.id)).map((amount) => (
+                  <div key={amount.id} className="relative inline-block">
                   <button
                     key={amount.id}
                     type="button"
@@ -178,6 +259,17 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
                     <span className="block md:inline">{amount.amount}</span>
                     <span className="block md:inline md:ml-1">{amount.currency}</span>
                   </button>
+                   {isEditingHiddenState && (<button
+                    type="button"
+                    aria-label="Hide amount"
+                    onClick={() => handleAmountHide(amount.id)}
+                    title="Hide this amount"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  )}
+                  </div>
                 ))}
               </div>
             ) : (

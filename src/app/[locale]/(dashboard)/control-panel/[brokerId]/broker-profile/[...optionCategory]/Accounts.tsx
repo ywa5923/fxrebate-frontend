@@ -1,23 +1,23 @@
 "use client";
 
-import {  DynamicTable, Option, OptionValue, Url } from '@/types';
+import {  DynamicTableRow, Option} from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent} from '@/components/ui/card';
 import AccountLinks from './AccountLinks';
 import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { deleteAccountType } from '@/lib/accountType-request';
 import { useRouter } from 'next/navigation';
 
 interface AccountsProps {
   broker_id: number;
-  accounts?: DynamicTable[];
+  accounts?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
   linksGroupedByAccountId: LinksGroupedByAccountId;

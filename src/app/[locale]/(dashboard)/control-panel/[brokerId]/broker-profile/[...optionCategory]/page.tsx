@@ -1,21 +1,21 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
-import { getOptionsValues } from "@/lib/getOptionsValues";
+//import { getOptionsValues } from "@/lib/getOptionsValues";
 import { MatrixCell } from "@/types";
-import { notFound, redirect } from "next/navigation";
-import { DynamicForm } from "@/components/DynamicForm";
+import { notFound } from "next/navigation";
+//import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
-import { getCompanies } from "@/lib/getCompanies";
-import Companies from "./Companies";
-import { getAccountTypes } from "@/lib/getAccountTypes";
+//import { getCompanies } from "@/lib/getCompanies";
+//import Companies from "./Companies";
+//import { getAccountTypes } from "@/lib/getAccountTypes";
 import Accounts from "./Accounts";
-import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
+//import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 import Company from "./Company";
 import BrokerOptions from "./BrokerOptions";
-import { getMatrixData, getMatrixHeaders } from "@/lib/matrix-requests";
-import { DynamicMatrix } from "@/components/ui/DynamicMatrix";
+
+
 import Rebates from "./Rebates";
-import { getDynamicTable } from "@/lib/getDynamicTable";
+//import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
 import { getChallengeCategories } from "@/lib/getChallengeCategories";
@@ -25,8 +25,12 @@ import logger from "@/lib/logger";
 import {  isAuthenticated} from "@/lib/auth-actions";
 import { hasPermission } from "@/lib/permissions";
 import { apiClient } from "@/lib/api-client";
-import { toast } from "sonner";
+
 import { MatrixHeaders } from "@/types/Matrix";
+
+import { DynamicTableRow } from "@/types";
+import { AccountTypeLinks } from "@/types/AccountTypeLinks";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
@@ -57,7 +61,7 @@ export default async function BrokerProfilePage({
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
- let pageLogger = logger.child('Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx');
+ let log = logger.child('Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx');
  
  // Add a small delay to ensure cookies are available after redirect
  await new Promise(resolve => setTimeout(resolve, 100));
@@ -120,16 +124,25 @@ export default async function BrokerProfilePage({
     
     //zone_code is null, so get only original data that is submitted by the broker and have zone_code null
     //there are the values submitted by the broker
-    const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
+   // const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
 
-    //pageLogger.info('Options values fetched', { context: {json:JSON.stringify(optionsValues,null,2)} });
+    
 
     // If this is the companies category, render the Companies component
-    if(categorySlug=='my-companies'){
+    if(categorySlug=='company-profile'){
       //get original companies option vlaues submitted by the broker which have zone_code null
       //comanies also contains options values for the companies
-      let  companies = await getCompanies(brokerId,null,null,'en');
-    
+      //let  companies = await getCompanies(brokerId,null,null,'en');
+     // let companies = await getDynamicTable('companies',brokerId,null,'en');
+     let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
+     let companiesResponse = await apiClient<DynamicTableRow[]>(companiesFetchUrl, true, {
+      method: "GET",
+      cache: "no-store",
+     });
+     if(!companiesResponse.success){
+      notFound();
+     }
+     let companies = companiesResponse.data ?? [];
       return (
         <>
           <Company
@@ -150,27 +163,48 @@ export default async function BrokerProfilePage({
       );
     }
     if(categorySlug=='my-trading-accounts' ){
-      let accountTypesLinks=await getAccountTypeUrls(brokerId,null,zone_code,language_code);
-      let accountType = await getAccountTypes(brokerId,null,'en');
-
-     // console.log("accountTypesUrls========================================",accountTypesLinks);
+     // let accountTypesLinks=await getAccountTypeUrls(brokerId,null,zone_code,language_code);
+      //let accountType = await getAccountTypes(brokerId,null,'en');
+    
+      let accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
+      let accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
+      const [accountTypesLinksResponse, accountTypesResponse] = await Promise.all([
+        apiClient<AccountTypeLinks>(accountTypesLinksFetchUrl, true, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+        apiClient<DynamicTableRow[]>(accountTypesFetchUrl, true, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+      ]);
+      if (!accountTypesLinksResponse.success || !accountTypesResponse.success) {
+        log.error("Error fetching account types links or account types", {context: {accountTypesLinks:accountTypesLinksResponse.message, accountTypes:accountTypesResponse.message}});
+        notFound();
+      }
+      const accountTypesLinks = accountTypesLinksResponse.data ?? null;
+      const accountTypes = accountTypesResponse.data ?? [];
+    
      
       return (
         <Accounts 
           broker_id={brokerId}
-          accounts={accountType}
+          accounts={accountTypes}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
-          linksGroupedByAccountId={accountTypesLinks.links_grouped_by_account_id ?? {}}
-          masterLinksGroupedByType={accountTypesLinks.master_links_grouped_by_type ?? {}}
-          linksGroups={accountTypesLinks.links_groups ?? []}
+          linksGroupedByAccountId={accountTypesLinks?.linksGroupedByAccountId ?? {}}
+          masterLinksGroupedByType={accountTypesLinks?.masterLinksGroupedByType ?? {}}
+          linksGroups={accountTypesLinks?.linksGroups ?? []}
         />
       );
     }
 
     if(categorySlug=='promotions' ){
-      let promotions = await getDynamicTable('promotions',brokerId,null,'en');
-
+     // let promotions = await getDynamicTable('promotions',brokerId,null,'en');
+      let promotionFetchUrl = `/promotions/${brokerId}?language_code=en`;
+      let promotionsResponse = await apiClient<DynamicTableRow[]>(promotionFetchUrl, true, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if(!promotionsResponse.success){
+        log.error("Error fetching promotions", {context: {promotions:promotionsResponse.message}});
+        notFound();
+      }
+      let promotions = promotionsResponse.data ?? [];
       return (
         <Promotions 
           broker_id={brokerId}
@@ -184,7 +218,17 @@ export default async function BrokerProfilePage({
 
 
     if(categorySlug=='contests' ){
-      let contests = await getDynamicTable('contests',brokerId,null,'en');
+      //let contests = await getDynamicTable('contests',brokerId,null,'en');
+      let contestsFetchUrl = `/contests/${brokerId}?language_code=en`;
+      let contestsResponse = await apiClient<DynamicTableRow[]>(contestsFetchUrl, true, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if(!contestsResponse.success){
+        log.error("Error fetching contests", {context: {contests:contestsResponse.message}});
+        notFound();
+      }
+      let contests = contestsResponse.data ?? [];
       
       return (
         <Contests 
@@ -226,10 +270,25 @@ export default async function BrokerProfilePage({
       // }
 
       // const {columnHeaders, rowHeaders}= headearsResponse.data;
+      let headersFetchUrl = `/matrix/headers/${brokerId}?language=en&matrix_id=Matrix-1&broker_id_strict=0&with_account_type_columns=1`;
+      let matrixDataFetchUrl = `/matrix/${brokerId}?matrix_name=Matrix-1`;
+
+
+      const [headersResponse, matrixDataResponse] = await Promise.all([
+        apiClient<MatrixHeaders>(headersFetchUrl, UseTokenAuth.Yes, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+        apiClient<MatrixCell[][]>(matrixDataFetchUrl, UseTokenAuth.Yes, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+      ]);
+      if (!headersResponse.success || !matrixDataResponse.success) {
+       
+        log.error("Error fetching matrix headers or matrix data", {context: {hedears:headersResponse.message, matrixData:matrixDataResponse.message}});
+        notFound();
+      }
+      const columnHeaders = headersResponse.data?.columnHeaders ?? [];
+      const rowHeaders = headersResponse.data?.rowHeaders ?? [];
+      const initialMatrixData = matrixDataResponse.data ?? [];
+     // const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
       
-      const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
-      
-      const initialMatrixData: MatrixCell[][] = await getMatrixData(brokerId, 'Matrix-1', is_admin)
+     // const initialMatrixData: MatrixCell[][] = await getMatrixData(brokerId, 'Matrix-1', is_admin)
      
      // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
 
@@ -239,6 +298,19 @@ export default async function BrokerProfilePage({
       </>
       );
     } else {
+
+      //===============Return the options values for the broker table by category id===============
+
+     let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
+     let optionsValuesResponse = await apiClient<OptionValue[]>(optionsValuesFetchUrl, true, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if(!optionsValuesResponse.success){
+      log.error("Error fetching options values", {context: {optionsValues:optionsValuesResponse.message}});
+      notFound();
+    }
+    let optionsValues = optionsValuesResponse.data ?? [];
 
       return (
           <BrokerOptions 

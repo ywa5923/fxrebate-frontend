@@ -1,19 +1,23 @@
 import { BASE_URL } from "@/constants"
 import { MatrixCell, MatrixData, MatrixHeaders } from "@/types"
+import { getBearerToken } from "./auth-actions"
 
 export async function getMatrixHeaders(
-  language:string,brokerId: number, 
+  language:string,
+  brokerId: number, 
   matrixId: string, 
   brokerIdStrict: number) :Promise<MatrixHeaders> {
-    const url =new URL(BASE_URL+"/matrix/headers")
-      url.searchParams.set("language[eq]", language)
-    url.searchParams.set("broker_id[eq]", brokerId.toString())
-    url.searchParams.set("matrix_id[eq]", matrixId.toString())
-    url.searchParams.set("broker_id_strict[eq]", brokerIdStrict.toString())
 
-    
+    const url =new URL(BASE_URL+`/matrix/headers/${brokerId}`)
+      url.searchParams.set("language", language)
+   //url.searchParams.set("broker_id[eq]", brokerId.toString())
+    url.searchParams.set("matrix_id", matrixId.toString())
+    url.searchParams.set("broker_id_strict", brokerIdStrict.toString())
+
+    console.log("=============url==============", url.toString())
     try {
-      const response = await fetch(url.toString() ,  { cache: "no-store" } )
+      let bearerToken = await getBearerToken();
+      const response = await fetch(url.toString() ,  { cache: "no-store", headers: { Authorization: `Bearer ${bearerToken}` } } )
      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -30,19 +34,20 @@ export async function getMatrixHeaders(
   }
 
   export async function getMatrixData(brokerId: number, matrixName: string, $isAdmin: boolean,zoneId: string|null=null):Promise<MatrixCell[][]> {
-    const url =new URL(BASE_URL+"/matrix")
-    url.searchParams.set("broker_id", brokerId.toString())
+    const url =new URL(BASE_URL+`/matrix/${brokerId}`)
+   // url.searchParams.set("broker_id", brokerId.toString())
     url.searchParams.set("matrix_name", matrixName)
-    url.searchParams.set("is_admin", $isAdmin.toString())
+    //url.searchParams.set("is_admin", $isAdmin.toString())
     if(zoneId){
       url.searchParams.set("zone_id", zoneId)
     }
 
     
     try {
+      let bearerToken = await getBearerToken();
       const response = await fetch(
         url.toString(),
-        { cache: "no-store" }  
+        { cache: "no-store", headers: { Authorization: `Bearer ${bearerToken}` } }  
       )
      
       if (!response.ok) {
@@ -57,7 +62,8 @@ export async function getMatrixHeaders(
   }
 
   export async function saveMatrixData(is_admin: boolean,brokerId: number, matrixName: string, matrixData: MatrixCell[][],zoneId: string|null=null):Promise<void> {
-    const url =new URL(BASE_URL+"/matrix/store")
+    const url =new URL(BASE_URL+`/matrix/store/${brokerId}`)
+    let token = await getBearerToken();
    const response = await fetch(
         url.toString(),
         {
@@ -65,6 +71,7 @@ export async function getMatrixHeaders(
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             matrix: matrixData,

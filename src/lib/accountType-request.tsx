@@ -3,6 +3,7 @@ import { BASE_URL } from "@/constants";
 import logger from "@/lib/logger";
 import { UrlPayload } from "@/types/Url";
 import { validateId } from "@/lib/validateId";
+import { getBearerToken } from "./auth-actions";
 
 export async function saveAccountTypeLink(data:UrlPayload)
 {
@@ -11,6 +12,7 @@ export async function saveAccountTypeLink(data:UrlPayload)
     const linkLogger = logger.child('lib/accountType-request/saveAccountTypeLink');
     
     try{
+        const token = await getBearerToken();
         let validatedUrlableId = validateId(urlable_id,{nullable:true});
         url = new URL(BASE_URL + `/account-types/${validatedUrlableId}/urls`);
         linkLogger.debug('Data received from client in server action:', { context: {validatedUrlableId,url,data,payload:JSON.stringify(data)} });
@@ -20,6 +22,7 @@ export async function saveAccountTypeLink(data:UrlPayload)
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(data),
     });

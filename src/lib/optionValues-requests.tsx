@@ -4,6 +4,7 @@ import { BASE_URL } from "@/constants";
 import logger from "@/lib/logger";
 import { OptionValue } from "@/types";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getBearerToken } from "./auth-actions";
 
 // Cloudflare R2 configuration
 const CLOUDFLARE_KEY = "f4807109289c15ecc5bedcdfbe77c1a0";
@@ -230,13 +231,16 @@ export async function submitBrokerProfile(
   //Send to PHP server
   try {
     let url = BASE_URL + `/brokers/${broker_id}/option-values`;
+    let token = await getBearerToken();
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
     const response = await fetch(url, {
       method:
         orginalOptionValues && orginalOptionValues.length > 0 ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers: headers,
       body: JSON.stringify(requestData),
     });
 

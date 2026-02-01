@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import logger from "@/lib/logger";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 
 interface StaticMatrixProps {
   brokerId?: number|undefined ;
@@ -51,7 +52,6 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
     if (typeof value === "object") {
       if ("text" in value) return String(value.text ?? "");
 
-  
     }
     return String(value);
   };
@@ -90,47 +90,31 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       setLoading(true);
     
       try {
-
-        
-        const searchParams = new URLSearchParams({
-          "language[eq]": language,
-          "col_group[eq]": stepSlug,
-          "row_group[eq]": "challenge",
-        }).toString();
-        const headersUrl = `/matrix/headers?${searchParams}`;
-
+        const headersUrl = `/matrix/headers/${brokerId}?language=${language}&col_group=${stepSlug}&row_group=challenge`;
         log.info("Fetching headers from:", { url: headersUrl });
-        console.log("Fetching challenges headers from:", { url: headersUrl });
-       console.log("ssssssssssssstepslug:", stepSlug);
-        const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, true, {
+        const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, UseTokenAuth.Yes, {
           method: "GET",
-        });
+        }, ErrorMode.Return); 
 
         if (!headearsResponse.success || !headearsResponse.data) {
           toast.error(headearsResponse.message);
           return;
         }
 
-        const { columnHeaders, rowHeaders } = headearsResponse.data;
-        // Fetch headers
-      //  const { columnHeaders, rowHeaders } = await getChallengeHeaders(language, stepSlug, "challenge");
-      
-      
-      
-        log.info("Headers:", { columnHeaders, rowHeaders });
-        console.log("challenges Headers:", { columnHeaders, rowHeaders });
-        
+       const { columnHeaders, rowHeaders } = headearsResponse.data;
+       log.info("Headers:", { columnHeaders, rowHeaders });
+     
         // Set headers immediately to prevent layout shift
         setColumnHeaders(columnHeaders);
         setRowHeaders(rowHeaders);
 
         // Fetch initial data
         //if the matrix is use to save placeholders data,the amountId will be null because placeholders differs only by step
-        const amountIdParam: string | null = type === "challenge" ? amountId.toString()  : null;
+        const amountIdParam: string | null = type === "challenge" && amountId ? amountId.toString()  : null;
     
           const params = new URLSearchParams({
-            ...(brokerId ? { broker_id: brokerId.toString() } : {}),
-            is_placeholder: type === "placeholder" ? "1" : "0",
+            //...(brokerId ? { broker_id: brokerId.toString() } : {}),
+           // is_placeholder: type === "placeholder" ? "1" : "0",
             category_id: categoryId.toString(),
             step_id: stepId.toString(),
             language,
@@ -138,7 +122,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             ...(zoneId !== null && zoneId !== undefined ? { zone_id: zoneId.toString() } : {}),
           });
 
-          const challengeResponse = await apiClient<ChalengeData&ChallengePlaceholders>(`/challenges?${params.toString()}`, true, {
+          let challengeUrl = type === "placeholder" ?'/challenges/placeholders':`/challenges/${brokerId}`;
+          const challengeResponse = await apiClient<ChalengeData&ChallengePlaceholders>(`${challengeUrl}?${params.toString()}`, true, {
             method: "GET",
           });
 
@@ -147,13 +132,13 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             return;
           }
 
-          const data = challengeResponse.data;
-          if (!data) {
+        
+          if (!challengeResponse.data) {
             toast.error("No data received");
             return;
           }
 
-          log.debug("Data received:", { url:`/challenges?${params.toString()}`,data:data,json:JSON.stringify(data,null,2) });
+          log.debug("Data received:", { url:`/challenges?${params.toString()}`,data:challengeResponse.data,json:JSON.stringify(challengeResponse.data,null,2) });
           let {matrix: initialData,
               affiliate_master_link, 
               affiliate_link, 
@@ -161,7 +146,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               matrix_placeholders_array,
               affiliate_master_link_placeholder,
               affiliate_link_placeholder,
-              evaluation_cost_discount_placeholder}=data;
+              evaluation_cost_discount_placeholder}=challengeResponse.data;
         
         // Set the placeholder state
         setIsPlaceholder(type === "placeholder" || false);
@@ -200,30 +185,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         if (initialData && Object.keys(initialData).length > 0) {
           
            if ( type === "challenge") {
-            // If admin mode, ensure public_value is populated from value if empty
-           // const processedData = { ...initialData } as MatrixCell[][];
-            // Object.keys(processedData).forEach((rowKey) => {
-             //    let rowIndex = parseInt(rowKey);
-            //   if (processedData[rowIndex]) {
-            //     processedData[rowIndex] = processedData[rowIndex].map((cell: MatrixCell) => {
-            //       // Check if public_value is empty or has null values
-            //       const isNewEntry = cell.is_updated_entry;
-            //       const hasPublicValue = cell.public_value && 
-            //         Object.keys(cell.public_value).length > 0 && 
-            //         Object.values(cell.public_value).some(val => val !== null && val !== undefined && val !== "");
-                  
-            //         let publicValue = is_admin ? (hasPublicValue ? cell.public_value : cell.value) : cell.public_value;
-
-                 
-            //       return {
-            //         ...cell,
-            //         public_value: publicValue,
-            //         placeholder: matrix_placeholders_array?.[cell.rowHeader+'-'+cell.colHeader]??null
-                   
-            //       };
-            //     });
-            //   }
-            // });
+            
             const processedData = initialData.map((row) =>
               row.map((cell) => {
                 const hasPublicValue =
@@ -282,7 +244,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       }
     };
     loadHeadersAndData();
-  }, [language,  categoryId, stepId, amountId, zoneId]);
+  }, [language,  categoryId, stepId, amountId, zoneId,stepSlug]);
 
 
 

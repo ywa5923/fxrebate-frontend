@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Minus, X, Save, Copy } from "lucide-react";
+import { Plus, X, Save, Copy } from "lucide-react";
 import { CreateSelect } from "@/components/CreateSelect";
 import { cn } from "@/lib/utils";
 import {
@@ -15,27 +15,11 @@ import {
 } from "@/components/ui/select";
 import { CreateMultiSelect } from "@/components/CreateMultiSelect";
 import { useEffect } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
 import { toast } from "sonner";
-import { ColumnHeader, MatrixData, MatrixCell, RowHeader } from "@/types";
-import { saveMatrixData } from "@/lib/matrix-requests";
-
-// interface DynamicMatrixProps {
-//   rowHeaders: string[]
-//   columnHeaders: {
-//     value: string
-//     type?: 'numberWithUnit' | 'numberWithReferenceWithUnit'
-//     units?: string[]
-//     references?: string[]
-//   }[]
-//   onChange?: (matrix: MatrixCell[][]) => void
-// }
+import { ColumnHeader, MatrixCell, RowHeader } from "@/types";
+import { apiClient } from "@/lib/api-client";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import logger from "@/lib/logger";
 
 interface DynamicMatrixProps {
   // rowHeaders: {
@@ -77,6 +61,7 @@ export function DynamicMatrix({
   is_admin,
   brokerId,
 }: DynamicMatrixProps) {
+  const log = logger.child("components/ui/DynamicMatrix");
   const [status, setStatus] = React.useState<string>("");
   // Track copied cells so the copy button persists and stays green
   // Key format: `${rowIndex}-${colIndex}`
@@ -352,37 +337,31 @@ export function DynamicMatrix({
     setValidationErrors({});
 
     try {
-      // const response = await fetch(
-      //   "http://localhost:8080/api/v1/matrix/store",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Accept: "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       matrix,
-      //       broker_id: brokerId,
-      //       matrix_name: "Matrix-1",
-      //     }),
-      //   }
-      // );
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to save matrix data");
-      // }
+      
 
       // const data = await response.json();
-      const data = await saveMatrixData(
-        is_admin,
-        brokerId,
-        "Matrix-1",
-        matrix as MatrixCell[][]
-      );
-      console.log("data========================================",JSON.stringify(matrix,null,2));
+      // const data = await saveMatrixData(
+      //   is_admin,
+      //   brokerId,
+      //   "Matrix-1",
+      //   matrix as MatrixCell[][]
+      // );
+      const response = await apiClient<MatrixCell[][]>(`/matrix/store/${brokerId}`, UseTokenAuth.Yes, {
+        method: "POST",
+        body: JSON.stringify({
+          matrix,
+          broker_id: brokerId,
+          matrix_name: "Matrix-1",
+        })}, ErrorMode.Throw);
+        
       setStatus("success");
       toast.success("Matrix data saved successfully");
-      console.log("Matrix data saved successfully:", data);
+      
+      log.debug("Matrix data saved successfully", {context: {data:JSON.stringify({
+          matrix,
+          broker_id: brokerId,
+          matrix_name: "Matrix-1",
+        })}});
     } catch (error) {
       console.error("Error saving matrix data:", error);
       setStatus("error");
@@ -576,7 +555,7 @@ export function DynamicMatrix({
                                         <div className="w-full">
                                           <Input
                                             type="text"
-                                            value={value}
+                                            value={value === true ? "" : String(value ?? "")}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               updateCell(
@@ -639,7 +618,7 @@ export function DynamicMatrix({
                                         <div className="w-full">
                                           <Input
                                             type="text"
-                                            value={value}
+                                            value={value === true ? "" : String(value ?? "")}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               updateCell(
@@ -662,7 +641,7 @@ export function DynamicMatrix({
                                       {item.type === "textarea" && (
                                         <div className="w-full">
                                           <textarea
-                                            value={value}
+                                            value={value === true ? "" : String(value ?? "")}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               updateCell(
