@@ -6,9 +6,14 @@ import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 import { X } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { toast } from "sonner";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
+  defaultCategories?: ChallengeType[];
   brokerId?: number ;
   type: "challenge" | "placeholder";
   is_admin: boolean;
@@ -20,15 +25,16 @@ type ChallengeState = {
   amountId: number | null;
 };
 
-type HiddenState = {
-  categories: number[];
-  steps: number[];
-  amounts: number[];
-};
+// type HiddenState = {
+//   categories: number[];
+//   steps: number[];
+//   amounts: number[];
+// };
 
-function ChallengeCategories({ categories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
-  const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
+function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
+  //const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
   const [isEditingHiddenState, setIsEditingHiddenState] = useState(false);
+  const router = useRouter();
   const [challengeState, setChallengeState] = useState<ChallengeState>(() => {
     const firstCategory = categories[0];
     if (!firstCategory) {
@@ -79,35 +85,39 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
     setChallengeState(prev => ({ ...prev, amountId: amount.id }));
   };
 
-  const handleCategoryHide = (categoryId: number) => {
-    const selectedCategory = categories.find((cat) => cat.id === categoryId);
-    if (!selectedCategory) return;
-    let categoryStepsArray = selectedCategory.steps.map((step) => step.id);
-    let categoryAmountsArray = selectedCategory.amounts.map((amount) => amount.id);
-   
-    setHiddenState((prev: HiddenState) => ({
-      ...prev,
-      categories: [...prev.categories, categoryId],
-      steps: [...prev.steps, ...categoryStepsArray],
-      amounts: [...prev.amounts, ...categoryAmountsArray],
-    } as HiddenState));
-    setChallengeState({
-      categoryId: categories[0].id,
-      stepId: categories[0].steps[0]?.id || null,
-      amountId: categories[0].amounts[0]?.id || null,
-    });
+  const handleCategoryHide = async (categoryId: number) => {
+
+    let deleteUrl = `/challenges/category/${brokerId}?category_id=${categoryId}`;
+    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
+      method: "DELETE",
+    }, ErrorMode.Return);
+    if (deleteResponse.success) {
+      router.refresh();
+    }else{
+      toast.error(deleteResponse.message);
+    }
   };
-  const handleStepHide = (stepId: number) => {
-    setHiddenState((prev: HiddenState) => ({
-      ...prev,
-      steps: [...prev.steps, stepId],
-    } as HiddenState));
+  const handleStepHide = async (stepId: number) => {
+    let deleteUrl = `/challenges/step/${brokerId}?step_id=${stepId}`;
+    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
+      method: "DELETE",
+    }, ErrorMode.Return);
+    if (deleteResponse.success) {
+      router.refresh();
+    }else{
+      toast.error(deleteResponse.message);
+    }
   };
-  const handleAmountHide = (amountId: number) => {
-    setHiddenState((prev: HiddenState) => ({
-      ...prev,
-      amounts: [...prev.amounts, amountId],
-    } as HiddenState));
+  const handleAmountHide = async (amountId: number) => {
+    let deleteUrl = `/challenges/amount/${brokerId}?amount_id=${amountId}`;
+    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
+      method: "DELETE",
+    }, ErrorMode.Return);
+    if (deleteResponse.success) {
+      router.refresh();
+    }else{
+      toast.error(deleteResponse.message);
+    }
   };
 
   if (!categories.length) {
@@ -140,7 +150,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
             </button>
             <button
               type="button"
-              onClick={() => setHiddenState({ categories: [], steps: [], amounts: [] })}
+             
               className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-orange-300 text-orange-700 bg-white hover:bg-orange-50 dark:bg-orange-900/10 dark:text-orange-300 dark:border-orange-700 dark:hover:bg-orange-900/20 focus:outline-none focus:ring-2 focus:ring-orange-300"
             >
               Reset tabs
@@ -153,7 +163,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           {/* STEP 1: Category Tabs */}
           <div className="min-h-[60px] md:min-h-[72px] flex items-center">
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full">
-              {categories.filter(c => !hiddenState.categories.includes(c.id)).map((category) => (
+              {categories.map((category) => (
                 <div key={category.id} className="relative inline-block">
                 <button
                   key={category.id}
@@ -193,7 +203,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           <div className="min-h-[48px] md:min-h-[56px] flex items-center">
             {derivedState.selectedCategory && derivedState.steps.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.steps.filter(s => !hiddenState.steps.includes(s.id)).map((step) => (
+                {derivedState.steps.map((step) => (
                    <div key={step.id} className="relative inline-block">
                   <button
                     key={step.id}
@@ -238,7 +248,7 @@ function ChallengeCategories({ categories, brokerId, type, is_admin }: Challenge
           <div className="min-h-[40px] md:min-h-[48px] flex items-center">
             {type === "challenge" && derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.amounts.filter(a => !hiddenState.amounts.includes(a.id)).map((amount) => (
+                {derivedState.amounts.map((amount) => (
                   <div key={amount.id} className="relative inline-block">
                   <button
                     key={amount.id}

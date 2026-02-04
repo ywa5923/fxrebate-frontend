@@ -26,11 +26,6 @@ export interface ChallengeTypesResponse {
   data: ChallengeType[];
 }
 
-// export interface ChallengeMatrixExtraData {
-//   affiliateLink: AffiliateLink;
-//   evaluationCostDiscount: EvaluationCostDiscount;
-//   masterAffiliateLink: AffiliateLink;
-// }
 
 export interface ChallengeMatrixExtraData {
   affiliate_link: AffiliateLink;

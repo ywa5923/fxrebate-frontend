@@ -18,7 +18,7 @@ import Rebates from "./Rebates";
 //import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
-import { getChallengeCategories } from "@/lib/getChallengeCategories";
+//import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
@@ -242,9 +242,30 @@ export default async function BrokerProfilePage({
 
    
     if(categorySlug=='challenge-matrix' ){
-      const categories:ChallengeType[] = await getChallengeCategories('en');
+      let brokerChallengeCategoriesUrl = `/challenges/categories/${brokerId}`;
+      let  defaultChallengeCategoriesUrl = `/challenges/default-categories`;
+
+      const [brokerChallengeCategoriesResponse, defaultChallengeCategoriesResponse] = await Promise.all([
+        apiClient<ChallengeType[]>(brokerChallengeCategoriesUrl, UseTokenAuth.Yes, {
+          method: "GET",
+          cache: "no-store",
+        }, ErrorMode.Return),
+        apiClient<ChallengeType[]>(defaultChallengeCategoriesUrl, UseTokenAuth.Yes, {
+          method: "GET",
+          cache: "no-store",
+        }, ErrorMode.Return),
+      ]);
+     
+      if (!brokerChallengeCategoriesResponse.success || !defaultChallengeCategoriesResponse.success) {
+        log.error("Error fetching broker challenge categories or default challenge categories", {context: {brokerChallengeCategories:brokerChallengeCategoriesResponse.message, defaultChallengeCategories:defaultChallengeCategoriesResponse.message}});
+        notFound();
+      }
+      let brokerCategories = brokerChallengeCategoriesResponse.data ?? [];
+      let defaultCategories = defaultChallengeCategoriesResponse.data ?? [];
+     
+  
     
-      return <ChallengeCategories key={brokerId} is_admin={is_admin} categories={categories} brokerId={brokerId} type="challenge"/>
+      return <ChallengeCategories key={brokerId} is_admin={is_admin} categories={brokerCategories} defaultCategories={defaultCategories} brokerId={brokerId} type="challenge"/>
     }
     
     if(categorySlug=='rebates'){

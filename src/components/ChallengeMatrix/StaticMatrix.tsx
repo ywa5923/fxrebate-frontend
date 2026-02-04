@@ -90,7 +90,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       setLoading(true);
     
       try {
-        const headersUrl = `/matrix/headers/${brokerId}?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+        //const headersUrl = `/matrix/headers/${brokerId}?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+        let headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+       
         log.info("Fetching headers from:", { url: headersUrl });
         const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, UseTokenAuth.Yes, {
           method: "GET",
@@ -121,8 +123,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             ...(amountId ? { amount_id: amountId.toString() } : {}),
             ...(zoneId !== null && zoneId !== undefined ? { zone_id: zoneId.toString() } : {}),
           });
-
+         
           let challengeUrl = type === "placeholder" ?'/challenges/placeholders':`/challenges/${brokerId}`;
+      
           const challengeResponse = await apiClient<ChalengeData&ChallengePlaceholders>(`${challengeUrl}?${params.toString()}`, true, {
             method: "GET",
           });
@@ -143,11 +146,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               affiliate_master_link, 
               affiliate_link, 
               evaluation_cost_discount,
-              matrix_placeholders_array,
+              matrix_placeholders_array,//matrix_placeholders_array
               affiliate_master_link_placeholder,
               affiliate_link_placeholder,
               evaluation_cost_discount_placeholder}=challengeResponse.data;
-        
+              
         // Set the placeholder state
         setIsPlaceholder(type === "placeholder" || false);
 
@@ -422,24 +425,17 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       };
       console.log("Saving payload:", payload);
 
-      const response = await apiClient<ChalengeData>("/challenges", true, {
+      let saveUrl = type === "placeholder" ? "/challenges/matrix/placeholders" : `/challenges/${brokerId}`;
+      const response = await apiClient<ChalengeData>(saveUrl, UseTokenAuth.Yes, {
         method: "POST",
         body: JSON.stringify(payload),
-      });
+      }, ErrorMode.Return);
 
       if (!response.success) {
         toast.error(response.message);
         return;
       }
 
-      // const res = await fetch(BASE_URL+"/challenges", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(payload),
-      // });
-      // if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      
-      // const data = await res.json();
       router.refresh();
       toast.success("Matrix data saved successfully");
       console.log("Saved successfully:", response.data);
