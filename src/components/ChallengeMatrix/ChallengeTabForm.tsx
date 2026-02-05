@@ -37,6 +37,7 @@ type ItemOption = { id: number; name: string };
 
 interface ChallengeTabFormProps {
   tabType: string;
+  selectedCategory?: ChallengeType;
   categories: ChallengeType[];
   defaultCategories: ChallengeType[];
   addApiUrl: string;
@@ -45,6 +46,7 @@ interface ChallengeTabFormProps {
 
 export default function ChallengeTabForm({
   tabType,
+  selectedCategory,
   categories,
   defaultCategories,
   addApiUrl,
@@ -52,10 +54,12 @@ export default function ChallengeTabForm({
 }: ChallengeTabFormProps) {
   const isStepType = tabType === "step";
   const isAmountType = tabType === "amount";
+  const isCategoryType = tabType === "category";
 
   const categoriesList = useMemo(
-    () => categories?.map((c) => ({ id: c.id, slug: c.slug, name: c.name })) ?? [],
-    [categories]
+    () =>
+      categories?.map((c) => ({ id: c.id, slug: c.slug, name: c.name })) ?? [],
+    [categories],
   );
 
   const form = useForm<FormValues>({
@@ -63,30 +67,46 @@ export default function ChallengeTabForm({
     defaultValues: { category: "", step: "", amount: "" },
   });
 
-  const selectedCategoryId = form.watch("category");
+  //const selectedCategoryId = form.watch("category");
+  const selectedCategoryId = selectedCategory?.id.toString() ?? "";
 
   const stepsNotInBrokerList = useMemo((): ItemOption[] => {
     if (!isStepType || !selectedCategoryId) return [];
-    const brokerSelectedCategory = categories?.find((c) => c.id === Number(selectedCategoryId));
+    const brokerSelectedCategory = categories?.find(
+      (c) => c.id === Number(selectedCategoryId),
+    );
     if (!brokerSelectedCategory) return [];
     const slug = brokerSelectedCategory.slug;
-    const defaultCategorySteps = defaultCategories?.find((c) => c.slug === slug)?.steps ?? [];
+    const defaultCategorySteps =
+      defaultCategories?.find((c) => c.slug === slug)?.steps ?? [];
     const brokerSteps = categories?.find((c) => c.slug === slug)?.steps ?? [];
-    const filtered = defaultCategorySteps.filter((s) => !brokerSteps.some((bs) => bs.slug === s.slug));
+    const filtered = defaultCategorySteps.filter(
+      (s) => !brokerSteps.some((bs) => bs.slug === s.slug),
+    );
     return filtered.map((s) => ({ id: s.id, name: s.name }));
   }, [isStepType, selectedCategoryId, categories, defaultCategories]);
 
   const amountsNotInBrokerList = useMemo((): ItemOption[] => {
     if (!isAmountType || !selectedCategoryId) return [];
-    const brokerSelectedCategory = categories?.find((c) => c.id === Number(selectedCategoryId));
+    const brokerSelectedCategory = categories?.find(
+      (c) => c.id === Number(selectedCategoryId),
+    );
     if (!brokerSelectedCategory) return [];
     const slug = brokerSelectedCategory.slug;
-    const defaultCategoryAmounts = defaultCategories?.find((c) => c.slug === slug)?.amounts ?? [];
-    const brokerAmounts = categories?.find((c) => c.slug === slug)?.amounts ?? [];
+    const defaultCategoryAmounts =
+      defaultCategories?.find((c) => c.slug === slug)?.amounts ?? [];
+    const brokerAmounts =
+      categories?.find((c) => c.slug === slug)?.amounts ?? [];
     const filtered = defaultCategoryAmounts.filter(
-      (a) => !brokerAmounts.some((ba) => ba.amount === a.amount && ba.currency === a.currency)
+      (a) =>
+        !brokerAmounts.some(
+          (ba) => ba.amount === a.amount && ba.currency === a.currency,
+        ),
     );
-    return filtered.map((a) => ({ id: a.id, name: `${a.amount} ${a.currency}` }));
+    return filtered.map((a) => ({
+      id: a.id,
+      name: `${a.amount} ${a.currency}`,
+    }));
   }, [isAmountType, selectedCategoryId, categories, defaultCategories]);
 
   async function onSubmit(values: FormValues) {
@@ -107,14 +127,14 @@ export default function ChallengeTabForm({
       isStepType && values.step
         ? { category_id: categoryId, step_id: Number(values.step) }
         : isAmountType && values.amount
-          ? { category_id: categoryId, amount_id: Number(values.amount) }
-          : { category_id: categoryId };
+        ? { category_id: categoryId, amount_id: Number(values.amount) }
+        : { category_id: categoryId };
 
     const response = await apiClient<unknown>(
       addApiUrl,
       UseTokenAuth.Yes,
       { method: "POST", body: JSON.stringify(body) },
-      ErrorMode.Return
+      ErrorMode.Return,
     );
 
     if (response.success) {
@@ -125,6 +145,21 @@ export default function ChallengeTabForm({
       toast.error(response.message ?? "Failed to add");
     }
   }
+
+  const submitDisabled = (() => {
+    if (categoriesList.length === 0 && isCategoryType) return true;
+    if (
+      isStepType &&
+      (stepsNotInBrokerList.length === 0 || !form.watch("step"))
+    )
+      return true;
+    if (
+      isAmountType &&
+      (amountsNotInBrokerList.length === 0 || !form.watch("amount"))
+    )
+      return true;
+    return false;
+  })();
 
   return (
     <Form {...form}>
@@ -141,8 +176,10 @@ export default function ChallengeTabForm({
                   if (isStepType) form.setValue("step", "");
                   if (isAmountType) form.setValue("amount", "");
                 }}
-                value={field.value}
-                disabled={categoriesList.length === 0}
+                //value={field.value}
+                value={selectedCategory?.id.toString() ?? ""}
+                //disabled={categoriesList.length === 0}
+                disabled={isStepType || isAmountType}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -173,7 +210,11 @@ export default function ChallengeTabForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Step</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={stepsNotInBrokerList.length === 0}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={stepsNotInBrokerList.length === 0}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a step" />
@@ -192,6 +233,16 @@ export default function ChallengeTabForm({
             )}
           />
         )}
+        {isStepType && stepsNotInBrokerList.length == 0 && (
+          <FormItem>
+            <FormLabel>Step</FormLabel>
+            <p className="text-sm text-muted-foreground">
+              No more steps to add
+            </p>
+          </FormItem>
+        )}
+
+        <br />
         {isAmountType && amountsNotInBrokerList.length > 0 && (
           <FormField
             control={form.control}
@@ -199,7 +250,11 @@ export default function ChallengeTabForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Amount</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={amountsNotInBrokerList.length === 0}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={amountsNotInBrokerList.length === 0}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select an amount" />
@@ -218,13 +273,19 @@ export default function ChallengeTabForm({
             )}
           />
         )}
+        {isAmountType && amountsNotInBrokerList.length == 0 && (
+          <FormItem>
+            <FormLabel>Amount</FormLabel>
+            <p className="text-sm text-muted-foreground">
+              No more amounts to add
+            </p>
+          </FormItem>
+        )}
+
         <Button
           type="submit"
-          disabled={
-            categoriesList.length === 0 ||
-            (isStepType && stepsNotInBrokerList.length > 0 && !form.watch("step")) ||
-            (isAmountType && amountsNotInBrokerList.length > 0 && !form.watch("amount"))
-          }
+          disabled={submitDisabled}
+          className="bg-green-800 hover:bg-green-900 text-white disabled:opacity-50"
         >
           Add {tabType}
         </Button>

@@ -19,11 +19,13 @@ import { ChallengeType } from "@/types";
 
 export default function AddTabBtn({
   tabType,
+  selectedCategory,
   categories,
   defaultCategories,
   addApiUrl,
 }: {
   tabType: string;
+  selectedCategory?: ChallengeType;
   categories: ChallengeType[];
   defaultCategories?: ChallengeType[];
   addApiUrl: string;
@@ -65,6 +67,7 @@ export default function AddTabBtn({
     <ScrollArea className="max-h-[70vh] p-1">
       <ChallengeTabForm
         tabType={tabType}
+        selectedCategory={selectedCategory}
         categories={categories}
         defaultCategories={defaultCategories ?? []}
         addApiUrl={addApiUrl}

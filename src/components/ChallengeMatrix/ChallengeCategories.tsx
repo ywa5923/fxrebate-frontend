@@ -146,7 +146,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
               onClick={() => setIsEditingHiddenState(!isEditingHiddenState)}
               className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-sky-600 text-sky-700 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300"
             >
-              {isEditingHiddenState ? "Save current state" : "Edit tabs visibility"}
+              {isEditingHiddenState ? "Close Edit Mode" : "Edit tabs visibility"}
             </button>
            
           </div>
@@ -238,7 +238,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   ))}
                   {isEditingHiddenState && (
                     <span className="inline-flex flex-shrink-0 self-center">
-                      <AddTabBtn tabType="step" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
+                      <AddTabBtn tabType="step" selectedCategory={derivedState.selectedCategory} categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
                     </span>
                   )}
                 </>
@@ -249,7 +249,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   </span>
                   {isEditingHiddenState && (
                     <span className="inline-flex flex-shrink-0 self-center">
-                      <AddTabBtn tabType="step" categories={categories} defaultCategories={defaultCategories} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
+                      <AddTabBtn tabType="step" selectedCategory={derivedState.selectedCategory} categories={categories} defaultCategories={defaultCategories} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
                     </span>
                   )}
                 </>
@@ -297,7 +297,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   ))}
                   {isEditingHiddenState && (
                     <span className="inline-flex flex-shrink-0 self-center">
-                      <AddTabBtn tabType="amount" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
+                      <AddTabBtn tabType="amount" selectedCategory={derivedState.selectedCategory} categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
                     </span>
                   )}
                 </>
@@ -308,7 +308,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   </span>
                   { isEditingHiddenState && (
                     <span className="inline-flex flex-shrink-0 self-center">
-                      <AddTabBtn tabType="amount" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
+                      <AddTabBtn tabType="amount" selectedCategory={derivedState.selectedCategory} categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
                     </span>
                   )}
                 </>
