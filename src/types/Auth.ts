@@ -1,12 +1,16 @@
-export interface AuthUser {
-    id: number;
-    name: string;
-    email: string;
-    user_type: string;
-    role: string;
-    broker_context?: BrokerContext;
-    permissions?: Array<Permission>
-  }
+import { BrokerInfo } from "@/app/schemas/auth-schema";
+export type { AuthUser } from "@/app/schemas/auth-schema";
+
+
+// export interface AuthUser {
+//     id: number;
+//     name: string;
+//     email: string;
+//     user_type: string;
+//     role: string;
+//     broker_context?: BrokerContext;
+//     permissions?: Array<Permission>
+//   }
 
   export interface BrokerContext {
     broker_id: number;
@@ -21,14 +25,14 @@ export interface AuthUser {
     data: BrokerInfo;
   }
 
-  export interface BrokerInfo {
-    broker_id: number;
-    broker_trading_name?: string|null;
-    country_id:number;
-    country_code:string;
-    zone_id:number;
-    zone_code:string;
-  }
+  // export interface BrokerInfo {
+  //   broker_id: number;
+  //   broker_trading_name?: string|null;
+  //   country_id:number;
+  //   country_code:string;
+  //   zone_id:number;
+  //   zone_code:string;
+  // }
 
 
   export interface Permission {

@@ -1,7 +1,7 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 //import { getOptionsValues } from "@/lib/getOptionsValues";
 import { MatrixCell } from "@/types";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 //import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
 import { OptionValue } from "@/types";
@@ -22,8 +22,8 @@ import Contests from "./Contests";
 import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
-import {  isAuthenticated} from "@/lib/auth-actions";
-import { hasPermission } from "@/lib/permissions";
+import {  getBrokerInfo, isAuthenticated} from "@/lib/auth-actions";
+
 import { apiClient } from "@/lib/api-client";
 
 import { MatrixHeaders } from "@/types/Matrix";
@@ -31,6 +31,7 @@ import { MatrixHeaders } from "@/types/Matrix";
 import { DynamicTableRow } from "@/types";
 import { AccountTypeLinks } from "@/types/AccountTypeLinks";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { canAdminBroker } from "@/lib/auth-actions";
 
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
@@ -40,47 +41,36 @@ export default async function BrokerProfilePage({
 }: { 
   params: Promise<{ optionCategory: string[], brokerId: string }> 
 }) {
+  let log = logger.child('Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx');
  
-  // Check authentication server-side
+  const resolvedParams = await params;
+  const brokerId = parseInt(resolvedParams.brokerId);
+  const categoryId = resolvedParams.optionCategory[0];
+  const categorySlug = resolvedParams.optionCategory[1];
   
+  //========Check if user is authenticated and redirect to login if not======================
+  const user: AuthUser | null = await isAuthenticated();
+  if (!user) {
+    log.info('User not authenticated, redirecting to login');
+   redirect('/en');
+   }
   
+
+   //========Check if user can administer broker=============
   // // Get user permissions and broker context
-  // const is_admin = await isAdmin();
-  // const brokerContext = await getBrokerContext();
+   const is_admin= await canAdminBroker(brokerId);
+   let brokerInfo = await getBrokerInfo(brokerId);
+   let broker_type = brokerInfo.broker_type;
+   log.info('User authenticated successfully', {user: user, is_admin: is_admin});
+   //========================End of security checks==============================================
   
-  // if (!brokerContext) {
-  //   logger.error('Broker context not found for user');
-  //   redirect('/en');
-  // }
-  
-  // console.log("user========================================", user);
-  // let brokerId = brokerContext.broker_id;
-  //let brokerId = 181;
-  let is_admin = false;
-  let broker_type = 'broker';//crypto, props, broker
   let language_code='en';
   let zone_code='eu';
   //brokertype: broker, props, crypto
- let log = logger.child('Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx');
+
  
- // Add a small delay to ensure cookies are available after redirect
- await new Promise(resolve => setTimeout(resolve, 100));
-
-  try {
-   // const user: AuthUser | null = await isAuthenticated();
-    //if (!user) {
-    //  pageLogger.info('User not authenticated, redirecting to login');
-   // redirect('/en');
-   // }
-
-   // pageLogger.info('User authenticated', { user: user,permissions: user?.permissions?.[0]?.type });
-
-    const resolvedParams = await params;
-    const brokerId = parseInt(resolvedParams.brokerId);
-    const categoryId = resolvedParams.optionCategory[0];
-    const categorySlug = resolvedParams.optionCategory[1];
-
-   // let is_admin=hasPermission(user, 'manage', 'broker', brokerId);
+   // Add a small delay to ensure cookies are available after redirect
+   await new Promise(resolve => setTimeout(resolve, 100));
     
     if (!categoryId) {
       console.log("No category ID provided");
@@ -347,8 +337,5 @@ export default async function BrokerProfilePage({
         
       );
     }
-  } catch (error) {
-    console.error("Error loading broker profile page:", error);
-    throw error;
-  }
+ 
 }

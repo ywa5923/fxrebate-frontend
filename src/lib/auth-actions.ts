@@ -206,8 +206,8 @@ export async function getBearerToken(): Promise<string | null> {
 /**
  * Get user data from API using bearer token
  */
-export async function getUserData(): Promise<AuthUser> {
-  const log = logger.child('lib/auth-actions/getUserData');
+export async function getLoggedInUserData(): Promise<AuthUser> {
+  const log = logger.child('lib/auth-actions/getLoggedInUserData');
 
   try {
     // Get bearer token
@@ -223,6 +223,8 @@ export async function getUserData(): Promise<AuthUser> {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${bearerToken}`,
       },
+      cache: 'no-store',
+     
     });
 
     // Check HTTP response
@@ -271,7 +273,7 @@ export async function getUserData(): Promise<AuthUser> {
 export async function isAuthenticated(): Promise<AuthUser | null> {
   const log = logger.child('lib/auth-actions/isAuthenticated');
   try {
-    const user = await getUserData();
+    const user = await getLoggedInUserData();
     // log.debug('User authenticated successfully', { userId: user.id, userType: user.user_type });
     return user;
   } catch (error) {
@@ -284,6 +286,7 @@ export async function isAuthenticated(): Promise<AuthUser | null> {
 }
 
 /**
+ * To be continued
  * Check if user is super admin
  */
 export async function isSuperAdmin(): Promise<boolean> {
@@ -294,33 +297,23 @@ export async function isSuperAdmin(): Promise<boolean> {
     (user?.permissions?.some(p => p.type === 'super_admin' && p.action === 'manage') || false);
 }
 
-/**
- * Deprecated function
- * Check if user can administer specific broker
- */
-export async function canAdministerBroker(brokerId: number): Promise<boolean> {
-  const user = await isAuthenticated();
-  if (!user) return false;
-
-  if (user.user_type === 'platform_user') {
 
 
-  } else if (user.user_type === 'team_user') {
-    return user?.permissions?.some(p =>
-      p.type === 'broker' &&
-      p.action === 'manage' &&
-      p.resource_id === brokerId
-    ) || false;
-  }
-  return false;
-}
+//Ok
+//check if user can administer broker
 
 export async function canAdminBroker(brokerId: number): Promise<boolean> {
   let log = logger.child('lib/auth-actions/canAdminBroker');
   try {
     const brokerInfo = await getBrokerInfo(brokerId);
-    const user = await getUserData();
+    const user = await getLoggedInUserData();
     
+    if(user != null && user.role === 'super-admin'){
+      //check also for permission type: super-admin and action: manage
+      return user?.permissions?.some(p =>
+        p.type === 'super-admin' && p.action === 'manage'
+      ) || false;
+    }
     //check permissions for the user to manage the broker
     if (user.user_type === 'platform_user') {
       return user?.permissions?.some(p =>
@@ -349,7 +342,7 @@ export async function canAdminBroker(brokerId: number): Promise<boolean> {
 }
 
 /**
- * 
+ * Ok
  * @param brokerId - The ID of the broker to get info for
  * @returns 
  */
@@ -366,6 +359,7 @@ export async function getBrokerInfo(brokerId: number): Promise<BrokerInfo> {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${bearerToken}`,
       },
+      cache: 'no-store'
     });
 
     // fetch() resolved successfully — now check HTTP status
@@ -383,14 +377,9 @@ export async function getBrokerInfo(brokerId: number): Promise<BrokerInfo> {
       throw new Error(data.message || 'API request failed');
     }
     log.debug("Broker info fetched successfully", { data: data.data });
-   // const brokerInfo: BrokerInfo = BrokerInfoSchema.parse(data.data);
-  //  const parsed = BrokerInfoSchema.safeParse(data.data);
-  //  if (!parsed.success) {
-  //   log.error('!!================!! Invalid BrokerInfo shape', { errors: parsed.error.issues });
-  //   throw new Error('Invalid BrokerInfo shape'); // or throw depending on your policy
-  //  }
-  // return parsed.data;
-  return data.data;
+   
+   return data.data;
+
   } catch (err) {
     log.error('!!================!!Error fetching broker info', { error: err instanceof Error ? err.message : err });
     throw err; // rethrow so error.tsx can handle UI
@@ -399,33 +388,8 @@ export async function getBrokerInfo(brokerId: number): Promise<BrokerInfo> {
 
 
 
-/**
- * Get user's broker context
- */
-export async function getBrokerContext(): Promise<AuthUser['broker_context'] | null> {
-  const user = await isAuthenticated();
-  return user?.broker_context || null;
-}
 
 
-
-/**
- * Get user's broker ID from context
- */
-export async function getCurrentBrokerId(): Promise<number | null> {
-  const brokerContext = await getBrokerContext();
-  return brokerContext?.broker_id || null;
-}
-
-/**
- * Check if user can access current broker
- */
-export async function canAccessCurrentBroker(): Promise<boolean> {
-  const brokerId = await getCurrentBrokerId();
-  if (!brokerId) return false;
-
-  return await canAdministerBroker(brokerId);
-}
 
 
 

@@ -158,7 +158,7 @@ export default function ChallengeTabForm({
     );
 
     if (response.success) {
-      toast.success(`${tabType} added successfully`);
+      toast.success(`${tabType.toUpperCase()} added successfully`);
       form.reset({ category: "", step: "", amount: "" });
       onSuccess?.();
     } else {

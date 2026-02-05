@@ -23,6 +23,8 @@ export type Permission = z.infer<typeof PermissionSchema>;
 export const BrokerContextSchema = z.object({
     broker_id: z.number(),
     broker_name: z.string(),
+    broker_type: z.string(),
+    broker_country: z.string(),
     team_id: z.number(),
     team_name: z.string(),
   });
@@ -33,7 +35,9 @@ export const AuthUserSchema = z.object({
     email: z.string(),
     name: z.string(),
     user_type: z.string(),
+    role: z.string().nullable().optional(),
     permissions: z.array(PermissionSchema),
     broker_context: BrokerContextSchema.optional(),
   });
 export type AuthUser = z.infer<typeof AuthUserSchema>;
+
