@@ -25,10 +25,10 @@ import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
 import { ChallengeType } from "@/types";
 
-type FormValues = { category: string; step?: string; amount?: string };
+type FormValues = { category?: string; step?: string; amount?: string };
 
 const formSchema = z.object({
-  category: z.string().min(1, "Please select a category"),
+  category: z.string().optional(),
   step: z.string().optional(),
   amount: z.string().optional(),
 });
@@ -56,6 +56,21 @@ export default function ChallengeTabForm({
   const isAmountType = tabType === "amount";
   const isCategoryType = tabType === "category";
 
+  //====0. For tabType=category==================================
+  //-the categories received in props are the are the broker categories list
+  //-so we need to filter the defaultCategories received in props to get the categories that are not in the broker categories list 
+  //-the user see in the form select box only the default categories that are not in the broker categories list
+  //sent to backend api the id of a selected default category which is cloned and saved in the broker categories table
+  //====1. For tabType=step and amount=========
+  //-the categories received in props are the categories that are in the broker categories list
+  //-defaultcategories are the categories that are not defined bu superadmin to be available for all brokers
+  //the user see in the form select box only the defaultsteps and amounts that are not in the broker steps and amounts list
+  //sent to backend api the id of a selected defaultstep or amount which is cloned and saved in the broker step and amount tables
+  //====2. Seelcted Category==================================
+  //- the selected category recived in props is the category selected by broker, so it's the broker's category not default category
+  
+
+
   const categoriesList = useMemo(
     () =>
       categories?.map((c) => ({ id: c.id, slug: c.slug, name: c.name })) ?? [],
@@ -71,37 +86,49 @@ export default function ChallengeTabForm({
   const selectedCategoryId = selectedCategory?.id.toString() ?? "";
 
   const stepsNotInBrokerList = useMemo((): ItemOption[] => {
+
     if (!isStepType || !selectedCategoryId) return [];
-    const brokerSelectedCategory = categories?.find(
-      (c) => c.id === Number(selectedCategoryId),
-    );
+    // const brokerSelectedCategory = categories?.find(
+    //   (c) => c.id === Number(selectedCategoryId),
+    // );
+    const brokerSelectedCategory = selectedCategory;
     if (!brokerSelectedCategory) return [];
-    const slug = brokerSelectedCategory.slug;
-    const defaultCategorySteps =
-      defaultCategories?.find((c) => c.slug === slug)?.steps ?? [];
-    const brokerSteps = categories?.find((c) => c.slug === slug)?.steps ?? [];
+
+    const selectedCategorySlug = brokerSelectedCategory.slug;
+    const defaultCategorySteps = defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.steps ?? [];
+     
+    //const brokerSteps = categories?.find((c) => c.slug === selectedCategorySlug)?.steps ?? [];
+    const brokerSteps = brokerSelectedCategory?.steps ?? [];
+
+    //filter the default steps to get the steps that are not in the broker steps list
     const filtered = defaultCategorySteps.filter(
       (s) => !brokerSteps.some((bs) => bs.slug === s.slug),
     );
+
     return filtered.map((s) => ({ id: s.id, name: s.name }));
+
   }, [isStepType, selectedCategoryId, categories, defaultCategories]);
 
   const amountsNotInBrokerList = useMemo((): ItemOption[] => {
     if (!isAmountType || !selectedCategoryId) return [];
-    const brokerSelectedCategory = categories?.find(
-      (c) => c.id === Number(selectedCategoryId),
-    );
+      // const brokerSelectedCategory = categories?.find(
+      //   (c) => c.id === Number(selectedCategoryId),
+      // );
+      const brokerSelectedCategory = selectedCategory;
     if (!brokerSelectedCategory) return [];
-    const slug = brokerSelectedCategory.slug;
-    const defaultCategoryAmounts =
-      defaultCategories?.find((c) => c.slug === slug)?.amounts ?? [];
-    const brokerAmounts =
-      categories?.find((c) => c.slug === slug)?.amounts ?? [];
+    const selectedCategorySlug = brokerSelectedCategory.slug;
+
+    const defaultCategoryAmounts = defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.amounts ?? [];
+      
+    //const brokerAmounts = categories?.find((c) => c.slug === selectedCategorySlug)?.amounts ?? [];
+    const brokerAmounts = brokerSelectedCategory?.amounts ?? [];
+
+    //filter the default amounts to get the amounts that are not in the broker amounts list
     const filtered = defaultCategoryAmounts.filter(
-      (a) =>
-        !brokerAmounts.some(
-          (ba) => ba.amount === a.amount && ba.currency === a.currency,
-        ),
+      (a) =>!brokerAmounts.some(
+        (ba) => ba.amount === a.amount && ba.currency === a.currency,
+      ),
+        
     );
     return filtered.map((a) => ({
       id: a.id,
@@ -110,30 +137,23 @@ export default function ChallengeTabForm({
   }, [isAmountType, selectedCategoryId, categories, defaultCategories]);
 
   async function onSubmit(values: FormValues) {
-    const categoryId = Number(values.category);
-    if (Number.isNaN(categoryId)) return;
-    const requireStep = isStepType && stepsNotInBrokerList.length > 0;
-    if (requireStep && (!values.step || values.step.length === 0)) {
-      form.setError("step", { message: "Please select a step" });
-      return;
-    }
-    const requireAmount = isAmountType && amountsNotInBrokerList.length > 0;
-    if (requireAmount && (!values.amount || values.amount.length === 0)) {
-      form.setError("amount", { message: "Please select an amount" });
-      return;
-    }
 
-    const body =
-      isStepType && values.step
-        ? { category_id: categoryId, step_id: Number(values.step) }
-        : isAmountType && values.amount
-        ? { category_id: categoryId, amount_id: Number(values.amount) }
-        : { category_id: categoryId };
+    let searchParams = new URLSearchParams();
+    if(isStepType && values.step && selectedCategory){
+        searchParams.set("default_tab_id_to_clone", values.step);
+        searchParams.set("broker_challenge_category_id", selectedCategory.id.toString());
+    }else if(isAmountType && values.amount && selectedCategory){
+        searchParams.set("default_tab_id_to_clone", values.amount);
+        searchParams.set("broker_challenge_category_id", selectedCategory.id.toString());
+    }else if(isCategoryType && values.category ){
+        searchParams.set("default_tab_id_to_clone", values.category);
+    }
+    console.log("formValues values", values,selectedCategory);
 
     const response = await apiClient<unknown>(
-      addApiUrl,
+      addApiUrl+"?"+searchParams.toString(),
       UseTokenAuth.Yes,
-      { method: "POST", body: JSON.stringify(body) },
+      { method: "POST", body: JSON.stringify({ category_id: "categoryId" }) },
       ErrorMode.Return,
     );
 
@@ -174,12 +194,13 @@ export default function ChallengeTabForm({
                 onValueChange={(value) => {
                   field.onChange(value);
                   if (isStepType) form.setValue("step", "");
-                  if (isAmountType) form.setValue("amount", "");
+                 if (isAmountType) form.setValue("amount", "");
                 }}
                 //value={field.value}
-                value={selectedCategory?.id.toString() ?? ""}
+               value={selectedCategory?.id.toString() ?? field.value}
                 //disabled={categoriesList.length === 0}
                 disabled={isStepType || isAmountType}
+               
               >
                 <FormControl>
                   <SelectTrigger className="w-full">

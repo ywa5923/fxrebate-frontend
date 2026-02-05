@@ -35,7 +35,7 @@ export default function AddTabBtn({
 
   
   //categories list are shown in the form select box
-  //for tabType=category,the categories received in props are the categories that are not in the broker categories list
+  //for tabType=category,the categories received in props are the defaultcategories that are not in the broker categories list
   //for tabType=step and amount, the categories received in props are the categories that are in the broker categories list
   
 

@@ -1,16 +1,26 @@
 "use client";
 
 import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
-import React, { useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 import AddTabBtn from "@/components/ChallengeMatrix/AddTabBtn";
 import { X } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+//import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
@@ -26,11 +36,17 @@ type ChallengeState = {
   amountId: number | null;
 };
 
-
+type DeleteConfirmation = {
+  type: "category" | "step" | "amount";
+  id: number;
+  name: string;
+} | null;
 
 function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
   //const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
   const [isEditingHiddenState, setIsEditingHiddenState] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const [challengeState, setChallengeState] = useState<ChallengeState>(() => {
     const firstCategory = categories[0];
@@ -84,39 +100,46 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
     setChallengeState(prev => ({ ...prev, amountId: amount.id }));
   };
 
-  const handleCategoryHide = async (categoryId: number) => {
+  const openDeleteConfirmation = (type: "category" | "step" | "amount", id: number, name: string) => {
+    setDeleteConfirmation({ type, id, name });
+  };
 
-    let deleteUrl = `/challenges/category/${brokerId}?category_id=${categoryId}`;
-    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation) return;
+    setIsDeleting(true);
+
+    const { type: deleteType, id } = deleteConfirmation;
+    let deleteUrl = "";
+    let paramName = "";
+
+    switch (deleteType) {
+      case "category":
+        deleteUrl = `/challenges/category/${brokerId}?category_id=${id}`;
+        paramName = "category_id";
+        break;
+      case "step":
+        deleteUrl = `/challenges/step/${brokerId}?step_id=${id}`;
+        paramName = "step_id";
+        break;
+      case "amount":
+        deleteUrl = `/challenges/amount/${brokerId}?amount_id=${id}`;
+        paramName = "amount_id";
+        break;
+    }
+
+    const deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
       method: "DELETE",
     }, ErrorMode.Return);
+
     if (deleteResponse.success) {
+      toast.success(`${deleteType.charAt(0).toUpperCase() + deleteType.slice(1)} removed successfully`);
       router.refresh();
-    }else{
+    } else {
       toast.error(deleteResponse.message);
     }
-  };
-  const handleStepHide = async (stepId: number) => {
-    let deleteUrl = `/challenges/step/${brokerId}?step_id=${stepId}`;
-    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
-      method: "DELETE",
-    }, ErrorMode.Return);
-    if (deleteResponse.success) {
-      router.refresh();
-    }else{
-      toast.error(deleteResponse.message);
-    }
-  };
-  const handleAmountHide = async (amountId: number) => {
-    let deleteUrl = `/challenges/amount/${brokerId}?amount_id=${amountId}`;
-    let deleteResponse = await apiClient<any>(deleteUrl, UseTokenAuth.Yes, {
-      method: "DELETE",
-    }, ErrorMode.Return);
-    if (deleteResponse.success) {
-      router.refresh();
-    }else{
-      toast.error(deleteResponse.message);
-    }
+
+    setIsDeleting(false);
+    setDeleteConfirmation(null);
   };
 
   if (!categories.length) {
@@ -182,7 +205,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   <button
                     type="button"
                     aria-label="Hide category"
-                    onClick={() => handleCategoryHide(category.id)}
+                    onClick={() => openDeleteConfirmation("category", category.id, category.name)}
                     title="Hide this category"
                     className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
                   >
@@ -227,7 +250,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                         <button
                           type="button"
                           aria-label="Hide step"
-                          onClick={() => handleStepHide(step.id)}
+                          onClick={() => openDeleteConfirmation("step", step.id, step.name)}
                           title="Hide this step"
                           className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
                         >
@@ -286,7 +309,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                         <button
                           type="button"
                           aria-label="Hide amount"
-                          onClick={() => handleAmountHide(amount.id)}
+                          onClick={() => openDeleteConfirmation("amount", amount.id, `${amount.amount} ${amount.currency}`)}
                           title="Hide this amount"
                           className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
                         >
@@ -347,6 +370,30 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
 
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmation} onOpenChange={(open) => !open && setDeleteConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to remove the {deleteConfirmation?.type}{" "}
+              <span className="font-semibold text-foreground">"{deleteConfirmation?.name}"</span>.
+              This action will delete all related tables records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? "Removing..." : "Yes, remove it"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
