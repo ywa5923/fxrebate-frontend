@@ -4,6 +4,7 @@ import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
+import AddTabBtn from "@/components/ChallengeMatrix/AddTabBtn";
 import { X } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRouter } from "next/navigation";
@@ -25,11 +26,7 @@ type ChallengeState = {
   amountId: number | null;
 };
 
-// type HiddenState = {
-//   categories: number[];
-//   steps: number[];
-//   amounts: number[];
-// };
+
 
 function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
   //const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
@@ -47,6 +44,8 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
     };
   });
 
+  //categories are broker categories, for type=placeholder, the categories are the default categories
+ let categoriesNotInBrokerList = defaultCategories?.filter((cat) => !categories.some((c) => c.slug === cat.slug)) ?? [];
   
   const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
   const selectedStepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
@@ -140,7 +139,8 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
             Select a challenge category to get started
           </p>
-          <div className="mt-3 flex items-center justify-center gap-2">
+          {type === "challenge" && (
+            <div className="mt-3 flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => setIsEditingHiddenState(!isEditingHiddenState)}
@@ -148,21 +148,16 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
             >
               {isEditingHiddenState ? "Save current state" : "Edit tabs visibility"}
             </button>
-            <button
-              type="button"
-             
-              className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-orange-300 text-orange-700 bg-white hover:bg-orange-50 dark:bg-orange-900/10 dark:text-orange-300 dark:border-orange-700 dark:hover:bg-orange-900/20 focus:outline-none focus:ring-2 focus:ring-orange-300"
-            >
-              Reset tabs
-            </button>
+           
           </div>
+          )}
         </div>
 
         <div className="space-y-4 md:space-y-6">
           
           {/* STEP 1: Category Tabs */}
-          <div className="min-h-[60px] md:min-h-[72px] flex items-center">
-            <div className="flex flex-wrap justify-center gap-2 md:gap-4 w-full">
+          <div className="min-h-[60px] md:min-h-[72px] flex items-center justify-center px-2">
+            <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 w-full">
               {categories.map((category) => (
                 <div key={category.id} className="relative inline-block">
                 <button
@@ -196,99 +191,129 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                 )}
                 </div>
               ))}
+              {isEditingHiddenState && (
+                <span className="inline-flex flex-shrink-0 self-center">
+                  <AddTabBtn tabType="category" categories={categoriesNotInBrokerList} addApiUrl={`/challenges/category/${brokerId ?? 0}`} />
+                </span>
+              )}
             </div>
           </div>
 
           {/* STEP 2: Steps */}
-          <div className="min-h-[48px] md:min-h-[56px] flex items-center">
-            {derivedState.selectedCategory && derivedState.steps.length > 0 ? (
-              <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.steps.map((step) => (
-                   <div key={step.id} className="relative inline-block">
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => handleStepClick(step)}
-                    className={cn(
-                      "px-3 md:px-4 py-2",
-                      "text-xs md:text-sm font-medium",
-                      "rounded-lg border-2 border-green-800",
-                      "min-w-[100px] md:min-w-[120px]",
-                      "text-center transition-all duration-200",
-                      "hover:shadow-sm active:scale-95",
-                      challengeState.stepId === step.id
-                        ? "bg-green-800 text-white shadow-md"
-                        : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    )}
-                  >
-                    {step.name}
-                  </button>
-                  {isEditingHiddenState && (<button
-                    type="button"
-                    aria-label="Hide step"
-                    onClick={() => handleStepHide(step.id)}
-                    title="Hide this step"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>)}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="w-full flex justify-center">
-                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                  {derivedState.selectedCategory ? "No steps available" : "Select a category first"}
-                </div>
-              </div>
-            )}
+          <div className="min-h-[48px] md:min-h-[56px] flex items-center justify-center px-2">
+            <div className="flex flex-wrap justify-center items-center gap-2 w-full">
+              {derivedState.selectedCategory && derivedState.steps.length > 0 ? (
+                <>
+                  {derivedState.steps.map((step) => (
+                    <div key={step.id} className="relative inline-block">
+                      <button
+                        type="button"
+                        onClick={() => handleStepClick(step)}
+                        className={cn(
+                          "px-3 md:px-4 py-2",
+                          "text-xs md:text-sm font-medium",
+                          "rounded-lg border-2 border-green-800",
+                          "min-w-[100px] md:min-w-[120px]",
+                          "text-center transition-all duration-200",
+                          "hover:shadow-sm active:scale-95",
+                          challengeState.stepId === step.id
+                            ? "bg-green-800 text-white shadow-md"
+                            : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        )}
+                      >
+                        {step.name}
+                      </button>
+                      {isEditingHiddenState && (
+                        <button
+                          type="button"
+                          aria-label="Hide step"
+                          onClick={() => handleStepHide(step.id)}
+                          title="Hide this step"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {isEditingHiddenState && (
+                    <span className="inline-flex flex-shrink-0 self-center">
+                      <AddTabBtn tabType="step" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center">
+                    {derivedState.selectedCategory ? "No steps available" : "Select a category first"}
+                  </span>
+                  {isEditingHiddenState && (
+                    <span className="inline-flex flex-shrink-0 self-center">
+                      <AddTabBtn tabType="step" categories={categories} defaultCategories={defaultCategories} addApiUrl={`/challenges/step/${brokerId ?? 0}`} />
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           {/* STEP 3: Amounts */}
-          <div className="min-h-[40px] md:min-h-[48px] flex items-center">
-            {type === "challenge" && derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
-              <div className="flex flex-wrap justify-center gap-2 w-full">
-                {derivedState.amounts.map((amount) => (
-                  <div key={amount.id} className="relative inline-block">
-                  <button
-                    key={amount.id}
-                    type="button"
-                    onClick={() => handleAmountClick(amount)}
-                    className={cn(
-                      "px-3 md:px-4 py-2",
-                      "text-xs md:text-sm font-medium",
-                      "rounded-lg border-2 border-green-800",
-                      "min-w-[70px] md:min-w-[80px]",
-                      "text-center transition-all duration-200",
-                      "hover:shadow-sm active:scale-95",
-                      challengeState.amountId === amount.id
-                        ? "bg-green-800 text-white shadow-md"
-                        : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    )}
-                  >
-                    <span className="block md:inline">{amount.amount}</span>
-                    <span className="block md:inline md:ml-1">{amount.currency}</span>
-                  </button>
-                   {isEditingHiddenState && (<button
-                    type="button"
-                    aria-label="Hide amount"
-                    onClick={() => handleAmountHide(amount.id)}
-                    title="Hide this amount"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+          <div className="min-h-[40px] md:min-h-[48px] flex items-center justify-center px-2">
+            <div className="flex flex-wrap justify-center items-center gap-2 w-full">
+              {type === "challenge" && derivedState.selectedCategory && derivedState.amounts.length > 0 ? (
+                <>
+                  {derivedState.amounts.map((amount) => (
+                    <div key={amount.id} className="relative inline-block">
+                      <button
+                        type="button"
+                        onClick={() => handleAmountClick(amount)}
+                        className={cn(
+                          "px-3 md:px-4 py-2",
+                          "text-xs md:text-sm font-medium",
+                          "rounded-lg border-2 border-green-800",
+                          "min-w-[70px] md:min-w-[80px]",
+                          "text-center transition-all duration-200",
+                          "hover:shadow-sm active:scale-95",
+                          challengeState.amountId === amount.id
+                            ? "bg-green-800 text-white shadow-md"
+                            : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        )}
+                      >
+                        <span className="block md:inline">{amount.amount}</span>
+                        <span className="block md:inline md:ml-1">{amount.currency}</span>
+                      </button>
+                      {isEditingHiddenState && (
+                        <button
+                          type="button"
+                          aria-label="Hide amount"
+                          onClick={() => handleAmountHide(amount.id)}
+                          title="Hide this amount"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center shadow hover:bg-slate-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {isEditingHiddenState && (
+                    <span className="inline-flex flex-shrink-0 self-center">
+                      <AddTabBtn tabType="amount" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
+                    </span>
                   )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="w-full flex justify-center">
-                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                  {derivedState.selectedCategory ? "No amounts available" : "Select a category first"}
-                </div>
-              </div>
-            )}
+                </>
+              ) : (
+                <>
+                  <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center">
+                    {derivedState.selectedCategory ? "No amounts available" : "Select a category first"}
+                  </span>
+                  { isEditingHiddenState && (
+                    <span className="inline-flex flex-shrink-0 self-center">
+                      <AddTabBtn tabType="amount" categories={categories} defaultCategories={defaultCategories ?? []} addApiUrl={`/challenges/amount/${brokerId ?? 0}`} />
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           {/* STEP 4: Matrix area */}
