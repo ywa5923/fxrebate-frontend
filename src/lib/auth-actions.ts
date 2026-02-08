@@ -319,17 +319,17 @@ export async function canAdminBroker(brokerId: number): Promise<boolean> {
       return user?.permissions?.some(p =>
         p.action === 'manage' &&
         ((p.type === 'country' && p.resource_id === brokerInfo.country_id) ||
-          (p.type === 'zone' && p.resource_id === brokerInfo.zone_id))
-          // || (p.type === 'broker' && p.resource_id === brokerId))
+          (p.type === 'zone' && p.resource_id === brokerInfo.zone_id)
+           || (p.type === 'broker' && p.resource_id === brokerId))
       ) || false;
 
 
-    } else if (user.user_type === 'team_user') {
-      return user?.permissions?.some(p =>
-        p.type === 'broker' &&
-        p.action === 'manage' &&
-        p.resource_id === brokerId
-      ) || false;
+    // } else if (user.user_type === 'team_user') {
+    //   return user?.permissions?.some(p =>
+    //     p.type === 'broker' &&
+    //     p.action === 'manage' &&
+    //     p.resource_id === brokerId
+    //   ) || false;
     }else{
       return false;
     }
