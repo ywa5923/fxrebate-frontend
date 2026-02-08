@@ -145,7 +145,7 @@ export async function setAuthCookie(token: string, user: Omit<AuthUser, 'permiss
     // Set HttpOnly cookie with secure settings
     cookieStore.set('bearer_token', token, {
       httpOnly: true,        // Cannot be accessed by JavaScript
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      //secure: process.env.NODE_ENV === 'production', // HTTPS only in production
       sameSite: 'lax',       // Changed from 'strict' to 'lax' for better compatibility
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
