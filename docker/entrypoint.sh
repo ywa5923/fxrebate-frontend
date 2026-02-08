@@ -22,7 +22,7 @@ if [ "$RUN_FRESH" = "true" ] || [ ! -f "/app/server.js" ]; then
     echo "Copying standalone output..."
     cp -r /app/.next/standalone/. /app/
     # Also copy static files
-    cp -r /app/.next/static /app/.next/static 2>/dev/null || true
+
     echo "Build completed."
   else
     echo "ERROR: Standalone build not found!"
