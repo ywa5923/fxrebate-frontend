@@ -16,7 +16,7 @@ RUN \
   elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile --ignore-scripts; \
   else echo "Lockfile not found." && exit 1; \
   fi
-#TO DO:-ADD IGNORE SCRIPTS pnpm install --frozen-lockfile --ignore-scripts
+
 
 # Rebuild the source code only when needed
 FROM base AS builder
