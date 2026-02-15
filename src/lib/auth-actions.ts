@@ -294,8 +294,15 @@ export async function isSuperAdmin(): Promise<boolean> {
   const user = await isAuthenticated();
   if (!user) return false;
 
-  return user.user_type === 'platform_user' &&
-    (user?.permissions?.some(p => p.type === 'super_admin' && p.action === 'manage') || false);
+  if(user != null && user.role === 'super-admin' && user.user_type === 'platform_user'){
+    //check also for permission type: super-admin and action: manage
+    return user?.permissions?.some(p =>
+      p.type === 'super-admin' && p.action === 'manage'
+    ) || false;
+  }
+  return false;
+  // return user.user_type === 'platform_user' &&
+  //   (user?.permissions?.some(p => p.type === 'super_admin' && p.action === 'manage') || false);
 }
 
 
@@ -341,6 +348,8 @@ export async function canAdminBroker(brokerId: number): Promise<boolean> {
 
 
 }
+
+
 
 /**
  * Ok

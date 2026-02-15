@@ -26,7 +26,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
-import { Frame } from 'lucide-react';
+
 import { getCategoriesWithOptions } from '@/lib/getCategoriesWithOptions';
 
 async function getBrokerOptions2() {
@@ -66,7 +66,7 @@ export default async function DashboardLayout({
   const user: AuthUser | null = await isAuthenticated();
   if (!user) {
   layoutLogger.info('User not authenticated, redirecting to login');
-  //redirect('/en');
+  redirect('/en');
   }
   let isBrokerManager=hasPermission(user, 'manage', 'broker', brokerId);
 
@@ -92,7 +92,7 @@ export default async function DashboardLayout({
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
         <SidebarProvider>
-          <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager}/>
+          <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} userName={user?.name} userEmail={user?.email}/>
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4">

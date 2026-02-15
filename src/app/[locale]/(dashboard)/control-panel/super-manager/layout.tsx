@@ -3,8 +3,8 @@ import { satoshi } from '@/lib/fonts';
 import '@/app/globals.css';
 import { Providers } from '@/providers/Theme';
 import { AppSidebarSuper } from "@/components/app-sidebar-super"
-import { isAuthenticated } from '@/lib/auth-actions';
-import { isSuperAdmin } from '@/lib/permissions';
+
+import { isAuthenticated, isSuperAdmin } from '@/lib/auth-actions';
 import logger from '@/lib/logger';
 import { redirect } from 'next/navigation';
 import { BreadcrumbsSuperManager } from "@/components/breadcrumbs-super-manager"
@@ -22,20 +22,21 @@ export default async function SuperManagerLayout({
   children: React.ReactNode;
 }) {
   const layoutLogger = logger.child('control-panel/super-manager/layout.tsx');
-  
+
+  const isSuper = await isSuperAdmin();
+
+  if (!isSuper) {
+    layoutLogger.info('User not authenticated, redirecting to login');
+    redirect('/en');
+  }
+
+
+ 
   const loggedUser = await isAuthenticated();
   if (!loggedUser) {
     layoutLogger.info('User not authenticated, redirecting to login');
-    //redirect('/en');
+    redirect('/en');
   }
-
-  //const isSuper = isSuperAdmin(user);
-  const isSuper = true;
-  if (!isSuper) {
-    layoutLogger.warn('User is not super admin, access denied');
-    //redirect('/en/control-panel');
-  }
-
   const sidebarUserLinks = [
     {
       name: 'Brokers',
