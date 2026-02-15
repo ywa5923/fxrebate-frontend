@@ -96,7 +96,8 @@ interface LoggerConfig {
 
 class Logger {
   private config: LoggerConfig = {
-    enableConsole: process.env.NODE_ENV !== 'production',
+   // enableConsole: process.env.NODE_ENV !== 'production',
+    enableConsole: true,
     enableAPI: !!process.env.NEXT_PUBLIC_LOG_API_URL,
     apiUrl: process.env.NEXT_PUBLIC_LOG_API_URL,
     apiKey: process.env.NEXT_PUBLIC_LOG_API_KEY,

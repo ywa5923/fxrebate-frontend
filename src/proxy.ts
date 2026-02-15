@@ -66,7 +66,7 @@ export async function proxy(req: NextRequest) {
 
 
   const rewrittenPath = await getOriginalRoute(pathname, locale, zone);
-  console.log("Rewritten path", rewrittenPath)
+  //console.log("Rewritten path", rewrittenPath)
   if (rewrittenPath) {
     url.pathname = rewrittenPath;
     const rewriteResponse = NextResponse.rewrite(url);
