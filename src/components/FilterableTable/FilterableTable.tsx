@@ -325,7 +325,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                   if (!dashboardUrl) return;
                   window.location.href = dashboardUrl.replace(
                     "#dashboard_id#",
-                    item.id
+                    String(item.id)
                   );
                 }}
                 title={`Go to broker dashboard: ${item.id}`}

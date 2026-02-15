@@ -1,6 +1,6 @@
 "use client";
 
-import type { DynamicTable, Option, OptionValue } from '@/types';
+import type { DynamicTableRow, Option } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState } from 'react';
@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface CompanyProps {
   broker_id: number;
-  company: DynamicTable | null;
+  company: DynamicTableRow | null;
   options: Option[];
   is_admin?: boolean;
 }

@@ -11,12 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { DynamicTable } from '@/types';
+import { DynamicTableRow } from '@/types';
 import { deleteDynamicTable } from '@/lib/deleteDynamicTable';
 
 interface ContestsProps {
   broker_id: number;
-  contests?: DynamicTable[];
+  contests?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
 }
