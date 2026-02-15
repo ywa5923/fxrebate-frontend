@@ -14,7 +14,7 @@ export type BrokerInfo = z.infer<typeof BrokerInfoSchema>;
 export const PermissionSchema = z.object({
     type: z.string(),
     action: z.string(),
-    resource_id: z.number(),
+    resource_id: z.number().nullable(),
     resource_value: z.string().nullable(),
   });
 
