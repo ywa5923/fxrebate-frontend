@@ -50,11 +50,11 @@ export default async function BrokerProfilePage({
   
   //========Check if user is authenticated and redirect to login if not======================
   const user: AuthUser | null = await isAuthenticated();
-  if (!user) {
-    log.info('User not authenticated, redirecting to login');
-   redirect('/en');
-   }
-  
+  // if (!user) {
+  //   log.info('User not authenticated, redirecting to login');
+  //  redirect('/en');
+  //  }
+
 
    //========Check if user can administer broker=============
   // // Get user permissions and broker context

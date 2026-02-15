@@ -158,6 +158,7 @@ export async function setAuthCookie(token: string, user: Omit<AuthUser, 'permiss
 
     cookieStore.set('user_data', userDataString, {
       httpOnly: false,       // Can be accessed by JavaScript for UI
+      secure:false,
       //secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',       // Changed from 'strict' to 'lax'
       maxAge: 60 * 60 * 24 * 7,
