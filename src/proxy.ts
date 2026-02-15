@@ -56,7 +56,8 @@ export async function proxy(req: NextRequest) {
     response.cookies.set('zone', zone, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Secure only in production
+     // secure: process.env.NODE_ENV === 'production', // Secure only in production
+     secure:false,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
@@ -73,7 +74,8 @@ export async function proxy(req: NextRequest) {
     rewriteResponse.cookies.set('zone', zone, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      //secure: process.env.NODE_ENV === 'production', // Secure only in production
+      secure:false,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30,
     });

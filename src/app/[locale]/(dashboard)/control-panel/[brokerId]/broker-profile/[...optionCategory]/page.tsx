@@ -61,7 +61,7 @@ export default async function BrokerProfilePage({
    const is_admin= await canAdminBroker(brokerId);
    let brokerInfo = await getBrokerInfo(brokerId);
    let broker_type = brokerInfo.broker_type;
-   log.info('User authenticated successfully', {user: user, is_admin: is_admin});
+   console.log('User authenticated successfully', {user: user, is_admin: is_admin});
    //========================End of security checks==============================================
   
   let language_code='en';
