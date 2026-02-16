@@ -28,6 +28,7 @@ import {
 import { Toaster } from "@/components/ui/sonner"
 
 import { getCategoriesWithOptions } from '@/lib/getCategoriesWithOptions';
+import ThemeToggleDashboard from '@/components/ThemeToggleDashboard';
 
 async function getBrokerOptions2() {
   try {
@@ -41,8 +42,6 @@ async function getBrokerOptions2() {
     }
     
     const responseData = await response.json()
-    
-   
     
     return responseData.data; // Fallback to original format if structure is different
   } catch (error) {
@@ -94,12 +93,12 @@ export default async function DashboardLayout({
         <SidebarProvider>
           <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} userName={user?.name} userEmail={user?.email}/>
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-              <div className="flex items-center gap-2 px-4">
+            <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-950/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <div className="flex items-center gap-2 px-3 sm:px-4 w-full">
                 <SidebarTrigger className="-ml-1" />
                 <Separator
                   orientation="vertical"
-                  className="mr-2 data-[orientation=vertical]:h-4"
+                  className="mr-2 data-[orientation=vertical]:h-4 hidden sm:block"
                 />
                 <Breadcrumb>
                   <BreadcrumbList>
@@ -114,9 +113,12 @@ export default async function DashboardLayout({
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
+                <div className="ml-auto">
+                  <ThemeToggleDashboard />
+                </div>
               </div>
             </header>
-            <main className="flex-1">
+            <main className="flex-1 overflow-x-hidden">
               {children}
             </main>
           </SidebarInset>

@@ -76,7 +76,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Accounts</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Accounts</h1>
         <Button 
           onClick={() => setShowNewAccount(!showNewAccount)}
           className={cn(

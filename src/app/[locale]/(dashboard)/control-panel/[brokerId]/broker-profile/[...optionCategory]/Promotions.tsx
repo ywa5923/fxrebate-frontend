@@ -1,22 +1,22 @@
 "use client";
 
-import { Option, OptionValue } from '@/types';
+import { Option } from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog,  DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { DynamicTable } from '@/types';
+import { DynamicTableRow } from '@/types';
 import { deleteDynamicTable } from '@/lib/deleteDynamicTable';
 
 interface PromotionsProps {
   broker_id: number;
-  promotions?: DynamicTable[];
+  promotions?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
 }
@@ -59,7 +59,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Promotions</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Promotions</h1>
         <Button 
           onClick={() => setShowNewPromotion(!showNewPromotion)}
           className={cn(

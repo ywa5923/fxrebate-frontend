@@ -502,10 +502,10 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   : `200px repeat(3, minmax(150px, 1fr))` 
               }}
             >
-            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b min-h-[2.5rem] flex items-center">Row / Column</div>
+            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 min-h-[2.5rem] flex items-center">Row / Column</div>
             {columnHeaders.length > 0 && (
               columnHeaders.map((header, index) => (
-                <div key={index} className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b text-center min-h-[2.5rem] flex items-center justify-center">
+                <div key={index} className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 text-center min-h-[2.5rem] flex items-center justify-center">
                   {header.name}
                 </div>
               ))
@@ -513,11 +513,11 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             {rowHeaders.length > 0 && (
               rowHeaders.map((rowHeader, rowIndex) => (
                 <div key={`row-${rowIndex}`} className="contents">
-                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">{rowHeader.name}</div>
+                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">{rowHeader.name}</div>
                   {columnHeaders.map((colHeader, colIndex) => {
                     const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
                     return (
-                      <div key={`cell-${rowIndex}-${colIndex}`} className="p-2 border min-h-[4rem] flex items-center">
+                      <div key={`cell-${rowIndex}-${colIndex}`} className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
                         {cellData
                           ? renderCell(cellData, rowIndex, colIndex)
                           : <div className="text-gray-400 text-sm w-full">No data</div>}
@@ -529,9 +529,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             )}
             {/* Affiliate link row (separate from matrix data) */}
            {(type === "challenge" || type === "placeholder" )&& <div className="contents">
-              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">Evaluation Cost Discount</div>
               <div
-                className="p-2 border min-h-[4rem] flex flex-col"
+                className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <div className="flex flex-col gap-2">
@@ -581,9 +581,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 </div>
               </div>
               
-              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center">Affiliate Link</div>
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">Affiliate Link</div>
               <div
-                className="p-2 border min-h-[4rem] flex flex-col"
+                className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <div className="flex flex-col gap-2">
@@ -632,7 +632,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                   )}
                 </div>
               </div>
-              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r min-h-[4rem] flex items-center gap-2">
+              <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
                 <span>Master Affiliate Link</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -642,7 +642,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
                 </Tooltip>
               </div>
               <div
-                className="p-2 border min-h-[4rem] flex flex-col"
+                className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
                 style={{ gridColumn: `span ${Math.max(columnHeaders.length, 1)} / span ${Math.max(columnHeaders.length, 1)}` }}
               >
                 <div className="flex flex-col gap-2">

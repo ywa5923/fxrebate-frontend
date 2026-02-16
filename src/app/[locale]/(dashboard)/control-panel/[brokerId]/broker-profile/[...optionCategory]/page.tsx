@@ -80,50 +80,27 @@ export default async function BrokerProfilePage({
     const categoriesWithOptions = await getCategoriesWithOptions('en',broker_type);
    
     // Handle case where API returns empty data or different structure
-    if (!categoriesWithOptions || !Array.isArray(categoriesWithOptions)) {
-      console.log("Invalid broker options data:", categoriesWithOptions);
+    if (!categoriesWithOptions || !Array.isArray(categoriesWithOptions) || categoriesWithOptions.length === 0) {
+      log.error("Invalid broker options data:", categoriesWithOptions);
       notFound();
     }
     
-    if (categoriesWithOptions.length === 0) {
-      console.log("No broker options available");
-      notFound();
-    }
     
     const matchedCategory = categoriesWithOptions.find(
       (category: OptionCategory) => {
-        // Use loose equality to handle string vs number comparison
         const matches = category.id == categoryId;
-        //console.log(`Checking option ${category.id} (${typeof category.id}) against categoryId ${categoryId} (${typeof categoryId}): ${matches}`);
         return matches;
       }
     );
 
     if (!matchedCategory) {
-      console.log("No matching broker options found for category ID:", categoryId);
-     // console.log("Available IDs:", brokerOptionsWithCategories.map((opt: any) => opt.id));
+      log.error("No matching broker options found for category ID", {categoryId: categoryId});
       notFound();
     }
 
 
-    //let accountType = null;
-    // if(categorySlug=='my-account-types'){
-    //   accountType = await getAccountTypes(brokerId,null,'en');
-    
-    // }
-    
-    //zone_code is null, so get only original data that is submitted by the broker and have zone_code null
-    //there are the values submitted by the broker
-   // const optionsValues: OptionValue[] = await getOptionsValues(brokerId, "Brokers", categoryId, "en",null,true);
-
-    
-
-    // If this is the companies category, render the Companies component
     if(categorySlug=='company-profile'){
-      //get original companies option vlaues submitted by the broker which have zone_code null
-      //comanies also contains options values for the companies
-      //let  companies = await getCompanies(brokerId,null,null,'en');
-     // let companies = await getDynamicTable('companies',brokerId,null,'en');
+   
      let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
      let companiesResponse = await apiClient<DynamicTableRow[]>(companiesFetchUrl, true, {
       method: "GET",
@@ -153,9 +130,7 @@ export default async function BrokerProfilePage({
       );
     }
     if(categorySlug=='my-trading-accounts' ){
-     // let accountTypesLinks=await getAccountTypeUrls(brokerId,null,zone_code,language_code);
-      //let accountType = await getAccountTypes(brokerId,null,'en');
-    
+     
       let accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
       let accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
       const [accountTypesLinksResponse, accountTypesResponse] = await Promise.all([
@@ -260,27 +235,6 @@ export default async function BrokerProfilePage({
     
     if(categorySlug=='rebates'){
 
-      // const searchParams = new URLSearchParams({
-      //   "language[eq]": "en",
-      //   "broker_id[eq]": brokerId.toString(),
-      //   "matrix_id[eq]": "Matrix-1",
-      //   "broker_id_strict[eq]": "0",
-      // }).toString();
-      // const headersUrl = `/matrix/headers?${searchParams.toString()}`;
-
-      // pageLogger.debug("Fetching headers from:", { url: headersUrl });
-
-      // const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, true, {
-      //   method: "GET",
-      //   cache: "no-store",
-      // });
-
-      // if (!headearsResponse.success || !headearsResponse.data) {
-      //   toast.error(headearsResponse.message);
-      //   return;
-      // }
-
-      // const {columnHeaders, rowHeaders}= headearsResponse.data;
       let headersFetchUrl = `/matrix/headers/${brokerId}?language=en&matrix_id=Matrix-1&broker_id_strict=0&with_account_type_columns=1`;
       let matrixDataFetchUrl = `/matrix/${brokerId}?matrix_name=Matrix-1`;
 
@@ -297,11 +251,37 @@ export default async function BrokerProfilePage({
       const columnHeaders = headersResponse.data?.columnHeaders ?? [];
       const rowHeaders = headersResponse.data?.rowHeaders ?? [];
       const initialMatrixData = matrixDataResponse.data ?? [];
-     // const {columnHeaders, rowHeaders}= await getMatrixHeaders('en',brokerId, 'Matrix-1', 0)
-      
-     // const initialMatrixData: MatrixCell[][] = await getMatrixData(brokerId, 'Matrix-1', is_admin)
-     
-     // "http://localhost:8080/api/v1/matrix/headers?broker_id[eq]=1&matrix_id[eq]=Matrix-1&broker_id_strict[eq]=0
+
+      if(columnHeaders.length === 0){
+        let tradingAccountCategoryId = categoriesWithOptions.find(category => category.slug === 'my-trading-accounts')?.id;
+        if(!tradingAccountCategoryId){
+          log.error("Trading account category not found", {context: {categoriesWithOptions:categoriesWithOptions}});
+          notFound();
+        }
+        return (
+          <div className="flex flex-col items-center justify-center min-h-[300px] p-8 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <div className="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No Account Types Found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm mb-5">
+              You need to create account types before you can configure the rebates matrix.
+            </p>
+            <a
+              href={`/en/control-panel/${brokerId}/broker-profile/${tradingAccountCategoryId}/my-trading-accounts`}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-800 hover:bg-green-900 text-white text-sm font-medium transition-colors shadow-sm"
+            >
+              Go to Account Types
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
+        );
+      }
+
 
       return (<>
         <Rebates rowHeaders={rowHeaders} columnHeaders={columnHeaders} initialMatrixData={initialMatrixData} is_admin={is_admin} brokerId={brokerId}/>

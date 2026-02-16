@@ -1,27 +1,16 @@
 "use client"
 
 import {
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
   type LucideIcon,
   ChevronRight
 } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
@@ -75,31 +64,41 @@ export function NavProjects({
   isBrokerManager?: boolean,
 }) {
   const { isMobile } = useSidebar()
+  const pathname = usePathname()
 
   return (
     <>
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      {/* FXREBATE Logo Full Width */}
+      {/* FXREBATE Logo Full Width - CSS-based swap to avoid hydration mismatch */}
       <div className="w-full mt-4 mb-4 flex items-center justify-center">
         <img 
-          src="/assets/darkFxRebate-logo.svg" 
+          src="/assets/darkFxRebate-logo.svg"
           alt="FXREBATE Logo" 
-          className="h-10 w-auto"
+          className="h-10 w-auto block dark:hidden"
+        />
+        <img 
+          src="/assets/lightFxRebate-logo.svg"
+          alt="FXREBATE Logo" 
+          className="h-10 w-auto hidden dark:block"
         />
       </div>
       <SidebarGroupLabel>Control Panel</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
-         // const IconComponent = iconMap[item.icon] || Building2
+          const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
           return (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild>
                 <Link
                   href={item.url}
-                  className="flex items-center px-3 py-2 rounded-md transition-all duration-200 text-gray-800 hover:bg-green-50 hover:text-green-600 font-medium text-sm"
+                  className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 text-sm ${
+                    isActive
+                      ? "bg-green-800 text-white shadow-sm"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                  }`}
                 >
-                  <ChevronRight className="mr-3 h-4 w-4" />
-                  {item.name}
+                  <ChevronRight className={`mr-2 h-4 w-4 transition-transform duration-200 ${isActive ? "text-green-200 rotate-90" : "text-gray-400"}`} />
+                  <span className={isActive ? "font-semibold" : "font-medium"}>{item.name}</span>
                 </Link>
               </SidebarMenuButton>
             {/*<DropdownMenu>
@@ -132,12 +131,6 @@ export function NavProjects({
           </SidebarMenuItem>
           )
         })}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
 

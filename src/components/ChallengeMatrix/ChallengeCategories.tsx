@@ -144,14 +144,14 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
 
   if (!categories.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="flex items-center justify-center px-4 py-16">
         <div className="text-gray-500 dark:text-gray-400">No categories</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+    <div className="flex items-center justify-center px-2 sm:px-4 py-6 sm:py-8">
       <div className="w-full max-w-6xl">
         
         {/* Header */}

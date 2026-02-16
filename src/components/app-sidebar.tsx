@@ -2,29 +2,22 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
   Frame,
-  GalleryVerticalEnd,
   Map,
   PieChart,
-  Settings2,
-  SquareTerminal,
   LogOut,
   Users,
+  HelpCircle,
+  MessageCircle,
+  ExternalLink,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -168,12 +161,70 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
         <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} />
+
+        {/* What's New + Help - fills the gap above footer */}
+        <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 group-data-[collapsible=icon]:hidden">
+
+          {/* What's New */}
+          <div className="rounded-xl border border-green-200 dark:border-green-900/50 bg-green-50/50 dark:bg-green-950/20 p-3.5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-green-800 dark:text-green-400">What&apos;s New</p>
+            </div>
+            <div className="space-y-2">
+              <div className="group">
+                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">Dark mode support</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-500 leading-relaxed">The dashboard now fully supports dark mode.</p>
+              </div>
+              <div className="border-t border-green-200/60 dark:border-green-900/30" />
+              <div className="group">
+                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">Challenge matrix</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-500 leading-relaxed">New editing tools for challenge categories.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
+          <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/40">
+                <HelpCircle className="h-4 w-4 text-green-700 dark:text-green-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Need Help?</p>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
+              Have questions about rebates or your account? Our team is here to help.
+            </p>
+            <div className="flex flex-col gap-2">
+              <a
+                href="mailto:support@fxrebate.com"
+                className="flex items-center gap-2 text-xs font-medium text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Contact Support
+              </a>
+              <a
+                href="https://fxrebate.com/faq"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View FAQ
+              </a>
+            </div>
+          </div>
+        </div>
       </SidebarContent>
-      <SidebarFooter className="border-t group-data-[collapsible=icon]:hidden">
-        <div className="p-4 space-y-3">
+      <SidebarFooter className="border-t border-gray-200 dark:border-gray-800 group-data-[collapsible=icon]:hidden">
+        <div className="p-3 sm:p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-              <Users className="h-4 w-4 text-green-400" />
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -187,7 +238,7 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
+            className="w-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
             onClick={async () => {
               await logoutUser();
               window.location.href = '/en';
