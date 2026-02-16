@@ -6,7 +6,7 @@ import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Plus, X, Trash } from 'lucide-react';
+import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog,  DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -157,12 +157,10 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
             >
               {promotion.option_values && promotion.option_values.length > 0 ? (
                 <>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-5 border-b border-gray-200 dark:border-gray-800 gap-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 sm:w-14 sm:h-14 bg-green-200 dark:bg-green-900/70 rounded-full flex items-center justify-center shadow-lg ring-2 ring-green-400 dark:ring-green-700">
-                        <svg className="w-4 h-4 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                        </svg>
+                      <div className="w-11 h-11 flex items-center justify-center">
+                        <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Promotion {index + 1}</h2>

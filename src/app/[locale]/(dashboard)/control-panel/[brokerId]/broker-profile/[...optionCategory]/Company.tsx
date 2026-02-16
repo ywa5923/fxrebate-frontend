@@ -6,7 +6,7 @@ import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, LayoutGrid } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CompanyProps {
@@ -83,12 +83,10 @@ export default function Company({ broker_id, company, options, is_admin = false 
       {/* Company Content */}
       {company ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-5 border-b border-gray-200 dark:border-gray-800 gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-14 sm:h-14 bg-green-200 dark:bg-green-900/70 rounded-full flex items-center justify-center shadow-lg ring-2 ring-green-400 dark:ring-green-700">
-                <svg className="w-4 h-4 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+              <div className="w-11 h-11 flex items-center justify-center">
+                <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Company</h2>

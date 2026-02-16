@@ -3,7 +3,7 @@
 import { DynamicForm } from '@/components/DynamicForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Option, OptionValue } from '@/types';
-import { DollarSign } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 
 interface BrokerOptionsProps {
@@ -35,25 +35,31 @@ export default function BrokerOptions({
   category
 }: BrokerOptionsProps) {
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 sm:w-14 sm:h-14 bg-green-200 dark:bg-green-900/70 rounded-full flex items-center justify-center shadow-lg ring-2 ring-green-400 dark:ring-green-700">
-              <DollarSign className="w-4 h-4 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+    <div className="container mx-auto p-3 sm:p-6">
+      <div className="rounded-2xl bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 border border-gray-200/80 dark:border-gray-800 shadow-sm overflow-hidden">
+        {/* Header with subtle background pattern */}
+        <div className="relative px-5 sm:px-6 py-5 sm:py-6 border-b border-gray-200 dark:border-gray-800">
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 flex items-center justify-center">
+                <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{category}</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{category}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 sm:mt-0">
-            <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-              ID: {entity_id}
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
+              <span className="text-gray-300 dark:text-gray-700 mx-1">|</span>
+              <span className="text-[11px] text-gray-400 dark:text-gray-600 font-mono">#{entity_id}</span>
             </div>
           </div>
         </div>
-        <Card className="max-w-2xl mx-auto">
+        {/* Content */}
+        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6">
+        <Card className="max-w-2xl mx-auto border-0 shadow-none">
           <CardContent>
             <DynamicForm
               broker_id={broker_id}
@@ -66,6 +72,7 @@ export default function BrokerOptions({
             />
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
