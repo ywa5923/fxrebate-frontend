@@ -4,6 +4,10 @@ import AddTabBtn from "./AddTabBtn";
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable } from "@dnd-kit/react/sortable";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { toast } from "sonner";
 
 interface CategoriesContainerProps {
   categories: ChallengeType[];
@@ -28,12 +32,32 @@ export default function CategoriesContainer({
   brokerId,
   activeCategoryId,
 }: CategoriesContainerProps) {
-    
   const [orderedCategories, setOrderedCategories] = useState(categories);
+  const router = useRouter();
+
+  const saveLink = `/challenges/${brokerId}/tabs/category/order`;
 
   useEffect(() => {
     setOrderedCategories(categories);
   }, [categories]);
+
+  const handleSaveOrder = async (newOrder: ChallengeType[]) => {
+    try {
+      const response = await apiClient<any>(saveLink, UseTokenAuth.Yes, {
+        method: "PUT",
+        body: JSON.stringify({ tab_ids: newOrder.map((category) => category.id) }),
+      }, ErrorMode.Return);
+
+   
+      if (!response.success) {
+        toast.error("Failed to save order. Reverting...");
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("Network error. Reverting...");
+      router.refresh();
+    }
+  };
 
   return (
     <DragDropProvider
@@ -46,12 +70,11 @@ export default function CategoriesContainer({
           const { initialIndex, index } = source;
 
           if (initialIndex !== index) {
-            setOrderedCategories((items) => {
-              const newItems = [...items];
-              const [removed] = newItems.splice(initialIndex, 1);
-              newItems.splice(index, 0, removed);
-              return newItems;
-            });
+            const newItems = [...orderedCategories];
+            const [removed] = newItems.splice(initialIndex, 1);
+            newItems.splice(index, 0, removed);
+            setOrderedCategories(newItems);
+            handleSaveOrder(newItems);
           }
         }
       }}

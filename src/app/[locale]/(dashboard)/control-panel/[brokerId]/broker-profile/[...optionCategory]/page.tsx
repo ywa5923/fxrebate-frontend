@@ -135,9 +135,10 @@ export default async function BrokerProfilePage({
      
       let accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
       let accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
+      
       const [accountTypesLinksResponse, accountTypesResponse] = await Promise.all([
-        apiClient<AccountTypeLinks>(accountTypesLinksFetchUrl, true, { method: "GET", cache: "no-store" }, ErrorMode.Return),
-        apiClient<DynamicTableRow[]>(accountTypesFetchUrl, true, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+        apiClient<AccountTypeLinks>(accountTypesLinksFetchUrl, UseTokenAuth.Yes, { method: "GET", cache: "no-store" }, ErrorMode.Return),
+        apiClient<DynamicTableRow[]>(accountTypesFetchUrl, UseTokenAuth.Yes, { method: "GET", cache: "no-store" }, ErrorMode.Return),
       ]);
       if (!accountTypesLinksResponse.success || !accountTypesResponse.success) {
         log.error("Error fetching account types links or account types", {context: {accountTypesLinks:accountTypesLinksResponse.message, accountTypes:accountTypesResponse.message}});
@@ -146,16 +147,16 @@ export default async function BrokerProfilePage({
       const accountTypesLinks = accountTypesLinksResponse.data ?? null;
       const accountTypes = accountTypesResponse.data ?? [];
     
-     
+      
       return (
         <Accounts 
           broker_id={brokerId}
           accounts={accountTypes}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
-          linksGroupedByAccountId={accountTypesLinks?.linksGroupedByAccountId ?? {}}
-          masterLinksGroupedByType={accountTypesLinks?.masterLinksGroupedByType ?? {}}
-          linksGroups={accountTypesLinks?.linksGroups ?? []}
+          linksGroupedByAccountId={accountTypesLinks?.links_grouped_by_account_id ?? {}}
+          masterLinksGroupedByType={accountTypesLinks?.master_links_grouped_by_type ?? {}}
+          linksGroups={accountTypesLinks?.links_groups ?? []}
         />
       );
     }

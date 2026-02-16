@@ -4,6 +4,10 @@ import AddTabBtn from "./AddTabBtn";
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable } from "@dnd-kit/react/sortable";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { toast } from "sonner";
 
 interface StepsContainerProps {
   steps: ChallengeStep[];
@@ -33,10 +37,30 @@ export default function StepsContainer({
   defaultCategories,
 }: StepsContainerProps) {
   const [orderedSteps, setOrderedSteps] = useState(steps);
+  const router = useRouter();
+
+  const saveLink = `/challenges/${brokerId}/tabs/step/order`;
 
   useEffect(() => {
     setOrderedSteps(steps);
   }, [steps]);
+
+  const handleSaveOrder = async (newOrder: ChallengeStep[]) => {
+    try {
+      const response = await apiClient<any>(saveLink, UseTokenAuth.Yes, {
+        method: "POST",
+        body: JSON.stringify({ tab_ids: newOrder.map((step) => step.id) }),
+      }, ErrorMode.Return);
+
+      if (!response.success) {
+        toast.error("Failed to save step order. Reverting...");
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("Network error. Reverting...");
+      router.refresh();
+    }
+  };
 
   return (
     <DragDropProvider
@@ -49,12 +73,11 @@ export default function StepsContainer({
           const { initialIndex, index } = source;
 
           if (initialIndex !== index) {
-            setOrderedSteps((items) => {
-              const newItems = [...items];
-              const [removed] = newItems.splice(initialIndex, 1);
-              newItems.splice(index, 0, removed);
-              return newItems;
-            });
+            const newItems = [...orderedSteps];
+            const [removed] = newItems.splice(initialIndex, 1);
+            newItems.splice(index, 0, removed);
+            setOrderedSteps(newItems);
+            handleSaveOrder(newItems);
           }
         }
       }}

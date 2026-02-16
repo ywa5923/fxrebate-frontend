@@ -4,6 +4,10 @@ import AddTabBtn from "./AddTabBtn";
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable } from "@dnd-kit/react/sortable";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { toast } from "sonner";
 
 interface AmountsContainerProps {
   amounts: ChallengeAmount[];
@@ -33,10 +37,30 @@ export default function AmountsContainer({
   defaultCategories,
 }: AmountsContainerProps) {
   const [orderedAmounts, setOrderedAmounts] = useState(amounts);
+  const router = useRouter();
+
+  const saveLink = `/challenges/${brokerId}/tabs/amount/order`;
 
   useEffect(() => {
     setOrderedAmounts(amounts);
   }, [amounts]);
+
+  const handleSaveOrder = async (newOrder: ChallengeAmount[]) => {
+    try {
+      const response = await apiClient<any>(saveLink, UseTokenAuth.Yes, {
+        method: "POST",
+        body: JSON.stringify({ tab_ids: newOrder.map((amount) => amount.id) }),
+      }, ErrorMode.Return);
+
+      if (!response.success) {
+        toast.error("Failed to save amount order. Reverting...");
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("Network error. Reverting...");
+      router.refresh();
+    }
+  };
 
   return (
     <DragDropProvider
@@ -49,12 +73,11 @@ export default function AmountsContainer({
           const { initialIndex, index } = source;
 
           if (initialIndex !== index) {
-            setOrderedAmounts((items) => {
-              const newItems = [...items];
-              const [removed] = newItems.splice(initialIndex, 1);
-              newItems.splice(index, 0, removed);
-              return newItems;
-            });
+            const newItems = [...orderedAmounts];
+            const [removed] = newItems.splice(initialIndex, 1);
+            newItems.splice(index, 0, removed);
+            setOrderedAmounts(newItems);
+            handleSaveOrder(newItems);
           }
         }
       }}

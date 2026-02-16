@@ -8,7 +8,7 @@ export type LinksGroupedByType = {
 };
 
 export type AccountTypeLinks = {
-  linksGroupedByAccountId: LinksGroupedByAccountId;
-  masterLinksGroupedByType: LinksGroupedByType;
-  linksGroups: Array<string>;
+  links_grouped_by_account_id: LinksGroupedByAccountId;
+  master_links_grouped_by_type: LinksGroupedByType;
+  links_groups: Array<string>;
 };
