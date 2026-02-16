@@ -22,6 +22,7 @@ export async function getCategoriesWithOptions(
    
     try {
       
+      console.log("xxxxxxxxxxxxxxxurl", url.toString());
         const response = await fetch(url.toString(), { cache: "no-store" });
         //link example:http://localhost:8080/api/v1/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers"
       

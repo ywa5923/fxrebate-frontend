@@ -6,11 +6,11 @@ import { Providers } from '@/providers/Theme';
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { BASE_URL } from '@/constants';
-import { AuthUser } from '@/types';
+import { AuthUser, OptionCategory } from '@/types';
 import { isAuthenticated } from '@/lib/auth-actions';
 import logger from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,10 +27,12 @@ import {
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 
-import { getCategoriesWithOptions } from '@/lib/getCategoriesWithOptions';
 import ThemeToggleDashboard from '@/components/ThemeToggleDashboard';
 import { Suspense } from 'react';
 import NProgressBar from '@/components/NProgressBar';
+import { getBrokerInfo } from '@/lib/auth-actions';
+import { apiClient } from '@/lib/api-client';
+import { ErrorMode, UseTokenAuth } from '@/lib/enums';
 
 async function getBrokerOptions2() {
   try {
@@ -61,8 +63,12 @@ export default async function DashboardLayout({
 }) {
   const resolvedParams = await params;
   const brokerId = parseInt(resolvedParams.brokerId);
+  const brokerInfo = await getBrokerInfo(brokerId);
+  const brokerType = brokerInfo.broker_type;
   let layoutLogger = logger.child('control-panel/[brokerId]/broker-profile/layout.tsx');
-  const categoriesWithOptions = await getCategoriesWithOptions("en")
+
+
+ 
 
   const user: AuthUser | null = await isAuthenticated();
   if (!user) {
@@ -80,7 +86,17 @@ export default async function DashboardLayout({
     }
   }
 
-  let sidebarOptionsLinks = categoriesWithOptions?.map((optionCategory: any) => {
+  let optionCategoriesUrl = `/option-categories/get-list?broker_type=${brokerType}`;
+  let optionCategoriesResponse = await apiClient<OptionCategory[]>(optionCategoriesUrl, UseTokenAuth.Yes, {
+    method: "GET",
+    cache: "no-store",
+  }, ErrorMode.Return);
+  if(!optionCategoriesResponse.success){
+    layoutLogger.error("Error fetching option categories", {context: {optionCategoriesResponse: optionCategoriesResponse.message}});
+    notFound();
+  }
+  let optionCategories = optionCategoriesResponse.data ?? [];
+  let sidebarOptionsLinks = optionCategories.map((optionCategory: OptionCategory) => {
     let categoryName = optionCategory.name.toLowerCase().replace(/ /g, '-')
     return {
       name: optionCategory.name,
@@ -89,6 +105,7 @@ export default async function DashboardLayout({
     }
   }) || []
  
+ 
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
@@ -96,7 +113,7 @@ export default async function DashboardLayout({
           <NProgressBar />
         </Suspense>
         <SidebarProvider>
-          <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} userName={user?.name} userEmail={user?.email}/>
+          <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} userName={user?.name} userEmail={user?.email} brokerType={brokerType}/>
           <SidebarInset>
             <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-950/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-3 sm:px-4 w-full">

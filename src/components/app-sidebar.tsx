@@ -153,7 +153,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBrokerManager = false, userName, userEmail, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any, teamManagementLink?: { name: string; url: string; icon: string } | null, isBrokerManager?: boolean, userName?: string, userEmail?: string }) {
+export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBrokerManager = false, userName, userEmail, brokerType, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any, teamManagementLink?: { name: string; url: string; icon: string } | null, isBrokerManager?: boolean, userName?: string, userEmail?: string, brokerType?: string }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -166,23 +166,22 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
         <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 group-data-[collapsible=icon]:hidden">
 
           {/* What's New */}
-          <div className="rounded-xl border border-green-200 dark:border-green-900/50 bg-green-50/50 dark:bg-green-950/20 p-3.5">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="relative flex h-2 w-2">
+          <div className="rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50/50 dark:bg-green-950/20 px-3 py-2">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
               </span>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-green-800 dark:text-green-400">What&apos;s New</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-green-800 dark:text-green-400">What&apos;s New</p>
             </div>
-            <div className="space-y-2">
-              <div className="group">
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">Dark mode support</p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-500 leading-relaxed">The dashboard now fully supports dark mode.</p>
+            <div className="space-y-1">
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Dark mode</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">— Full dashboard support</p>
               </div>
-              <div className="border-t border-green-200/60 dark:border-green-900/30" />
-              <div className="group">
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">Challenge matrix</p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-500 leading-relaxed">New editing tools for challenge categories.</p>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Challenge matrix</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-500">— New editing tools</p>
               </div>
             </div>
           </div>
@@ -233,6 +232,11 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {userEmail ?? ""}
               </p>
+              {brokerType && (
+                <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                  {brokerType}
+                </span>
+              )}
             </div>
           </div>
           <Button

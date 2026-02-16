@@ -56,6 +56,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
     }
   }
 
+
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center justify-between mb-6">
