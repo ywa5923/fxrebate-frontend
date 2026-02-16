@@ -29,6 +29,8 @@ import { Toaster } from "@/components/ui/sonner"
 
 import { getCategoriesWithOptions } from '@/lib/getCategoriesWithOptions';
 import ThemeToggleDashboard from '@/components/ThemeToggleDashboard';
+import { Suspense } from 'react';
+import NProgressBar from '@/components/NProgressBar';
 
 async function getBrokerOptions2() {
   try {
@@ -90,6 +92,9 @@ export default async function DashboardLayout({
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
       <Providers>
+        <Suspense fallback={null}>
+          <NProgressBar />
+        </Suspense>
         <SidebarProvider>
           <AppSidebar brokerOptionsLinks={sidebarOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} userName={user?.name} userEmail={user?.email}/>
           <SidebarInset>
