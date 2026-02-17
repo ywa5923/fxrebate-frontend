@@ -135,58 +135,48 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       setLoading(true);
     
       try {
-        //const headersUrl = `/matrix/headers/${brokerId}?language=${language}&col_group=${stepSlug}&row_group=challenge`;
-        let headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
-       
-       // log.info("Fetching headers from:", { url: headersUrl });
-        const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, UseTokenAuth.Yes, {
-          method: "GET",
-        }, ErrorMode.Return); 
+        const headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+
+        const params = new URLSearchParams({
+          category_id: categoryId.toString(),
+          step_id: stepId.toString(),
+          language,
+          ...(amountId ? { amount_id: amountId.toString() } : {}),
+          ...(zoneId !== null && zoneId !== undefined ? { zone_id: zoneId.toString() } : {}),
+        });
+
+        const challengeUrl = type === "placeholder" ? '/challenges/placeholders' : `/challenges/${brokerId}`;
+
+        // Fetch headers and challenge data in parallel
+        const [headearsResponse, challengeResponse] = await Promise.all([
+          apiClient<MatrixHeaders>(headersUrl, UseTokenAuth.Yes, {
+            method: "GET",
+          }, ErrorMode.Return),
+          apiClient<ChalengeData & ChallengePlaceholders>(`${challengeUrl}?${params.toString()}`, true, {
+            method: "GET",
+          }),
+        ]);
 
         if (!headearsResponse.success || !headearsResponse.data) {
           toast.error(headearsResponse.message);
           return;
         }
 
-       const { columnHeaders, rowHeaders } = headearsResponse.data;
-       //log.info("Headers:", { columnHeaders, rowHeaders });
-     
-        // Set headers immediately to prevent layout shift
+        if (!challengeResponse.success) {
+          toast.error(challengeResponse.message);
+          return;
+        }
+
+        if (!challengeResponse.data) {
+          toast.error("No data received");
+          return;
+        }
+
+        const { columnHeaders, rowHeaders } = headearsResponse.data;
         setColumnHeaders(columnHeaders);
         setRowHeaders(rowHeaders);
 
-        // Fetch initial data
-        //if the matrix is use to save placeholders data,the amountId will be null because placeholders differs only by step
-        const amountIdParam: string | null = type === "challenge" && amountId ? amountId.toString()  : null;
-    
-          const params = new URLSearchParams({
-            //...(brokerId ? { broker_id: brokerId.toString() } : {}),
-           // is_placeholder: type === "placeholder" ? "1" : "0",
-            category_id: categoryId.toString(),
-            step_id: stepId.toString(),
-            language,
-            ...(amountId ? { amount_id: amountId.toString() } : {}),
-            ...(zoneId !== null && zoneId !== undefined ? { zone_id: zoneId.toString() } : {}),
-          });
-         
-          let challengeUrl = type === "placeholder" ?'/challenges/placeholders':`/challenges/${brokerId}`;
-      
-          const challengeResponse = await apiClient<ChalengeData&ChallengePlaceholders>(`${challengeUrl}?${params.toString()}`, true, {
-            method: "GET",
-          });
-
-          if (!challengeResponse.success) {
-            toast.error(challengeResponse.message);
-            return;
-          }
-
-        
-          if (!challengeResponse.data) {
-            toast.error("No data received");
-            return;
-          }
-
-          log.debug("Data received:", { url:`/challenges?${params.toString()}`,data:challengeResponse.data,json:JSON.stringify(challengeResponse.data,null,2) });
+        log.debug("Data received:", { url:`/challenges?${params.toString()}`,data:challengeResponse.data,json:JSON.stringify(challengeResponse.data,null,2) });
          
           let {matrix: initialData,
               is_published,
