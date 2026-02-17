@@ -62,6 +62,7 @@ export interface ChalengeData extends ChallengeMatrixExtraData {
   step_slug?: string;
   broker_id?: number | null;
   is_placeholder: boolean;
+  is_published: boolean;
   amount_id?: number | null;
   zone_id?: number | null;
   is_admin?: boolean;

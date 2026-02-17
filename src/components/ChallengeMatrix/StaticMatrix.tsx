@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import PublishToggle from "@/components/ChallengeMatrix/PublishToggle";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FiCopy } from "react-icons/fi";
@@ -42,6 +43,50 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [matrixExtraData, setMatrixExtraData] = useState<ChallengeMatrixExtraData|null>(null);
+  const [isPublished, setIsPublished] = useState<boolean|null>(true);
+  const [publishing, setPublishing] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isEmptyMatrix, setIsEmptyMatrix] = useState(false);
+
+  const togglePublish = async (published: boolean) => {
+    if (isEmptyMatrix) {
+      toast.error("Please save some table data first before changing the visibility.");
+      return;
+    }
+    try {
+      setPublishing(true);
+      const response = await apiClient<any>(
+        `/challenges/${brokerId}/publish`,
+        UseTokenAuth.Yes,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            category_id: categoryId,
+            step_id: stepId,
+            amount_id: amountId,
+            is_published: published,
+          }),
+        },
+        ErrorMode.Return,
+      );
+
+      if (!response.success) {
+        toast.error(published ? "Failed to publish table" : "Failed to set table as draft");
+        log.error("togglePublish", { error: response.message, brokerId, categoryId, stepId, amountId, published });
+        return;
+      }
+
+      setIsPublished(published);
+      toast.success(published ? "Table is now live" : "Table reverted to draft");
+      router.refresh();
+    } catch (error) {
+      toast.error("Network error while updating");
+      log.error("togglePublish", { error, brokerId, categoryId, stepId, amountId, published });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   // Track which cells were copied so the copy button remains visible and green
   // Key format: `${rowIndex}-${colIndex}`
   const [copiedCells, setCopiedCells] = useState<Set<string>>(new Set());
@@ -93,7 +138,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         //const headersUrl = `/matrix/headers/${brokerId}?language=${language}&col_group=${stepSlug}&row_group=challenge`;
         let headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
        
-        log.info("Fetching headers from:", { url: headersUrl });
+       // log.info("Fetching headers from:", { url: headersUrl });
         const headearsResponse = await apiClient<MatrixHeaders>(headersUrl, UseTokenAuth.Yes, {
           method: "GET",
         }, ErrorMode.Return); 
@@ -104,7 +149,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         }
 
        const { columnHeaders, rowHeaders } = headearsResponse.data;
-       log.info("Headers:", { columnHeaders, rowHeaders });
+       //log.info("Headers:", { columnHeaders, rowHeaders });
      
         // Set headers immediately to prevent layout shift
         setColumnHeaders(columnHeaders);
@@ -142,7 +187,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           }
 
           log.debug("Data received:", { url:`/challenges?${params.toString()}`,data:challengeResponse.data,json:JSON.stringify(challengeResponse.data,null,2) });
+         
           let {matrix: initialData,
+              is_published,
               affiliate_master_link, 
               affiliate_link, 
               evaluation_cost_discount,
@@ -153,7 +200,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               
         // Set the placeholder state
         setIsPlaceholder(type === "placeholder" || false);
-
+        setIsPublished(is_published);
+        setHasChanges(false);
        
         if(is_admin && type === "challenge"){
 
@@ -188,7 +236,8 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         if (initialData && Object.keys(initialData).length > 0) {
           
            if ( type === "challenge") {
-            
+            //the default value for is_published is true at database level
+           // setIsPublished(true);
             const processedData = initialData.map((row) =>
               row.map((cell) => {
                 const hasPublicValue =
@@ -236,6 +285,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
             });
           });
           setMatrixData(newMatrix);
+          setIsEmptyMatrix(true);
         }
         
       } catch (e) {
@@ -271,6 +321,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       next[rowIndex] = row;
       return next;
     });
+    setHasChanges(true);
   };
 
   const CopyValueToPublicValue = (rowIndex: number, colIndex: number, fieldName: string) => {
@@ -423,7 +474,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
           'affiliate_master_link': matrixExtraData?.affiliate_master_link?.url,
         }
       };
-      console.log("Saving payload:", payload);
+      //console.log("Saving payload:", payload);
 
       let saveUrl = type === "placeholder" ? "/challenges/matrix/placeholders" : `/challenges/${brokerId}`;
       const response = await apiClient<ChalengeData>(saveUrl, UseTokenAuth.Yes, {
@@ -436,7 +487,9 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         return;
       }
 
-      router.refresh();
+      //router.refresh();
+      setHasChanges(false);
+      setIsEmptyMatrix(false);
       toast.success("Matrix data saved successfully");
       console.log("Saved successfully:", response.data);
      
@@ -468,11 +521,6 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
   if (columnHeaders.length === 0 || rowHeaders.length === 0) {
     return (
       <div className="w-full">
-        <div className="mb-4 flex justify-end">
-          <Button disabled={saving || !stepSlug} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg">
-            {saving ? "Saving..." : "Save Table"}
-          </Button>
-        </div>
         <Card>
           <CardContent className="p-6">
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -486,8 +534,18 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex justify-end">
-        <Button disabled={saving || !stepSlug} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg">
+      <div className="mb-4 flex items-center justify-between">
+        {/* Public / Draft toggle (hidden in placeholder mode) */}
+        {isPublished !== null && type !== "placeholder" && (
+          <PublishToggle
+            isPublished={isPublished}
+            onToggle={togglePublish}
+            disabled={publishing}
+          />
+        )}
+
+        {/* Save button */}
+        <Button disabled={saving || !stepSlug || !hasChanges} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg disabled:opacity-50">
           {saving ? "Saving..." : "Save Table"}
         </Button>
       </div>

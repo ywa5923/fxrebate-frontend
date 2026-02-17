@@ -171,7 +171,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
               onClick={() => setIsEditingHiddenState(!isEditingHiddenState)}
               className="inline-flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md border border-sky-600 text-sky-700 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300"
             >
-              {isEditingHiddenState ? "Close Edit Mode" : "Edit tabs visibility"}
+              {isEditingHiddenState ? "Close Edit Mode" : "Edit tabs"}
             </button>
            
           </div>
