@@ -83,7 +83,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
             showNewAccount
               ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-              : "border-slate-400 dark:border-slate-500 text-slate-500 dark:text-slate-400 hover:border-slate-600 dark:hover:border-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+              : "border-green-600 dark:border-green-500 text-green-600 dark:text-green-500 hover:border-green-700 dark:hover:border-green-400 hover:text-green-700 dark:hover:text-green-400"
           )}
           title={showNewAccount ? "Cancel" : "New Account"}
         >
@@ -104,7 +104,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
               <p className="text-sm text-gray-600 dark:text-gray-400">Add a new account type</p>
             </div>
           </div>
-          <Card className="w-full sm:max-w-2xl sm:mx-auto">
+          <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
               <DynamicForm
                 broker_id={broker_id}
@@ -144,7 +144,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                     <span className="hidden sm:inline">Account {index + 1}</span>
                     <span className="sm:hidden">Acc {index + 1}</span>
                     {isActive && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-white" />
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-500" />
                     )}
                   </button>
                 )
@@ -157,7 +157,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             <div
               key={account.id}
               className={cn(
-                "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6",
+                "bg-[#ffffff] dark:bg-gray-800 rounded-lg p-6",
                 activeTab === account.id.toString() ? "block" : "hidden"
               )}
             >
@@ -169,7 +169,6 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                         <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Account {index + 1}</h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
                       </div>
                     </div>
@@ -188,7 +187,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                       </Button>
                     </div>
                   </div>
-                  <Card className="max-w-2xl mx-auto">
+                  <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
                     <CardContent>
                       <DynamicForm
                         broker_id={broker_id}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 import PublishToggle from "@/components/ChallengeMatrix/PublishToggle";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -535,7 +536,14 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
         )}
 
         {/* Save button */}
-        <Button disabled={saving || !stepSlug || !hasChanges} onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg shadow-lg disabled:opacity-50">
+        <Button
+          disabled={saving || !stepSlug || !hasChanges}
+          onClick={handleSave}
+          variant="outline"
+          size="default"
+          className="h-9 bg-green-100 hover:bg-green-200 text-green-800 border-green-200 disabled:opacity-50"
+        >
+          <Save className="h-4 w-4 mr-2" />
           {saving ? "Saving..." : "Save Table"}
         </Button>
       </div>

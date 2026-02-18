@@ -36,7 +36,7 @@ export default function BrokerOptions({
 }: BrokerOptionsProps) {
   return (
     <div className="container mx-auto p-3 sm:p-6">
-      <div className="rounded-2xl bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 border border-gray-200/80 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div className="rounded-2xl bg-[#ffffff] dark:bg-gray-900 border-0 shadow-none overflow-hidden">
         {/* Header with subtle background pattern */}
         <div className="relative px-5 sm:px-6 py-5 sm:py-6 border-b border-gray-200 dark:border-gray-800">
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -56,19 +56,19 @@ export default function BrokerOptions({
         </div>
         {/* Content */}
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6">
-        <Card className="max-w-2xl mx-auto border-0 shadow-none">
-          <CardContent>
-            <DynamicForm
-              broker_id={broker_id}
-              options={options}
-              optionsValues={optionsValues}
-              is_admin={is_admin}
-              entity_id={entity_id}
-              entity_type={entity_type}
-              action={submitBrokerProfile}
-            />
-          </CardContent>
-        </Card>
+          <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
+            <CardContent>
+              <DynamicForm
+                broker_id={broker_id}
+                options={options}
+                optionsValues={optionsValues}
+                is_admin={is_admin}
+                entity_id={entity_id}
+                entity_type={entity_type}
+                action={submitBrokerProfile}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -719,10 +719,10 @@ export function DynamicForm({
         );
       case "image":
         return (
-          <div>
+          <div className="min-w-0 overflow-hidden">
             {formField.value && typeof formField.value === "string" && (
-              <div className="text-sm text-muted-foreground mb-2">
-                Current file:{" "}
+              <div className="text-sm text-muted-foreground mb-2 min-w-0 overflow-hidden">
+                <span>Current file:{" "}</span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -730,7 +730,7 @@ export function DynamicForm({
                         href={formField.value}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="underline text-blue-600 hover:text-blue-800"
+                        className="underline text-blue-600 hover:text-blue-800 break-all"
                       >
                         {formField.value.split("/").pop()}
                       </a>
@@ -800,13 +800,28 @@ export function DynamicForm({
         onSubmit={form.handleSubmit(handleServerActionSubmit)}
         className="space-y-8"
       >
-        {options.map((option) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-8 w-full">
+        {options.map((option, idx) => {
+          const wideTypes = ["textarea", "notes", "multiple_select", "image","url"];
+          const isNativeWide = wideTypes.includes(option.form_type);
+          const nextIsNativeWide = idx < options.length - 1 && wideTypes.includes(options[idx + 1].form_type);
+          const prevIsNativeWide = idx > 0 && wideTypes.includes(options[idx - 1].form_type);
+          const isLastItem = idx === options.length - 1;
+          const isWide = isNativeWide || (idx === 0 && nextIsNativeWide) || (isLastItem && prevIsNativeWide);
+          console.log(`[DynamicForm] idx=${idx} form_type="${option.form_type}" isNativeWide=${isNativeWide} isWide=${isWide}`);
+          // const wideClasses = cn(
+          //   isWide && "col-span-full",
+          //   isNativeWide && "border-b border-dashed border-gray-200 dark:border-gray-700 pb-6",
+          //   isNativeWide && !prevIsNativeWide && "border-t pt-6"
+          // );
+          const wideClasses = '';
+          return (
           <FormField
             key={option.id}
             control={form.control}
             name={option.slug}
             render={({ field: formField }) => (
-              <FormItem>
+              <FormItem className={wideClasses}>
                 {option.form_type !== "checkbox" && (
                   <div className="flex items-center gap-2">
                     <FormLabel>{option.name}{option.required === 1 && <span className="text-red-500 text-lg font-bold align-super" aria-label="required">*</span>}</FormLabel>
@@ -844,7 +859,9 @@ export function DynamicForm({
               </FormItem>
             )}
           />
-        ))}
+          );
+        })}
+        </div>
         <Button
           type="submit"
           disabled={!isFormDirty}

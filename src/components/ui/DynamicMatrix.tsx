@@ -417,7 +417,7 @@ export function DynamicMatrix({
             ? "Saved"
             : status === "error"
             ? "Validation Errors"
-            : "Save Matrix"}
+            : "Save Table"}
         </Button>
       </div>
 

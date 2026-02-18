@@ -95,7 +95,7 @@ export function NavProjects({
                     !isLast ? "border-b border-gray-100 dark:border-gray-800" : ""
                   } ${
                     isActive
-                      ? "bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white border-r-[3px] border-r-gray-900 dark:border-r-white"
+                      ? "bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white border-r-[3px] border-r-green-600 dark:border-r-green-500"
                       : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-100 border-r-[3px] border-r-transparent"
                   }`}
                 >

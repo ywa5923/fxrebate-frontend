@@ -21,13 +21,13 @@ export default function Rebates({
 }) {
   
   return (
-    <div className="space-y-1 p-3 sm:p-6 bg-gray-50 dark:bg-gray-950">
+    <div className="space-y-1 p-3 sm:p-6 bg-[#ffffff] dark:bg-gray-950">
       {/* Header Section */}
       <div className={cn("max-w-7xl mx-auto", is_admin && "border border-green-600 dark:border-green-500 rounded-lg")}>
         
         {/* Matrix Editor Card */}
-        <Card className="shadow-none border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg">
-          <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800">
+        <Card className="shadow-none border-0 bg-[#ffffff] dark:bg-gray-900 rounded-lg">
+          <CardHeader className="bg-[#ffffff] dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-gray-900 dark:text-gray-100">
               <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               {is_admin ? 'Admin Matrix Configuration' : 'Broker Matrix Configuration'}

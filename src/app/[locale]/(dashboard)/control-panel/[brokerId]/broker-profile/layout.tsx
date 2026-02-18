@@ -140,7 +140,7 @@ export default async function DashboardLayout({
                 </div>
               </div>
             </header>
-            <main className="flex-1 overflow-x-hidden">
+            <main className="flex-1 overflow-x-hidden bg-[#ffffff] dark:bg-gray-950">
               {children}
             </main>
           </SidebarInset>
