@@ -426,11 +426,11 @@ export function DynamicMatrix({
           <table className="w-full">
             <thead>
               <tr>
-                <th className="border p-1 bg-muted md:sticky left-0 z-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-visible md:overflow-visible">
+                <th className="border p-1 bg-[#fafafa] dark:bg-gray-800 md:sticky left-0 z-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-visible md:overflow-visible">
                   <div className="min-w-[200px]">Row/Column</div>
                 </th>
                 {matrix[0]?.map((_, colIndex) => (
-                  <th key={colIndex} className="border p-1 bg-muted w-[250px]">
+                  <th key={colIndex} className="border p-1 bg-[#fafafa] dark:bg-gray-800 w-[250px]">
                     <div className="flex items-center gap-1">
                       <div className="w-full">
                         <Select
@@ -507,7 +507,7 @@ export function DynamicMatrix({
                       </div>
                       <div
                         className={`w-full min-h-[36px] ${
-                          rowIndex % 2 === 0 ? "bg-background" : "bg-muted/50"
+                          rowIndex % 2 === 0 ? "bg-background" : "bg-[#fafafa] dark:bg-gray-800/50"
                         }`}
                       >
                         <CreateMultiSelect
