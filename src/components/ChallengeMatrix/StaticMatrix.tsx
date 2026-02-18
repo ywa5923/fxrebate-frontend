@@ -54,6 +54,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
       toast.error("Please save some table data first before changing the visibility.");
       return;
     }
+
     try {
       setPublishing(true);
       const response = await apiClient<any>(
@@ -255,6 +256,7 @@ export default function StaticMatrix({ brokerId, categoryId, stepId, stepSlug, a
               })
             );
             setMatrixData(processedData);
+            setIsEmptyMatrix(false);
           } else {
             setMatrixData(initialData);
           }
