@@ -59,29 +59,20 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
 
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Promotions</h1>
-        <Button 
+        <button
           onClick={() => setShowNewPromotion(!showNewPromotion)}
           className={cn(
-            "transition-all duration-200",
-            showNewPromotion 
-              ? "bg-red-600 hover:bg-red-700 text-white" 
-              : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-lg hover:shadow-xl"
+            "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
+            showNewPromotion
+              ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+              : "border-slate-400 dark:border-slate-500 text-slate-500 dark:text-slate-400 hover:border-slate-600 dark:hover:border-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
           )}
+          title={showNewPromotion ? "Cancel" : "New Promotion"}
         >
-          {showNewPromotion ? (
-            <>
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Promotion
-            </>
-          )}
-        </Button>
+          {showNewPromotion ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+        </button>
       </div>
       
       {/* New Promotion Form */}
@@ -89,10 +80,8 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Promotion</h3>
@@ -121,29 +110,29 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
       {/* Tab Navigation */}
       {promotions && promotions.length > 0 ? (
         <>
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <div className="flex overflow-x-auto scrollbar-hide space-x-1 pb-2">
-              {promotions.map((promotion, index) => (
-                <button
-                  key={promotion.id}
-                  onClick={() => setActiveTab(promotion.id.toString())}
-                  className={cn(
-                    "px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap flex-shrink-0",
-                    activeTab === promotion.id.toString()
-                      ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  )}
-                >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <div className={cn(
-                      "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full",
-                      activeTab === promotion.id.toString() ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                    )}></div>
+          <div className="mb-6">
+            <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
+              {promotions.map((promotion, index) => {
+                const isActive = activeTab === promotion.id.toString()
+                return (
+                  <button
+                    key={promotion.id}
+                    onClick={() => setActiveTab(promotion.id.toString())}
+                    className={cn(
+                      "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
+                      isActive
+                        ? "text-gray-900 dark:text-white font-semibold"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+                    )}
+                  >
                     <span className="hidden sm:inline">Promotion {index + 1}</span>
                     <span className="sm:hidden">Promo {index + 1}</span>
-                  </div>
-                </button>
-              ))}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-white" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
           

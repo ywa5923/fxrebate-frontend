@@ -23,54 +23,41 @@ export default function PublishToggle({ isPublished, onToggle, disabled = false 
   return (
     <AlertDialog>
       <div className={cn(
-        "relative flex items-center h-9 rounded-full bg-gray-200 dark:bg-gray-800 p-0.5 select-none",
+        "relative flex items-center h-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1 cursor-pointer select-none",
         disabled && "opacity-60 pointer-events-none"
       )}>
-        {/* Public option */}
         <button
           onClick={!isPublished ? () => onToggle(true) : undefined}
           disabled={disabled}
           className={cn(
-            "relative z-10 flex items-center gap-1.5 px-4 h-full rounded-full text-xs font-semibold transition-colors duration-200",
+            "relative z-10 flex items-center gap-1.5 px-3 h-full rounded-md text-xs font-medium transition-all duration-200 cursor-pointer",
             isPublished
-              ? "text-emerald-700 dark:text-emerald-300"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+              ? "text-gray-900 dark:text-white"
+              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
           )}
         >
-          <span className={cn(
-            "h-2 w-2 rounded-full",
-            isPublished ? "bg-emerald-500 animate-pulse" : "bg-gray-400 dark:bg-gray-500"
-          )} />
+          <span className={cn("h-2 w-2 rounded-full", isPublished ? "bg-emerald-500 animate-pulse" : "")} />
           <span>Public</span>
         </button>
-
-        {/* Draft option */}
         <AlertDialogTrigger asChild disabled={!isPublished || disabled}>
           <button
             className={cn(
-              "relative z-10 flex items-center gap-1.5 px-4 h-full rounded-full text-xs font-semibold transition-colors duration-200",
+              "relative z-10 flex items-center gap-1.5 px-3 h-full rounded-md text-xs font-medium transition-all duration-200 cursor-pointer",
               !isPublished
-                ? "text-amber-700 dark:text-amber-300"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                ? "text-gray-900 dark:text-white"
+                : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
             )}
           >
-            <span className={cn(
-              "h-2 w-2 rounded-full",
-              !isPublished ? "bg-amber-500" : "bg-gray-400 dark:bg-gray-500"
-            )} />
+            <span className={cn("h-2 w-2 rounded-full", !isPublished ? "bg-amber-500" : "")} />
             <span>Draft</span>
           </button>
         </AlertDialogTrigger>
-
-        {/* Sliding indicator */}
-        <div
-          className={cn(
-            "absolute top-0.5 h-[calc(100%-4px)] rounded-full transition-all duration-300 ease-in-out shadow-sm",
-            isPublished
-              ? "left-0.5 w-[calc(50%-1px)] bg-white dark:bg-gray-700"
-              : "left-[calc(50%+1px)] w-[calc(50%-3px)] bg-white dark:bg-gray-700"
-          )}
-        />
+        <div className={cn(
+          "absolute top-1 h-[calc(100%-8px)] rounded-md transition-all duration-300 ease-in-out",
+          isPublished
+            ? "left-1 w-[calc(50%-2px)] bg-gray-100 dark:bg-slate-800 shadow-sm"
+            : "left-[calc(50%+2px)] w-[calc(50%-6px)] bg-gray-100 dark:bg-slate-800 shadow-sm"
+        )} />
       </div>
 
       {/* Confirmation dialog for switching to Draft */}

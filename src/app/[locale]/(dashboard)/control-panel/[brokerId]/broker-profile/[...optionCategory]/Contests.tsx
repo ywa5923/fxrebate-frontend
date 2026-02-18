@@ -61,29 +61,20 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
 
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3 mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Contests</h1>
-        <Button 
+        <button
           onClick={() => setShowNewContest(!showNewContest)}
           className={cn(
-            "transition-all duration-200",
-            showNewContest 
-              ? "bg-red-600 hover:bg-red-700 text-white" 
-              : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-lg hover:shadow-xl"
+            "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
+            showNewContest
+              ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+              : "border-slate-400 dark:border-slate-500 text-slate-500 dark:text-slate-400 hover:border-slate-600 dark:hover:border-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
           )}
+          title={showNewContest ? "Cancel" : "New Contest"}
         >
-          {showNewContest ? (
-            <>
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Contest
-            </>
-          )}
-        </Button>
+          {showNewContest ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+        </button>
       </div>
       
       {/* New Contest Form */}
@@ -91,10 +82,8 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Contest</h3>
@@ -123,29 +112,29 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
       {/* Tab Navigation */}
       {contests && contests.length > 0 ? (
         <>
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <div className="flex overflow-x-auto scrollbar-hide space-x-1 pb-2">
-              {contests.map((contest, index) => (
-                <button
-                  key={contest.id}
-                  onClick={() => setActiveTab(contest.id.toString())}
-                  className={cn(
-                    "px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap flex-shrink-0",
-                    activeTab === contest.id.toString()
-                      ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 shadow-sm"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  )}
-                >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <div className={cn(
-                      "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full",
-                      activeTab === contest.id.toString() ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                    )}></div>
+          <div className="mb-6">
+            <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
+              {contests.map((contest, index) => {
+                const isActive = activeTab === contest.id.toString()
+                return (
+                  <button
+                    key={contest.id}
+                    onClick={() => setActiveTab(contest.id.toString())}
+                    className={cn(
+                      "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
+                      isActive
+                        ? "text-gray-900 dark:text-white font-semibold"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+                    )}
+                  >
                     <span className="hidden sm:inline">Contest {index + 1}</span>
                     <span className="sm:hidden">Cont {index + 1}</span>
-                  </div>
-                </button>
-              ))}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-white" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
           

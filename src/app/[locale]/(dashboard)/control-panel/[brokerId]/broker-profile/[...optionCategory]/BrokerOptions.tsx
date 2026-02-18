@@ -50,9 +50,6 @@ export default function BrokerOptions({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
-              <span className="text-gray-300 dark:text-gray-700 mx-1">|</span>
               <span className="text-[11px] text-gray-400 dark:text-gray-600 font-mono">#{entity_id}</span>
             </div>
           </div>
