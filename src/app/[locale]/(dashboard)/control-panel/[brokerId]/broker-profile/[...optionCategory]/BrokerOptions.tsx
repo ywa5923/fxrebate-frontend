@@ -1,7 +1,6 @@
 "use client";
 
 import { DynamicForm } from '@/components/DynamicForm';
-import { Card, CardContent } from '@/components/ui/card';
 import { Option, OptionValue } from '@/types';
 import { LayoutGrid } from 'lucide-react';
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
@@ -42,7 +41,7 @@ export default function BrokerOptions({
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 flex items-center justify-center">
-                <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{category}</h2>
@@ -50,25 +49,23 @@ export default function BrokerOptions({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-gray-400 dark:text-gray-600 font-mono">#{entity_id}</span>
+              <span className="text-[11px] text-green-600 dark:text-green-400 font-mono">#{entity_id}</span>
             </div>
           </div>
         </div>
         {/* Content */}
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6">
-          <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
-            <CardContent>
-              <DynamicForm
-                broker_id={broker_id}
-                options={options}
-                optionsValues={optionsValues}
-                is_admin={is_admin}
-                entity_id={entity_id}
-                entity_type={entity_type}
-                action={submitBrokerProfile}
-              />
-            </CardContent>
-          </Card>
+          <div className="bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-4 border border-dashed border-gray-200 dark:border-gray-700">
+            <DynamicForm
+              broker_id={broker_id}
+              options={options}
+              optionsValues={optionsValues}
+              is_admin={is_admin}
+              entity_id={entity_id}
+              entity_type={entity_type}
+              action={submitBrokerProfile}
+            />
+          </div>
         </div>
       </div>
     </div>

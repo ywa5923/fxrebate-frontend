@@ -163,11 +163,8 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
         <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} />
 
         <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
-          <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800">
-                <HelpCircle className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              </div>
+          <div className="rounded-xl bg-[#ffffff] dark:bg-gray-900 p-4">
+            <div className="mb-2">
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Need Help?</p>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">

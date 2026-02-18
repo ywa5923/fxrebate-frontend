@@ -62,14 +62,22 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Contests</h1>
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 flex items-center justify-center">
+            <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Contests</h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+          </div>
+        </div>
         <button
           onClick={() => setShowNewContest(!showNewContest)}
           className={cn(
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
             showNewContest
               ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-              : "border-green-600 dark:border-green-500 text-green-600 dark:text-green-500 hover:border-green-700 dark:hover:border-green-400 hover:text-green-700 dark:hover:text-green-400"
+              : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           )}
           title={showNewContest ? "Cancel" : "New Contest"}
         >
@@ -112,7 +120,7 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
       {/* Tab Navigation */}
       {contests && contests.length > 0 ? (
         <>
-          <div className="mb-6">
+          <div className="mb-2">
             <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
               {contests.map((contest, index) => {
                 const isActive = activeTab === contest.id.toString()
@@ -143,49 +151,35 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
             <div
               key={contest.id}
               className={cn(
-                "bg-[#ffffff] dark:bg-gray-800 rounded-lg p-6",
+                "bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-px border border-dashed border-gray-200 dark:border-gray-700",
                 activeTab === contest.id.toString() ? "block" : "hidden"
               )}
             >
               {contest.option_values && contest.option_values.length > 0 ? (
                 <>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-5 border-b border-gray-200 dark:border-gray-800 gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 flex items-center justify-center">
-                        <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
-                      </div>
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                      ID: {contest.id}
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 sm:mt-0">
-                      <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                        ID: {contest.id}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                        onClick={() => setConfirmDeleteContest(contest.id)}
-                        title="Delete contest"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                      onClick={() => setConfirmDeleteContest(contest.id)}
+                      title="Delete contest"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
-                    <CardContent>
-                      <DynamicForm
-                        broker_id={broker_id}
-                        options={options}
-                        optionsValues={contest.option_values}
-                        action={submitBrokerProfile}
-                        is_admin={is_admin}
-                        entity_id={contest.id}
-                        entity_type="contest"
-                      />
-                    </CardContent>
-                  </Card>
+                  <DynamicForm
+                    broker_id={broker_id}
+                    options={options}
+                    optionsValues={contest.option_values}
+                    action={submitBrokerProfile}
+                    is_admin={is_admin}
+                    entity_id={contest.id}
+                    entity_type="contest"
+                  />
                 </>
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
