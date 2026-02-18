@@ -87,16 +87,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
       {/* New Promotion Form */}
       {showNewPromotion && (
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
-          {/* Header with icon and text */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Promotion</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new promotion</p>
-            </div>
-          </div>
+          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Promotion</p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
               <DynamicForm

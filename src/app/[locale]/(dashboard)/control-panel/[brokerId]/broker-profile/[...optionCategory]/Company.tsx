@@ -20,9 +20,17 @@ export default function Company({ broker_id, company, options, is_admin = false 
   const [showNewCompany, setShowNewCompany] = useState(false);
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Company</h1>
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 flex items-center justify-center">
+            <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Company</h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+          </div>
+        </div>
         {!company && (
           <button
             onClick={() => setShowNewCompany(!showNewCompany)}
@@ -30,7 +38,7 @@ export default function Company({ broker_id, company, options, is_admin = false 
               "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
               showNewCompany
                 ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-                : "border-slate-400 dark:border-slate-500 text-slate-500 dark:text-slate-400 hover:border-slate-600 dark:hover:border-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             )}
             title={showNewCompany ? "Cancel" : "New Company"}
           >
@@ -38,20 +46,11 @@ export default function Company({ broker_id, company, options, is_admin = false 
           </button>
         )}
       </div>
-      {/* New Company Form or Edit Form */}
+      {/* New Company Form */}
       {(!company && showNewCompany) && (
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
-          {/* Header with icon and text */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create New Company</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Add a new company</p>
-            </div>
-          </div>
-          <Card className="max-w-2xl mx-auto">
+          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Company</p>
+          <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
               <DynamicForm
                 broker_id={broker_id}
@@ -71,26 +70,25 @@ export default function Company({ broker_id, company, options, is_admin = false 
       )}
       {/* Company Content */}
       {company ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-5 border-b border-gray-200 dark:border-gray-800 gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 flex items-center justify-center">
-                <LayoutGrid className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+        <div className="rounded-2xl bg-[#ffffff] dark:bg-gray-900 border-0 shadow-none overflow-hidden">
+          <div className="relative px-5 sm:px-6 py-5 sm:py-6 border-b border-gray-200 dark:border-gray-800">
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 flex items-center justify-center">
+                  <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Company</h2>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Company</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Configuration & Settings</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-green-600 dark:text-green-400 font-mono">#{company.id}</span>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 sm:mt-0">
-              <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                ID: {company.id}
-              </div>
-              {/* If you want a Delete button for company, add it here as in Accounts */}
             </div>
           </div>
-          <Card className="max-w-2xl mx-auto">
-            <CardContent>
+          <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6">
+            <div className="bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-4 border border-dashed border-gray-200 dark:border-gray-700">
               <DynamicForm
                 broker_id={broker_id}
                 options={options}
@@ -100,8 +98,8 @@ export default function Company({ broker_id, company, options, is_admin = false 
                 entity_id={company.id}
                 entity_type="company"
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       ) : (!showNewCompany && (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
