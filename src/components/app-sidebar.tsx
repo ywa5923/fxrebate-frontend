@@ -162,36 +162,11 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
         {/* <NavMain items={data.navMain} /> */}
         <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} />
 
-        {/* What's New + Help - fills the gap above footer */}
-        <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 group-data-[collapsible=icon]:hidden">
-
-          {/* What's New */}
-          <div className="rounded-lg border border-green-200 dark:border-green-900/50 bg-green-50/50 dark:bg-green-950/20 px-3 py-2">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
-              </span>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-green-800 dark:text-green-400">What&apos;s New</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Dark mode</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-500">— Full dashboard support</p>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-[11px] font-medium text-gray-800 dark:text-gray-200">Challenge matrix</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-500">— New editing tools</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
+        <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
           <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/40">
-                <HelpCircle className="h-4 w-4 text-green-700 dark:text-green-400" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800">
+                <HelpCircle className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Need Help?</p>
             </div>
@@ -233,7 +208,7 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
                 {userEmail ?? ""}
               </p>
               {brokerType && (
-                <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   {brokerType}
                 </span>
               )}

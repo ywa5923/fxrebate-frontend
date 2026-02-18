@@ -173,13 +173,13 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
                         ID: {promotion.id}
                       </div>
                       <Button
-                        variant="destructive"
-                        size="sm"
-                        className="w-full sm:w-auto sm:ml-2"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
                         onClick={() => setConfirmDeletePromotion(promotion.id)}
+                        title="Delete promotion"
                       >
-                        <Trash className="w-4 h-4 mr-1" />
-                        Delete Promotion
+                        <Trash className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

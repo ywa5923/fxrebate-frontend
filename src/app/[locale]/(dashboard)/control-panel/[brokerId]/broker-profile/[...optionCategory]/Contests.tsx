@@ -175,13 +175,13 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
                         ID: {contest.id}
                       </div>
                       <Button
-                        variant="destructive"
-                        size="sm"
-                        className="w-full sm:w-auto sm:ml-2"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
                         onClick={() => setConfirmDeleteContest(contest.id)}
+                        title="Delete contest"
                       >
-                        <Trash className="w-4 h-4 mr-1" />
-                        Delete Contest
+                        <Trash className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

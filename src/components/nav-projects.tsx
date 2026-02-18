@@ -82,53 +82,30 @@ export function NavProjects({
           className="h-10 w-auto hidden dark:block"
         />
       </div>
-      <SidebarGroupLabel>Control Panel</SidebarGroupLabel>
-      <SidebarMenu>
-        {projects.map((item) => {
+      <SidebarMenu className="gap-0">
+        {projects.map((item, index) => {
           const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
+          const isLast = index === projects.length - 1
           return (
-            <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton asChild>
+            <SidebarMenuItem key={item.name} className="list-none">
+              <SidebarMenuButton asChild className="h-auto p-0 !rounded-none">
                 <Link
                   href={item.url}
-                  className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 text-sm ${
+                  className={`!rounded-none flex items-center justify-between px-4 py-3.5 w-full transition-colors duration-150 ${
+                    !isLast ? "border-b border-gray-100 dark:border-gray-800" : ""
+                  } ${
                     isActive
-                      ? "bg-green-800 text-white shadow-sm"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                      ? "bg-slate-800 dark:bg-slate-700 text-white border-l-2 border-l-slate-800 dark:border-l-slate-500"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-100 border-l-2 border-l-transparent"
                   }`}
                 >
-                  <ChevronRight className={`mr-2 h-4 w-4 transition-transform duration-200 ${isActive ? "text-green-200 rotate-90" : "text-gray-400"}`} />
-                  <span className={isActive ? "font-semibold" : "font-medium"}>{item.name}</span>
+                  <span className={`text-sm ${isActive ? "font-semibold" : "font-normal"}`}>{item.name}</span>
+                  <ChevronRight className={`h-3.5 w-3.5 ${
+                    isActive ? "text-slate-300 dark:text-slate-400" : "text-gray-300 dark:text-gray-600"
+                  }`} />
                 </Link>
               </SidebarMenuButton>
-            {/*<DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <Folder className="text-muted-foreground" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Forward className="text-muted-foreground" />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>*/}
-          </SidebarMenuItem>
+            </SidebarMenuItem>
           )
         })}
       </SidebarMenu>
