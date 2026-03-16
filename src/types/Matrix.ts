@@ -30,6 +30,7 @@ export interface RowHeaderOption {
 export interface RowHeader {
   slug: string;
   name: string;
+  is_percentage: boolean;
   options: RowHeaderOption[];
 }
 

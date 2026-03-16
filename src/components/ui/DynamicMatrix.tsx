@@ -20,6 +20,7 @@ import { ColumnHeader, MatrixCell, RowHeader } from "@/types";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
+import { useRouter } from "next/navigation";
 
 interface DynamicMatrixProps {
   // rowHeaders: {
@@ -62,6 +63,7 @@ export function DynamicMatrix({
   brokerId,
 }: DynamicMatrixProps) {
   const log = logger.child("components/ui/DynamicMatrix");
+  const router = useRouter();
   const [status, setStatus] = React.useState<string>("");
   // Track copied cells so the copy button persists and stays green
   // Key format: `${rowIndex}-${colIndex}`
@@ -356,12 +358,14 @@ export function DynamicMatrix({
         
       setStatus("success");
       toast.success("Matrix data saved successfully");
+     
       
       log.debug("Matrix data saved successfully", {context: {data:JSON.stringify({
           matrix,
           broker_id: brokerId,
           matrix_name: "Matrix-1",
         })}});
+        router.refresh();
     } catch (error) {
       console.error("Error saving matrix data:", error);
       setStatus("error");

@@ -69,6 +69,9 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
   
   const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
   const selectedStepSlug = selectedCategory?.steps.find((s) => s.id === challengeState.stepId)?.slug;
+  const selectedAmountNumber = selectedCategory?.amounts.find((a) => a.id === challengeState.amountId)?.amount??0;
+  const selectedAmountCurrency = selectedCategory?.amounts.find((a) => a.id === challengeState.amountId)?.currency??"";
+
   const derivedState = {
     selectedCategory: selectedCategory,
     steps: selectedCategory?.steps || [],
@@ -256,6 +259,8 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   stepId={challengeState.stepId!}
                   stepSlug={derivedState.stepSlug!}
                   amountId={challengeState.amountId??null}
+                  amountNumber={Number(selectedAmountNumber)}
+                  amountCurrency={selectedAmountCurrency}
                   zoneId={null}
                   language="en"
                   type={type}
