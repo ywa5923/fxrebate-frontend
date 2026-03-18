@@ -12,8 +12,8 @@ import Accounts from "./Accounts";
 //import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 import Company from "./Company";
 import BrokerOptions from "./BrokerOptions";
-
-
+import { EvaluationFormConfig } from "@/components/EvaluationRules";
+import { EvaluationRules } from "@/components/EvaluationRules";
 import Rebates from "./Rebates";
 //import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
@@ -211,7 +211,7 @@ export default async function BrokerProfilePage({
    
     if(categorySlug=='challenge-matrix' ){
       let brokerChallengeCategoriesUrl = `/challenges/categories/${brokerId}`;
-      let  defaultChallengeCategoriesUrl = `/challenges/default-categories`;
+      let defaultChallengeCategoriesUrl = `/challenges/default-categories`;
 
       const [brokerChallengeCategoriesResponse, defaultChallengeCategoriesResponse] = await Promise.all([
         apiClient<ChallengeType[]>(brokerChallengeCategoriesUrl, UseTokenAuth.Yes, {
@@ -234,6 +234,17 @@ export default async function BrokerProfilePage({
   
     
       return <ChallengeCategories key={brokerId} is_admin={is_admin} categories={brokerCategories} defaultCategories={defaultCategories} brokerId={brokerId} type="challenge"/>
+    }
+
+    if(categorySlug=='evaluation-rules'){
+      let evaluationRulesFetchUrl = '/evaluation-rules/form-config';
+      let evaluationRulesResponse = await apiClient<EvaluationFormConfig>(evaluationRulesFetchUrl, UseTokenAuth.Yes, { method: "GET", cache: "no-store" }, ErrorMode.Return);
+      if(!evaluationRulesResponse.success || !evaluationRulesResponse.data){
+        log.error("Error fetching evaluation rules form config", {context: {evaluationRules:evaluationRulesResponse.message}});
+        notFound();
+      }
+      let evaluationRulesFormConfig = evaluationRulesResponse.data;
+      return <EvaluationRules key={brokerId} is_admin={is_admin} formConfig={evaluationRulesFormConfig} brokerId={brokerId}/>
     }
     
     if(categorySlug=='rebates'){
