@@ -7,6 +7,7 @@ export interface EvaluationRule {
   evaluation_option_id: number;
   public_evaluation_option_id: number | null;
   details: string | null;
+  is_getter_for_admin: 0 | 1;
   public_details: string | null;
   previous_evaluation_option_id: number | null;
   previous_evaluation_option_value: string | null;

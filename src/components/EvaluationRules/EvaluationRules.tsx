@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Info, LayoutGrid } from "lucide-react";
+import { Copy, Info, LayoutGrid } from "lucide-react";
 import { EvaluationFormConfig, type EvaluationRule } from "./types";
 import {
   Select,
@@ -22,8 +22,10 @@ import {
 import { Field, FieldContent, FieldError, FieldLabel } from "@/components/ui/field";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-type EvaluationFormValues = Record<string, string>;
+type EvaluationFormValues = Record<string, string|number>;
 
 export default function EvaluationRules({
   formConfig,
@@ -53,7 +55,7 @@ export default function EvaluationRules({
   //   { name: "copy-trading#1", config: ... },
   //   { name: "scalping#2", config: ... }
   // ]
-
+console.log(evaluationRules);
   const initialValues = useMemo<EvaluationFormValues>(() => {
     const acc: EvaluationFormValues = {};
     for (const field of fields) {
@@ -92,22 +94,32 @@ export default function EvaluationRules({
       const key = rule.evaluation_rule_slug+"#"+rule.evaluation_rule_id;
       if (!key || !fields.some((f) => f.name === key)) continue;
 
-      const optionId = is_admin  ? rule.public_evaluation_option_id : rule.evaluation_option_id;
+      const optionId = is_admin  ? (rule.public_evaluation_option_id ?? rule.evaluation_option_id) : rule.evaluation_option_id;
       acc[key] = String(optionId);
       if(is_admin){
-        acc[`${key}_broker_value`] = String(rule.evaluation_option_value);
+        acc[`${key}_broker_value`] = String(rule.evaluation_option_value)+"#"+String(rule.evaluation_option_id);
         acc[`${key}_previous_value`] = String(rule.previous_evaluation_option_value);
       }
       
       
      
        if(rule.is_getter === 1){
-        const details = is_admin? rule.public_details  : rule.details ;
+        const details = is_admin? (rule.public_details ?? rule.details)  : rule.details ;
         acc[`${key}_getter`] = details != null ? String(details) : "";
         if(is_admin){
           acc[`${key}_getter_broker_value`] = String(rule.details?? "");
           acc[`${key}_getter_previous_value`] = String(rule.previous_details?? "");
         }
+       }
+       if(is_admin && rule.is_getter_for_admin === 1){
+        acc[`${key}_getter`]=rule.public_details?? "";
+        acc[`${key}_getter_broker_value`] = String(rule.details?? "");
+        acc[`${key}_getter_previous_value`] = String(rule.previous_details?? "");
+       }
+
+
+       if(rule.is_updated_entry === 1){
+        acc[`${key}_is_updated_entry`] = 1;
        }
 
       
@@ -126,13 +138,18 @@ export default function EvaluationRules({
 
   const onSubmit = async (values: EvaluationFormValues) => {
     console.log(values);
-    const saveEvaluationRulesUrl = "/evaluation-rules";
-    await apiClient<boolean>(
+    const saveEvaluationRulesUrl = "/evaluation-rules/"+brokerId;
+    const response = await apiClient<boolean>(
       saveEvaluationRulesUrl,
       UseTokenAuth.No,
       { method: "POST", body: JSON.stringify(values) },
       ErrorMode.Return,
     );
+    if (response.success) {
+      toast.success("Evaluation rules saved successfully");
+    } else {
+      toast.error(response.message ?? "Failed to save evaluation rules");
+    }
   };
 
   void brokerId;
@@ -189,6 +206,9 @@ export default function EvaluationRules({
                     const selectedOptionIsGetter = selectedOption?.is_getter === 1;
                     const fieldError = form.formState.errors[name];
 
+                    const isUpdatedEntry =form.watch(`${name}_is_updated_entry`);
+                      
+
                     return (
                       <Field
                         orientation="responsive"
@@ -201,7 +221,7 @@ export default function EvaluationRules({
                         <FieldContent className="min-w-0 space-y-1">
                           <div className="flex w-full min-w-0 flex-col gap-2">
                             <Select
-                              value={field.value ?? ""}
+                              value={String(field.value ?? "")}
                                 onValueChange={(value) => {
                                   field.onChange(value);
                                   
@@ -231,7 +251,14 @@ export default function EvaluationRules({
                             )}
 
                             {is_admin && (
-                              <div className="flex flex-col gap-1 border border-gray-200 dark:border-gray-700 pt-2 px-2 pb-2 rounded-md">
+                              <div
+                                className={cn(
+                                  "flex flex-col gap-1 border pt-2 px-2 pb-2 rounded-md",
+                                  isUpdatedEntry
+                                    ? "border-red-500 border-1 dark:border-red-500"
+                                    : "border-gray-200 dark:border-gray-700",
+                                )}
+                              >
                                 <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
                                   Broker Value:{" "}
                                   {form.getValues(
@@ -244,6 +271,16 @@ export default function EvaluationRules({
                                     `${name}_previous_value`,
                                   )}
                                 </p>
+                                {/* If the selected option is not a getter but it have a previous getter value, show it */}
+                                {/* This is for the case when user change a getter value to other vlaue which is not a getter,previous geter value remain in db*/}
+                                {!selectedOptionIsGetter && form.getValues(`${name}_getter_previous_value`) !== "" && (
+                                  <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
+                                    Previous Getter Value:{" "}
+                                    {form.getValues(
+                                      `${name}_getter_previous_value`,
+                                    )}
+                                  </p>
+                                )}
                               </div>
                             )}
                           </div>
@@ -282,7 +319,14 @@ export default function EvaluationRules({
                                     />
                                   </div>
                                   {is_admin && (
-                                    <div className="flex flex-col gap-1 border border-gray-200 dark:border-gray-700 pt-2 px-2 pb-2 rounded-md">
+                                    <div
+                                      className={cn(
+                                        "flex flex-col gap-1 border pt-2 px-2 pb-2 rounded-md",
+                                        isUpdatedEntry
+                                          ? "border-red-500 border-1 dark:border-red-500"
+                                          : "border-gray-200 dark:border-gray-700",
+                                      )}
+                                    >
                                       <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
                                         Broker Value:{" "}
                                         {form.getValues(
@@ -317,6 +361,39 @@ export default function EvaluationRules({
                                 : []
                             }
                           />
+                          <div className="mt-2 flex w-full justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-sm"
+                              className="shrink-0"
+                              title="Copy broker defaults"
+                              aria-label="Copy broker defaults"
+                              onClick={() => {
+                                //get the broker value from the initial values and set the form value to the broker value
+                                const brokerVal =
+                                  initialValues[name + "_broker_value"];
+                                const brokerValId =
+                                  String(brokerVal ?? "").split("#")[1] ?? "";
+                                //get the getter broker value from the initial values and set the form value to the broker value
+                                const getterVal =
+                                  initialValues[
+                                    getterFieldName + "_broker_value"
+                                  ];
+                                 
+                                form.reset({
+                                  ...initialValues,
+                                  ...form.getValues(),
+                                  [name]: brokerValId,
+                                  [getterFieldName]: getterVal,
+                                  [name + "_is_updated_entry"]: 0,
+                                  
+                                });
+                              }}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </FieldContent>
                       </Field>
                      
