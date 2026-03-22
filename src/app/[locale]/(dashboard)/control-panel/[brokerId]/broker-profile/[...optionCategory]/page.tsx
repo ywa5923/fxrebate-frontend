@@ -21,6 +21,7 @@ import Rebates from "./Rebates";
 //import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
+import EvaluationSteps from "./EvaluationSteps";
 //import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
@@ -35,7 +36,7 @@ import { DynamicTableRow } from "@/types";
 import { AccountTypeLinks } from "@/types/AccountTypeLinks";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { canAdminBroker } from "@/lib/auth-actions";
-
+import Companies from "./Companies";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -104,7 +105,7 @@ export default async function BrokerProfilePage({
     }
 
 
-    if(categorySlug=='company-profile'){
+    if(categorySlug=='companies-profiles'){
    
      let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
      let companiesResponse = await apiClient<DynamicTableRow[]>(companiesFetchUrl, true, {
@@ -117,20 +118,21 @@ export default async function BrokerProfilePage({
      let companies = companiesResponse.data ?? [];
       return (
         <>
+         {/*
           <Company
             broker_id={brokerId}
             company={companies[0] ?? null}
             options={matchedCategory.options as Option[]}
             is_admin={is_admin}
           />
-          {/*
+         */}
           <Companies 
             broker_id={brokerId}
             companies={companies}
             options={matchedCategory.options as Option[]}
             is_admin={is_admin}
           />
-          */}
+          
         </>
       );
     }
@@ -205,6 +207,34 @@ export default async function BrokerProfilePage({
         <Contests 
           broker_id={brokerId}
           contests={contests}
+          options={matchedCategory.options as Option[]}
+          is_admin={is_admin}
+        />
+      );
+    }
+
+    if (categorySlug === "evaluation-steps") {
+      const evaluationStepsFetchUrl = `/dynamic-tables/${brokerId}/evaluation-steps`;
+      const evaluationStepsResponse = await apiClient<DynamicTableRow[]>(
+        evaluationStepsFetchUrl,
+        UseTokenAuth.No,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      );
+      if (!evaluationStepsResponse.success) {
+        log.error("Error fetching evaluation steps", {
+          context: { evaluationSteps: evaluationStepsResponse.message },
+        });
+        notFound();
+      }
+      const evaluationSteps = evaluationStepsResponse.data ?? [];
+
+      return (
+        <EvaluationSteps
+          broker_id={brokerId}
+          evaluationSteps={evaluationSteps}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
         />

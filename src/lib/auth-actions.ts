@@ -245,7 +245,7 @@ export async function getLoggedInUserData(): Promise<AuthUser> {
       throw new Error('User data not found in response');
     }
 
-    
+    log.debug('333333333333333333333333333333333User data fetched successfully', { user: responseData.user });
 
     // const user: AuthUser = AuthUserSchema.parse(responseData.user);
     // log.debug('User data fetched successfully', { user: user });
@@ -275,7 +275,7 @@ export async function isAuthenticated(): Promise<AuthUser | null> {
   const log = logger.child('lib/auth-actions/isAuthenticated');
   try {
     const user = await getLoggedInUserData();
-    // log.debug('User authenticated successfully', { userId: user.id, userType: user.user_type });
+     log.debug('########User authenticated successfully', { userId: user.id, userType: user.user_type });
     return user;
   } catch (error) {
     log.error('!!================!!Authentication check failed', {

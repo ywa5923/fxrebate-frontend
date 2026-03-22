@@ -1,10 +1,9 @@
 "use client";
 
-import { DynamicTableRow, Option } from "@/types";
+import { Option } from "@/types";
 import { DynamicForm } from "@/components/DynamicForm";
-
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X, Trash, LayoutGrid } from "lucide-react";
@@ -18,52 +17,55 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DynamicTableRow } from "@/types";
 import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
 
-interface CompaniesProps {
+interface EvaluationStepsProps {
   broker_id: number;
-  companies?: DynamicTableRow[];
+  evaluationSteps?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
 }
 
-export default function Companies({
+export default function EvaluationSteps({
   broker_id,
-  companies,
+  evaluationSteps,
   options,
   is_admin = false,
-}: CompaniesProps) {
+}: EvaluationStepsProps) {
   const [activeTab, setActiveTab] = useState<string>(
-    companies?.[0]?.id?.toString() || "",
+    evaluationSteps?.[0]?.id?.toString() || "",
   );
-  const [showNewCompany, setShowNewCompany] = useState(false);
-  const [confirmDeleteCompany, setConfirmDeleteCompany] = useState<
-    number | null
-  >(null);
+  const [showNewStep, setShowNewStep] = useState(false);
+  const [confirmDeleteStep, setConfirmDeleteStep] = useState<number | null>(
+    null,
+  );
   const router = useRouter();
-  const prevCompaniesLength = useRef(companies?.length || 0);
+  const prevStepsLength = useRef(evaluationSteps?.length || 0);
 
   useEffect(() => {
-    if (companies && companies.length > prevCompaniesLength.current) {
-      setActiveTab(companies[companies.length - 1].id.toString());
+    if (evaluationSteps && evaluationSteps.length > prevStepsLength.current) {
+      setActiveTab(
+        evaluationSteps[evaluationSteps.length - 1].id.toString(),
+      );
     } else if (
-      companies &&
-      companies.length > 0 &&
-      !companies.some((company) => company.id.toString() === activeTab)
+      evaluationSteps &&
+      evaluationSteps.length > 0 &&
+      !evaluationSteps.some((row) => row.id.toString() === activeTab)
     ) {
-      setActiveTab(companies[0].id.toString());
+      setActiveTab(evaluationSteps[0].id.toString());
     }
-    prevCompaniesLength.current = companies?.length || 0;
-  }, [companies, activeTab]);
+    prevStepsLength.current = evaluationSteps?.length || 0;
+  }, [evaluationSteps, activeTab]);
 
-  async function handleDeleteCompany(companyId: number) {
+  async function handleDeleteStep(stepId: number) {
     try {
-      await deleteDynamicTable("companies", companyId, broker_id);
-      toast.success("Company deleted successfully!");
+      await deleteDynamicTable("evaluation-steps", stepId, broker_id);
+      toast.success("Evaluation step deleted successfully!");
       router.refresh();
     } catch (error) {
-      toast.error("Failed to delete company");
-      console.log("DELETE COMPANY ERROR", error);
+      toast.error("Failed to delete evaluation step");
+      console.log("DELETE EVALUATION STEP ERROR", error);
     }
   }
 
@@ -76,7 +78,7 @@ export default function Companies({
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
-              Companies
+              Evaluation steps
             </h1>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               Configuration & Settings
@@ -85,16 +87,16 @@ export default function Companies({
         </div>
         <button
           type="button"
-          onClick={() => setShowNewCompany(!showNewCompany)}
+          onClick={() => setShowNewStep(!showNewStep)}
           className={cn(
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
-            showNewCompany
+            showNewStep
               ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
               : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
           )}
-          title={showNewCompany ? "Cancel" : "New Company"}
+          title={showNewStep ? "Cancel" : "New evaluation step"}
         >
-          {showNewCompany ? (
+          {showNewStep ? (
             <X className="w-3.5 h-3.5" />
           ) : (
             <Plus className="w-3.5 h-3.5" />
@@ -102,10 +104,10 @@ export default function Companies({
         </button>
       </div>
 
-      {showNewCompany && (
+      {showNewStep && (
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
-            New Company
+            New evaluation step
           </p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
@@ -129,28 +131,28 @@ export default function Companies({
                     entity_id,
                     entity_type,
                   );
-                  setShowNewCompany(false);
+                  setShowNewStep(false);
                 }}
                 is_admin={is_admin}
                 entity_id={0}
-                entity_type="Company"
+                entity_type="evaluation-step"
               />
             </CardContent>
           </Card>
         </div>
       )}
 
-      {companies && companies.length > 0 ? (
+      {evaluationSteps && evaluationSteps.length > 0 ? (
         <>
           <div className="mb-2">
             <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
-              {companies.map((company, index) => {
-                const isActive = activeTab === company.id.toString();
+              {evaluationSteps.map((row, index) => {
+                const isActive = activeTab === row.id.toString();
                 return (
                   <button
-                    key={company.id}
+                    key={row.id}
                     type="button"
-                    onClick={() => setActiveTab(company.id.toString())}
+                    onClick={() => setActiveTab(row.id.toString())}
                     className={cn(
                       "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
                       isActive
@@ -159,9 +161,9 @@ export default function Companies({
                     )}
                   >
                     <span className="hidden sm:inline">
-                      Company {index + 1}
+                      Step {index + 1}
                     </span>
-                    <span className="sm:hidden">Comp {index + 1}</span>
+                    <span className="sm:hidden">St {index + 1}</span>
                     {isActive && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-500" />
                     )}
@@ -171,26 +173,26 @@ export default function Companies({
             </div>
           </div>
 
-          {companies.map((company, index) => (
+          {evaluationSteps.map((row) => (
             <div
-              key={company.id}
+              key={row.id}
               className={cn(
                 "bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-px border border-dashed border-gray-200 dark:border-gray-700",
-                activeTab === company.id.toString() ? "block" : "hidden",
+                activeTab === row.id.toString() ? "block" : "hidden",
               )}
             >
-              {company.option_values && company.option_values.length > 0 ? (
+              {row.option_values && row.option_values.length > 0 ? (
                 <>
                   <div className="flex items-center justify-end gap-2 mb-1">
                     <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                      ID: {company.id}
+                      ID: {row.id}
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                      onClick={() => setConfirmDeleteCompany(company.id)}
-                      title="Delete company"
+                      onClick={() => setConfirmDeleteStep(row.id)}
+                      title="Delete evaluation step"
                     >
                       <Trash className="w-4 h-4" />
                     </Button>
@@ -198,11 +200,11 @@ export default function Companies({
                   <DynamicForm
                     broker_id={broker_id}
                     options={options}
-                    optionsValues={company.option_values}
+                    optionsValues={row.option_values}
                     action={submitBrokerProfile}
                     is_admin={is_admin}
-                    entity_id={company.id}
-                    entity_type="company"
+                    entity_id={row.id}
+                    entity_type="evaluation-step"
                   />
                 </>
               ) : (
@@ -217,14 +219,14 @@ export default function Companies({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
                   <p className="text-gray-500 dark:text-gray-400 font-medium">
                     No configuration available
                   </p>
                   <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                    This company has no option values to configure.
+                    This step has no option values to configure.
                   </p>
                 </div>
               )}
@@ -232,31 +234,31 @@ export default function Companies({
           ))}
 
           <Dialog
-            open={!!confirmDeleteCompany}
+            open={!!confirmDeleteStep}
             onOpenChange={(open) => {
-              if (!open) setConfirmDeleteCompany(null);
+              if (!open) setConfirmDeleteStep(null);
             }}
           >
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  Are you sure you want to delete this company?
+                  Are you sure you want to delete this evaluation step?
                 </DialogTitle>
               </DialogHeader>
               <div className="py-2">This action cannot be undone.</div>
               <DialogFooter>
                 <Button
                   variant="outline"
-                  onClick={() => setConfirmDeleteCompany(null)}
+                  onClick={() => setConfirmDeleteStep(null)}
                 >
                   Cancel
                 </Button>
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    if (confirmDeleteCompany) {
-                      handleDeleteCompany(confirmDeleteCompany);
-                      setConfirmDeleteCompany(null);
+                    if (confirmDeleteStep) {
+                      handleDeleteStep(confirmDeleteStep);
+                      setConfirmDeleteStep(null);
                     }
                   }}
                 >
@@ -267,7 +269,7 @@ export default function Companies({
           </Dialog>
         </>
       ) : (
-        !showNewCompany && (
+        !showNewStep && (
           <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
             <svg
               className="w-16 h-16 text-gray-400 mx-auto mb-4"
@@ -279,11 +281,11 @@ export default function Companies({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
               />
             </svg>
             <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">
-              No companies found
+              No evaluation steps found
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
               Use the + button in the header to get started.
