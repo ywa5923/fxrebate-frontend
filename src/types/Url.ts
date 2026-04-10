@@ -21,6 +21,7 @@ export type Url = {
   zone_id?: number | null;
   created_at: string;
   updated_at: string;
+  is_master_link: boolean;
 };
 
 export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
@@ -28,4 +29,11 @@ export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & 
   urlable_id: number | null;
   url?: string;
   name?: string;
+};
+
+export type AccountWithAffiliateLinks = {
+  broker_id: number;
+  account_type_id: number;
+  account_type_name: string;
+  affiliate_urls: Url[];
 };

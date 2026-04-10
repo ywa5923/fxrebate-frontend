@@ -37,6 +37,8 @@ import { AccountTypeLinks } from "@/types/AccountTypeLinks";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { canAdminBroker } from "@/lib/auth-actions";
 import Companies from "./Companies";
+import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
+import { AccountWithAffiliateLinks } from "@/types/Url";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -51,7 +53,7 @@ export default async function BrokerProfilePage({
   const brokerId = parseInt(resolvedParams.brokerId);
   const categoryId = resolvedParams.optionCategory[0];
   const categorySlug = resolvedParams.optionCategory[1];
-  
+
   //========Check if user is authenticated and redirect to login if not======================
   const user: AuthUser | null = await isAuthenticated();
   if (!user) {
@@ -214,7 +216,7 @@ export default async function BrokerProfilePage({
     }
 
     if (categorySlug === "evaluation-steps") {
-      const evaluationStepsFetchUrl = `/dynamic-tables/${brokerId}/evaluation-steps`;
+      const evaluationStepsFetchUrl = `/evaluation-steps/${brokerId}`;
       const evaluationStepsResponse = await apiClient<DynamicTableRow[]>(
         evaluationStepsFetchUrl,
         UseTokenAuth.No,
@@ -307,7 +309,7 @@ export default async function BrokerProfilePage({
       return (
         <EvaluationRules
           key={brokerId}
-          is_admin={is_admin}
+          is_admin={true}
           formConfig={evaluationRulesFormConfig}
           brokerId={brokerId}
           evaluationRules={evaluationRules}
@@ -315,6 +317,41 @@ export default async function BrokerProfilePage({
       );
     }
     
+    
+    if(categorySlug=='referral-links-and-notes'){
+
+      let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
+      let notesOptionsValuesResponse = await apiClient<OptionValue[]>(optionsValuesFetchUrl, true, {
+       method: "GET",
+       cache: "no-store",
+     });
+     if(!notesOptionsValuesResponse.success){
+       log.error("Error fetching notes options values", {context: {notesOptionsValues:notesOptionsValuesResponse.message}});
+       notFound();
+     }
+     let notesOptionsValues = notesOptionsValuesResponse.data ?? [];
+
+      let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
+      let referralLinksResponse = await apiClient<AccountWithAffiliateLinks[]>(referralLinksFetchUrl, UseTokenAuth.No, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if(!referralLinksResponse.success){
+        log.error("Error fetching referral links", {context: {referralLinks:referralLinksResponse.message}});
+        notFound();
+      }
+      let referralLinks = referralLinksResponse.data ?? [];
+          return <ReferalLinksAndNotes 
+          is_admin={false} 
+          brokerId={brokerId} 
+          referralLinks={referralLinks} 
+          notesOptions={matchedCategory.options as Option[]} 
+          notesOptionsValues={notesOptionsValues} 
+          />
+    }
+
+
+
     if(categorySlug=='rebates'){
 
       let headersFetchUrl = `/matrix/headers/${brokerId}?language=en&matrix_id=Matrix-1&broker_id_strict=0&with_account_type_columns=1`;
