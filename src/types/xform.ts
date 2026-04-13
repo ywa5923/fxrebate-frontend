@@ -26,17 +26,23 @@ export interface XFormField {
     label: string;
     placeholder: string;
     required: boolean;
-    options?: string[];
+    options?: XFormOption[];
     validation?: fieldValidation;
     fields?: Record<string, Omit<XFormField, 'fields'>>;//this is for array fields
   }
 
   export interface XFormSection {
+    label?: string;
     fields: Record<string, XFormField>;
+    description?: string;
   }
 
   export interface XFormDefinition {
     name?: string;
     description?: string;
     sections: Record<string, XFormSection>;
+  }
+  export interface XFormOption {
+    value: string|number;
+    label: string;
   }

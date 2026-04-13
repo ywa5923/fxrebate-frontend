@@ -1,12 +1,15 @@
 import {
+  ArrayPath,
+  Control,
   Controller,
-  ControllerProps,
   FieldPath,
   FieldValues,
+  Path,
   useFieldArray,
+  
 } from "react-hook-form";
 
-import { FormBaseProps, FormControlFunc } from "@/components/XForm/types";
+import { FormBaseProps, FormControlFunc, FormControlProps } from "@/components/XForm/types";
 
 import { Field, FieldLabel, FieldDescription, FieldContent, FieldError } from "@/components/ui/field";
 import { ReactNode } from "react";
@@ -22,13 +25,13 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { XIcon, PlusIcon } from "lucide-react";
-
+import { XFormField } from "@/types";
 
 
 export function FormBase<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  TTransformedValues = TFieldValues
+  
 >({
   children,
   control,
@@ -38,7 +41,7 @@ export function FormBase<
   controlFirst,
   horizontal,
   required,
-}: FormBaseProps<TFieldValues, TName, TTransformedValues>) {
+}: FormBaseProps<TFieldValues, TName>) {
 
   return (
     <Controller
@@ -191,10 +194,104 @@ export const FormNumber34: FormControlFunc<{ required?: boolean }> = props => {
   )
 }
 
+export const ArrayFields = <
+  TFieldValues extends FieldValues,
+  TArrayName extends ArrayPath<TFieldValues>
+>({
+  control,
+  name,
+  fieldDef,
+  required,
+}: {
+  control: Control<TFieldValues>;
+  name: TArrayName;
+  fieldDef: XFormField;
+  required?: boolean;
+}) => {
+  const { fields, append, remove } = useFieldArray({control, name});
+    
+  return (
+    <>
+      {fields.map((item, index) => (
+        <div key={item.id ?? index}>
+          {fieldDef.fields && Object.entries(fieldDef.fields as Record<string, XFormField>).map(([fKey, inner]: [string, XFormField]) => (
+            <FormInputGroup
+              key={fKey}
+              control={control}
+              name={`${String(name)}.${index}.${fKey}` as Path<TFieldValues>}
+              label={inner?.label || ""}
+              remove={() => remove(index)}
+            />
+          ))}
+       
+      
+        </div>
+      ))}
+      <div className="mt-3 flex justify-start">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => append({} as never)}
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add {fieldDef.label ?? "Item"}
+        </Button>
+      </div>
+     
+    </>
+  );
+}
 
 
+export const ArrayFields3: FormControlFunc<{
+  fieldDef: XFormField;
+  required?: boolean;
+}> = ({ control, name, fieldDef, required }) => {
 
-export function ArrayFields({
+  const { fields, append, remove } = useFieldArray({
+    control,
+    // `name` is FieldPath<> from FormControlFunc; RHF requires ArrayPath<> here.
+    name: name as ArrayPath<FieldValues> as never,
+  });
+
+  return (
+    <>
+      {fields.map((item, index) => (
+        <div key={item.id ?? index}>
+          {fieldDef.fields && Object.entries(fieldDef.fields as Record<string, XFormField>).map(([fKey, inner]: [string, XFormField]) => (
+            <FormInputGroup
+              key={fKey}
+              control={control}
+              name={`${name}.${index}.${fKey}` as any}
+              label={inner?.label || ""}
+              remove={() => remove(index)}
+            />
+          ))}
+       
+      
+        </div>
+      ))}
+      <div className="mt-3 flex justify-start">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => append({} as never)}
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add {fieldDef.label ?? "Item"}
+        </Button>
+      </div>
+     
+    </>
+  );
+};
+
+//to refactor this component to use type scrypt types
+export function ArrayFields2({
   control,
   name,
   fieldDef,

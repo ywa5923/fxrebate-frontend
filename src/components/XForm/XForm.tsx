@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-//import { generateXFormSchema } from "@/components/XForm/schema";
 import { getFormSchema } from "@/components/XForm/schema";
 import { Form } from "@/components/ui/form";
 import {  FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
@@ -11,24 +10,14 @@ import {  FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "
 import { ArrayFields } from "@/components/XForm/form-components";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
- 
-  FieldDescription,
-
-  FieldGroup,
- 
-  FieldLegend,
- 
-  FieldSet,
-} from "@/components/ui/field"
+import {FieldDescription,FieldGroup,FieldLegend, FieldSet} from "@/components/ui/field"
 
 import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { XFormDefinition, XFormSection, XFormField } from "@/types";
+import { XFormDefinition, XFormSection, XFormField, XFormOption } from "@/types";
 
 import { apiClient} from "@/lib/api-client";
 import { DynamicOption } from "@/types";
-
 
 import { toast } from "sonner";
 import { useState } from "react";
@@ -112,18 +101,18 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
           const response = await apiClient<T>(apiUrl, true);
 
           if (response.success && response.data) {
-            console.log("response.data", response.data);
-            console.log("makeDefaultValues(formConfig, response.data as any)", makeDefaultValues(formConfig, response.data as T));
+            log.debug("response.data", {responseData: response.data});
+            log.debug("makeDefaultValues(formConfig, response.data as any)", {defaultValues: makeDefaultValues(formConfig, response.data as T)});
             let defaultValues = makeDefaultValues(formConfig, response.data as T);
             requestAnimationFrame(() => form.reset(defaultValues));
           } else {
-            console.error("Failed to fetch item", response.message);
+           log.error("Failed to fetch item", {apiUrl: apiUrl, message: response.message});
             toast.error("Failed to fetch item");
           }
         }
        
       } catch (err) {
-        console.error("Failed to fetch item", err);
+        log.error("Failed to fetch item", {error: err});
         toast.error("Failed to load form data");
       } finally {
         setIsLoading(false);
@@ -198,8 +187,8 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
    
     toast.error(response.message);
    }
-   console.log("XFormData", data);
-   console.log("XFormFlatData", formFlatData);
+   log.debug("XFormData", data);
+   log.debug("XFormFlatData", formFlatData);
   }
 
     return (
@@ -213,15 +202,15 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
                   )}
                  { !isLoading && formConfig && <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit,(errors) => console.log('form errors:', errors))}>
-                        {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, any]) => {
+                        {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, XFormSection]) => {
                           return (
                             <FieldSet key={sectionKey} className="mb-4 pb-4 p-5 border-2 border-dashed border-grey-300 rounded-md">
-                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5  hover:bg-blue-100 text-blue-700 border border-dashed border-blue-300 rounded-md">{section.label.toUpperCase()}</FieldLegend>
+                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5  hover:bg-blue-100 text-blue-700 border border-dashed border-blue-300 rounded-md">{(section.label ?? sectionKey).toUpperCase()}</FieldLegend>
                             <FieldDescription>
                               {section?.description ?? ""}
                             </FieldDescription>
                             <FieldGroup data-slot="checkbox-group">
-                                {Object.entries(section?.fields ?? {}).map(([fieldKey, f]: [string, any]) => {
+                                { section?.fields && Object.entries(section?.fields as Record<string, XFormField>).map(([fieldKey, f]: [string, XFormField]) => {
 
                                   switch (f?.type) {
                                     case "text":
@@ -234,7 +223,7 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
                                       return <FormNumber key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} required={f?.required} />
                                     case "select":
                                       return <FormSelect key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} placeholder={f?.placeholder ?? "Select an option"} required={f?.required}>
-                                        {f.options.map((option: {value: string|number, label: string}) => {
+                                        {f.options?.map((option: XFormOption) => {
                                           return <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
                                         })}
                                       </FormSelect>
