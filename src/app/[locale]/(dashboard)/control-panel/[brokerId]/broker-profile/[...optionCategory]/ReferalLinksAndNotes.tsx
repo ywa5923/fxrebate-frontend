@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { AccountWithAffiliateLinks, Url } from "@/types/Url";
+import type { Option, OptionValue, AccountWithPlatformLinks, Url } from "@/types";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -50,17 +50,18 @@ type ReferralLinkRow = Pick<
   account_type_id: number | null;
 };
 
-function extactAccountTypes(referralLinks: AccountWithAffiliateLinks[]): Array<{value: number, label: string}> {
-  const accountTypes: Array<{value: number, label: string}> = [];
-  for (const acc of referralLinks ?? []) {
-    accountTypes.push({
-      value: acc?.account_type_id ?? 0,
-      label: acc?.account_type_name ?? "Account",
-    });
-  }
-  return accountTypes;
-}
-let UrlTypes = [
+// function extactAccountTypes(referralLinks: AccountWithAffiliateLinks[]): Array<{value: number, label: string}> {
+//   const accountTypes: Array<{value: number, label: string}> = [];
+//   for (const acc of referralLinks ?? []) {
+//     accountTypes.push({
+//       value: acc?.account_type_id ?? 0,
+//       label: acc?.account_type_name ?? "Account",
+//     });
+//   }
+//   return accountTypes;
+// }
+
+let urlTypes = [
   { value: "sign-up-ib-affiliate-link", label: "Sign-up IB/ Affiliate Link" },
   { value: "sign-up-sub-ib-affiliate-link", label: "Sign-up SUB-IB/ Sub-Affiliate Link" },
   
@@ -76,62 +77,56 @@ const referralLinkFormSchema = z.object({
 
 type ReferralLinkFormValues = z.infer<typeof referralLinkFormSchema>;
 
-function flattenAffiliateLinks(referralLinks: AccountWithAffiliateLinks[]): ReferralLinkRow[] {
-  const rows: ReferralLinkRow[] = [];
+// function flattenAffiliateLinks(referralLinks: AccountWithAffiliateLinks[]): ReferralLinkRow[] {
+//   const rows: ReferralLinkRow[] = [];
 
-  for (const acc of referralLinks ?? []) {
-    const accountName = acc?.account_type_name ?? "Account";
-    const affiliateUrls: Url[] = acc?.affiliate_urls ?? [];
+//   for (const acc of referralLinks ?? []) {
+//     const accountName = acc?.account_type_name ?? "Account";
+//     const affiliateUrls: Url[] = acc?.affiliate_urls ?? [];
 
-    for (const u of affiliateUrls) {
-      const id = Number(u?.id);
-      if (!Number.isFinite(id)) continue;
+//     for (const u of affiliateUrls) {
+//       const id = Number(u?.id);
+//       if (!Number.isFinite(id)) continue;
 
-      rows.push({
-        id,
-        name: u?.name ?? "Untitled",
-        url: u?.url ?? "",
-        previous_name: u?.previous_name ?? null,
-        public_name: u?.public_name ?? null,
-        previous_url: u?.previous_url ?? null,
-        public_url: u?.public_url ?? null,
-        is_updated_entry: u?.is_updated_entry ?? 0,
-        is_master_link: u?.is_master_link ?? false,
-        account_name: accountName,
-        url_type: u?.url_type ?? "unknown",
-        account_type_id: u?.is_master_link ? null : (acc?.account_type_id ?? 0),
-      });
-    }
-  }
+//       rows.push({
+//         id,
+//         name: u?.name ?? "Untitled",
+//         url: u?.url ?? "",
+//         previous_name: u?.previous_name ?? null,
+//         public_name: u?.public_name ?? null,
+//         previous_url: u?.previous_url ?? null,
+//         public_url: u?.public_url ?? null,
+//         is_updated_entry: u?.is_updated_entry ?? 0,
+//         is_master_link: u?.is_master_link ?? false,
+//         account_name: accountName,
+//         url_type: u?.url_type ?? "unknown",
+//         account_type_id: u?.is_master_link ? null : (acc?.account_type_id ?? 0),
+//       });
+//     }
+//   }
 
-  return rows;
+//   return rows;
+// }
+
+ type ReferalLinksAndNotesProps={
+  is_admin: boolean;
+  brokerId: number;
+  accountTypes: AccountWithPlatformLinks[];
+  IBLinks: Url[];
+  SubIBLinks: Url[];
+  notesOptions: Option[];
+  notesOptionsValues: OptionValue[];
 }
-
 export default function ReferalLinksAndNotes({
   is_admin,
   brokerId,
-  referralLinks,
+  accountTypes,
+  IBLinks,
+  SubIBLinks,
   notesOptions,
   notesOptionsValues,
-}: {
-  is_admin: boolean;
-  brokerId: number;
-  referralLinks: AccountWithAffiliateLinks[];
-  notesOptions: any[];
-  notesOptionsValues: any[];
-}) {
+}: ReferalLinksAndNotesProps) {
   const router = useRouter();
-
-  const derivedRows = useMemo(
-    () => flattenAffiliateLinks(referralLinks),
-    [referralLinks],
-  );
-  const accountTypes = useMemo(
-    () => extactAccountTypes(referralLinks),
-    [referralLinks],
-  );
-  const urlTypes = UrlTypes;
-
   const [activeTab, setActiveTab] = useState<"links" | "notes">("links");
   const [links, setLinks] = useState<ReferralLinkRow[]>(derivedRows);
 
@@ -268,37 +263,7 @@ export default function ReferalLinksAndNotes({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-4 border-b border-gray-200 dark:border-gray-800 flex gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          className={cn(
-            "rounded-none px-4 py-2 h-auto",
-            activeTab === "links"
-              ? "text-green-700 dark:text-green-300 border-b-2 border-green-600 dark:border-green-500"
-              : "text-gray-500 dark:text-gray-400",
-          )}
-          onClick={() => setActiveTab("links")}
-        >
-          <LinkIcon className="w-4 h-4 mr-2" />
-          Referral links
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          className={cn(
-            "rounded-none px-4 py-2 h-auto",
-            activeTab === "notes"
-              ? "text-green-700 dark:text-green-300 border-b-2 border-green-600 dark:border-green-500"
-              : "text-gray-500 dark:text-gray-400",
-          )}
-          onClick={() => setActiveTab("notes")}
-        >
-          <StickyNote className="w-4 h-4 mr-2" />
-          Notes
-        </Button>
-      </div>
+      <ReferralLinksTabHeader activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "links" ? (
         <div className="grid grid-cols-1 gap-4">

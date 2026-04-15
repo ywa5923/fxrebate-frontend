@@ -38,7 +38,7 @@ import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { canAdminBroker } from "@/lib/auth-actions";
 import Companies from "./Companies";
 import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
-import { AccountWithAffiliateLinks } from "@/types/Url";
+import { AffiliateLinksData} from "@/types/Url";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -332,7 +332,7 @@ export default async function BrokerProfilePage({
      let notesOptionsValues = notesOptionsValuesResponse.data ?? [];
 
       let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
-      let referralLinksResponse = await apiClient<AccountWithAffiliateLinks[]>(referralLinksFetchUrl, UseTokenAuth.No, {
+      let referralLinksResponse = await apiClient<AffiliateLinksData>(referralLinksFetchUrl, UseTokenAuth.No, {
         method: "GET",
         cache: "no-store",
       });
@@ -340,11 +340,17 @@ export default async function BrokerProfilePage({
         log.error("Error fetching referral links", {context: {referralLinks:referralLinksResponse.message}});
         notFound();
       }
-      let referralLinks = referralLinksResponse.data ?? [];
+      if(!referralLinksResponse.data?.account_types){
+        log.error("No account types found", {context: {referralLinks:referralLinksResponse.message}});
+        throw new Error("No account types found");
+      }
+
           return <ReferalLinksAndNotes 
           is_admin={false} 
           brokerId={brokerId} 
-          referralLinks={referralLinks} 
+          accountTypes={referralLinksResponse.data?.account_types ?? []} 
+          IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []} 
+          SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []} 
           notesOptions={matchedCategory.options as Option[]} 
           notesOptionsValues={notesOptionsValues} 
           />

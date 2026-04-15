@@ -31,9 +31,19 @@ export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & 
   name?: string;
 };
 
-export type AccountWithAffiliateLinks = {
-  broker_id: number;
+export type PlatformUrl = {
+  id: number;
+ name: string;
+};
+
+export type AccountWithPlatformLinks = {
   account_type_id: number;
   account_type_name: string;
-  affiliate_urls: Url[];
+  platform_urls?: PlatformUrl[];
+};
+
+export type AffiliateLinksData={
+  account_types: AccountWithPlatformLinks[];
+  ib_affiliate_urls?: Url[];
+  sub_ib_affiliate_urls?: Url[];
 };
