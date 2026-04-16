@@ -31,6 +31,8 @@ import { DynamicOption } from "@/types/DynamicOption";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
+import {ReferralLinksTabHeader} from "./ReferralLinksTabHeader";
+import {ReferralLinksTabContent} from "./ReferralLinksTabContent";
 
 type ReferralLinkRow = Pick<
   Url,
@@ -61,11 +63,8 @@ type ReferralLinkRow = Pick<
 //   return accountTypes;
 // }
 
-let urlTypes = [
-  { value: "sign-up-ib-affiliate-link", label: "Sign-up IB/ Affiliate Link" },
-  { value: "sign-up-sub-ib-affiliate-link", label: "Sign-up SUB-IB/ Sub-Affiliate Link" },
-  
-];
+
+ type TabType = "ib_links" | "sub_ib_links" | "notes";
 
 const referralLinkFormSchema = z.object({
   accountTypeId: z.string().min(1, "Please select an account type"),
@@ -108,7 +107,7 @@ type ReferralLinkFormValues = z.infer<typeof referralLinkFormSchema>;
 //   return rows;
 // }
 
- type ReferalLinksAndNotesProps={
+ type componentProps={
   is_admin: boolean;
   brokerId: number;
   accountTypes: AccountWithPlatformLinks[];
@@ -125,15 +124,17 @@ export default function ReferalLinksAndNotes({
   SubIBLinks,
   notesOptions,
   notesOptionsValues,
-}: ReferalLinksAndNotesProps) {
+}: componentProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"links" | "notes">("links");
-  const [links, setLinks] = useState<ReferralLinkRow[]>(derivedRows);
+  const [activeTab, setActiveTab] = useState<TabType>("ib_links");
+  const [ibLinks, setIBLinks] = useState<Url[]>(IBLinks);
+  const [subIBLinks, setSubIBLinks] = useState<Url[]>(SubIBLinks);
 
   // Keep local CRUD state in sync when server data changes.
   useEffect(() => {
-    setLinks(derivedRows);
-  }, [derivedRows]);
+    setIBLinks(IBLinks);
+    setSubIBLinks(SubIBLinks);
+  }, [IBLinks, SubIBLinks]);
 
   // Create/Edit dialog (local state only for now).
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -142,8 +143,8 @@ export default function ReferalLinksAndNotes({
   const form = useForm<ReferralLinkFormValues>({
     resolver: zodResolver(referralLinkFormSchema),
     defaultValues: {
-      accountTypeId: String(accountTypes[0]?.value ?? 0),
-      urlType: String(urlTypes[0]?.value),
+      accountTypeId: String(accountTypes[0]?.account_type_id ?? 0),
+      urlType: "",
       isMasterLink: false,
       name: "",
       url: "",
@@ -155,10 +156,10 @@ export default function ReferalLinksAndNotes({
   function openCreate() {
     setDialogMode("create");
     setEditingId(null);
-    const defaultAccountTypeId = String(accountTypes[0]?.value ?? 0);
+    const defaultAccountTypeId = String(accountTypes[0]?.account_type_id ?? 0);
     form.reset({
       accountTypeId: defaultAccountTypeId,
-      urlType: String(urlTypes[0]?.value ),
+      urlType: "",
       isMasterLink: false,
       name: "",
       url: "",
@@ -170,7 +171,7 @@ export default function ReferalLinksAndNotes({
     setDialogMode("edit");
     setEditingId(row.id);
     form.reset({
-      accountTypeId: String(row.account_type_id ?? accountTypes[0]?.value ?? 0),
+      accountTypeId: String(row.account_type_id ?? accountTypes[0]?.account_type_id ?? 0),
       urlType: row.url_type ?? "custom",
       isMasterLink: !!row.is_master_link,
       // In admin mode, edit defaults come from public fields.
@@ -186,12 +187,12 @@ export default function ReferalLinksAndNotes({
     const urlType = values.urlType.trim() || "custom";
     const isMasterLink = values.isMasterLink;
     const selectedAccountType = accountTypes.find(
-      (a) => a.value === Number(values.accountTypeId),
+      (a) => a.account_type_id === Number(values.accountTypeId),
     );
     const accountTypeId = isMasterLink ? null : (selectedAccountType?.value ?? 0);
     const accountName = isMasterLink
       ? "Master Link"
-      : (selectedAccountType?.label ?? "Account");
+      : (selectedAccountType?.account_type_name ?? "Account");
 
     let bodyPayload={
       broker_id: brokerId,
@@ -265,158 +266,11 @@ export default function ReferalLinksAndNotes({
 
       <ReferralLinksTabHeader activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab === "links" ? (
-        <div className="grid grid-cols-1 gap-4">
-          <Card className="border border-dashed border-gray-200 dark:border-gray-800 bg-[#fdfdfd] dark:bg-gray-800/40">
-            <CardHeader className="flex flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                  <LinkIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Referral links
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Each row shows account_name and url_type.
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={openCreate}
-              >
-                <Plus className="w-4 h-4" />
-                Add link
-              </Button>
-            </CardHeader>
-
-            <CardContent className="pt-2">
-              {links.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">
-                    No referral links yet
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {links.map((row) => {
-                    const isUpdated = row.is_updated_entry === 1;
-                    const displayName = is_admin
-                      ? row.public_name ?? "no data"
-                      : row.name;
-                    const displayUrl = is_admin
-                      ? row.public_url ?? "no data"
-                      : row.url;
-
-                    return (
-                      <div
-                        key={row.id}
-                        className={cn(
-                          "border rounded-lg p-4 flex items-start justify-between gap-3",
-                          isUpdated
-                            ? "border-red-400/90 dark:border-red-700"
-                            : "border-gray-200 dark:border-gray-700",
-                        )}
-                      >
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {row.is_master_link ? (
-                              <span className="text-xs text-amber-700 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/40 px-2 py-1 rounded-full">
-                                Master Link
-                              </span>
-                            ) : (
-                              <span className="text-xs text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                                {row.account_name}
-                              </span>
-                            )}
-                            <span className="text-xs text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
-                              {row.url_type}
-                            </span>
-                          </div>
-
-                          <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 break-words">
-                            <span className="font-semibold">
-                              {displayName || "—"}
-                            </span>
-                            {is_admin ? (
-                              <span className="ml-2 text-xs text-gray-700 dark:text-gray-200">
-                                broker_value:{" "}
-                                <span className="font-medium">
-                                  {row.name || "—"}
-                                </span>
-                                {" · "}
-                                previous_value:{" "}
-                                <span className="font-medium">
-                                  {row.previous_name ?? "—"}
-                                </span>
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="mt-1 text-sm">
-                            <a
-                              href={displayUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-blue-600 dark:text-blue-400 underline break-all"
-                              title={displayUrl}
-                            >
-                              {displayUrl}
-                            </a>
-                            {is_admin ? (
-                              <span className="ml-2 text-xs text-gray-700 dark:text-gray-200">
-                                broker_value:{" "}
-                                <span className="font-medium">
-                                  {row.url || "—"}
-                                </span>
-                                {" · "}
-                                previous_value:{" "}
-                                <span className="font-medium">
-                                  {row.previous_url ?? "—"}
-                                </span>
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30"
-                            onClick={() => openEdit(row)}
-                            title="Edit"
-                            aria-label="Edit referral link"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                            onClick={() => setConfirmDeleteId(row.id)}
-                            title="Delete"
-                            aria-label="Delete referral link"
-                          >
-                            <Trash className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
+      {activeTab === "ib_links" ?
+       <ReferralLinksTabContent variant="ib" title="Sign-up IB/ Affiliate Link" description="Each row shows account_name and url_type." links={ibLinks} is_admin={is_admin} onAddClick={openCreate} onEditRow={openEdit} onRequestDelete={handleDeleteReferralLink} />
+        : activeTab === "sub_ib_links" ? 
+        <ReferralLinksTabContent variant="sub_ib" title="Sign-up SUB-IB/ Sub-Affiliate Link" description="Each row shows account_name and url_type." links={subIBLinks} is_admin={is_admin} onAddClick={openCreate} onEditRow={openEdit} onRequestDelete={handleDeleteReferralLink} />
+         : (
         <Card className="border border-dashed border-gray-200 dark:border-gray-800 bg-[#fdfdfd] dark:bg-gray-800/40">
           <CardHeader>
             <div className="flex items-center gap-2">

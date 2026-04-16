@@ -32,7 +32,7 @@ export type ReferralLinksTabHeaderProps = {
   onTabChange: (tab: ReferralLinksTabId) => void;
 };
 
-export function ReferralLinksTabHeader({
+export  function ReferralLinksTabHeader({
   activeTab,
   onTabChange,
 }: ReferralLinksTabHeaderProps) {
