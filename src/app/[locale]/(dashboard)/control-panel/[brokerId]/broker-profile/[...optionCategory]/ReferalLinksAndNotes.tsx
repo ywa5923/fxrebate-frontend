@@ -189,7 +189,7 @@ export default function ReferalLinksAndNotes({
     const selectedAccountType = accountTypes.find(
       (a) => a.account_type_id === Number(values.accountTypeId),
     );
-    const accountTypeId = isMasterLink ? null : (selectedAccountType?.value ?? 0);
+    const accountTypeId = isMasterLink ? null : (selectedAccountType?.account_type_id ?? 0);
     const accountName = isMasterLink
       ? "Master Link"
       : (selectedAccountType?.account_type_name ?? "Account");

@@ -7,22 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Url } from "@/types/Url";
 
-export type ReferralLinkRow = Pick<
-  Url,
-  | "id"
-  | "name"
-  | "url"
-  | "previous_name"
-  | "public_name"
-  | "previous_url"
-  | "public_url"
-  | "is_updated_entry"
-  | "url_type"
-  | "is_master_link"
-> & {
-  account_name: string;
-  account_type_id: number | null;
-};
+
 
 const iconShellClass: Record<"ib" | "sub_ib", string> = {
   ib: "bg-green-100 dark:bg-green-900/50",
@@ -38,10 +23,10 @@ export type ReferralLinksTabContentProps = {
   variant: "ib" | "sub_ib";
   title: string;
   description?: string;
-  links: ReferralLinkRow[];
+  links: Url[];
   is_admin: boolean;
   onAddClick: () => void;
-  onEditRow: (row: ReferralLinkRow) => void;
+  onEditRow: (row: Url) => void;
   onRequestDelete: (id: number) => void;
 };
 
@@ -126,7 +111,7 @@ export function ReferralLinksTabContent({
                           </span>
                         ) : (
                           <span className="text-xs text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                            {row.account_name}
+                            {row.account_type_name}
                           </span>
                         )}
                         <span className="text-xs text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">

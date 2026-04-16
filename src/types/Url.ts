@@ -22,6 +22,8 @@ export type Url = {
   created_at: string;
   updated_at: string;
   is_master_link: boolean;
+  account_type_id?: number | null;
+  account_type_name?: string
 };
 
 export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {

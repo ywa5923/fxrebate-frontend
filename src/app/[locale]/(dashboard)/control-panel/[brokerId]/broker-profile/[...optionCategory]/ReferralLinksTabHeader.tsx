@@ -22,8 +22,8 @@ const tabs: Array<{
   label: string;
   Icon: LucideIcon;
 }> = [
-  { id: "ib_links", label: "IB Referral links", Icon: LinkIcon },
-  { id: "sub_ib_links", label: "SUB-IB Referral links", Icon: LinkIcon },
+  { id: "ib_links", label: "Sign-up IB/ Affiliate Link", Icon: LinkIcon },
+  { id: "sub_ib_links", label: "Sign-up SUB-IB/ Sub-Affiliate Link", Icon: LinkIcon },
   { id: "notes", label: "Notes", Icon: StickyNote },
 ];
 
