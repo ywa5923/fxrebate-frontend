@@ -5,31 +5,32 @@ import { Link as LinkIcon, StickyNote } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { AffiliateLinkTabType } from "@/types/Url";
 
-export type ReferralLinksTabId = "ib_links" | "sub_ib_links" | "notes";
 
-const tabActiveClass: Record<ReferralLinksTabId, string> = {
-  ib_links:
+
+const tabActiveClass: Record<AffiliateLinkTabType, string> = {
+  "sign-up-ib-affiliate-link":
     "text-green-700 dark:text-green-300 border-b-2 border-green-600 dark:border-green-500",
-  sub_ib_links:
+  "sign-up-sub-ib-affiliate-link":
     "text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-500",
   notes:
     "text-green-700 dark:text-green-300 border-b-2 border-green-600 dark:border-green-500",
 };
 
 const tabs: Array<{
-  id: ReferralLinksTabId;
+  id: AffiliateLinkTabType;
   label: string;
   Icon: LucideIcon;
 }> = [
-  { id: "ib_links", label: "Sign-up IB/ Affiliate Link", Icon: LinkIcon },
-  { id: "sub_ib_links", label: "Sign-up SUB-IB/ Sub-Affiliate Link", Icon: LinkIcon },
+  { id: "sign-up-ib-affiliate-link", label: "Sign-up IB/ Affiliate Link", Icon: LinkIcon },
+  { id: "sign-up-sub-ib-affiliate-link", label: "Sign-up SUB-IB/ Sub-Affiliate Link", Icon: LinkIcon },
   { id: "notes", label: "Notes", Icon: StickyNote },
 ];
 
 export type ReferralLinksTabHeaderProps = {
-  activeTab: ReferralLinksTabId;
-  onTabChange: (tab: ReferralLinksTabId) => void;
+  activeTab: AffiliateLinkTabType;
+  onTabChange: (tab: AffiliateLinkTabType) => void;
 };
 
 export  function ReferralLinksTabHeader({

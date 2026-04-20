@@ -22,9 +22,14 @@ export type Url = {
   created_at: string;
   updated_at: string;
   is_master_link: boolean;
-  account_type_id?: number | null;
-  account_type_name?: string
+
 };
+
+export type AccountTypeUrl = Url & {
+  account_type_id?: number | null;
+  account_type_name?: string;
+  currency?: string | null;
+}
 
 export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
   id: number | null;
@@ -48,4 +53,14 @@ export type AffiliateLinksData={
   account_types: AccountWithPlatformLinks[];
   ib_affiliate_urls?: Url[];
   sub_ib_affiliate_urls?: Url[];
+  currency_list: [{label: string; value: string}];
 };
+
+export type PlatofrmUrl={
+  id: number;
+  name: string;
+  url?: string;
+ 
+};
+
+export type AffiliateLinkTabType = "sign-up-ib-affiliate-link" | "sign-up-sub-ib-affiliate-link" | "notes";

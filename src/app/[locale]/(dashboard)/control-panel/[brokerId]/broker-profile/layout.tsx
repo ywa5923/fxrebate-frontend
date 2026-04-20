@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils';
 import { satoshi } from '@/lib/fonts';
 
-import '@/app/globals.css';
+import {BrowserLogger} from '@/components/BrowserLogger';
+
 import { Providers } from '@/providers/Theme';
 import { AppSidebar } from "@/components/app-sidebar"
 
@@ -14,7 +15,7 @@ import { notFound, redirect } from 'next/navigation';
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
+  BreadcrumbLink, 
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -33,6 +34,7 @@ import NProgressBar from '@/components/NProgressBar';
 import { getBrokerInfo } from '@/lib/auth-actions';
 import { apiClient } from '@/lib/api-client';
 import { ErrorMode, UseTokenAuth } from '@/lib/enums';
+
 
 async function getBrokerOptions2() {
   try {
@@ -108,6 +110,7 @@ export default async function DashboardLayout({
  
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
+      <BrowserLogger />
       <Providers>
         <Suspense fallback={null}>
           <NProgressBar />

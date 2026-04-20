@@ -349,6 +349,7 @@ export default async function BrokerProfilePage({
           is_admin={false} 
           brokerId={brokerId} 
           accountTypes={referralLinksResponse.data?.account_types ?? []} 
+          currencyList={referralLinksResponse.data.currency_list}
           IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []} 
           SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []} 
           notesOptions={matchedCategory.options as Option[]} 

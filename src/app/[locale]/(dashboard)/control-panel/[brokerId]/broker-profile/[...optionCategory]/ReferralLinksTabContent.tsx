@@ -5,7 +5,7 @@ import { Link as LinkIcon, Pencil, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Url } from "@/types/Url";
+import type { AccountTypeUrl} from "@/types/Url";
 
 
 
@@ -23,10 +23,10 @@ export type ReferralLinksTabContentProps = {
   variant: "ib" | "sub_ib";
   title: string;
   description?: string;
-  links: Url[];
+  links: AccountTypeUrl[];
   is_admin: boolean;
   onAddClick: () => void;
-  onEditRow: (row: Url) => void;
+  onEditRow: (row: AccountTypeUrl) => void;
   onRequestDelete: (id: number) => void;
 };
 
