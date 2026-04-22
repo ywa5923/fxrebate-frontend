@@ -25,12 +25,13 @@ import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
 import { ChallengeType } from "@/types";
 
-type FormValues = { category?: string; step?: string; amount?: string };
+type FormValues = { category?: string; step?: string; amount?: string, amountCurrency?: string };
 
 const formSchema = z.object({
   category: z.string().optional(),
   step: z.string().optional(),
   amount: z.string().optional(),
+  amountCurrency: z.string().optional(),
 });
 
 type ItemOption = { id: number; name: string };
@@ -42,6 +43,7 @@ interface ChallengeTabFormProps {
   defaultCategories: ChallengeType[];
   addApiUrl: string;
   onSuccess?: () => void;
+  amountCurrencies?: Array<{value:string,label:string}>;
 }
 
 export default function ChallengeTabForm({
@@ -51,19 +53,21 @@ export default function ChallengeTabForm({
   defaultCategories,
   addApiUrl,
   onSuccess,
+  amountCurrencies
 }: ChallengeTabFormProps) {
   const isStepType = tabType === "step";
   const isAmountType = tabType === "amount";
   const isCategoryType = tabType === "category";
 
+  //let amountCurrencies: Array<{ label: string; value: string }> = [{value:"USD", label:"USD"},{value:"EUR", label:"EUR"},{value:"GBP", label:"GBP"},{value:"JPY", label:"JPY"}];
   //====0. For tabType=category==================================
-  //-the categories received in props are the are the broker categories list
+  //-the categories received in props are  the broker categories list
   //-so we need to filter the defaultCategories received in props to get the categories that are not in the broker categories list 
   //-the user see in the form select box only the default categories that are not in the broker categories list
   //sent to backend api the id of a selected default category which is cloned and saved in the broker categories table
   //====1. For tabType=step and amount=========
   //-the categories received in props are the categories that are in the broker categories list
-  //-defaultcategories are the categories that are not defined bu superadmin to be available for all brokers
+  //-defaultcategories are the categories that are  defined by superadmin to be available for all brokers
   //the user see in the form select box only the defaultsteps and amounts that are not in the broker steps and amounts list
   //sent to backend api the id of a selected defaultstep or amount which is cloned and saved in the broker step and amount tables
   //====2. Seelcted Category==================================
@@ -79,7 +83,7 @@ export default function ChallengeTabForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { category: "", step: "", amount: "" },
+    defaultValues: { category: "", step: "", amount: "" ,amountCurrency:""},
   });
 
   //const selectedCategoryId = form.watch("category");
@@ -145,6 +149,8 @@ export default function ChallengeTabForm({
     }else if(isAmountType && values.amount && selectedCategory){
         searchParams.set("default_tab_id_to_clone", values.amount);
         searchParams.set("broker_challenge_category_id", selectedCategory.id.toString());
+        //set currency for the amount tab type
+        searchParams.set("amount_currency", values.amountCurrency ?? "");
     }else if(isCategoryType && values.category ){
         searchParams.set("default_tab_id_to_clone", values.category);
     }
@@ -254,7 +260,7 @@ export default function ChallengeTabForm({
             )}
           />
         )}
-        {isStepType && stepsNotInBrokerList.length == 0 && (
+        {isStepType && stepsNotInBrokerList.length === 0 && (
           <FormItem>
             <FormLabel>Step</FormLabel>
             <p className="text-sm text-muted-foreground">
@@ -265,6 +271,7 @@ export default function ChallengeTabForm({
 
         <br />
         {isAmountType && amountsNotInBrokerList.length > 0 && (
+          <>
           <FormField
             control={form.control}
             name="amount"
@@ -284,7 +291,7 @@ export default function ChallengeTabForm({
                   <SelectContent>
                     {amountsNotInBrokerList.map((opt) => (
                       <SelectItem key={opt.id} value={String(opt.id)}>
-                        {opt.name}
+                        {opt.name.split(" ")[0]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -293,8 +300,37 @@ export default function ChallengeTabForm({
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="amountCurrency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Currency</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={amountsNotInBrokerList.length === 0}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {amountCurrencies && amountCurrencies.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.label}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          </>
         )}
-        {isAmountType && amountsNotInBrokerList.length == 0 && (
+        {isAmountType && amountsNotInBrokerList.length === 0 && (
           <FormItem>
             <FormLabel>Amount</FormLabel>
             <p className="text-sm text-muted-foreground">

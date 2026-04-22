@@ -25,10 +25,11 @@ export type Url = {
 
 };
 
-export type AccountTypeUrl = Url & {
+export type AffiliateLink = Url & {
   account_type_id?: number | null;
   account_type_name?: string;
   currency?: string | null;
+  platform_urls?: Url[];
 }
 
 export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
@@ -43,6 +44,16 @@ export type PlatformUrl = {
  name: string;
 };
 
+export type FullPlatformUrl = {
+  id: number;
+  url: string;
+  public_url: string;
+  name: string;
+  public_name: string;
+  is_updated_entry: number; // 1 or 0
+  is_public: number; // 1 or 0
+};
+
 export type AccountWithPlatformLinks = {
   account_type_id: number;
   account_type_name: string;
@@ -51,16 +62,11 @@ export type AccountWithPlatformLinks = {
 
 export type AffiliateLinksData={
   account_types: AccountWithPlatformLinks[];
-  ib_affiliate_urls?: Url[];
-  sub_ib_affiliate_urls?: Url[];
+  ib_affiliate_urls?: AffiliateLink[];
+  sub_ib_affiliate_urls?: AffiliateLink[];
   currency_list: [{label: string; value: string}];
 };
 
-export type PlatofrmUrl={
-  id: number;
-  name: string;
-  url?: string;
- 
-};
+
 
 export type AffiliateLinkTabType = "sign-up-ib-affiliate-link" | "sign-up-sub-ib-affiliate-link" | "notes";

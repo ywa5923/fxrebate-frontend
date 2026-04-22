@@ -247,13 +247,17 @@ export default async function BrokerProfilePage({
     if(categorySlug=='challenge-matrix' ){
       let brokerChallengeCategoriesUrl = `/challenges/categories/${brokerId}`;
       let defaultChallengeCategoriesUrl = `/challenges/default-categories`;
+      type DefaultChallengeCategoriesData={
+        default_challenge_categories: ChallengeType[];
+        amount_currencies: Array<{value:string,label:string}>;
+      }
 
       const [brokerChallengeCategoriesResponse, defaultChallengeCategoriesResponse] = await Promise.all([
         apiClient<ChallengeType[]>(brokerChallengeCategoriesUrl, UseTokenAuth.Yes, {
           method: "GET",
           cache: "no-store",
         }, ErrorMode.Return),
-        apiClient<ChallengeType[]>(defaultChallengeCategoriesUrl, UseTokenAuth.Yes, {
+        apiClient<DefaultChallengeCategoriesData>(defaultChallengeCategoriesUrl, UseTokenAuth.Yes, {
           method: "GET",
           cache: "no-store",
         }, ErrorMode.Return),
@@ -264,11 +268,19 @@ export default async function BrokerProfilePage({
         notFound();
       }
       let brokerCategories = brokerChallengeCategoriesResponse.data ?? [];
-      let defaultCategories = defaultChallengeCategoriesResponse.data ?? [];
-     
+      let defaultCategories = defaultChallengeCategoriesResponse.data?.default_challenge_categories ?? [];
+      let amountCurrencies = defaultChallengeCategoriesResponse.data?.amount_currencies ?? [];
   
     
-      return <ChallengeCategories key={brokerId} is_admin={is_admin} categories={brokerCategories} defaultCategories={defaultCategories} brokerId={brokerId} type="challenge"/>
+      return <ChallengeCategories 
+      key={brokerId} 
+      is_admin={is_admin} 
+      categories={brokerCategories}
+      defaultCategories={defaultCategories}
+      brokerId={brokerId}
+      type="challenge"
+      amountCurrencies={amountCurrencies}
+      />
     }
 
     if(categorySlug=='evaluation-rules'){

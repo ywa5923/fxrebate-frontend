@@ -33,7 +33,7 @@ import type {
   Option,
   OptionValue,
   AccountWithPlatformLinks,
-  AccountTypeUrl,
+  AffiliateLink, AffiliateLinkTabType
 } from "@/types";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,7 +45,7 @@ import { useRouter } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
 import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
-import type { AffiliateLinkTabType } from "@/types/Url";
+
 import Multiselect from "react-select";
 
 
@@ -57,7 +57,7 @@ const referralLinkFormSchema = z.object({
       label: z.string(),
     }),
   ),
-  currency: z.string().optional(),
+  currency: z.string().min(1, "Please select a currency"),
   urlType: z.string().min(1, "Please select a URL type"),
   isMasterLink: z.boolean(),
   name: z.string().trim().min(1, "Name is required"),
@@ -71,8 +71,8 @@ type componentProps = {
   brokerId: number;
   accountTypes: AccountWithPlatformLinks[];
   currencyList: {label: string; value: string}[];
-  IBLinks: AccountTypeUrl[];
-  SubIBLinks: AccountTypeUrl[];
+  IBLinks: AffiliateLink[];
+  SubIBLinks: AffiliateLink[];
   notesOptions: Option[];
   notesOptionsValues: OptionValue[];
 };
@@ -90,8 +90,8 @@ export default function ReferalLinksAndNotes({
   const [activeTab, setActiveTab] = useState<AffiliateLinkTabType>(
     "sign-up-ib-affiliate-link",
   );
-  const [ibLinks, setIBLinks] = useState<AccountTypeUrl[]>(IBLinks);
-  const [subIBLinks, setSubIBLinks] = useState<AccountTypeUrl[]>(SubIBLinks);
+  const [ibLinks, setIBLinks] = useState<AffiliateLink[]>(IBLinks);
+  const [subIBLinks, setSubIBLinks] = useState<AffiliateLink[]>(SubIBLinks);
 
   // Keep local CRUD state in sync when server data changes.
   useEffect(() => {
@@ -103,14 +103,16 @@ export default function ReferalLinksAndNotes({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [editingId, setEditingId] = useState<number | null>(null);
+
   const form = useForm<ReferralLinkFormValues>({
     resolver: zodResolver(referralLinkFormSchema),
     defaultValues: {
       accountTypeId: String(accountTypes[0]?.account_type_id ?? 0),
-      platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
-        value: Number(p.id),
-        label: String(p.name ?? ""),
-      })),
+      // platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
+      //   value: Number(p.id),
+      //   label: String(p.name ?? ""),
+      // })),
+        platformUrls: [],
       currency: "",
       urlType: "",
       isMasterLink: false,
@@ -140,10 +142,11 @@ export default function ReferalLinksAndNotes({
     const defaultAccountTypeId = String(accountTypes[0]?.account_type_id ?? 0);
     form.reset({
       accountTypeId: defaultAccountTypeId,
-      platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
-        value: Number(p.id),
-        label: String(p.name ?? ""),
-      })),
+      // platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
+      //   value: Number(p.id),
+      //   label: String(p.name ?? ""),
+      // })),
+      platformUrls: [],
       currency: "",
       urlType: activeTab,
       isMasterLink: false,
@@ -153,7 +156,7 @@ export default function ReferalLinksAndNotes({
     setDialogOpen(true);
   }
 
-  function openEdit(row: AccountTypeUrl) {
+  function openEdit(row: AffiliateLink) {
     setDialogMode("edit");
     setEditingId(row.id);
 
@@ -161,7 +164,10 @@ export default function ReferalLinksAndNotes({
       accountTypeId: String(
         row.account_type_id ?? accountTypes[0]?.account_type_id ?? 0,
       ),
-      platformUrls: [], // dacă ai date, trebuie mapate la {value,label}
+      platformUrls: (row.platform_urls ?? []).map((p) => ({
+        value: Number(p.id),
+        label: String(p.name ?? ""),
+      })),
       currency: row.currency ?? "",
       urlType: row.url_type ?? "custom",
       isMasterLink: !!row.is_master_link,
@@ -173,17 +179,7 @@ export default function ReferalLinksAndNotes({
   }
 
   async function handleDialogSubmit(values: ReferralLinkFormValues) {
-    // const url = values.url.trim();
-    // const name = values.name.trim();
-    // const urlType = values.urlType.trim() || "custom";
-    // const isMasterLink = values.isMasterLink;
-    // const selectedAccountType = accountTypes.find(
-    //   (a) => a.account_type_id === Number(values.accountTypeId),
-    // );
-    // const accountTypeId = isMasterLink ? null : (selectedAccountType?.account_type_id ?? 0);
-    // const accountName = isMasterLink
-    //   ? "Master Link"
-    //   : (selectedAccountType?.account_type_name ?? "Account");
+    
 
     const bodyPayload = {
       broker_id: brokerId,
@@ -202,6 +198,7 @@ export default function ReferalLinksAndNotes({
         name: o.label,
       })),
     };
+  
 
     const serverUrl = editingId
       ? `/urls/broker/${brokerId}/affiliate-link/${editingId}`

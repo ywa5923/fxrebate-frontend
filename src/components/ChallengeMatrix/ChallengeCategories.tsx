@@ -32,6 +32,7 @@ interface ChallengeCategoriesProps {
   brokerId?: number ;
   type: "challenge" | "placeholder";
   is_admin: boolean;
+  amountCurrencies?: Array<{value:string,label:string}>;
 }
 
 type ChallengeState = {
@@ -46,7 +47,7 @@ type DeleteConfirmation = {
   name: string;
 } | null;
 
-function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin }: ChallengeCategoriesProps) {
+function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin, amountCurrencies }: ChallengeCategoriesProps) {
   //const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
   const [isEditingHiddenState, setIsEditingHiddenState] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>(null);
@@ -233,6 +234,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
               selectedCategory={derivedState.selectedCategory}
               categories={categories}
               defaultCategories={defaultCategories ?? []}
+              amountCurrencies={amountCurrencies}
             />
           ) : (
             <div className="min-h-[40px] md:min-h-[48px] flex items-center justify-center px-2">

@@ -26,6 +26,7 @@ interface AmountsContainerProps {
   selectedCategory: ChallengeType | undefined;
   categories: ChallengeType[];
   defaultCategories: ChallengeType[];
+  amountCurrencies?: Array<{value:string,label:string}>;
 }
 
 export default function AmountsContainer({
@@ -38,6 +39,7 @@ export default function AmountsContainer({
   selectedCategory,
   categories,
   defaultCategories,
+  amountCurrencies,
 }: AmountsContainerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -114,12 +116,14 @@ export default function AmountsContainer({
 
           {isEditingHiddenState && (
             <span className="inline-flex flex-shrink-0 self-center">
+            
               <AddTabBtn
                 tabType="amount"
                 selectedCategory={selectedCategory}
                 categories={categories}
                 defaultCategories={defaultCategories}
                 addApiUrl={`/challenges/amount/${brokerId ?? 0}`}
+                amountCurrencies={amountCurrencies}
               />
             </span>
           )}

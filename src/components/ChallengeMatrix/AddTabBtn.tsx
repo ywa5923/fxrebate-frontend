@@ -23,12 +23,15 @@ export default function AddTabBtn({
   categories,
   defaultCategories,
   addApiUrl,
+  amountCurrencies,
 }: {
   tabType: string;
   selectedCategory?: ChallengeType;
   categories: ChallengeType[];
   defaultCategories?: ChallengeType[];
   addApiUrl: string;
+  amountCurrencies?: Array<{value:string,label:string}>;
+
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -71,6 +74,7 @@ export default function AddTabBtn({
         categories={categories}
         defaultCategories={defaultCategories ?? []}
         addApiUrl={addApiUrl}
+        amountCurrencies={amountCurrencies}
         onSuccess={handleSuccess}
       />
     </ScrollArea>
