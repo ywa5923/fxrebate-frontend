@@ -725,11 +725,12 @@ export default function StaticMatrix({
         return;
       }
 
-      //router.refresh();
+      
       setHasChanges(false);
       setIsEmptyMatrix(false);
       toast.success("Matrix data saved successfully");
       console.log("Saved successfully:", response.data);
+      router.refresh();
     } catch (e) {
       console.error("Failed to save", e);
       toast.error("Error saving matrix data");
@@ -888,7 +889,8 @@ export default function StaticMatrix({
                             matrixExtraData?.evaluation_cost_discount
                               ?.placeholder ?? "Enter evaluation cost discount"
                           }
-                          onChange={(e) =>
+                          onChange={(e) =>{
+                              setHasChanges(true);
                             setMatrixExtraData((prev: any) => ({
                               ...prev,
                               evaluation_cost_discount: {
@@ -899,6 +901,7 @@ export default function StaticMatrix({
                                 is_updated_entry: false,
                               },
                             }))
+                          }
                           }
                           className="flex-1 min-w-0"
                         />
@@ -990,7 +993,8 @@ export default function StaticMatrix({
                             matrixExtraData?.affiliate_link?.placeholder ??
                             "Enter affiliate link"
                           }
-                          onChange={(e) =>
+                          onChange={(e) =>{
+                              setHasChanges(true);
                             setMatrixExtraData((prev: any) => ({
                               ...prev,
                               affiliate_link: {
@@ -1001,6 +1005,7 @@ export default function StaticMatrix({
                                 is_updated_entry: false,
                               },
                             }))
+                          }
                           }
                           className="flex-1 min-w-0"
                         />
@@ -1097,7 +1102,8 @@ export default function StaticMatrix({
                             matrixExtraData?.affiliate_master_link
                               ?.placeholder ?? "Enter affiliate link"
                           }
-                          onChange={(e) =>
+                          onChange={(e) =>{
+                             setHasChanges(true);
                             setMatrixExtraData((prev: any) => ({
                               ...prev,
                               affiliate_master_link: {
@@ -1108,6 +1114,7 @@ export default function StaticMatrix({
                                 is_updated_entry: false,
                               },
                             }))
+                          }
                           }
                           className="flex-1 min-w-0"
                         />
@@ -1120,6 +1127,7 @@ export default function StaticMatrix({
                               variant="outline"
                               size="sm"
                               onClick={(e) => {
+                               
                                 matrixExtraData?.affiliate_master_link?.url &&
                                   setMatrixExtraData((prev: any) => ({
                                     ...prev,

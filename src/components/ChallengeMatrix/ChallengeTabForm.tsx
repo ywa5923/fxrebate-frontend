@@ -24,6 +24,7 @@ import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
 import { ChallengeType } from "@/types";
+import { useCurrenciesStore } from "@/hooks/useCurrenciesStore";
 
 type FormValues = { category?: string; step?: string; amount?: string, amountCurrency?: string };
 
@@ -43,7 +44,7 @@ interface ChallengeTabFormProps {
   defaultCategories: ChallengeType[];
   addApiUrl: string;
   onSuccess?: () => void;
-  amountCurrencies?: Array<{value:string,label:string}>;
+ amountCurrencies?: Array<{value:string,label:string}>;
 }
 
 export default function ChallengeTabForm({
@@ -58,6 +59,8 @@ export default function ChallengeTabForm({
   const isStepType = tabType === "step";
   const isAmountType = tabType === "amount";
   const isCategoryType = tabType === "category";
+
+
 
   //let amountCurrencies: Array<{ label: string; value: string }> = [{value:"USD", label:"USD"},{value:"EUR", label:"EUR"},{value:"GBP", label:"GBP"},{value:"JPY", label:"JPY"}];
   //====0. For tabType=category==================================
@@ -98,6 +101,8 @@ export default function ChallengeTabForm({
     const brokerSelectedCategory = selectedCategory;
     if (!brokerSelectedCategory) return [];
 
+    //broker categories are challenge categories but with broker_id column different than null,
+    //defaultCategores are chalenge categories defined by superadmin to be available for all brokers, they have broker_id column null in the database
     const selectedCategorySlug = brokerSelectedCategory.slug;
     const defaultCategorySteps = defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.steps ?? [];
      
@@ -113,32 +118,18 @@ export default function ChallengeTabForm({
 
   }, [isStepType, selectedCategoryId, categories, defaultCategories]);
 
-  const amountsNotInBrokerList = useMemo((): ItemOption[] => {
-    if (!isAmountType || !selectedCategoryId) return [];
-      // const brokerSelectedCategory = categories?.find(
-      //   (c) => c.id === Number(selectedCategoryId),
-      // );
-      const brokerSelectedCategory = selectedCategory;
-    if (!brokerSelectedCategory) return [];
-    const selectedCategorySlug = brokerSelectedCategory.slug;
+ 
 
-    const defaultCategoryAmounts = defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.amounts ?? [];
-      
-    //const brokerAmounts = categories?.find((c) => c.slug === selectedCategorySlug)?.amounts ?? [];
-    const brokerAmounts = brokerSelectedCategory?.amounts ?? [];
+  const defaultAmounts = useMemo(() => {
+  return (
+    defaultCategories?.find((c) => c.slug === selectedCategory?.slug)?.amounts ?? []
+  ).map((a) => ({
+    id: a.id,
+    name: `${a.amount} ${a.currency}`,
+  }));
+}, [defaultCategories, selectedCategory?.slug]);
 
-    //filter the default amounts to get the amounts that are not in the broker amounts list
-    const filtered = defaultCategoryAmounts.filter(
-      (a) =>!brokerAmounts.some(
-        (ba) => ba.amount === a.amount && ba.currency === a.currency,
-      ),
-        
-    );
-    return filtered.map((a) => ({
-      id: a.id,
-      name: `${a.amount} ${a.currency}`,
-    }));
-  }, [isAmountType, selectedCategoryId, categories, defaultCategories]);
+  
 
   async function onSubmit(values: FormValues) {
 
@@ -165,7 +156,7 @@ export default function ChallengeTabForm({
 
     if (response.success) {
       toast.success(`${tabType.toUpperCase()} added successfully`);
-      form.reset({ category: "", step: "", amount: "" });
+      form.reset({ category: "", step: "", amount: "", amountCurrency: "" });
       onSuccess?.();
     } else {
       toast.error(response.message ?? "Failed to add");
@@ -181,7 +172,7 @@ export default function ChallengeTabForm({
       return true;
     if (
       isAmountType &&
-      (amountsNotInBrokerList.length === 0 || !form.watch("amount"))
+      (defaultAmounts.length === 0 || !form.watch("amount"))
     )
       return true;
     return false;
@@ -270,7 +261,7 @@ export default function ChallengeTabForm({
         )}
 
         <br />
-        {isAmountType && amountsNotInBrokerList.length > 0 && (
+        {isAmountType && defaultAmounts.length > 0 && (
           <>
           <FormField
             control={form.control}
@@ -281,7 +272,7 @@ export default function ChallengeTabForm({
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
-                  disabled={amountsNotInBrokerList.length === 0}
+                  disabled={defaultAmounts.length === 0}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -289,7 +280,7 @@ export default function ChallengeTabForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {amountsNotInBrokerList.map((opt) => (
+                    {defaultAmounts.map((opt) => (
                       <SelectItem key={opt.id} value={String(opt.id)}>
                         {opt.name.split(" ")[0]}
                       </SelectItem>
@@ -309,7 +300,7 @@ export default function ChallengeTabForm({
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
-                  disabled={amountsNotInBrokerList.length === 0}
+                  disabled={defaultAmounts.length === 0}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -330,14 +321,7 @@ export default function ChallengeTabForm({
           />
           </>
         )}
-        {isAmountType && amountsNotInBrokerList.length === 0 && (
-          <FormItem>
-            <FormLabel>Amount</FormLabel>
-            <p className="text-sm text-muted-foreground">
-              No more amounts to add
-            </p>
-          </FormItem>
-        )}
+       
 
         <Button
           type="submit"

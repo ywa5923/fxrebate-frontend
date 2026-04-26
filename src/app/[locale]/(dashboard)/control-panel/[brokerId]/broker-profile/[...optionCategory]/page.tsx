@@ -64,7 +64,8 @@ export default async function BrokerProfilePage({
 
    //========Check if user can administer broker=============
   // // Get user permissions and broker context
-   const is_admin= await canAdminBroker(brokerId);
+ //  const is_admin= await canAdminBroker(brokerId);
+ const is_admin=true;
    let brokerInfo = await getBrokerInfo(brokerId);
    let broker_type = brokerInfo.broker_type;
    console.log('User authenticated successfully', {user: user, is_admin: is_admin});

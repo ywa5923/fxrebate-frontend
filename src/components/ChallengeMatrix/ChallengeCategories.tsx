@@ -1,12 +1,12 @@
 "use client";
 
 import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 import AddTabBtn from "@/components/ChallengeMatrix/AddTabBtn";
 
-//import { useLocalStorage } from "@/hooks/useLocalStorage";
+
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
@@ -25,6 +25,8 @@ import {
 import CategoriesContainer from "./CategoriesContainer";
 import StepsContainer from "./StepsContainer";
 import AmountsContainer from "./AmountsContainer";
+
+//import { set } from "nprogress";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
@@ -65,7 +67,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
     };
   });
 
-  //categories are broker categories, for type=placeholder, the categories are the default categories
+   //categories are broker categories, for type=placeholder, the categories are the default categories
  let categoriesNotInBrokerList = defaultCategories?.filter((cat) => !categories.some((c) => c.slug === cat.slug)) ?? [];
   
   const selectedCategory = categories.find((cat) => cat.id === challengeState.categoryId);
@@ -80,6 +82,8 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
     stepSlug: selectedStepSlug,
     canShowMatrix: Boolean(selectedStepSlug && challengeState.stepId && challengeState.amountId && challengeState.categoryId)
   };
+
+
 
   const handleCategoryClick = (category: ChallengeType) => {
     if (category.id === challengeState.categoryId) return;
