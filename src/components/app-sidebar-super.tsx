@@ -7,6 +7,7 @@ import {
   Settings2, 
   Building,
   Users,
+  Network,
   Globe,
   Globe2,
   Search,
@@ -74,6 +75,8 @@ interface AppSidebarSuperProps extends React.ComponentProps<typeof Sidebar> {
 const iconMap: Record<string, LucideIcon> = {
   Building,
   Users,
+  UserGroups: Network,
+  Network,
   Globe,
   Globe2,
   Languages,
@@ -94,7 +97,7 @@ const iconMap: Record<string, LucideIcon> = {
   LayoutTemplate,
 }
 
-type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission';
+type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission'| 'brokerGroupPermission' | null;
 
 export function AppSidebarSuper({ 
   userLinks = [], 
@@ -147,7 +150,8 @@ export function AppSidebarSuper({
                   const isActive = pathname === link.url || pathname.startsWith(link.url + '/');
                   const isManageBrokers = link.name === 'Brokers';
                   const isPlatformUsers = link.name === 'Platform Users';
-                  const isUserPermissions = link.name === 'User Permissions';
+                  const isUserPermission = link.name === 'User Permissions';
+                  const isBrokerGroup = link.name === 'Broker Groups';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -180,8 +184,14 @@ export function AppSidebarSuper({
                           addApiUrl="/platform-users"
                         />
                         )}
+                        {isBrokerGroup && (
+                          <AddActionBtn
+                          resourceName="Broker Groups"
+                          addApiUrl="/broker-groups"
+                        />
+                        )}
 
-                        {isUserPermissions && (
+                        {isUserPermission && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -260,6 +270,20 @@ export function AppSidebarSuper({
                                   addApiUrl="/user-permissions/translator"
                                   formConfigApiUrl="/user-permissions/form-config/translator"
                                   open={activeDialog === "translatorTypePermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+
+                                <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("brokerGroupPermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Broker Group Permission
+                              </DropdownMenuItem>
+                              <DialogAddBtn
+                                  resourceName="Broker Group Permission"
+                                  addApiUrl="/user-permissions/broker_group"
+                                  formConfigApiUrl="/user-permissions/form-config/broker_group"
+                                  open={activeDialog === "brokerGroupPermission"}
                                   onOpenClose={() => setActiveDialog(null)}
                                 />
                               
@@ -421,4 +445,3 @@ export function AppSidebarSuper({
     </Sidebar>
   )
 }
-

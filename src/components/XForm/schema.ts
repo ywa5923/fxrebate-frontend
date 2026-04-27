@@ -37,8 +37,11 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
       baseSchema = z.boolean();
     } else if (field.type === "date") {
       baseSchema = z.date();
-    } else if (field.type === "multiselect") {
-      baseSchema = z.array(z.string());
+    } else if (field.type === "multiselect" || field.type === "multi-select") {
+      baseSchema = z.array(z.object({
+        label: z.string(),
+        value: z.string()
+      }));
     } else if (field.type === 'array_fields') {
       baseSchema = z.array(z.object(generateFieldsSchema(field.fields ?? {})));
     } else {

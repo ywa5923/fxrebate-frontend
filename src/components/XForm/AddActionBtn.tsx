@@ -10,7 +10,7 @@ import {
   import { Button } from "@/components/ui/button"
   import XForm from "@/components/XForm/XForm"
 import { useState } from "react"
-import { XFormDefinition } from "@/types"
+//import { XFormDefinition } from "@/types"
 import {  PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceName: string,addApiUrl: string } ) {

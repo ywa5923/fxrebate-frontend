@@ -49,6 +49,11 @@ export default async function SuperManagerLayout({
       icon: 'Users'
     },
     {
+      name: 'Broker Groups',
+      url: '/en/control-panel/super-manager/broker-groups',
+      icon: 'UserGroups'
+    },
+    {
       name: 'User Permissions',
       url: '/en/control-panel/super-manager/user-permissions',
       icon: 'Shield'
@@ -130,4 +135,3 @@ export default async function SuperManagerLayout({
     </div>
   );
 }
-

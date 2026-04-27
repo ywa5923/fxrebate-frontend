@@ -8,6 +8,7 @@ import { Form } from "@/components/ui/form";
 import {  FormSelect, FormCheckbox, FormInput, FormTextarea, FormNumber } from "@/components/XForm/form-components";
 
 import { ArrayFields } from "@/components/XForm/form-components";
+import { FormMultiSelect } from "@/components/XForm/form-multiselect";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {FieldDescription,FieldGroup,FieldLegend, FieldSet} from "@/components/ui/field"
@@ -227,7 +228,22 @@ export default function XForm<T extends Record<string, any>>({ formConfig,formCo
                                           return <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
                                         })}
                                       </FormSelect>
-                                    
+                                      case "multiselect":
+                                      case "multi-select":
+                                        return (
+                                          <FormMultiSelect
+                                            key={fieldKey}
+                                            control={form.control}
+                                            name={sectionKey + "." + fieldKey}
+                                            label={f?.label}
+                                            placeholder={f?.placeholder ?? "Select options"}
+                                            required={f?.required}
+                                            options={f.options}
+                                            searchUrl={f.searchUrl}
+                                            searchParamName={f.searchParamName}
+                                            debounceMs={f.debounceMs}
+                                          />
+                                        )
                                      case "array_fields":
                                       return <ArrayFields key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} fieldDef={f} required={f?.required} />
                                     default:

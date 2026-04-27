@@ -27,6 +27,9 @@ export interface XFormField {
     placeholder: string;
     required: boolean;
     options?: XFormOption[];
+    searchUrl?: string;
+    searchParamName?: string;
+    debounceMs?: number;
     validation?: fieldValidation;
     fields?: Record<string, Omit<XFormField, 'fields'>>;//this is for array fields
   }
