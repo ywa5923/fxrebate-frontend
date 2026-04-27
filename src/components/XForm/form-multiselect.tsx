@@ -251,6 +251,7 @@ function FormMultiSelectControl({
 
   const selectedValues = selectedOptions.map((option) => String(option.value));
   const selectedValueSet = new Set(selectedValues);
+  const canSearch = search.trim().length >= 2;
   const visibleOptions = remoteSearchUrl
     ? availableOptions
     : availableOptions.filter((option) =>
@@ -350,7 +351,9 @@ function FormMultiSelectControl({
                       Searching...
                     </div>
                   ) : (
-                    <CommandEmpty>No items found.</CommandEmpty>
+                    <CommandEmpty>
+                      {canSearch ? "No items found." : "Type at least 2 characters to search."}
+                    </CommandEmpty>
                   )}
                   <CommandGroup>
                     {visibleOptions.map((option) => {

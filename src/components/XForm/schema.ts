@@ -40,7 +40,7 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
     } else if (field.type === "multiselect" || field.type === "multi-select") {
       baseSchema = z.array(z.object({
         label: z.string(),
-        value: z.string()
+        value: z.coerce.string()
       }));
     } else if (field.type === 'array_fields') {
       baseSchema = z.array(z.object(generateFieldsSchema(field.fields ?? {})));
@@ -129,4 +129,3 @@ function preprocessEmptyString(schema: z.ZodTypeAny) {
     schema
   )
 }
-
