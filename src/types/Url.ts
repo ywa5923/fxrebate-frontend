@@ -29,7 +29,11 @@ export type AffiliateLink = Url & {
   account_type_id?: number | null;
   account_type_name?: string;
   currency?: string | null;
-  platform_urls?: Url[];
+  public_currency?: string | null;
+  previous_currency?: string | null;
+  type:string;
+  platform_urls?: PlatformUrl[];
+  metadata?: Record<string, any>;
 }
 
 export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {

@@ -6,8 +6,7 @@ import { Link as LinkIcon, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AffiliateLinkTabType } from "@/types/Url";
-
-
+import { useTransition } from "react";
 
 const tabActiveClass: Record<AffiliateLinkTabType, string> = {
   "sign-up-ib-affiliate-link":
@@ -23,20 +22,25 @@ const tabs: Array<{
   label: string;
   Icon: LucideIcon;
 }> = [
-  { id: "sign-up-ib-affiliate-link", label: "Sign-up IB/ Affiliate Link", Icon: LinkIcon },
-  { id: "sign-up-sub-ib-affiliate-link", label: "Sign-up SUB-IB/ Sub-Affiliate Link", Icon: LinkIcon },
+  {
+    id: "sign-up-ib-affiliate-link",
+    label: "Sign-up IB/ Affiliate Link",
+    Icon: LinkIcon,
+  },
+  {
+    id: "sign-up-sub-ib-affiliate-link",
+    label: "Sign-up SUB-IB/ Sub-Affiliate Link",
+    Icon: LinkIcon,
+  },
   { id: "notes", label: "Notes", Icon: StickyNote },
 ];
 
-export type ReferralLinksTabHeaderProps = {
+export type Props = {
   activeTab: AffiliateLinkTabType;
   onTabChange: (tab: AffiliateLinkTabType) => void;
 };
 
-export  function ReferralLinksTabHeader({
-  activeTab,
-  onTabChange,
-}: ReferralLinksTabHeaderProps) {
+export function ReferralLinksTabHeader({ activeTab, onTabChange }: Props) {
   return (
     <div className="mb-4 border-b border-gray-200 dark:border-gray-800 flex gap-2">
       {tabs.map(({ id, label, Icon }) => (

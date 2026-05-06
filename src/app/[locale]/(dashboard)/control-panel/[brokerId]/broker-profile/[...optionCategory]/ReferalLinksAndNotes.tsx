@@ -8,6 +8,7 @@ import {
   Plus,
   Trash,
   StickyNote,
+  CircleHelp,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -33,7 +39,8 @@ import type {
   Option,
   OptionValue,
   AccountWithPlatformLinks,
-  AffiliateLink, AffiliateLinkTabType
+  AffiliateLink,
+  AffiliateLinkTabType,
 } from "@/types";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,11 +50,11 @@ import { DynamicOption } from "@/types/DynamicOption";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { DynamicForm } from "@/components/DynamicForm";
+import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
 import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 
 import Multiselect from "react-select";
-
 
 const referralLinkFormSchema = z.object({
   accountTypeId: z.string().min(1, "Please select an account type"),
@@ -66,11 +73,11 @@ const referralLinkFormSchema = z.object({
 
 type ReferralLinkFormValues = z.infer<typeof referralLinkFormSchema>;
 
-type componentProps = {
+type Props = {
   is_admin: boolean;
   brokerId: number;
   accountTypes: AccountWithPlatformLinks[];
-  currencyList: {label: string; value: string}[];
+  currencyList: { label: string; value: string }[];
   IBLinks: AffiliateLink[];
   SubIBLinks: AffiliateLink[];
   notesOptions: Option[];
@@ -85,13 +92,15 @@ export default function ReferalLinksAndNotes({
   SubIBLinks,
   notesOptions,
   notesOptionsValues,
-}: componentProps) {
+}: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AffiliateLinkTabType>(
     "sign-up-ib-affiliate-link",
   );
   const [ibLinks, setIBLinks] = useState<AffiliateLink[]>(IBLinks);
   const [subIBLinks, setSubIBLinks] = useState<AffiliateLink[]>(SubIBLinks);
+  const [selectedRow, setSelectedRow] = useState<AffiliateLink | null>(null);
+
 
   // Keep local CRUD state in sync when server data changes.
   useEffect(() => {
@@ -108,11 +117,7 @@ export default function ReferalLinksAndNotes({
     resolver: zodResolver(referralLinkFormSchema),
     defaultValues: {
       accountTypeId: String(accountTypes[0]?.account_type_id ?? 0),
-      // platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
-      //   value: Number(p.id),
-      //   label: String(p.name ?? ""),
-      // })),
-        platformUrls: [],
+      platformUrls: [],
       currency: "",
       urlType: "",
       isMasterLink: false,
@@ -125,6 +130,15 @@ export default function ReferalLinksAndNotes({
 
   const watchedAccountTypeId = form.watch("accountTypeId");
   const watchedIsMasterLink = form.watch("isMasterLink");
+ 
+  //this function is used in the edit form to show the updated fields in red
+  const getLabelClassName = (updatedFieldKey: string) =>
+    cn(
+      "text-sm font-medium",
+      selectedRow?.metadata?.updated_fields?.includes(updatedFieldKey)
+        ? "text-red-600 dark:text-red-400"
+        : "text-gray-700 dark:text-gray-200",
+    );
 
   const platformUrlMultiselectOptions = useMemo(() => {
     const acc = accountTypes.find(
@@ -139,13 +153,10 @@ export default function ReferalLinksAndNotes({
   function openCreate() {
     setDialogMode("create");
     setEditingId(null);
+    setSelectedRow(null);
     const defaultAccountTypeId = String(accountTypes[0]?.account_type_id ?? 0);
     form.reset({
       accountTypeId: defaultAccountTypeId,
-      // platformUrls: (accountTypes[0]?.platform_urls ?? []).map((p) => ({
-      //   value: Number(p.id),
-      //   label: String(p.name ?? ""),
-      // })),
       platformUrls: [],
       currency: "",
       urlType: activeTab,
@@ -159,6 +170,10 @@ export default function ReferalLinksAndNotes({
   function openEdit(row: AffiliateLink) {
     setDialogMode("edit");
     setEditingId(row.id);
+    setSelectedRow(row);
+    const currency = is_admin? (row.public_currency ?? row.currency ?? ""): row.currency ?? "";
+    const name = is_admin ? (row.public_name ?? row.name ?? "") : (row.name ?? "");
+    const url = is_admin ? (row.public_url ?? row.url ?? "") : (row.url ?? "");
 
     form.reset({
       accountTypeId: String(
@@ -168,19 +183,17 @@ export default function ReferalLinksAndNotes({
         value: Number(p.id),
         label: String(p.name ?? ""),
       })),
-      currency: row.currency ?? "",
-      urlType: row.url_type ?? "custom",
+      currency: currency,
+      urlType: row.type,
       isMasterLink: !!row.is_master_link,
-      name: is_admin ? row.public_name ?? "" : row.name ?? "",
-      url: is_admin ? row.public_url ?? "" : row.url ?? "",
+      name: name,
+      url: url,
     });
 
     setDialogOpen(true);
   }
 
   async function handleDialogSubmit(values: ReferralLinkFormValues) {
-    
-
     const bodyPayload = {
       broker_id: brokerId,
       account_type_id: values.isMasterLink
@@ -191,14 +204,13 @@ export default function ReferalLinksAndNotes({
       is_master_link: values.isMasterLink,
       name: values.name.trim(),
       url: values.url.trim(),
-
-      //  IMPORTANT
-      platform_urls: values.platformUrls.map((o) => ({
-        id: o.value,
-        name: o.label,
-      })),
+      platform_urls: values.isMasterLink
+        ? []
+        : values.platformUrls.map((o) => ({
+            id: o.value,
+            name: o.label,
+          })),
     };
-  
 
     const serverUrl = editingId
       ? `/urls/broker/${brokerId}/affiliate-link/${editingId}`
@@ -216,6 +228,8 @@ export default function ReferalLinksAndNotes({
             : "Referral link created successfully",
         );
         setDialogOpen(false);
+        router.refresh();
+        setSelectedRow(null);
       } else {
         toast.error(response.message ?? "Failed to save referral link");
       }
@@ -265,23 +279,12 @@ export default function ReferalLinksAndNotes({
         onTabChange={setActiveTab}
       />
 
-      {activeTab === "sign-up-ib-affiliate-link" ? (
+      {activeTab === "sign-up-ib-affiliate-link" ||
+      activeTab === "sign-up-sub-ib-affiliate-link" ? (
         <ReferralLinksTabContent
-          variant="ib"
-          title="Sign-up IB/ Affiliate Link"
-          description="Each row shows account_name and url_type."
-          links={ibLinks}
-          is_admin={is_admin}
-          onAddClick={openCreate}
-          onEditRow={openEdit}
-          onRequestDelete={handleDeleteReferralLink}
-        />
-      ) : activeTab === "sign-up-sub-ib-affiliate-link" ? (
-        <ReferralLinksTabContent
-          variant="sub_ib"
-          title="Sign-up SUB-IB/ Sub-Affiliate Link"
-          description="Each row shows account_name and url_type."
-          links={subIBLinks}
+          links={
+            activeTab === "sign-up-ib-affiliate-link" ? ibLinks : subIBLinks
+          }
           is_admin={is_admin}
           onAddClick={openCreate}
           onEditRow={openEdit}
@@ -325,32 +328,12 @@ export default function ReferalLinksAndNotes({
           setDialogOpen(open);
         }}
       >
-        <DialogContent
-          className="overflow-x-hidden"
-          onInteractOutside={(event) => {
-            const target = event.target as HTMLElement | null;
-            if (
-              target?.closest(".react-select__menu") ||
-              target?.closest(".react-select__menu-portal")
-            ) {
-              event.preventDefault();
-            }
-          }}
-          onPointerDownOutside={(event) => {
-            const target = event.target as HTMLElement | null;
-            if (
-              target?.closest(".react-select__menu") ||
-              target?.closest(".react-select__menu-portal")
-            ) {
-              event.preventDefault();
-            }
-          }}
-        >
+        <DialogContent className="w-[calc(100%-1rem)] max-w-[calc(100%-1rem)] sm:max-w-2xl overflow-x-hidden p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {dialogMode === "edit"
                 ? "Edit referral link"
-                : "New referral link"}
+                : "New referral link1"}
             </DialogTitle>
           </DialogHeader>
 
@@ -360,13 +343,13 @@ export default function ReferalLinksAndNotes({
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-1 min-w-0">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className={getLabelClassName("account_type_id")}>
                   Account name
                 </div>
                 <Controller
                   name="accountTypeId"
                   control={form.control}
-                  render={({ field }) => (
+                  render={({ field }) =>
                     watchedIsMasterLink ? (
                       <div className="flex min-h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
                         All Accounts
@@ -399,22 +382,31 @@ export default function ReferalLinksAndNotes({
                         </SelectContent>
                       </Select>
                     )
-                  )}
+                  }
                 />
+                {/* if admin show row.metadata.previous_relations_values.previous_account_type_name */}
+                {is_admin  && (
+                 <BrokerPreviousValue
+                    show="previous"
+                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_account_type_name}
+                  />
+                )}
                 {form.formState.errors.accountTypeId ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
                     {form.formState.errors.accountTypeId.message}
                   </p>
                 ) : null}
+                
+                
               </div>
               <div className="space-y-1 min-w-0">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className={getLabelClassName("platform_urls")}>
                   Platform URLs
                 </div>
                 <Controller
                   name="platformUrls"
                   control={form.control}
-                  render={({ field }) => (
+                  render={({ field }) =>
                     watchedIsMasterLink ? (
                       <div className="flex min-h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
                         All Platforms
@@ -438,7 +430,9 @@ export default function ReferalLinksAndNotes({
                             ...base,
                             minHeight: 40,
                             borderRadius: 8,
-                            borderColor: state.isFocused ? "#22c55e" : "#e5e7eb",
+                            borderColor: state.isFocused
+                              ? "#22c55e"
+                              : "#e5e7eb",
                             boxShadow: state.isFocused
                               ? "0 0 0 2px rgba(34,197,94,0.2)"
                               : "none",
@@ -479,8 +473,8 @@ export default function ReferalLinksAndNotes({
                             backgroundColor: state.isSelected
                               ? "#22c55e"
                               : state.isFocused
-                                ? "#f0fdf4"
-                                : "white",
+                              ? "#f0fdf4"
+                              : "white",
                             color: state.isSelected ? "white" : "#111827",
                             cursor: "pointer",
                             ":active": {
@@ -499,8 +493,15 @@ export default function ReferalLinksAndNotes({
                         }}
                       />
                     )
-                  )}
+                  }
                 />
+                 {/* if admin show row.metadata.previous_relations_values.previous_platform_urls */}
+                 {is_admin  && (
+                 <BrokerPreviousValue
+                    show="previous"
+                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_platform_urls?.join(", ")}
+                  />
+                )}
                 {form.formState.errors.platformUrls ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
                     {form.formState.errors.platformUrls.message}
@@ -522,7 +523,7 @@ export default function ReferalLinksAndNotes({
                 />
               </div>
               <div className="space-y-1 min-w-0">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className={getLabelClassName("currency")}>
                   Currency
                 </div>
                 <Controller
@@ -549,30 +550,58 @@ export default function ReferalLinksAndNotes({
                     </Select>
                   )}
                 />
+                {is_admin && (
+                  <BrokerPreviousValue
+                    brokerValue={selectedRow?.currency}
+                    previousValue={selectedRow?.previous_currency}
+                  />
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Controller
-                name="isMasterLink"
-                control={form.control}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={!!field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                )}
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-200">
-                is_master_link
-              </span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Controller
+                  name="isMasterLink"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                    />
+                  )}
+                />
+                <span className={getLabelClassName("is_master_link")}>
+                  Is Master Link
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      aria-label="Master link info"
+                    >
+                      <CircleHelp className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6}>
+                    Master links apply to all account types and web platforms
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              {is_admin && (
+                <BrokerPreviousValue
+                  show="previous"
+                  previousValue={selectedRow?.metadata?.previous_relations_values?.previous_is_master_link}
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-1">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className={getLabelClassName("name")}>
                   Name
                 </div>
                 <Controller
@@ -586,6 +615,12 @@ export default function ReferalLinksAndNotes({
                     />
                   )}
                 />
+                {is_admin && (
+                  <BrokerPreviousValue
+                    brokerValue={selectedRow?.name}
+                    previousValue={selectedRow?.previous_name}
+                  />
+                )}
                 {form.formState.errors.name ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
                     {form.formState.errors.name.message}
@@ -593,7 +628,7 @@ export default function ReferalLinksAndNotes({
                 ) : null}
               </div>
               <div className="space-y-1">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <div className={getLabelClassName("url")}>
                   Referral URL
                 </div>
                 <Controller
@@ -607,6 +642,12 @@ export default function ReferalLinksAndNotes({
                     />
                   )}
                 />
+                {is_admin && (
+                  <BrokerPreviousValue
+                    brokerValue={selectedRow?.url}
+                    previousValue={selectedRow?.previous_url}
+                  />
+                )}
                 {form.formState.errors.url ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
                     {form.formState.errors.url.message}

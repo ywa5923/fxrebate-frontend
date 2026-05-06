@@ -5,9 +5,7 @@ import { Link as LinkIcon, Pencil, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { AccountTypeUrl} from "@/types/Url";
-
-
+import type { AffiliateLink } from "@/types/Url";
 
 const iconShellClass: Record<"ib" | "sub_ib", string> = {
   ib: "bg-green-100 dark:bg-green-900/50",
@@ -19,50 +17,28 @@ const iconGlyphClass: Record<"ib" | "sub_ib", string> = {
   sub_ib: "text-blue-600 dark:text-blue-400",
 };
 
-export type ReferralLinksTabContentProps = {
-  variant: "ib" | "sub_ib";
-  title: string;
-  description?: string;
-  links: AccountTypeUrl[];
+export type Props = {
+  //variant: "ib" | "sub_ib";
+
+  links: AffiliateLink[];
   is_admin: boolean;
   onAddClick: () => void;
-  onEditRow: (row: AccountTypeUrl) => void;
+  onEditRow: (row: AffiliateLink) => void;
   onRequestDelete: (id: number) => void;
 };
 
 export function ReferralLinksTabContent({
-  variant,
-  title,
-  description = "Each row shows account_name and url_type.",
+ 
   links,
   is_admin,
   onAddClick,
   onEditRow,
   onRequestDelete,
-}: ReferralLinksTabContentProps) {
+}: Props) {
   return (
     <div className="grid grid-cols-1 gap-4">
       <Card className="border border-dashed border-gray-200 dark:border-gray-800 bg-[#fdfdfd] dark:bg-gray-800/40">
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center",
-                iconShellClass[variant],
-              )}
-            >
-              <LinkIcon className={cn("w-4 h-4", iconGlyphClass[variant])} />
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {description}
-              </div>
-            </div>
-          </div>
-
+        <CardHeader className="flex flex-row items-center justify-end gap-3">
           <Button
             type="button"
             variant="outline"
@@ -87,10 +63,10 @@ export function ReferralLinksTabContent({
               {links.map((row) => {
                 const isUpdated = row.is_updated_entry === 1;
                 const displayName = is_admin
-                  ? (row.public_name ?? "no data")
+                  ? row.public_name ?? row.name
                   : row.name;
                 const displayUrl = is_admin
-                  ? (row.public_url ?? "no data")
+                  ? row.public_url ?? row.url
                   : row.url;
 
                 return (
@@ -98,7 +74,7 @@ export function ReferralLinksTabContent({
                     key={row.id}
                     className={cn(
                       "border rounded-lg p-4 flex items-start justify-between gap-3",
-                      isUpdated
+                      is_admin && isUpdated
                         ? "border-red-400/90 dark:border-red-700"
                         : "border-gray-200 dark:border-gray-700",
                     )}
@@ -121,21 +97,9 @@ export function ReferralLinksTabContent({
 
                       <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 break-words">
                         <span className="font-semibold">
-                          {displayName || "—"}
+                          {displayName}
                         </span>
-                        {is_admin ? (
-                          <span className="ml-2 text-xs text-gray-700 dark:text-gray-200">
-                            broker_value:{" "}
-                            <span className="font-medium">
-                              {row.name || "—"}
-                            </span>
-                            {" · "}
-                            previous_value:{" "}
-                            <span className="font-medium">
-                              {row.previous_name ?? "—"}
-                            </span>
-                          </span>
-                        ) : null}
+                        
                       </div>
 
                       <div className="mt-1 text-sm">
@@ -148,20 +112,16 @@ export function ReferralLinksTabContent({
                         >
                           {displayUrl}
                         </a>
-                        {is_admin ? (
-                          <span className="ml-2 text-xs text-gray-700 dark:text-gray-200">
-                            broker_value:{" "}
-                            <span className="font-medium">
-                              {row.url || "—"}
-                            </span>
-                            {" · "}
-                            previous_value:{" "}
-                            <span className="font-medium">
-                              {row.previous_url ?? "—"}
-                            </span>
-                          </span>
-                        ) : null}
-                      </div>
+                        </div>
+                        
+                         {is_admin && row.is_updated_entry === 1 && (
+                        <div className="mt-1 text-sm">
+                        <span className="text-xs text-red-700 dark:text-gray-200">
+                           Updated fields: {row.metadata?.updated_fields?.join(", ")}
+                        </span>
+                         </div>
+                        )}
+                      
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
@@ -188,6 +148,15 @@ export function ReferralLinksTabContent({
                         <Trash className="w-4 h-4" />
                       </Button>
                     </div>
+                  
+                    { is_admin && row.metadata && (
+                      <div className="mt-1 text-sm">
+                        <pre className="text-xs text-gray-700 dark:text-gray-200">
+                          
+                          {JSON.stringify(row.metadata, null, 2)}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 );
               })}
