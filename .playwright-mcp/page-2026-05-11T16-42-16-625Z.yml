@@ -1,0 +1,168 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - 'heading "FXRebate in Numbers: Proven Success, Real Rewards" [level=2] [ref=e5]'
+    - generic [ref=e6]:
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: K+
+        - paragraph [ref=e10]: Active Clients
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: + Years
+        - paragraph [ref=e15]: Experience in Financial Markets
+      - generic [ref=e18]:
+        - paragraph [ref=e19]:
+          - text: $
+          - text: Million+
+        - paragraph [ref=e20]: Paid in Rebates
+      - generic [ref=e23]:
+        - paragraph [ref=e24]:
+          - text: $
+          - text: K+
+        - paragraph [ref=e25]: Paid in Affiliate Commissions
+  - generic [ref=e26]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img "tag" [ref=e30]
+        - generic [ref=e31]: Why join us
+      - heading "Your Best Partner for Maximum Cashback" [level=3] [ref=e32]
+      - paragraph [ref=e33]: "Joining FXRebate means gaining access to the most rewarding, reliable, and customer-focused rebate platform available. Here's what sets us apart:"
+    - generic [ref=e35]:
+      - heading "Best rate guarantee" [level=3] [ref=e36]
+      - paragraph [ref=e37]: Earn money back on every trade through our reliable network of top-rated brokers, crypto exchanges and prop firms. Your cashback is deposited directly into your FXRebate Wallet or to your Trading Account, providing you with consistent, hassle-free rewards for every transaction. With FXRebate, every trade truly matters.
+    - generic [ref=e39]:
+      - heading "Best affiliate network" [level=3] [ref=e40]
+      - paragraph [ref=e41]: Earn more with FXRebate’s 3-tier affiliate program! Get rewarded not just for your referrals, but also for their referrals—up to a total of 12.5% in commissions.
+      - link "Join the affiliate network icon" [ref=e43] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e44]: Join the affiliate network
+        - img "icon" [ref=e46]
+    - generic [ref=e48]:
+      - heading "Access to the industry-leading trading tools" [level=3] [ref=e49]
+      - paragraph [ref=e50]: Gain access to cutting-edge trading tools designed to enhance your strategy and performance. From advanced analytics to automated solutions, our industry-leading tools empower traders with precision, efficiency, and a competitive edge.
+      - link "View all tools icon" [ref=e52] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e53]: View all tools
+        - img "icon" [ref=e55]
+    - generic [ref=e57]:
+      - heading "Superb 24-hour support" [level=3] [ref=e58]
+      - paragraph [ref=e59]: Friendly and knowledgeable support from professionals’ traders. Our support staff are professionals with more than 20 years of experience in financial markets. We are there for you via phone, chat or email.
+      - link "Contact us icon" [ref=e61] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e62]: Contact us
+        - img "icon" [ref=e64]
+  - generic [ref=e67]:
+    - heading "Why Us" [level=2] [ref=e68]
+    - paragraph [ref=e69]: Our platform stands out with a robust set of features designed to deliver unmatched value, flexibility, and reliability.
+  - generic [ref=e70]:
+    - generic [ref=e71]:
+      - heading "Would you like to know more about trading?" [level=2] [ref=e72]
+      - generic [ref=e73]:
+        - button "Previous card" [disabled] [ref=e74]:
+          - img [ref=e75]
+        - button "Next card" [ref=e77] [cursor=pointer]:
+          - img [ref=e78]
+    - generic [ref=e81]:
+      - button "Academy academy-k5xj06cw6" [ref=e83] [cursor=pointer]:
+        - generic [ref=e85]: Academy
+        - img "academy-k5xj06cw6" [ref=e86]
+      - button "Charts charts-nh8wzimlh" [ref=e88] [cursor=pointer]:
+        - generic [ref=e90]: Charts
+        - img "charts-nh8wzimlh" [ref=e91]
+      - button "Trading Tools trading_tools-6seivdnco" [ref=e93] [cursor=pointer]:
+        - generic [ref=e95]: Trading Tools
+        - img "trading_tools-6seivdnco" [ref=e96]
+      - button "Academy academy-7l3jbmm32" [ref=e98] [cursor=pointer]:
+        - generic [ref=e100]: Academy
+        - img "academy-7l3jbmm32" [ref=e101]
+      - button "Productivity productivity-k6l8duuku" [ref=e103] [cursor=pointer]:
+        - generic [ref=e105]: Productivity
+        - img "productivity-k6l8duuku" [ref=e106]
+      - button "Trading trading-kownhf9n0" [ref=e108] [cursor=pointer]:
+        - generic [ref=e110]: Trading
+        - img "trading-kownhf9n0" [ref=e111]
+  - heading "Trusted by Thousands of Traders Worldwide" [level=3] [ref=e113]
+  - generic [ref=e117]:
+    - generic [ref=e118]:
+      - heading "Newsletter" [level=2] [ref=e119]
+      - paragraph [ref=e120]: You might be losing opportunities, but it&apos;s OK. If you need to learn more about how FXRebate works and how to make your activity more profitable, sign up here to receive the latest information about our partners, to increase your revenue.
+    - generic [ref=e122]:
+      - generic [ref=e123]:
+        - generic [ref=e124]: Name
+        - textbox "Enter your name" [ref=e125]
+      - generic [ref=e126]:
+        - generic [ref=e127]: Email
+        - textbox "Enter your email" [ref=e128]
+      - button "Sign up now" [ref=e129] [cursor=pointer]
+      - paragraph [ref=e130]: By clicking Join Now, you agree to our Terms and Conditions.
+  - contentinfo [ref=e131]:
+    - generic [ref=e133]:
+      - generic [ref=e134]:
+        - generic [ref=e136]:
+          - link [ref=e137] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e138]
+          - link [ref=e140] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e141]
+          - link [ref=e143] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e144]
+          - link [ref=e146] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e147]
+          - link [ref=e149] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e150]
+        - list [ref=e152]:
+          - listitem [ref=e153]:
+            - text: Main
+            - list [ref=e154]:
+              - listitem [ref=e155]:
+                - link "Forex Brokers" [ref=e156] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e157]:
+                - link "Crypto Exchanges" [ref=e158] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e159]:
+                - link "Prop Firms" [ref=e160] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e161]:
+                - link "Affiliate Program" [ref=e162] [cursor=pointer]:
+                  - /url: "#"
+          - listitem [ref=e163]:
+            - text: Tools & Education
+            - list [ref=e164]:
+              - listitem [ref=e165]:
+                - link "Trading Academy" [ref=e166] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e167]:
+                - link "Trading Tools" [ref=e168] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e169]:
+                - link "Charts" [ref=e170] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e171]:
+                - link "Blog" [ref=e172] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e173]:
+                - link "Telegram" [ref=e174] [cursor=pointer]:
+                  - /url: "#"
+          - listitem [ref=e175]:
+            - text: Company information
+            - list [ref=e176]:
+              - listitem [ref=e177]:
+                - link "About us" [ref=e178] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e179]:
+                - link "Contact" [ref=e180] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e181]:
+                - link "Help Center" [ref=e182] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e183]:
+                - link "Terms of Service" [ref=e184] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e185]:
+                - link "Privacy Policy" [ref=e186] [cursor=pointer]:
+                  - /url: "#"
+      - paragraph [ref=e188]: "Disclaimer: It is possible that you can lose all of the money you deposit, and in some circumstance you may even be required to deposit additional sums to cover you loses. By undertaking these types of high risk trades you acknowledge that you are trading with your available risk capital and any losses you may incur will not adversely affect your lifestyle. The high degree of leverage can work against you as well as for you. You must be aware of the risks of investing in forex, futures, and options and be willing to accept them in order to trade in these markets. Forex trading involves substantial risk of loss and is not suitable for all investors. Please do not trade with borrowed money or money you cannot afford to lose. This website is neither a solicitation nor an offer to Buy or Sell currencies, futures, or options. No representation is being made that any account will or is likely to achieve profits or losses similar to those discussed on this website. Any opinions, news, research, analysis, prices, or other information contained on this website is provided as general market commentary and does not constitute investment advice. Website owners and affiliates will not accept liability for any loss or damage, including without limitation to, any loss of profit, which may arise directly or indirectly from the use of or reliance on such information. Please remember that the past performance of any trading system or methodology is not necessarily indicative of future results. Trading foreign exchange, commodity futures, options, precious metals and other over-the-counter or no-exchange products carries a high level of risk and may not be suitable for all investors."
+    - paragraph [ref=e189]: "@ All copy rights are reserved"

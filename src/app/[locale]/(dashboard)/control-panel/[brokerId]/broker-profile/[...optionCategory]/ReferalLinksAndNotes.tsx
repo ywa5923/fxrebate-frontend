@@ -2,13 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Link as LinkIcon,
   LayoutGrid,
-  Pencil,
-  Plus,
-  Trash,
   StickyNote,
   CircleHelp,
+  Copy,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -55,6 +52,9 @@ import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 
 import Multiselect from "react-select";
+import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
+
+type CopyField = "name" | "url" | "currency";
 
 const referralLinkFormSchema = z.object({
   accountTypeId: z.string().min(1, "Please select an account type"),
@@ -127,6 +127,9 @@ export default function ReferalLinksAndNotes({
   });
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [clickedCopyBtns, setClickedCopyBtns] = useState<
+    Set<CopyField>
+  >(() => new Set());
 
   const watchedAccountTypeId = form.watch("accountTypeId");
   const watchedIsMasterLink = form.watch("isMasterLink");
@@ -135,7 +138,7 @@ export default function ReferalLinksAndNotes({
   const getLabelClassName = (updatedFieldKey: string) =>
     cn(
       "text-sm font-medium",
-      selectedRow?.metadata?.updated_fields?.includes(updatedFieldKey)
+      selectedRow?.metadata?.updated_fields?.includes(updatedFieldKey) && is_admin
         ? "text-red-600 dark:text-red-400"
         : "text-gray-700 dark:text-gray-200",
     );
@@ -171,9 +174,19 @@ export default function ReferalLinksAndNotes({
     setDialogMode("edit");
     setEditingId(row.id);
     setSelectedRow(row);
+  
+    //if admin check what rows has empty public value and broker value is not empty
+    //mark the fields that has empty public values with green color of the copy field buttons
+    //this is done in renderCopyBtn function
+    if(is_admin && row.is_updated_entry === 1) {
+      const shouldBeUpdated = checkFieldsPublicValue(row, ["currency", "name", "url"]);
+      setClickedCopyBtns(new Set(shouldBeUpdated));
+    }
+  
     const currency = is_admin? (row.public_currency ?? row.currency ?? ""): row.currency ?? "";
     const name = is_admin ? (row.public_name ?? row.name ?? "") : (row.name ?? "");
     const url = is_admin ? (row.public_url ?? row.url ?? "") : (row.url ?? "");
+
 
     form.reset({
       accountTypeId: String(
@@ -191,6 +204,47 @@ export default function ReferalLinksAndNotes({
     });
 
     setDialogOpen(true);
+  }
+
+  function copyBrokerValueToPublicValue(field: CopyField) {
+    const brokerValue = selectedRow?.[field];
+    if (brokerValue == null || brokerValue === "") return;
+    form.setValue(field, String(brokerValue));
+
+  }
+
+  function renderCopyBtn(field: CopyField) {
+    if (!is_admin || dialogMode !== "edit" || !selectedRow) return null;
+
+    const publicKey = `public_${field}` as keyof AffiliateLink;
+    const showRedCopyHint =
+      selectedRow.is_updated_entry === 1 &&
+      selectedRow[field] != selectedRow[publicKey];
+    const clicked = clickedCopyBtns.has(field);
+
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={(e) => {
+          e.preventDefault();
+          copyBrokerValueToPublicValue(field);
+          setClickedCopyBtns((prev) => new Set(prev).add(field));
+        }}
+        className={cn(
+          "p-1 h-6 w-6 flex-shrink-0",
+          clicked
+            ? "bg-green-100 border-green-500 text-green-700"
+            : showRedCopyHint
+              ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
+              : "text-muted-foreground border-border hover:bg-muted/50",
+        )}
+        title="Copy broker value to public value"
+      >
+        <Copy className="h-3 w-3" />
+      </Button>
+    );
   }
 
   async function handleDialogSubmit(values: ReferralLinkFormValues) {
@@ -230,6 +284,7 @@ export default function ReferalLinksAndNotes({
         setDialogOpen(false);
         router.refresh();
         setSelectedRow(null);
+        setClickedCopyBtns(new Set());
       } else {
         toast.error(response.message ?? "Failed to save referral link");
       }
@@ -550,11 +605,16 @@ export default function ReferalLinksAndNotes({
                     </Select>
                   )}
                 />
-                {is_admin && (
-                  <BrokerPreviousValue
-                    brokerValue={selectedRow?.currency}
-                    previousValue={selectedRow?.previous_currency}
-                  />
+                {is_admin && selectedRow && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={selectedRow?.currency}
+                        previousValue={selectedRow?.previous_currency}
+                      />
+                    </div>
+                    {renderCopyBtn("currency")}
+                  </div>
                 )}
               </div>
             </div>
@@ -586,7 +646,11 @@ export default function ReferalLinksAndNotes({
                       <CircleHelp className="h-4 w-4" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" sideOffset={6}>
+                  <TooltipContent
+                    side="top"
+                    sideOffset={6}
+                    className="text-sm px-3.5 py-2"
+                  >
                     Master links apply to all account types and web platforms
                   </TooltipContent>
                 </Tooltip>
@@ -615,11 +679,16 @@ export default function ReferalLinksAndNotes({
                     />
                   )}
                 />
-                {is_admin && (
-                  <BrokerPreviousValue
-                    brokerValue={selectedRow?.name}
-                    previousValue={selectedRow?.previous_name}
-                  />
+                {is_admin && selectedRow && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={selectedRow?.name}
+                        previousValue={selectedRow?.previous_name}
+                      />
+                    </div>
+                    {renderCopyBtn("name")}
+                  </div>
                 )}
                 {form.formState.errors.name ? (
                   <p className="text-xs text-red-600 dark:text-red-400">
@@ -642,11 +711,16 @@ export default function ReferalLinksAndNotes({
                     />
                   )}
                 />
-                {is_admin && (
-                  <BrokerPreviousValue
-                    brokerValue={selectedRow?.url}
-                    previousValue={selectedRow?.previous_url}
-                  />
+                {is_admin && selectedRow && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={selectedRow?.url}
+                        previousValue={selectedRow?.previous_url}
+                      />
+                    </div>
+                    {renderCopyBtn("url")}
+                  </div>
                 )}
                 {form.formState.errors.url ? (
                   <p className="text-xs text-red-600 dark:text-red-400">

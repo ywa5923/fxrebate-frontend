@@ -18,14 +18,25 @@ const iconGlyphClass: Record<"ib" | "sub_ib", string> = {
 };
 
 export type Props = {
-  //variant: "ib" | "sub_ib";
-
   links: AffiliateLink[];
   is_admin: boolean;
   onAddClick: () => void;
   onEditRow: (row: AffiliateLink) => void;
   onRequestDelete: (id: number) => void;
 };
+//link metadata example
+// {
+//   "updated_fields": [],
+//   "previous_relations_values": {
+//     "previous_platform_urls": [
+//       "2222222222222",
+//       "asxz",
+//       "link nou"
+//     ],
+//     "previous_account_type_id": 27,
+//     "previous_account_type_name": "My first account2"
+//   }
+// }
 
 export function ReferralLinksTabContent({
  
@@ -90,9 +101,6 @@ export function ReferralLinksTabContent({
                             {row.account_type_name}
                           </span>
                         )}
-                        <span className="text-xs text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
-                          {row.url_type}
-                        </span>
                       </div>
 
                       <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 break-words">
@@ -149,14 +157,14 @@ export function ReferralLinksTabContent({
                       </Button>
                     </div>
                   
-                    { is_admin && row.metadata && (
+                    {/* is_admin && row.metadata && (
                       <div className="mt-1 text-sm">
                         <pre className="text-xs text-gray-700 dark:text-gray-200">
                           
                           {JSON.stringify(row.metadata, null, 2)}
                         </pre>
                       </div>
-                    )}
+                    )*/}
                   </div>
                 );
               })}

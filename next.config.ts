@@ -25,14 +25,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  logging: {
+    browserToTerminal: true,
+  },
   // Allow production builds to succeed even if there are TypeScript or ESLint errors.
   // Remember to re-enable enforcement when ready.
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,, run pnpm lint to see errors
+  // },
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['framer-motion']
