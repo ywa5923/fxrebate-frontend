@@ -127,6 +127,8 @@ export default function ReferalLinksAndNotes({
   });
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
+  //keep the name for the copy field buttons.this is used in the renderCopyBtn function
   const [clickedCopyBtns, setClickedCopyBtns] = useState<
     Set<CopyField>
   >(() => new Set());
@@ -270,7 +272,7 @@ export default function ReferalLinksAndNotes({
       ? `/urls/broker/${brokerId}/affiliate-link/${editingId}`
       : `/urls/broker/${brokerId}/affiliate-link`;
     try {
-      const response = await apiClient<DynamicOption>(serverUrl, true, {
+      const response = await apiClient<AffiliateLink>(serverUrl, true, {
         method: editingId ? "PUT" : "POST",
         body: JSON.stringify(bodyPayload),
       });

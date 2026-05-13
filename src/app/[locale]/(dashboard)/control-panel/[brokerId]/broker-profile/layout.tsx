@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { satoshi } from '@/lib/fonts';
 
-import {BrowserLogger} from '@/components/BrowserLogger';
+
 
 import { Providers } from '@/providers/Theme';
 import { AppSidebar } from "@/components/app-sidebar"
@@ -110,7 +110,7 @@ export default async function DashboardLayout({
  
   return (
     <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
-      <BrowserLogger />
+     
       <Providers>
         <Suspense fallback={null}>
           <NProgressBar />
