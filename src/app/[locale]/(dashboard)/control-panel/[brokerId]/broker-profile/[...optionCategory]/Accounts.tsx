@@ -14,7 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { toast } from 'sonner';
 import { deleteAccountType } from '@/lib/accountType-request';
 import { useRouter } from 'next/navigation';
-
+import { apiClient } from '@/lib/api-client';
+import { UseTokenAuth } from '@/lib/enums';
+import  logger  from "@/lib/logger";
 interface AccountsProps {
   broker_id: number;
   accounts?: DynamicTableRow[];
@@ -44,7 +46,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
   const router = useRouter();
   const prevAccountsLength = useRef(accounts.length);
-
+  const thisLogger = logger.child("Accounts");
   useEffect(() => {
     // If a new account is added
     if (accounts.length > prevAccountsLength.current) {
@@ -64,9 +66,18 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
   async function handleDeleteAccountType(accountId: number) {
     
     try{
-      const response = await deleteAccountType(accountId,broker_id);
+     // const response = await deleteAccountType(accountId,broker_id);
+     const serverUrl = `/account-types/${accountId}/broker/${broker_id}`;
+     const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
+      method: "DELETE",
+    });
+    if(response.success){
       toast.success("Account type deleted successfully!");
       router.refresh();
+    }else{
+      toast.error(response.message ?? "Failed to delete account type");
+      thisLogger.error("Failed to delete account type", { error:response.message, context: { accountId,broker_id } });
+    }
     }catch(error){
       toast.error("Failed to delete account type");
       console.log("DELETE ACCOUNT TYPE ERROR",error);
