@@ -20,7 +20,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Url,UrlPayload } from "@/types/Url";
+import { Url} from "@/types/Url";
 import { LinksGroupedByType } from "@/types/AccountTypeLinks";
 import { saveAccountTypeLink, deleteAccountTypeLink } from "@/lib/accountType-request";
 import { useRouter } from "next/navigation";
@@ -45,8 +45,12 @@ import { UseTokenAuth } from "@/lib/enums";
 
 
 const LinkFormSchema = z.object({
-  url: z.string().optional(),
-  name: z.string().optional(),
+  url: z
+    .string()
+    .trim()
+    .min(1, { message: "URL is required" })
+    .url({ message: "Please enter a valid URL" }),
+  name: z.string().trim().min(1, { message: "Name is required" }),
   type: z.string().min(1, { message: "Type is required" }),
   is_master: z.boolean().optional(),
 });
@@ -131,7 +135,14 @@ export default function AccountLinks({
     });
   }
 
-  
+   //this function is used in the edit form to show the updated fields in red
+   const getLabelClassName = (updatedFieldKey: string) =>
+    cn(
+      "text-sm font-medium",
+      editingLink?.metadata?.updated_fields?.includes(updatedFieldKey) && is_admin
+        ? "text-red-600 dark:text-red-400"
+        : "text-gray-700 dark:text-gray-200",
+    );
 
   // Simulated server action
   async function onSubmit(data: z.infer<typeof LinkFormSchema>) {
@@ -371,7 +382,7 @@ export default function AccountLinks({
                   name= "url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel className={getLabelClassName("url")}>URL</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
                           <Input {...field} className="flex-1" />
@@ -400,7 +411,7 @@ export default function AccountLinks({
                   name= "name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel className={getLabelClassName("name")}>Name</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
                           <Input {...field} className="flex-1" />
@@ -412,6 +423,17 @@ export default function AccountLinks({
                     </FormItem>
                   )}
                 />
+                {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={editingLink?.url}
+                        previousValue={editingLink?.previous_url}
+                      />
+                    </div>
+                    {renderCopyBtn("url")}
+                  </div>
+                )} 
                
                 {/* Show "Is Master Link" only for admins when adding new link (not editing) */}
               
@@ -426,10 +448,22 @@ export default function AccountLinks({
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel>Is Master Link</FormLabel>
+                        <FormLabel className={getLabelClassName("urlable_id")}>Is Master Link</FormLabel>
                       </FormItem>
                     )}
                   />
+                   {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        show="previous"
+                        previousValue={editingLink?.metadata?.previous_relations_values?.previous_account_type}
+                      />
+                    </div>
+                   
+                  </div>
+                )} 
+                  
                
                 <div className="flex gap-2 pt-2">
                   <Button

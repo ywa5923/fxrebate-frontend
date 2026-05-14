@@ -22,7 +22,7 @@ export type Url = {
   created_at: string;
   updated_at: string;
   is_master_link: boolean;
-
+  metadata?: Record<string, any>;
 };
 
 export type AffiliateLink = Url & {
