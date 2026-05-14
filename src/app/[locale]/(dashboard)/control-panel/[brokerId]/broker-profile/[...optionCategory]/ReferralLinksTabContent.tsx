@@ -1,11 +1,12 @@
 "use client";
 
-import { Link as LinkIcon, Pencil, Plus, Trash } from "lucide-react";
+import {  Pencil, Plus, Trash } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { AffiliateLink } from "@/types/Url";
+
 
 const iconShellClass: Record<"ib" | "sub_ib", string> = {
   ib: "bg-green-100 dark:bg-green-900/50",
@@ -39,7 +40,6 @@ export type Props = {
 // }
 
 export function ReferralLinksTabContent({
- 
   links,
   is_admin,
   onAddClick,

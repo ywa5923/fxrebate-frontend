@@ -85,7 +85,7 @@ export default function AccountLinks({
     () => new Set(),
   );
 
-  const log = logger.child("AccountLinks");
+  const thisLogger = logger.child("AccountLinks");
   // Handle accordion state change - close form when accordion closes
   const handleAccordionChange = (value: string[]) => {
     setOpenAccordion(value);
@@ -177,12 +177,12 @@ export default function AccountLinks({
         );
       } else {
         toast.error(response.message ?? "Failed to save link");
-        log.error("Failed to save link", { error:response.message, context: { payload,broker_id, account_type_id } });
+        thisLogger.error("Failed to save link", { error:response.message, context: { payload,broker_id, account_type_id } });
       }
       
     } catch (error) {
       toast.error("Failed to save link");
-      log.error("Failed to save link", { error:error, context: { broker_id, account_type_id } });
+      thisLogger.error("Failed to save link", { error:error, context: { broker_id, account_type_id } });
     }
     setEditingLink(null);
     setAddingType(null);  
@@ -219,12 +219,12 @@ export default function AccountLinks({
         toast.success("Link deleted successfully!");
       } else {
         toast.error(response.message ?? "Failed to delete link");
-        log.error("Failed to delete link", { error:response.message, context: { broker_id, account_type_id } });
+          thisLogger.error("Failed to delete link", { error:response.message, context: { broker_id, account_type_id } });
       }
      
     } catch (error) {
       toast.error("Failed to delete link");
-      log.error("Failed to delete link", { error:error, context: { broker_id, account_type_id } });
+      thisLogger.error("Failed to delete link", { error:error, context: { broker_id, account_type_id } });
     }
   }
 

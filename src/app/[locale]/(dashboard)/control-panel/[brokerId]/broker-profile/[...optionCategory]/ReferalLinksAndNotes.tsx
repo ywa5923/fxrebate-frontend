@@ -54,6 +54,7 @@ import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 import Multiselect from "react-select";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
+import  logger  from "@/lib/logger";
 
 type CopyField = "name" | "url" | "currency";
 
@@ -95,6 +96,7 @@ export default function ReferalLinksAndNotes({
   notesOptionsValues,
 }: Props) {
   const router = useRouter();
+  const thisLogger = logger.child("ReferalLinksAndNotes");
   const [activeTab, setActiveTab] = useState<AffiliateLinkTabType>(
     "sign-up-ib-affiliate-link",
   );
@@ -292,9 +294,10 @@ export default function ReferalLinksAndNotes({
         setClickedCopyBtns(new Set());
       } else {
         toast.error(response.message ?? "Failed to save referral link");
+        thisLogger.error("Failed to save referral link", { error:response.message, context: { brokerId, editingId } });
       }
     } catch (error) {
-      console.log("SAVE REFERRAL LINK ERROR", error);
+      thisLogger.error("Failed to save referral link", { error:error, context: { brokerId, editingId } });
       toast.error("Failed to save referral link");
     }
   }
@@ -311,9 +314,10 @@ export default function ReferalLinksAndNotes({
         router.refresh();
       } else {
         toast.error(response.message ?? "Failed to delete referral link");
+        thisLogger.error("Failed to delete referral link", { error:response.message, context: { brokerId, urlId } });
       }
     } catch (error) {
-      console.log("DELETE REFERRAL LINK ERROR", error);
+      thisLogger.error("Failed to delete referral link", { error:error, context: { brokerId, urlId } });
       toast.error("Failed to delete referral link");
     }
   }
