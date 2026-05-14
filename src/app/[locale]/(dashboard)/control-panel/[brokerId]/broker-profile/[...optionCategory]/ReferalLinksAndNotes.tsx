@@ -53,6 +53,7 @@ import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 
 import Multiselect from "react-select";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
+import { UseTokenAuth } from "@/lib/enums";
 
 type CopyField = "name" | "url" | "currency";
 
@@ -272,7 +273,7 @@ export default function ReferalLinksAndNotes({
       ? `/urls/broker/${brokerId}/affiliate-link/${editingId}`
       : `/urls/broker/${brokerId}/affiliate-link`;
     try {
-      const response = await apiClient<AffiliateLink>(serverUrl, true, {
+      const response = await apiClient<AffiliateLink>(serverUrl, UseTokenAuth.Yes, {
         method: editingId ? "PUT" : "POST",
         body: JSON.stringify(bodyPayload),
       });
@@ -299,7 +300,7 @@ export default function ReferalLinksAndNotes({
   async function handleDeleteReferralLink(urlId: number) {
     const deleteUrl = `/urls/broker/${brokerId}/affiliate-link/${urlId}`;
     try {
-      const response = await apiClient<boolean>(deleteUrl, false, {
+      const response = await apiClient<AffiliateLink>(deleteUrl, UseTokenAuth.Yes, {
         method: "DELETE",
       });
       if (response.success) {

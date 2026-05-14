@@ -38,7 +38,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
-import { Copy } from "lucide-react";
+import { Copy, Plus, Pencil, Trash } from "lucide-react";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
 
@@ -169,7 +169,7 @@ export default function AccountLinks({
       ? `/account-type/broker/${broker_id}/url/${editingLink.id}`
       : `/account-type/broker/${broker_id}/url`;
   
-      const response = await apiClient<Url>(serverUrl, UseTokenAuth.No, {
+      const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: editingLink ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
@@ -210,13 +210,23 @@ export default function AccountLinks({
     broker_id: number
   ) {
     try {
-      const response = await deleteAccountTypeLink(
-        link_id,
-        account_type_id,
-        broker_id
-      );
-      router.refresh();
-      toast.success("Link deleted successfully!");
+      // const response = await deleteAccountTypeLink(
+      //   link_id,
+      //   account_type_id,
+      //   broker_id
+      // );
+      
+      const serverUrl = `/account-type/broker/${broker_id}/url/${link_id}`;
+      const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
+        method: "DELETE",
+      });
+      if (response.success) {
+        router.refresh();
+        toast.success("Link deleted successfully!");
+      } else {
+        toast.error(response.message ?? "Failed to delete link");
+      }
+     
     } catch (error) {
       toast.error("Failed to delete link");
       console.log("DELETE link error", JSON.stringify(error, null, 2));
@@ -286,24 +296,34 @@ export default function AccountLinks({
                   </span>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  openEdit(link);
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() =>
-                  setConfirmDelete({ id: link.id, account_type_id, broker_id })
-                }
-              >
-                Delete
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30"
+                  onClick={() => {
+                    openEdit(link);
+                  }}
+                  title="Edit"
+                  aria-label="Edit link"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                  onClick={() =>
+                    setConfirmDelete({ id: link.id, account_type_id, broker_id })
+                  }
+                  title="Delete"
+                  aria-label="Delete link"
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           );
         })}
@@ -574,12 +594,18 @@ export default function AccountLinks({
                 </div>
               </AccordionTrigger>
               <Button
-                size="sm"
+                type="button"
+                size="icon"
                 variant="outline"
-                className="mr-4"
+                title="Add link"
+                className={cn(
+                  "mr-4 h-7 w-7 shrink-0 rounded border transition-all duration-150",
+                  "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
+                  "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
+                )}
                 onClick={() => handleAddClick(type)}
               >
-                Add
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
             <AccordionContent>
