@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/form";
 import { Url} from "@/types/Url";
 import { LinksGroupedByType } from "@/types/AccountTypeLinks";
-import { saveAccountTypeLink, deleteAccountTypeLink } from "@/lib/accountType-request";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
@@ -118,7 +117,7 @@ export default function AccountLinks({
   function openEdit(link: Url) {
 
     setEditingLink(link);
-    //if admin check what rows has empty public value and broker value is not empty
+    //if admin=true,checks what rows has empty public value and broker value is not empty
     //mark the fields that has empty public values with green color of the copy field buttons
     //this is done in renderCopyBtn function
     const shouldBeUpdated = checkFieldsPublicValue(link, ["url", "name"]);
@@ -210,12 +209,7 @@ export default function AccountLinks({
     broker_id: number
   ) {
     try {
-      // const response = await deleteAccountTypeLink(
-      //   link_id,
-      //   account_type_id,
-      //   broker_id
-      // );
-      
+     
       const serverUrl = `/account-type/broker/${broker_id}/url/${link_id}`;
       const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: "DELETE",
@@ -342,11 +336,13 @@ export default function AccountLinks({
     if (!is_admin || !editingLink) return null;
 
     const publicKey = `public_${field}` as keyof Url;
-    const showRedCopyHint =
-      editingLink.is_updated_entry === 1 &&
-      editingLink[field] != editingLink[publicKey];
+    // const showRedCopyHint =
+    //   editingLink.is_updated_entry === 1 &&
+    //   editingLink[field] != editingLink[publicKey];
 
-      const clicked = clickedCopyBtns.has(field);
+    const showRedCopyHint = editingLink.metadata?.updated_fields?.includes(field);
+
+    const clicked = clickedCopyBtns.has(field);
 
     return (
       <Button

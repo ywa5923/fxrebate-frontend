@@ -36,12 +36,12 @@ export type AffiliateLink = Url & {
   metadata?: Record<string, any>;
 }
 
-// export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
-//   id: number | null;
-//   urlable_id: number | null;
-//   url?: string;
-//   name?: string;
-// };
+export type UrlPayload = Pick<Url, "broker_id" | "urlable_type" | "url_type"> & {
+  id: number | null;
+  urlable_id: number | null;
+  url?: string;
+  name?: string;
+};
 
 export type PlatformUrl = {
   id: number;

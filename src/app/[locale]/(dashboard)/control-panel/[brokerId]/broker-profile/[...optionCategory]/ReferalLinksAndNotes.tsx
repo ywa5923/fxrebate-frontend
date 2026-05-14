@@ -220,9 +220,11 @@ export default function ReferalLinksAndNotes({
     if (!is_admin || dialogMode !== "edit" || !selectedRow) return null;
 
     const publicKey = `public_${field}` as keyof AffiliateLink;
-    const showRedCopyHint =
-      selectedRow.is_updated_entry === 1 &&
-      selectedRow[field] != selectedRow[publicKey];
+    // const showRedCopyHint =
+    //   selectedRow.is_updated_entry === 1 &&
+    //   selectedRow[field] != selectedRow[publicKey];
+
+    const showRedCopyHint = selectedRow.metadata?.updated_fields?.includes(field);
     const clicked = clickedCopyBtns.has(field);
 
     return (
