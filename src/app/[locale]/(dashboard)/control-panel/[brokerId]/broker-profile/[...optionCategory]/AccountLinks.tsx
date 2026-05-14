@@ -20,12 +20,11 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Url,UrlPayload } from "@/types/Url";
+import { Url} from "@/types/Url";
 import { LinksGroupedByType } from "@/types/AccountTypeLinks";
-import { saveAccountTypeLink, deleteAccountTypeLink } from "@/lib/accountType-request";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
+import { apiClient } from "@/lib/api-client";
 
 import {
   Dialog,
@@ -36,51 +35,27 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { FiCopy } from "react-icons/fi";
 
-// Function to create schema based on admin status
-const createLinkSchema = (isAdmin: boolean) => {
-  if (isAdmin) {
-    // Admin validates public_url and public_name
-    return z.object({
-      url: z.string().optional(),
-      public_url: z.string().min(1, { message: "URL is required" }).url({ message: "Please enter a valid URL" }),
-      name: z.string().optional(),
-      public_name: z.string().min(1, { message: "Name is required" }),
-      type: z.string().min(1, { message: "Type is required" }),
-      is_master: z.boolean().optional(),
-      is_updated_entry: z.boolean().optional(),
-      previous_url: z.string().optional(),
-      previous_name: z.string().optional(),
-    });
-  } else {
-    // Non-admin validates url and name
-    return z.object({
-      url: z.string().min(1, { message: "URL is required" }).url({ message: "Please enter a valid URL" }),
-      public_url: z.string().optional(),
-      name: z.string().min(1, { message: "Name is required" }),
-      public_name: z.string().optional(),
-      type: z.string().min(1, { message: "Type is required" }),
-      is_master: z.boolean().optional(),
-      is_updated_entry: z.boolean().optional(),
-      previous_url: z.string().optional(),
-      previous_name: z.string().optional(),
-    });
-  }
-};
+import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
+import { Copy, Plus, Pencil, Trash } from "lucide-react";
+import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
+import { UseTokenAuth } from "@/lib/enums";
+import  logger  from "@/lib/logger";
 
-// Base type for form values
-export type LinkFormValues = {
-  url?: string;
-  public_url?: string;
-  name?: string;
-  public_name?: string;
-  type: string;
-  is_master?: boolean;
-  is_updated_entry?: boolean;
-  previous_url?: string;
-  previous_name?: string;
-};
+
+
+const LinkFormSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, { message: "URL is required" })
+    .url({ message: "Please enter a valid URL" }),
+  name: z.string().trim().min(1, { message: "Name is required" }),
+  type: z.string().min(1, { message: "Type is required" }),
+  is_master: z.boolean().optional(),
+});
+
+type CopyField="name"|"url"
 
 export default function AccountLinks({
   broker_id,
@@ -106,6 +81,11 @@ export default function AccountLinks({
     broker_id: number;
   } | null>(null);
 
+  const [clickedCopyBtns, setClickedCopyBtns] = useState<Set<CopyField>>(
+    () => new Set(),
+  );
+
+  const log = logger.child("AccountLinks");
   // Handle accordion state change - close form when accordion closes
   const handleAccordionChange = (value: string[]) => {
     setOpenAccordion(value);
@@ -114,63 +94,98 @@ export default function AccountLinks({
     if (addingType && !value.includes(addingType)) {
       setAddingType(null);
       setEditingLink(null);
+      setClickedCopyBtns(new Set());
       form.reset();
     }
     if (editingLink && !value.includes(editingLink.url_type)) {
       setAddingType(null);
       setEditingLink(null);
+      setClickedCopyBtns(new Set());
       form.reset();
     }
   };
 
   // Form for add/edit - use dynamic schema based on is_admin
-  const form = useForm<LinkFormValues>({
-    resolver: zodResolver(createLinkSchema(is_admin) as any),
+  const form = useForm<z.infer<typeof LinkFormSchema>>({
+    resolver: zodResolver(LinkFormSchema as any),
     defaultValues: {
       url: "",
-      public_url: "",
-      previous_url: "",
       name: "",
-      previous_name: "",
-      public_name: "",
       type: "",
       is_master: false,
-      is_updated_entry: false,
     },
   });
   const router = useRouter();
 
+  function openEdit(link: Url) {
+
+    setEditingLink(link);
+    //if admin=true,checks what rows has empty public value and broker value is not empty
+    //mark the fields that has empty public values with green color of the copy field buttons
+    //this is done in renderCopyBtn function
+    const shouldBeUpdated = checkFieldsPublicValue(link, ["url", "name"]);
+    setClickedCopyBtns(new Set(shouldBeUpdated));
+    const url = is_admin ? link.public_url ?? link.url : link.url;
+    const name = is_admin ? link.public_name ?? link.name : link.name;
+    const isMaster = link.urlable_id === null;
+
+    form.reset({
+      url: url,
+      name: name,
+      type: link.url_type,
+      is_master: isMaster,
+    });
+  }
+
+   //this function is used in the edit form to show the updated fields in red
+   const getLabelClassName = (updatedFieldKey: string) =>
+    cn(
+      "text-sm font-medium",
+      editingLink?.metadata?.updated_fields?.includes(updatedFieldKey) && is_admin
+        ? "text-red-600 dark:text-red-400"
+        : "text-gray-700 dark:text-gray-200",
+    );
+
   // Simulated server action
-  async function onSubmit(data: LinkFormValues) {
-    console.log("Form submitted with data:", data);
-    console.log("Is admin:", is_admin);
-    
+  async function onSubmit(data: z.infer<typeof LinkFormSchema>) {
+   
+   // log.info("Form submitted with data:", { data, is_admin });
     try {
       // If editing, include the id
-      const payload: UrlPayload = {
+      const payload = {
         ...(editingLink ? { id: editingLink.id } : { id: null }),
         broker_id,
-        urlable_id: data.is_master ? null : account_type_id,
-        urlable_type: "account-type",
+        account_type_id: data.is_master ? null : account_type_id,
         url_type: data.type,
-        name: is_admin ? data.public_name : data.name,
-        url: is_admin ? data.public_url : data.url,
+        name: data.name,
+        url: data.url,
+       
       };
 
-      console.log("Payload being sent:", payload);
+     const serverUrl = editingLink
+      ? `/account-type/broker/${broker_id}/url/${editingLink.id}`
+      : `/account-type/broker/${broker_id}/url`;
+  
+      const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
+        method: editingLink ? "PUT" : "POST",
+        body: JSON.stringify(payload),
+      });
+      if (response.success) {
+        router.refresh();
+        toast.success(
+          editingLink ? "Link updated successfully!" : "Link added successfully!"
+        );
+      } else {
+        toast.error(response.message ?? "Failed to save link");
+        log.error("Failed to save link", { error:response.message, context: { payload,broker_id, account_type_id } });
+      }
       
-      const response = await saveAccountTypeLink(payload);
-      router.refresh();
-      toast.success(
-        editingLink ? "Link updated successfully!" : "Link added successfully!"
-      );
     } catch (error) {
       toast.error("Failed to save link");
-      console.log("save link error", JSON.stringify(error, null, 2));
+      log.error("Failed to save link", { error:error, context: { broker_id, account_type_id } });
     }
     setEditingLink(null);
-    setAddingType(null);
-    // form.reset();
+    setAddingType(null);  
   }
 
   // Handle add button click
@@ -178,9 +193,7 @@ export default function AccountLinks({
     setAddingType(type);
     form.reset({
       url: "",
-      public_url: "",
       name: "",
-      public_name: "",
       type,
       is_master: false,
     });
@@ -196,16 +209,22 @@ export default function AccountLinks({
     broker_id: number
   ) {
     try {
-      const response = await deleteAccountTypeLink(
-        link_id,
-        account_type_id,
-        broker_id
-      );
-      router.refresh();
-      toast.success("Link deleted successfully!");
+     
+      const serverUrl = `/account-type/broker/${broker_id}/url/${link_id}`;
+      const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
+        method: "DELETE",
+      });
+      if (response.success) {
+        router.refresh();
+        toast.success("Link deleted successfully!");
+      } else {
+        toast.error(response.message ?? "Failed to delete link");
+        log.error("Failed to delete link", { error:response.message, context: { broker_id, account_type_id } });
+      }
+     
     } catch (error) {
       toast.error("Failed to delete link");
-      console.log("DELETE link error", JSON.stringify(error, null, 2));
+      log.error("Failed to delete link", { error:error, context: { broker_id, account_type_id } });
     }
   }
 
@@ -233,6 +252,9 @@ export default function AccountLinks({
     return (
       <div>
         {allLinks.map((link, index) => {
+         
+          const displayName = is_admin ? link.public_name ?? link.name : link.name;
+          const displayUrl = is_admin ? link.public_url ?? link.url : link.url;
           const isMaster = link.urlable_id === null;
           const isUpdatedEntry = link.is_updated_entry === 1;
           return (
@@ -250,62 +272,106 @@ export default function AccountLinks({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <a
-                      href={link.url}
+                      href={displayUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium underline"
                     >
-                      {link.name}
+                      {displayName}
                     </a>
+                   
                     {isMaster && (
                       <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">
                         Master
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {link.url_type}
-                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-muted-foreground">
+                      {displayUrl}
+                    </span>
+                    {is_admin && isUpdatedEntry && (
+                      <span className="text-xs text-red-700 dark:text-gray-200">
+                        Updated fields:{" "}
+                        {link.metadata?.updated_fields?.join(", ")}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setEditingLink(link);
-                  form.reset({
-                    ...link,
-                    // Admin-editable fields fallback to broker values when public is null
-                   // public_url: (link.public_url ?? link.url ?? "") || "",
-                  //  public_name: (link.public_name ?? link.name ?? "") || "",
-                  public_url: link.public_url || "",
-                  public_name: link.public_name || "",
-                    // Always keep broker values present too
-                    url: link.url || "",
-                    name: link.name || "",
-                    type: link.url_type,
-                    is_master: isMaster,
-                    is_updated_entry: Boolean(isUpdatedEntry),
-                    previous_url: link.previous_url ?? undefined,
-                    previous_name: link.previous_name ?? undefined,
-                  });
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() =>
-                  setConfirmDelete({ id: link.id, account_type_id, broker_id })
-                }
-              >
-                Delete
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30"
+                  onClick={() => {
+                    openEdit(link);
+                  }}
+                  title="Edit"
+                  aria-label="Edit link"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                  onClick={() =>
+                    setConfirmDelete({ id: link.id, account_type_id, broker_id })
+                  }
+                  title="Delete"
+                  aria-label="Delete link"
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           );
         })}
       </div>
+    );
+  }
+  type CopyField = "name" | "url";
+  function copyBrokerValueToPublicValue(field: CopyField) {
+    const brokerValue = editingLink?.[field];
+    if (brokerValue == null || brokerValue === "") return;
+    form.setValue(field, String(brokerValue));
+
+  }
+
+  function renderCopyBtn(field: CopyField) {
+    if (!is_admin || !editingLink) return null;
+
+    const publicKey = `public_${field}` as keyof Url;
+   
+    const showRedCopyHint = editingLink.metadata?.updated_fields?.includes(field);
+
+    const clicked = clickedCopyBtns.has(field);
+
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={(e) => {
+          e.preventDefault();
+          copyBrokerValueToPublicValue(field);
+          setClickedCopyBtns((prev) => new Set(prev).add(field));
+        }}
+        className={cn(
+          "p-1 h-6 w-6 flex-shrink-0",
+          clicked
+            ? "bg-green-100 border-green-500 text-green-700"
+            : showRedCopyHint
+              ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
+              : "text-muted-foreground border-border hover:bg-muted/50",
+        )}
+        title="Copy broker value to public value"
+      >
+        <Copy className="h-3 w-3" />
+      </Button>
     );
   }
 
@@ -335,125 +401,64 @@ export default function AccountLinks({
               >
                 <FormField
                   control={form.control}
-                  name={is_admin ? "public_url" : "url"}
+                  name= "url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL</FormLabel>
+                      <FormLabel className={getLabelClassName("url")}>URL</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
                           <Input {...field} className="flex-1" />
                         </FormControl>
                         {/* Copy button for admins with updated entries */}
-                        {is_admin && form.watch("is_updated_entry") && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              const brokerUrl = form.watch("url");
-                              if (brokerUrl) {
-                                form.setValue("public_url", brokerUrl);
-                                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-                              }
-                            }}
-                            className="p-2 flex-shrink-0"
-                            title="Copy broker URL to public URL"
-                          >
-                            <FiCopy className="w-4 h-4" />
-                          </Button>
-                        )}
+                        
                       </div>
                       <FormMessage />
-
-                      {is_admin && (
-                        <div className={cn("text-sm text-gray-500 dark:text-gray-400", {
-                          "text-red-500 dark:text-red-400": form.watch("is_updated_entry"),
-                        })}>
-                          <div>Broker value: {form.watch("url")}</div>
-                          {form.watch("previous_url") && (
-                            <div>
-                              Previous value: {form.watch("previous_url")}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </FormItem>
                   )}
                 />
+                 {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={editingLink?.url}
+                        previousValue={editingLink?.previous_url}
+                      />
+                    </div>
+                    {renderCopyBtn("url")}
+                  </div>
+                )} 
 
                 <FormField
                   control={form.control}
-                  name={is_admin ? "public_name" : "name"}
+                  name= "name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel className={getLabelClassName("name")}>Name</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
                           <Input {...field} className="flex-1" />
                         </FormControl>
                         {/* Copy button for admins with updated entries */}
-                        {is_admin && form.watch("is_updated_entry") && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              const linkName = form.watch("name");
-                              if (linkName) {
-                                form.setValue("public_name", linkName);
-                                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-                              }
-                            }}
-                            className="p-2 flex-shrink-0"
-                            title="Copy broker name to public name"
-                          >
-                            <FiCopy className="w-4 h-4" />
-                          </Button>
-                        )}
+                        
                       </div>
                       <FormMessage />
-                      {is_admin && (
-                        <div className={cn("text-sm text-gray-500 dark:text-gray-400", {
-                          "text-red-500 dark:text-red-400": form.watch("is_updated_entry"),
-                        })}>
-                          <div>Broker value: {form.watch("name")}</div>
-                          {form.watch("previous_name") && (
-                            <div>
-                              Previous name: {form.watch("previous_name")}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </FormItem>
                   )}
                 />
-                {/* <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {links_groups.map((g) => (
-                            <SelectItem key={g} value={g}>
-                              {g}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
+                {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={editingLink?.name}
+                        previousValue={editingLink?.previous_name}
+                      />
+                    </div>
+                    {renderCopyBtn("name")}
+                  </div>
+                )} 
+               
                 {/* Show "Is Master Link" only for admins when adding new link (not editing) */}
-                {(is_admin  || addingType ) && (
+              
                   <FormField
                     control={form.control}
                     name="is_master"
@@ -465,11 +470,23 @@ export default function AccountLinks({
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel>Is Master Link</FormLabel>
+                        <FormLabel className={getLabelClassName("urlable_id")}>Is Master Link</FormLabel>
                       </FormItem>
                     )}
                   />
-                )}
+                   {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        show="previous"
+                        previousValue={editingLink?.metadata?.previous_relations_values?.previous_account_type}
+                      />
+                    </div>
+                   
+                  </div>
+                )} 
+                  
+               
                 <div className="flex gap-2 pt-2">
                   <Button
                     type="submit"
@@ -579,12 +596,18 @@ export default function AccountLinks({
                 </div>
               </AccordionTrigger>
               <Button
-                size="sm"
+                type="button"
+                size="icon"
                 variant="outline"
-                className="mr-4"
+                title="Add link"
+                className={cn(
+                  "mr-4 h-7 w-7 shrink-0 rounded border transition-all duration-150",
+                  "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
+                  "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
+                )}
                 onClick={() => handleAddClick(type)}
               >
-                Add
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
             <AccordionContent>
@@ -602,6 +625,10 @@ export default function AccountLinks({
           </AccordionItem>
         ))}
       </Accordion>
+
+
+
+
       {/* Confirmation Dialog for Delete */}
       <Dialog
         open={!!confirmDelete}

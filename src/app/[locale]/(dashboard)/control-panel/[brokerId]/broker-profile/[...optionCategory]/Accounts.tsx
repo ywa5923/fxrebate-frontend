@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
 import { Card, CardContent} from '@/components/ui/card';
-import AccountLinks3 from './AccountLinks3';
+import AccountLinks from './AccountLinks';
 import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -196,7 +196,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                       <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
                     </div>
                   )}
-              <AccountLinks3 
+              <AccountLinks
               broker_id={broker_id}
               account_type_id={account?.id} 
                links={linksGroupedByAccountId[account.id]??{}}
