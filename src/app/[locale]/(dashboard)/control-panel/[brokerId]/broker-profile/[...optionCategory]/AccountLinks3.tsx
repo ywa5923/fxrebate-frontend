@@ -285,9 +285,17 @@ export default function AccountLinks({
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {displayUrl}
-                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-muted-foreground">
+                      {displayUrl}
+                    </span>
+                    {is_admin && isUpdatedEntry && (
+                      <span className="text-xs text-red-700 dark:text-gray-200">
+                        Updated fields:{" "}
+                        {link.metadata?.updated_fields?.join(", ")}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -443,11 +451,11 @@ export default function AccountLinks({
                   <div className="mt-1 flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <BrokerPreviousValue
-                        brokerValue={editingLink?.url}
-                        previousValue={editingLink?.previous_url}
+                        brokerValue={editingLink?.name}
+                        previousValue={editingLink?.previous_name}
                       />
                     </div>
-                    {renderCopyBtn("url")}
+                    {renderCopyBtn("name")}
                   </div>
                 )} 
                

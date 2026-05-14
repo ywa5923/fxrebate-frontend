@@ -559,7 +559,7 @@ export default function ReferalLinksAndNotes({
                  {is_admin  && (
                  <BrokerPreviousValue
                     show="previous"
-                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_platform_urls?.join(", ")}
+                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_platform_urls?.join("; ")}
                   />
                 )}
                 {form.formState.errors.platformUrls ? (
