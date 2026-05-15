@@ -87,7 +87,8 @@ type RegulatorDetailField = Exclude<
   "name" | "acronym" | "rating"
 >;
 
-const DETAIL_FIELDS: RegulatorDetailField[] = [
+/** Fields shown when the accordion is expanded (header uses name, acronym, rating) */
+const EXPANDED_FIELDS: RegulatorDetailField[] = [
   "country",
   "zone",
   "tier_classification",
@@ -97,9 +98,9 @@ const DETAIL_FIELDS: RegulatorDetailField[] = [
   "website",
   "year_established",
   "jurisdiction_type",
+  "notes",
+  "description",
 ];
-
-const TEXT_FIELDS: Array<"notes" | "description"> = ["notes", "description"];
 
 /** Shown on collapsed accordion header as a short summary */
 const HEADER_SUMMARY_FIELDS: RegulatorDetailField[] = [
@@ -109,12 +110,8 @@ const HEADER_SUMMARY_FIELDS: RegulatorDetailField[] = [
   "jurisdiction_type",
 ];
 
-function formatValue(
-  field: RegulatorDisplayField,
-  value: string | number | null | undefined,
-): string | null {
+function formatValue(value: string | number | null | undefined): string | null {
   if (value === null || value === undefined || value === "") return null;
-  if (field === "year_established") return String(value);
   return String(value);
 }
 
@@ -166,7 +163,7 @@ function DetailItem({
 
 function HeaderSummary({ regulator }: { regulator: Regulator }) {
   const parts = HEADER_SUMMARY_FIELDS.map((field) =>
-    formatValue(field, regulator[field]),
+    formatValue(regulator[field]),
   ).filter((value): value is string => value !== null);
 
   if (parts.length === 0) return null;
@@ -179,14 +176,11 @@ function HeaderSummary({ regulator }: { regulator: Regulator }) {
 }
 
 function RegulatorDetails({ regulator }: { regulator: Regulator }) {
-  const hasGridDetails = DETAIL_FIELDS.some(
-    (field) => formatValue(field, regulator[field]) !== null,
-  );
-  const hasTextDetails = TEXT_FIELDS.some(
-    (field) => formatValue(field, regulator[field]) !== null,
+  const fieldsWithValues = EXPANDED_FIELDS.filter(
+    (field) => formatValue(regulator[field]) !== null,
   );
 
-  if (!hasGridDetails && !hasTextDetails) {
+  if (fieldsWithValues.length === 0) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
         No additional regulator details available.
@@ -195,39 +189,21 @@ function RegulatorDetails({ regulator }: { regulator: Regulator }) {
   }
 
   return (
-    <div className="space-y-5">
-      {hasGridDetails && (
-        <dl className="grid w-full min-w-0 grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-          {DETAIL_FIELDS.map((field) => (
-            <DetailItem
-              key={field}
-              field={field}
-              label={FIELD_LABELS[field]}
-              value={formatValue(field, regulator[field])}
-            />
-          ))}
-        </dl>
-      )}
-
-      {hasTextDetails && (
-        <dl
-          className={cn(
-            "grid w-full min-w-0 grid-cols-1 gap-y-4",
-            hasGridDetails && "border-t border-gray-100 pt-5 dark:border-gray-700",
-          )}
-        >
-          {TEXT_FIELDS.map((field) => (
-            <DetailItem
-              key={field}
-              field={field}
-              label={FIELD_LABELS[field]}
-              value={formatValue(field, regulator[field])}
-              multiline
-            />
-          ))}
-        </dl>
-      )}
-    </div>
+    <dl className="grid w-full min-w-0 grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+      {fieldsWithValues.map((field) => {
+        const isLongText = field === "notes" || field === "description";
+        return (
+          <DetailItem
+            key={field}
+            field={field}
+            label={FIELD_LABELS[field]}
+            value={formatValue(regulator[field])}
+            multiline={isLongText}
+            className={isLongText ? "md:col-span-2" : undefined}
+          />
+        );
+      })}
+    </dl>
   );
 }
 
