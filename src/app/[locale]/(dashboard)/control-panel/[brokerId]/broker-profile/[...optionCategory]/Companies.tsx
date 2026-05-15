@@ -1,6 +1,6 @@
 "use client";
 
-import { DynamicTableRow, Option } from "@/types";
+import { Company, DynamicTableRow, Option, Regulator, RegulatorList } from "@/types";
 import { DynamicForm } from "@/components/DynamicForm";
 
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
@@ -18,14 +18,17 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
+//import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
 import { apiClient } from "@/lib/api-client";
 import { UseTokenAuth } from "@/lib/enums";
 import  logger  from "@/lib/logger";
+import CompanyRegulators from "./CompanyRegulators";
 
-interface CompaniesProps {
+
+interface Props {
   broker_id: number;
-  companies?: DynamicTableRow[];
+  companies?: Company[];
+  regulatorsList: RegulatorList;
   options: Option[];
   is_admin?: boolean;
 }
@@ -33,9 +36,10 @@ interface CompaniesProps {
 export default function Companies({
   broker_id,
   companies,
+  regulatorsList,
   options,
   is_admin = false,
-}: CompaniesProps) {
+}: Props) {
   const thisLogger = logger.child("Companies");
   const [activeTab, setActiveTab] = useState<string>(
     companies?.[0]?.id?.toString() || "",
@@ -243,6 +247,14 @@ export default function Companies({
                   </p>
                 </div>
               )}
+              <div className="w-full min-w-0 mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <CompanyRegulators
+                  broker_id={broker_id}
+                  company_id={company.id}
+                  regulators={company.regulators}
+                  regulatorsList={regulatorsList}
+                />
+              </div>
             </div>
           ))}
 

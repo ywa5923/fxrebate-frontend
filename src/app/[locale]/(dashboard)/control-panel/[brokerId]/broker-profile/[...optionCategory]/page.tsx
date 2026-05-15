@@ -1,6 +1,6 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 //import { getOptionsValues } from "@/lib/getOptionsValues";
-import { MatrixCell } from "@/types";
+import { Company, MatrixCell, Regulator, RegulatorList } from "@/types";
 import { notFound, redirect } from "next/navigation";
 //import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
@@ -120,31 +120,43 @@ export default async function BrokerProfilePage({
 
   if (categorySlug == "companies-profiles") {
     let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
-    let companiesResponse = await apiClient<DynamicTableRow[]>(
-      companiesFetchUrl,
-      true,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!companiesResponse.success) {
+    const regulatorsFetchUrl = '/regulators/list';
+    const [companiesResponse, regulatorsResponse] = await Promise.all([
+      apiClient<Company[]>(
+        companiesFetchUrl,
+        true,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      ),
+      apiClient<RegulatorList>(
+        regulatorsFetchUrl,
+        true,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      ),
+    ]);
+    if (!companiesResponse.success || !regulatorsResponse.success) {
+      log.error("Error fetching companies or regulators", {
+        context: {
+          companies: companiesResponse.message,
+          regulators: regulatorsResponse.message,
+        },
+      });
       notFound();
     }
     let companies = companiesResponse.data ?? [];
+    let regulators = regulatorsResponse.data ?? [];
     return (
       <>
-        {/*
-          <Company
-            broker_id={brokerId}
-            company={companies[0] ?? null}
-            options={matchedCategory.options as Option[]}
-            is_admin={is_admin}
-          />
-         */}
+        
         <Companies
           broker_id={brokerId}
           companies={companies}
+          regulatorsList={regulators}
           options={matchedCategory.options as Option[]}
           is_admin={is_admin}
         />
