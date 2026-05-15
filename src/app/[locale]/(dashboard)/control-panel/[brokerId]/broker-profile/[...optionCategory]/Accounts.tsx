@@ -80,7 +80,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
     }
     }catch(error){
       toast.error("Failed to delete account type");
-      console.log("DELETE ACCOUNT TYPE ERROR",error);
+     thisLogger.error("DELETE ACCOUNT TYPE ERROR", { error:error, context: { accountId,broker_id } });
     }
   }
 

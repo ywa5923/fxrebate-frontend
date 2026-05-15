@@ -223,7 +223,7 @@ export async function submitBrokerProfile(
 
   optionValuesLogger.debug("Formatted data for SENDING TO PHP API:", {
     context: {
-      option_values: JSON.stringify(requestData),
+      option_values: JSON.stringify(requestData,null,2),
     },
   });
   // return;

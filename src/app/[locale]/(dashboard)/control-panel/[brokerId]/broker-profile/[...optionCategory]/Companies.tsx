@@ -19,6 +19,9 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
+import { apiClient } from "@/lib/api-client";
+import { UseTokenAuth } from "@/lib/enums";
+import  logger  from "@/lib/logger";
 
 interface CompaniesProps {
   broker_id: number;
@@ -33,6 +36,7 @@ export default function Companies({
   options,
   is_admin = false,
 }: CompaniesProps) {
+  const thisLogger = logger.child("Companies");
   const [activeTab, setActiveTab] = useState<string>(
     companies?.[0]?.id?.toString() || "",
   );
@@ -57,14 +61,25 @@ export default function Companies({
   }, [companies, activeTab]);
 
   async function handleDeleteCompany(companyId: number) {
-    try {
-      await deleteDynamicTable("companies", companyId, broker_id);
-      toast.success("Company deleted successfully!");
-      router.refresh();
-    } catch (error) {
-      toast.error("Failed to delete company");
-      console.log("DELETE COMPANY ERROR", error);
-    }
+
+    try{
+      // const response = await deleteAccountType(accountId,broker_id);
+      const serverUrl = `/companies/${companyId}/broker/${broker_id}`;
+      const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
+       method: "DELETE",
+     });
+     if(response.success){
+       toast.success("Account type deleted successfully!");
+       router.refresh();
+     }else{
+       toast.error(response.message ?? "Failed to delete account type");
+       thisLogger.error("Failed to delete account type", { error:response.message, context: { companyId,broker_id } });
+     }
+     }catch(error){
+       toast.error("Failed to delete account type");
+       console.log("DELETE ACCOUNT TYPE ERROR",error);
+     }
+    
   }
 
   return (
