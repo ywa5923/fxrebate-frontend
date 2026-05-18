@@ -451,6 +451,8 @@ export default function StaticMatrix({
     colIndex: number,
     isPlaceholder: boolean,
     isPercentage: boolean,
+    //percentageValue: number|null,
+    
     showError: boolean,
   ) => {
     // In admin mode, use public_value for input, otherwise use value
@@ -829,10 +831,27 @@ export default function StaticMatrix({
                   </div>
                 ))}
               {rowHeaders.length > 0 &&
-                rowHeaders.map((rowHeader, rowIndex) => (
+                rowHeaders.map((rowHeader, rowIndex) => {
+                 
+                  if (!is_admin && rowHeader.broker_can_see) {
+                    return null;
+                  }
+                  return (
                   <div key={`row-${rowIndex}`} className="contents">
                     <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
                       {rowHeader.name}
+                        {rowHeader.description && (
+                          <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs cursor-help text-green-800 dark:text-gray-400">
+                              (info)
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {rowHeader.description}
+                          </TooltipContent>
+                        </Tooltip>
+                        )}
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData =
@@ -858,7 +877,8 @@ export default function StaticMatrix({
                       );
                     })}
                   </div>
-                ))}
+                  );
+                })}
               {/* Affiliate link row (separate from matrix data) */}
               {(type === "challenge" || type === "placeholder") && (
                 <div className="contents">

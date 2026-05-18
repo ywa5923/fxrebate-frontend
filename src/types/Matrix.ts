@@ -31,6 +31,8 @@ export interface RowHeader {
   slug: string;
   name: string;
   is_percentage: boolean;
+  description: string|null;
+  broker_can_see: boolean;
   options: RowHeaderOption[];
 }
 
