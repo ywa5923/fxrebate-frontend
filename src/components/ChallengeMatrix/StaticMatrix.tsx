@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+import { CircleHelp, Save } from "lucide-react";
 import PublishToggle from "@/components/ChallengeMatrix/PublishToggle";
 
 import {
@@ -810,7 +810,7 @@ export default function StaticMatrix({
             onPointerCancel={stopMatrixDragging}
           >
             <div
-              className="grid gap-4 min-w-max"
+              className="grid gap-3 min-w-max"
               style={{
                 gridTemplateColumns:
                   columnHeaders.length > 0
@@ -833,25 +833,34 @@ export default function StaticMatrix({
               {rowHeaders.length > 0 &&
                 rowHeaders.map((rowHeader, rowIndex) => {
                  
-                  if (!is_admin && rowHeader.broker_can_see) {
+                  //some rows headears are not visible to the broker, so we don't render them
+                  if (!is_admin && !rowHeader.broker_can_see) {
                     return null;
                   }
                   return (
                   <div key={`row-${rowIndex}`} className="contents">
-                    <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
-                      {rowHeader.name}
-                        {rowHeader.description && (
-                          <Tooltip>
+                    <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
+                      <span>{rowHeader.name}</span>
+                      {rowHeader.description && (
+                        <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-xs cursor-help text-green-800 dark:text-gray-400">
-                              (info)
-                            </span>
+                            <button
+                              type="button"
+                              className="inline-flex shrink-0 items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                              aria-label={`${rowHeader.name} info`}
+                            >
+                              <CircleHelp className="h-4 w-4" />
+                            </button>
                           </TooltipTrigger>
-                          <TooltipContent>
+                          <TooltipContent
+                            side="top"
+                            sideOffset={6}
+                            className="text-sm px-3.5 py-2"
+                          >
                             {rowHeader.description}
                           </TooltipContent>
                         </Tooltip>
-                        )}
+                      )}
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData =
