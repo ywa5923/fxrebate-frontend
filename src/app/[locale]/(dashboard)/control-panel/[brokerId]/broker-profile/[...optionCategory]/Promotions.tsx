@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
 import { Dialog,  DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { DynamicTableRow } from '@/types';
-import { deleteDynamicTable } from '@/lib/deleteDynamicTable';
+import { apiClient } from '@/lib/api-client';
+import { UseTokenAuth } from '@/lib/enums';
+import logger from '@/lib/logger';
 
 interface PromotionsProps {
   broker_id: number;
@@ -28,7 +29,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
   const [confirmDeletePromotion, setConfirmDeletePromotion] = useState<number|null>(null);
   const router = useRouter();
   const prevPromotionsLength = useRef(promotions?.length || 0);
-
+  const thisLogger = logger.child("PromotionsComponent");
   useEffect(() => {
     // If a new promotion is added
     if (promotions && promotions.length > prevPromotionsLength.current) {
@@ -48,16 +49,22 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
   async function handleDeletePromotion(promotionId: number) {
     try {
      
-      const response = await deleteDynamicTable('promotions',promotionId,broker_id);
-      toast.success("Promotion deleted successfully!");
-      router.refresh();
-    } catch (error) {
+      const serverUrl = `/promotions/${promotionId}/broker/${broker_id}`;
+      const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
+        method: "DELETE",
+      });
+      if(response.success){
+        toast.success("Promotion deleted successfully!");
+        router.refresh();
+      }else{
+        toast.error(response.message ?? "Failed to delete promotion");
+        thisLogger.error("Failed to delete promotion", { error:response.message, context: { promotionId,broker_id } });
+      }
+    }catch(error){
       toast.error("Failed to delete promotion");
-      console.log("DELETE PROMOTION ERROR", error);
+      thisLogger.error("Failed to delete promotion", { error:error, context: { promotionId,broker_id } });
     }
   }
-
-
   return (
     <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
       <div className="flex items-center gap-3 mb-6">

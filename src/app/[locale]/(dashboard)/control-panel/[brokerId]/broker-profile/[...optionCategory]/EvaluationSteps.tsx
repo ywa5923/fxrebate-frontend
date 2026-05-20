@@ -18,7 +18,9 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { DynamicTableRow } from "@/types";
-import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
+import { apiClient } from "@/lib/api-client";
+import { UseTokenAuth } from "@/lib/enums";
+import logger from "@/lib/logger";
 
 interface EvaluationStepsProps {
   broker_id: number;
@@ -42,7 +44,7 @@ export default function EvaluationSteps({
   );
   const router = useRouter();
   const prevStepsLength = useRef(evaluationSteps?.length || 0);
-
+  const thisLogger = logger.child("EvaluationStepsComponent");
   useEffect(() => {
     if (evaluationSteps && evaluationSteps.length > prevStepsLength.current) {
       setActiveTab(
@@ -60,12 +62,20 @@ export default function EvaluationSteps({
 
   async function handleDeleteStep(stepId: number) {
     try {
-      await deleteDynamicTable("evaluation-steps", stepId, broker_id);
-      toast.success("Evaluation step deleted successfully!");
-      router.refresh();
-    } catch (error) {
+      const serverUrl = `/evaluation-steps/${stepId}/broker/${broker_id}`;
+      const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
+        method: "DELETE",
+      });
+      if(response.success){
+        toast.success("Evaluation step deleted successfully!");
+        router.refresh();
+      }else{
+        toast.error(response.message ?? "Failed to delete evaluation step");
+        thisLogger.error("Failed to delete evaluation step", { error:response.message, context: { stepId,broker_id } });
+      }
+    }catch(error){
       toast.error("Failed to delete evaluation step");
-      console.log("DELETE EVALUATION STEP ERROR", error);
+      thisLogger.error("Failed to delete evaluation step", { error:error, context: { stepId,broker_id } });
     }
   }
 

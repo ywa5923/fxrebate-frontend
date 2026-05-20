@@ -1,18 +1,26 @@
 "use client";
 
-import { Option } from '@/types';
-import { DynamicForm } from '@/components/DynamicForm';
-import { submitBrokerProfile } from '@/lib/optionValues-requests';
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
-import { Card, CardContent} from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { DynamicTableRow } from '@/types';
-import { deleteDynamicTable } from '@/lib/deleteDynamicTable';
+import { Option } from "@/types";
+import { DynamicForm } from "@/components/DynamicForm";
+import { submitBrokerProfile } from "@/lib/optionValues-requests";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Plus, X, Trash, LayoutGrid } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { DynamicTableRow } from "@/types";
+import { apiClient } from "@/lib/api-client";
+import { UseTokenAuth } from "@/lib/enums";
+import logger from "@/lib/logger";
 
 interface ContestsProps {
   broker_id: number;
@@ -21,13 +29,22 @@ interface ContestsProps {
   is_admin?: boolean;
 }
 
-export default function Contests({ broker_id, contests, options, is_admin = false }: ContestsProps) {
-  const [activeTab, setActiveTab] = useState<string>(contests?.[0]?.id?.toString() || '');
+export default function Contests({
+  broker_id,
+  contests,
+  options,
+  is_admin = false,
+}: ContestsProps) {
+  const [activeTab, setActiveTab] = useState<string>(
+    contests?.[0]?.id?.toString() || "",
+  );
   const [showNewContest, setShowNewContest] = useState(false);
-  const [confirmDeleteContest, setConfirmDeleteContest] = useState<number|null>(null);
+  const [confirmDeleteContest, setConfirmDeleteContest] = useState<
+    number | null
+  >(null);
   const router = useRouter();
   const prevContestsLength = useRef(contests?.length || 0);
-
+  const thisLogger = logger.child("ContestsComponent");
   useEffect(() => {
     // If a new contest is added
     if (contests && contests.length > prevContestsLength.current) {
@@ -36,7 +53,7 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
     } else if (
       contests &&
       contests.length > 0 &&
-      !contests.some(contest => contest.id.toString() === activeTab)
+      !contests.some((contest) => contest.id.toString() === activeTab)
     ) {
       // If current activeTab is invalid, set to first contest
       setActiveTab(contests[0].id.toString());
@@ -46,17 +63,31 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
 
   async function handleDeleteContest(contestId: number) {
     try {
-    
-     
-      const response = await deleteDynamicTable('contests',contestId,broker_id);
-      toast.success("Contest deleted successfully!");
-      router.refresh();
+      const serverUrl = `/contests/${contestId}/broker/${broker_id}`;
+      const response = await apiClient<DynamicTableRow>(
+        serverUrl,
+        UseTokenAuth.Yes,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.success) {
+        toast.success("Contest deleted successfully!");
+        router.refresh();
+      } else {
+        toast.error(response.message ?? "Failed to delete contest");
+        thisLogger.error("Failed to delete contest", {
+          error: response.message,
+          context: { contestId, broker_id },
+        });
+      }
     } catch (error) {
       toast.error("Failed to delete contest");
-      console.log("DELETE CONTEST ERROR", error);
+      thisLogger.error("Failed to delete contest", {
+        error: error,
+        context: { contestId, broker_id },
+      });
     }
-
-   
   }
 
   return (
@@ -67,8 +98,12 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
             <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Contests</h1>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+              Contests
+            </h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Configuration & Settings
+            </p>
           </div>
         </div>
         <button
@@ -77,27 +112,47 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
             showNewContest
               ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-              : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
           )}
           title={showNewContest ? "Cancel" : "New Contest"}
         >
-          {showNewContest ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+          {showNewContest ? (
+            <X className="w-3.5 h-3.5" />
+          ) : (
+            <Plus className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
-      
+
       {/* New Contest Form */}
       {showNewContest && (
         <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
-          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Contest</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
+            New Contest
+          </p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
               <DynamicForm
                 broker_id={broker_id}
                 options={options}
                 optionsValues={[]}
-                action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
-                  await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
+                action={async (
+                  broker_id,
+                  formData,
+                  is_admin,
+                  optionsValues,
+                  entity_id,
+                  entity_type,
+                ) => {
+                  await submitBrokerProfile(
+                    broker_id,
+                    formData,
+                    is_admin,
+                    optionsValues,
+                    entity_id,
+                    entity_type,
+                  );
                   setShowNewContest(false);
                 }}
                 is_admin={is_admin}
@@ -108,14 +163,14 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
           </Card>
         </div>
       )}
-      
+
       {/* Tab Navigation */}
       {contests && contests.length > 0 ? (
         <>
           <div className="mb-2">
             <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
               {contests.map((contest, index) => {
-                const isActive = activeTab === contest.id.toString()
+                const isActive = activeTab === contest.id.toString();
                 return (
                   <button
                     key={contest.id}
@@ -124,27 +179,29 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
                       "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
                       isActive
                         ? "text-gray-900 dark:text-white font-semibold"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium",
                     )}
                   >
-                    <span className="hidden sm:inline">Contest {index + 1}</span>
+                    <span className="hidden sm:inline">
+                      Contest {index + 1}
+                    </span>
                     <span className="sm:hidden">Cont {index + 1}</span>
                     {isActive && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-500" />
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
-          
+
           {/* Tab Content */}
           {contests.map((contest, index) => (
             <div
               key={contest.id}
               className={cn(
                 "bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-px border border-dashed border-gray-200 dark:border-gray-700",
-                activeTab === contest.id.toString() ? "block" : "hidden"
+                activeTab === contest.id.toString() ? "block" : "hidden",
               )}
             >
               {contest.option_values && contest.option_values.length > 0 ? (
@@ -175,27 +232,49 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
                 </>
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This contest has no option values to configure.</p>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">
+                    No configuration available
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                    This contest has no option values to configure.
+                  </p>
                 </div>
               )}
             </div>
           ))}
-          
+
           {/* Confirmation Dialog for Contest Delete */}
-          <Dialog open={!!confirmDeleteContest} onOpenChange={open => { if (!open) setConfirmDeleteContest(null); }}>
+          <Dialog
+            open={!!confirmDeleteContest}
+            onOpenChange={(open) => {
+              if (!open) setConfirmDeleteContest(null);
+            }}
+          >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Are you sure you want to delete this contest?</DialogTitle>
+                <DialogTitle>
+                  Are you sure you want to delete this contest?
+                </DialogTitle>
               </DialogHeader>
-              <div className="py-2">
-                This action cannot be undone.
-              </div>
+              <div className="py-2">This action cannot be undone.</div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmDeleteContest(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDeleteContest(null)}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -213,15 +292,31 @@ export default function Contests({ broker_id, contests, options, is_admin = fals
             </DialogContent>
           </Dialog>
         </>
-      ) : !showNewContest && (
-        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No contests found</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Contest" to get started.</p>
-        </div>
+      ) : (
+        !showNewContest && (
+          <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+            <svg
+              className="w-16 h-16 text-gray-400 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">
+              No contests found
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+              Click "Add New Contest" to get started.
+            </p>
+          </div>
+        )
       )}
     </div>
   );
-} 
+}

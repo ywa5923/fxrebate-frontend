@@ -2,7 +2,6 @@
 
 import { Company, DynamicTableRow, Option, Regulator, RegulatorList } from "@/types";
 import { DynamicForm } from "@/components/DynamicForm";
-
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-//import { deleteDynamicTable } from "@/lib/deleteDynamicTable";
 import { apiClient } from "@/lib/api-client";
 import { UseTokenAuth } from "@/lib/enums";
 import  logger  from "@/lib/logger";
@@ -40,7 +38,7 @@ export default function Companies({
   options,
   is_admin = false,
 }: Props) {
-  const thisLogger = logger.child("Companies");
+  const thisLogger = logger.child("CompaniesComponent");
   const [activeTab, setActiveTab] = useState<string>(
     companies?.[0]?.id?.toString() || "",
   );
@@ -67,21 +65,21 @@ export default function Companies({
   async function handleDeleteCompany(companyId: number) {
 
     try{
-      // const response = await deleteAccountType(accountId,broker_id);
+    
       const serverUrl = `/companies/${companyId}/broker/${broker_id}`;
       const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
        method: "DELETE",
      });
      if(response.success){
-       toast.success("Account type deleted successfully!");
+       toast.success("Company deleted successfully!");
        router.refresh();
      }else{
-       toast.error(response.message ?? "Failed to delete account type");
-       thisLogger.error("Failed to delete account type", { error:response.message, context: { companyId,broker_id } });
+       toast.error(response.message ?? "Failed to delete company");
+       thisLogger.error("Failed to delete company", { error:response.message, context: { companyId,broker_id } });
      }
      }catch(error){
-       toast.error("Failed to delete account type");
-       console.log("DELETE ACCOUNT TYPE ERROR",error);
+       toast.error("Failed to delete company");
+       thisLogger.error("Failed to delete company", { error:error, context: { companyId,broker_id } });
      }
     
   }
