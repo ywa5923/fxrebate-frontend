@@ -408,36 +408,33 @@ function AddRegulatorDialog({
               control={form.control}
               name="regulator_id"
               render={({ field }) => (
-                <FormItem className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-3">
-                    <FormLabel className="mb-0 shrink-0">Regulator</FormLabel>
-                    <div className="min-w-0 flex-1">
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={availableRegulators.length === 0}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={
-                              availableRegulators.length === 0
-                                ? "No regulators available"
-                                : "Select a regulator"
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availableRegulators.map((item) => (
-                          <SelectItem key={item.id} value={String(item.id)}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                <FormItem className="min-w-0">
+                  <FormLabel>Regulator</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={availableRegulators.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full min-w-0 overflow-hidden [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1">
+                        <SelectValue
+                          className="truncate"
+                          placeholder={
+                            availableRegulators.length === 0
+                              ? "No regulators available"
+                              : "Select a regulator"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableRegulators.map((item) => (
+                        <SelectItem key={item.id} value={String(item.id)}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
