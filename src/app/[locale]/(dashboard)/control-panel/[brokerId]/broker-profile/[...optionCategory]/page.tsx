@@ -405,7 +405,7 @@ export default async function BrokerProfilePage({
     return (
       <EvaluationRules
         key={brokerId}
-        is_admin={true}
+        is_admin={is_admin}
         formConfig={evaluationRulesFormConfig}
         brokerId={brokerId}
         evaluationRules={evaluationRules}

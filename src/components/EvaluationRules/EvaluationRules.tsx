@@ -24,7 +24,7 @@ import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
+import logger from "@/lib/logger";
 type EvaluationFormValues = Record<string, string|number>;
 
 export default function EvaluationRules({
@@ -38,6 +38,7 @@ export default function EvaluationRules({
   is_admin: boolean;
   evaluationRules?: EvaluationRule[];
 }) {
+  const thisLogger = logger.child("EvaluationRules");
   const section = useMemo(() => {
     const firstSection = Object.values(formConfig.sections)[0];
     return firstSection ?? null;
@@ -137,11 +138,11 @@ console.log(evaluationRules);
   }, [initialValues, form]);
 
   const onSubmit = async (values: EvaluationFormValues) => {
-    console.log(values);
+    thisLogger.info("Evaluation rules submitted", { context: { values } });
     const saveEvaluationRulesUrl = "/evaluation-rules/"+brokerId;
     const response = await apiClient<boolean>(
       saveEvaluationRulesUrl,
-      UseTokenAuth.No,
+      UseTokenAuth.Yes,
       { method: "POST", body: JSON.stringify(values) },
       ErrorMode.Return,
     );
@@ -152,7 +153,7 @@ console.log(evaluationRules);
     }
   };
 
-  void brokerId;
+
 
   return (
     <div className="rounded-2xl bg-[#ffffff] dark:bg-gray-900 border-0 shadow-none overflow-hidden">
@@ -361,7 +362,7 @@ console.log(evaluationRules);
                                 : []
                             }
                           />
-                          <div className="mt-2 flex w-full justify-end">
+                          {is_admin && (<div className="mt-2 flex w-full justify-end">
                             <Button
                               type="button"
                               variant="outline"
@@ -393,7 +394,7 @@ console.log(evaluationRules);
                             >
                               <Copy className="h-3.5 w-3.5" />
                             </Button>
-                          </div>
+                          </div>)}
                         </FieldContent>
                       </Field>
                      
