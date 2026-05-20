@@ -34,8 +34,8 @@ export default function BrokerOptions({
   category
 }: BrokerOptionsProps) {
   return (
-    <div className="container mx-auto p-3 sm:p-6">
-      <div className="rounded-2xl bg-[#ffffff] dark:bg-gray-900 border-0 shadow-none overflow-hidden">
+    <div className="container mx-auto p-3 sm:p-6 pb-32 sm:pb-40">
+      <div className="rounded-2xl bg-[#ffffff] dark:bg-gray-900 border-0 shadow-none">
         {/* Header with subtle background pattern */}
         <div className="relative px-5 sm:px-6 py-5 sm:py-6 border-b border-gray-200 dark:border-gray-800">
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

@@ -592,6 +592,7 @@ export function DynamicForm({
               isMulti
               classNamePrefix="react-select"
               instanceId={option.slug} // Add stable instanceId to prevent hydration errors
+             
               onChange={(selected) => {
                 // Store the actual array of selected values
                 const values = selected
