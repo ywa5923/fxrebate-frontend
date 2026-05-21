@@ -283,13 +283,14 @@ function DeleteRegulatorDialog({
     setIsDeleting(true);
     try {
       const serverUrl = `/regulators/${regulator.id}/company/${companyId}/broker/${brokerId}`;
-      const response = await apiClient(serverUrl, UseTokenAuth.Yes, {
+      const response = await apiClient<Regulator>(serverUrl, UseTokenAuth.Yes, {
         method: "DELETE",
       });
 
       if (response.success) {
-        toast.success("Regulator removed from company");
+        toast.success(`Regulator ${response.data?.name} removed from company`);
         onOpenChange(false);
+
         router.refresh();
       } else {
         toast.error(response.message ?? "Failed to remove regulator");
@@ -369,19 +370,19 @@ function AddRegulatorDialog({
       );
 
       if (response.success) {
-        toast.success("Regulator linked to company");
+        toast.success("Regulator attached to company");
         form.reset();
         onOpenChange(false);
         router.refresh();
       } else {
-        toast.error(response.message ?? "Failed to link regulator");
+        toast.error(response.message ?? "Failed to attach regulator");
         form.setError("root", {
-          message: response.message ?? "Failed to link regulator",
+          message: response.message ?? "Failed to attach regulator",
         });
       }
     } catch {
-      toast.error("Failed to link regulator");
-      form.setError("root", { message: "Failed to link regulator" });
+      toast.error("Failed to attach regulator");
+      form.setError("root", { message: "Failed to attach regulator" });
     } finally {
       setIsSubmitting(false);
     }
