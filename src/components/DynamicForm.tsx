@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { Option, OptionValue } from "@/types";
 import { useRouter } from "next/navigation";
 import logger from "@/lib/logger";
+import { BrokerPreviousValue } from "./BrokerPreviousValue";
 
 interface DynamicFormProps {
   broker_id: number;
@@ -67,6 +68,28 @@ interface DynamicFormProps {
   entity_type?: string;
 }
 
+function getInitialCopiedSlugs(
+  options: Option[],
+  optionsValues: OptionValue[],
+  is_admin: boolean
+): Set<string> {
+  if (!is_admin) return new Set();
+  const slugs = new Set<string>();
+  for (const option of options) {
+    const optionValue = optionsValues.find((ov) => ov.option_slug === option.slug);
+    if (
+      optionValue &&
+      (optionValue.public_value === null ||
+        optionValue.public_value === "undefined") &&
+      optionValue.value !== null &&
+      optionValue.value !== "undefined"
+    ) {
+      slugs.add(option.slug);
+    }
+  }
+  return slugs;
+}
+
 export function DynamicForm({
   broker_id,
   options,
@@ -77,10 +100,14 @@ export function DynamicForm({
   entity_type,
 }: DynamicFormProps) {
   const router = useRouter();
-  const [isFormDirty, setIsFormDirty] = useState(false);
+  const initialCopiedSlugs = getInitialCopiedSlugs(options, optionsValues, is_admin);
+  const [isFormDirty, setIsFormDirty] = useState(
+    is_admin && initialCopiedSlugs.size > 0
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalOptionsValues, setOriginalOptionsValues] = useState(optionsValues);
-  const [clickedCopyButtons, setClickedCopyButtons] = useState<Set<string>>(new Set());
+  const [clickedCopyButtons, setClickedCopyButtons] =
+    useState<Set<string>>(initialCopiedSlugs);
 
   //NOTE:
   //===Form initialization with optionsValues:===
@@ -168,10 +195,16 @@ export function DynamicForm({
       })}>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <div>Broker value: {brokerValue + " " + metadataUnit}</div>
+
+            <BrokerPreviousValue
+              brokerValue={brokerValue + " " + metadataUnit}
+              previousValue={previousValue ?? ""}
+            />
+            {/*<div>Broker value: {brokerValue + " " + metadataUnit}</div>
             {!!showPrev && <div>Prev Value: {previousValue}</div>}
+            */}
           </div>
-          {(!!isUpdatedEntry || clickedCopyButtons.has(option.slug)) && (
+          {(!!isUpdatedEntry || clickedCopyButtons.has(option.slug)) && brokerValue !== null && brokerValue !== "undefined" && (
             <Button
               type="button"
               variant="outline"
@@ -181,6 +214,7 @@ export function DynamicForm({
                 copyBrokerToPublic(option.slug);
                 // Add to clicked buttons set
                 setClickedCopyButtons(prev => new Set(prev).add(option.slug));
+                setIsFormDirty(true);
                 e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
               }}
               className={cn(
@@ -352,15 +386,15 @@ export function DynamicForm({
       if (optionValue !== null && optionValue !== undefined) {
 
         //if admin, populate form with public_value if it exists, otherwise use populate with optionValue.value
-        // let fieldValue = is_admin
-        //   ? optionValue?.public_value === null ||
-        //     optionValue?.public_value === "undefined"
-        //     ? optionValue?.value
-        //     : optionValue?.public_value
-        //   : optionValue?.value;
+        let fieldValue = is_admin
+          ? optionValue?.public_value === null ||
+            optionValue?.public_value === "undefined"
+            ? optionValue?.value
+            : optionValue?.public_value
+          : optionValue?.value;
 
-        
-        let fieldValue = is_admin ? optionValue?.public_value : optionValue?.value;
+          
+      //  let fieldValue = is_admin ? optionValue?.public_value : optionValue?.value;
 
         let metadata=is_admin ? optionValue?.metadata?.public_value : optionValue?.metadata?.value;
 
