@@ -15,6 +15,7 @@ import { DynamicTableRow } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
 import logger from '@/lib/logger';
+import { OptionsForm } from '@/components/OptionsForm/OptionsForm';
 
 interface PromotionsProps {
   broker_id: number;
@@ -97,7 +98,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Promotion</p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
-              <DynamicForm
+              <OptionsForm
                 broker_id={broker_id}
                 options={options}
                 optionsValues={[]}
@@ -108,6 +109,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="promotion"
+               
               />
             </CardContent>
           </Card>
@@ -168,7 +170,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
                       <Trash className="w-4 h-4" />
                     </Button>
                   </div>
-                  <DynamicForm
+                  <OptionsForm
                     broker_id={broker_id}
                     options={options}
                     optionsValues={promotion.option_values}

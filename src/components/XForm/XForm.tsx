@@ -64,7 +64,7 @@ type XFormProps = {
   mode?: 'edit' | 'create';
 }
 
-export default function XForm<T extends Record<string, any>>({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
+export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
 {
 
   const router = useRouter();

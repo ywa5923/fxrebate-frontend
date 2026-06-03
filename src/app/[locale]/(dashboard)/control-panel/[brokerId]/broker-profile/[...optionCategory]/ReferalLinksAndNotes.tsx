@@ -43,18 +43,17 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiClient } from "@/lib/api-client";
-import { DynamicOption } from "@/types/DynamicOption";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { DynamicForm } from "@/components/DynamicForm";
 import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
 import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
-
 import Multiselect from "react-select";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
 import  logger  from "@/lib/logger";
+import { submitBrokerProfile } from "@/lib/optionValues-requests";
+import { OptionsForm } from "@/components/OptionsForm/OptionsForm";
 
 type CopyField = "name" | "url" | "currency";
 
@@ -357,21 +356,22 @@ export default function ReferalLinksAndNotes({
       ) : (
         <Card className="border border-dashed border-gray-200 dark:border-gray-800 bg-[#fdfdfd] dark:bg-gray-800/40">
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <StickyNote className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <div>
+            <div className="flex w-full items-start gap-2">
+              <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+              <div className="min-w-0 flex-1 w-full">
                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Notes
                 </div>
-                <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6">
-                  <DynamicForm
+                  <div className="w-full pt-5 sm:pt-6 pb-5 sm:pb-6">
+                    <OptionsForm
                     broker_id={brokerId}
                     options={notesOptions}
                     optionsValues={notesOptionsValues}
                     is_admin={is_admin}
                     entity_id={brokerId}
                     entity_type={"broker"}
-                    action={() => Promise.resolve()}
+                    action={submitBrokerProfile}
+                    display="vertical"
                   />
                 </div>
               </div>

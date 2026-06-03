@@ -107,6 +107,9 @@ export async function submitBrokerProfile(
   //if original option values are provided, then we are updating the broker profile
   //if original option values are not provided, then we are creating a new broker profile
 
+  optionValuesLogger.debug("Original option values received in server action from client:", {
+      orginalOptionValues,
+  });
   optionValuesLogger.debug("formData received in server action from client:", {
     formData,
     entity_id,
@@ -124,7 +127,7 @@ export async function submitBrokerProfile(
         if (value instanceof File) {
           files[key] = value as File;
         } else {
-          // Check if this is an array field (contains semicolon-separated values)
+          // NumberWithUnit type is sent as json {value:"3";unit:"eur"}
           if (isValidJsonString(value as string)) {
             data[key] = JSON.parse(value as string);
           } else {
@@ -148,6 +151,8 @@ export async function submitBrokerProfile(
   // Upload files to Cloudflare R2
   for (const [fieldName, file] of Object.entries(files)) {
     try {
+
+     
       const publicUrl = await uploadToCloudflareR2(file, file.name);
       // Replace the file object with the public URL
       data[fieldName] = publicUrl;
@@ -198,20 +203,21 @@ export async function submitBrokerProfile(
     //if admin does't update the public value when is_updated_entry is true, then the is_updated_entry remains true,
     //TODO: we need to handle this case, so that the is_updated_entry is false when admin doesn't WANT to update the public value
     //MAYBE we can add a checkbox to the form to indicate if the admin wants to update the public value
-    if (
-      is_admin &&
-      originalOption?.is_updated_entry &&
-      valueToSave == originalOption?.public_value
-    ) {
-      is_updated_entry = 1;
-    }
+    // if (
+    //   is_admin &&
+    //   originalOption?.is_updated_entry &&
+    //   valueToSave == originalOption?.public_value
+    // ) {
+    //   is_updated_entry = 1;
+    // }
 
     return {
       id: originalOption?.id,
       option_slug,
-      ...(is_admin ? { public_value: valueToSave } : { value: valueToSave }),
+      value: valueToSave,
+      //...(is_admin ? { public_value: valueToSave } : {value: valueToSave }),
       metadata: meta_data_unit ? { unit: meta_data_unit } : null,
-      ...(is_admin ? { is_updated_entry: is_updated_entry } : {}),
+     // ...(is_admin ? { is_updated_entry: is_updated_entry } : {}),
     };
   });
 

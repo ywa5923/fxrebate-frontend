@@ -4,6 +4,10 @@ import * as React from "react";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import {
+  ControllerRenderProps,
+  FieldValues,
+} from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,16 +32,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon, Copy } from "lucide-react";
+
+import { Copy } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -51,6 +49,7 @@ import { useRouter } from "next/navigation";
 import logger from "@/lib/logger";
 import { BrokerPreviousValue } from "./BrokerPreviousValue";
 
+
 interface DynamicFormProps {
   broker_id: number;
   options: Option[];
@@ -60,7 +59,7 @@ interface DynamicFormProps {
     is_admin: boolean,
     originalData?: OptionValue[],
     entity_id?: number,
-    entity_type?: string
+    entity_type?: string,
   ) => Promise<void>;
   optionsValues: OptionValue[];
   is_admin: boolean;
@@ -71,14 +70,18 @@ interface DynamicFormProps {
 function getInitialCopiedSlugs(
   options: Option[],
   optionsValues: OptionValue[],
-  is_admin: boolean
+  is_admin: boolean,
 ): Set<string> {
+
+  
   if (!is_admin) return new Set();
   const slugs = new Set<string>();
   for (const option of options) {
-    const optionValue = optionsValues.find((ov) => ov.option_slug === option.slug);
+    const optionValue = optionsValues.find(
+      (ov) => ov.option_slug === option.slug,
+    );
     if (
-      optionValue &&
+      optionValue && optionValue.is_updated_entry === false &&
       (optionValue.public_value === null ||
         optionValue.public_value === "undefined") &&
       optionValue.value !== null &&
@@ -100,45 +103,55 @@ export function DynamicForm({
   entity_type,
 }: DynamicFormProps) {
   const router = useRouter();
-  const initialCopiedSlugs = getInitialCopiedSlugs(options, optionsValues, is_admin);
-  const [isFormDirty, setIsFormDirty] = useState(
-    is_admin && initialCopiedSlugs.size > 0
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [originalOptionsValues, setOriginalOptionsValues] = useState(optionsValues);
-  const [clickedCopyButtons, setClickedCopyButtons] =
-    useState<Set<string>>(initialCopiedSlugs);
 
+
+
+
+  const [isFormDirty, setIsFormDirty] = useState(is_admin);
+    //console.log("option values: ",JSON.stringify(optionsValues,null,2))
+ 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalOptionsValues, setOriginalOptionsValues] =  useState(()=>optionsValues);
+   
+  const [clickedCopyButtons, setClickedCopyButtons] =  useState<Set<string>>( () => getInitialCopiedSlugs(options, optionsValues, is_admin));
+  
+
+   //this is used to refresh(empty)the file input when a new file is uploaded
+    const [fileInputKey,setFileInputKey]=useState(0); 
+
+    const thisLogger = logger.child("DynamicForm Component");
+
+    
+   
+  //sconsole.log("optionsValues", JSON.stringify(optionsValues, null, 2));
   //NOTE:
   //===Form initialization with optionsValues:===
   //If admin is true, the form field value is set to the optionValue.public_value if it exists, otherwise it is set to the optionValue.value
   //this is used to auto populate the public values with the broker value if public_value is not set
-  //The data submitted to server action by admin is considered as public_value, 
+  //The data submitted to server action by admin is considered as public_value,
   //===Form initialization with optionsValues:===s
 
   const getOptionValue = (optionSlug: string) => {
-    return optionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug
+    return originalOptionsValues.find(
+      (optionValue) => optionValue.option_slug === optionSlug,
     );
   };
-  
 
   // Helper function to copy broker value to public value
   const copyBrokerToPublic = (optionSlug: string) => {
     const optionValue = originalOptionsValues.find(
-      (optionValue) => optionValue.option_slug === optionSlug
+      (optionValue) => optionValue.option_slug === optionSlug,
     );
     if (optionValue) {
-
       //if admin =true, the form value is public_value, otherwise it is value
-      //so for admin set the form field with the optionValue's value 
+      //so for admin set the form field with the optionValue's value
 
       // Update the form field with the broker value
-      let option = options.find(option => option.slug === optionSlug);
+      let option = options.find((option) => option.slug === optionSlug);
       let isMultiSelect = option?.form_type === "multiple_select";
       let isCheckbox = option?.form_type === "checkbox";
       let isNotes = option?.form_type === "notes";
-     // let isNumberWithUnit = options.find(option => option.slug === optionSlug)?.form_type === "numberWithUnit";
+   
       let isNumberWithUnit = option?.form_type === "numberWithUnit";
       if (isNumberWithUnit) {
         // For numberWithUnit, set both value and unit
@@ -152,18 +165,15 @@ export function DynamicForm({
         form.setValue(optionSlug, optionValue.value?.split("; "));
       } else if (isCheckbox) {
         form.setValue(optionSlug, optionValue.value === "1");
-      }
-      
-      else {
-     
+      } else {
         // For other field types, set the string value
         form.setValue(optionSlug, optionValue.value);
       }
 
       //reset the is_updated_entry to false
-      setOriginalOptionsValues((prev)=>{
+      setOriginalOptionsValues((prev) => {
         const next = [...prev];
-        const found = next.find(ov => ov.option_slug === optionSlug);
+        const found = next.find((ov) => ov.option_slug === optionSlug);
         if (found) {
           found.is_updated_entry = false;
         }
@@ -184,18 +194,19 @@ export function DynamicForm({
     const brokerValue = optionValue?.value;
 
     const previousValue = optionValue?.previous_value;
-    
+
     const showPrev = previousValue !== null;
-   
+
     const metadataUnit = optionValue?.metadata?.value?.unit ?? "";
 
     return (
-      <div className={cn("text-sm text-muted-foreground mt-2", {
-        "text-red-500": isUpdatedEntry,
-      })}>
+      <div
+        className={cn("text-sm text-muted-foreground mt-2", {
+          "text-red-500": isUpdatedEntry,
+        })}
+      >
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-
             <BrokerPreviousValue
               brokerValue={brokerValue + " " + metadataUnit}
               previousValue={previousValue ?? ""}
@@ -204,288 +215,120 @@ export function DynamicForm({
             {!!showPrev && <div>Prev Value: {previousValue}</div>}
             */}
           </div>
-          {(!!isUpdatedEntry || clickedCopyButtons.has(option.slug)) && brokerValue !== null && brokerValue !== "undefined" && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                copyBrokerToPublic(option.slug);
-                // Add to clicked buttons set
-                setClickedCopyButtons(prev => new Set(prev).add(option.slug));
-                setIsFormDirty(true);
-                e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
-              }}
-              className={cn(
-                "p-1 h-6 w-6 flex-shrink-0",
-                clickedCopyButtons.has(option.slug)
-                  ? "bg-green-100 border-green-500 text-green-700"
-                  : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
-              )}
-              title="Copy broker value to public value"
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
-          )}
+          {(!!isUpdatedEntry || clickedCopyButtons?.has(option.slug)) &&
+            brokerValue !== null &&
+            brokerValue !== "undefined" && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  copyBrokerToPublic(option.slug);
+                  // Add to clicked buttons set
+                  setClickedCopyButtons((prev) =>
+                    new Set(prev).add(option.slug),
+                  );
+                  setIsFormDirty(true);
+                  e.currentTarget.classList.add(
+                    "bg-green-100",
+                    "border-green-500",
+                    "text-green-700",
+                  );
+                }}
+                className={cn(
+                  "p-1 h-6 w-6 flex-shrink-0",
+                  clickedCopyButtons?.has(option.slug)
+                    ? "bg-green-100 border-green-500 text-green-700"
+                    : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200",
+                )}
+                title="Copy broker value to public value"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            )}
         </div>
       </div>
     );
   };
 
-  // Create a dynamic schema based on the fields
-  const schemaObject: { [key: string]: any } = {};
-  for (const option of options) {
-    if (option.form_type === "numberWithUnit") {
-      schemaObject[option.slug] =
-        option.required === 1
-          ? z.object({
-              value: z.number(),
-              unit: z.string(),
-            })
-          : z.object({
-              value: z.number(),
-              unit: z.string(),
-            }).nullable().optional();
-      continue;
-    }
-    // Handle image fields
-    if (option.form_type === "image") {
-      schemaObject[option.slug] =
-        option.required === 1
-          ? z.instanceof(File).or(z.string())
-          : z.instanceof(File).or(z.string()).nullable().optional();
-      continue;
-    }
-
-    let fieldSchema;
-    switch (option.form_type) {
-     
-      case "number":
-        let numberSchema = z.number();
-        if (option.min_constraint) {
-          numberSchema = numberSchema.min(option.min_constraint, `${option.name} must be at least ${option.min_constraint}`);
-        }
-        if (option.max_constraint) {
-          numberSchema = numberSchema.max(option.max_constraint, `${option.name} must be at most ${option.max_constraint}`);
-        }
-        if (option.required === 1) {
-          // Required: must be a number and meet min/max
-          fieldSchema = z.preprocess(
-            (val) => (val === "" ? null : Number(val)),
-            numberSchema
-          );
-        } else {
-          // Optional: null/undefined is allowed, but if filled, must meet min/max
-          fieldSchema = z.preprocess(
-            (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
-            numberSchema.nullable().optional()
-          );
-        }
-        break;
-      case "checkbox":
-        if (option.required === 1) {
-          fieldSchema = z.preprocess(
-            (val) => (val === null || val === undefined ? false : Boolean(val)),
-            z.boolean()
-          );
-        } else {
-          fieldSchema = z.preprocess(
-            (val) => (val === null || val === undefined ? null : Boolean(val)),
-            z.boolean().nullable().optional()
-          );
-        }
-        break;
-     
-      case "string":
-      case "textarea":
-        let baseString = z.string();
-        if (option.min_constraint) {
-          baseString = baseString.min(option.min_constraint, `${option.name} must be at least ${option.min_constraint} characters`);
-        }
-        if (option.max_constraint) {
-          baseString = baseString.max(option.max_constraint, `${option.name} must be at most ${option.max_constraint} characters`);
-        }
-        if (option.required === 1) {
-          const minValue = option.min_constraint ?? 1;
-          baseString = baseString.min(minValue, `${option.name} is required`);
-          fieldSchema = z.preprocess((val) => val === "" ? null : val, baseString);
-        } else {
-          fieldSchema = z.preprocess(
-            (val) => val === "" ? null : val,
-            baseString.nullable().optional()
-          );
-        }
-        break;
-      case "multiple_select":
-        // Use string validation with pipe delimiter format
-        // Create the array schema with preprocessing
-        if (option.required === 1) {
-          fieldSchema = z.preprocess(
-            (val) => {
-              if (val === null || val === undefined) return [];
-              if (Array.isArray(val)) return val;
-              return [];
-            },
-            z.array(z.string()).min(1, `Please select at least one ${option.name}`)
-          );
-        } else {
-          fieldSchema = z.preprocess(
-            (val) => {
-              if (val === null || val === undefined) return [];
-              if (Array.isArray(val)) return val;
-              return [];
-            },
-            z.array(z.string()).optional()
-          );
-        }
-        break;
-      case "notes":
-        if (option.required === 1) {
-          fieldSchema = z.preprocess(
-            (val) => {
-              if (val === null || val === undefined) return [];
-              if (Array.isArray(val)) return val;
-              return [];
-            },
-            z.array(z.string().min(1, "Note cannot be empty")).min(1, `Please enter at least one ${option.name}`)
-          );
-        } else {
-          fieldSchema = z.preprocess(
-            (val) => {
-              if (val === null || val === undefined) return [];
-              if (Array.isArray(val)) return val;
-              return [];
-            },
-            z.array(z.string()).optional()
-          );
-        }
-        break;
-      case "url":
-        if (option.required === 1) {
-          fieldSchema = z.string().min(1, "URL is required").url({ message: "Invalid URL" });
-        } else {
-          fieldSchema = z.string().url({ message: "Invalid URL" }).nullable().optional();
-        }
-        break;
-      default:
-        fieldSchema = z.string();
-    }
-
-    schemaObject[option.slug] = fieldSchema;
-  }
-
-  const formSchema = z.object(schemaObject);
+  
+  const formSchema = React.useMemo(() => buildFormSchema(options), [options]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: options.reduce((acc, option) => {
-      let optionValue = originalOptionsValues?.find(
-        (optionValue: OptionValue) => optionValue.option_slug === option.slug
-      );
-      if (optionValue !== null && optionValue !== undefined) {
-
-        //if admin, populate form with public_value if it exists, otherwise use populate with optionValue.value
-        let fieldValue = is_admin
-          ? optionValue?.public_value === null ||
-            optionValue?.public_value === "undefined"
-            ? optionValue?.value
-            : optionValue?.public_value
-          : optionValue?.value;
-
-          
-      //  let fieldValue = is_admin ? optionValue?.public_value : optionValue?.value;
-
-        let metadata=is_admin ? optionValue?.metadata?.public_value : optionValue?.metadata?.value;
-
-        switch (option.form_type) {
-          case "checkbox":
-            return { ...acc, [option.slug]: fieldValue ==="1" };
-          case "multiple_select":
-            return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
-
-          case "notes":
-            return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [""] };
-
-          case "numberWithUnit":
-            return {
-              ...acc,
-              [option.slug]: {
-                value: fieldValue ? parseFloat(fieldValue) : undefined,
-                unit: metadata?.unit,
-              },
-            };
-          case "image":
-            return { ...acc, [option.slug]: fieldValue };
-          default:
-            return { ...acc, [option.slug]: fieldValue };
-        }
-      }
-      return { ...acc, [option.slug]: null };
-    }, {}),
+     defaultValues: buildDefaultValues(options, optionsValues, is_admin),
+   
   });
 
   // Watch form changes to enable/disable submit button
-  const formValues = form.watch();
+ // const formValues = form.watch();
   React.useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (type === "change") {
         setIsFormDirty(true);
         if (is_admin && name) {
           setOriginalOptionsValues((prev) => {
-            const next = [...prev];
-            const found = next.find((ov) => ov.option_slug === String(name));
-            if (found) {
-              found.is_updated_entry = false;
-            }
-            return next;
+            return prev.map((ov) => ov.option_slug === String(name) ? { ...ov, is_updated_entry: false } : ov);
           });
         }
       }
-      
     });
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
+  React.useEffect(() => {
+  form.reset(buildDefaultValues(options, optionsValues, is_admin));
+  setOriginalOptionsValues(optionsValues);
+  setClickedCopyButtons(getInitialCopiedSlugs(options, optionsValues, is_admin));
+
+}, [optionsValues, options, is_admin, form]);
+
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
-     //console.log("Server action form data from client:", data);
-     const dynamicFormLogger = logger.child('DynamicForm/handleServerActionSubmit');
-     dynamicFormLogger.debug("Form data before sending to server", { context: { data } });
-     
-     // Trigger validation for all fields
-     const isValid = await form.trigger();
-     if (!isValid) {
-       dynamicFormLogger.debug("Form validation failed", { context: { errors: form.formState.errors } });
-       return;
-     }
+    
+   
+    thisLogger.debug("Form data before sending to server", {
+      context: { data },
+    });
+
+    // Trigger validation for all fields
+    const isValid = await form.trigger();
+    if (!isValid) {
+      thisLogger.debug("Form validation failed", {
+        context: { errors: form.formState.errors },
+      });
+      return;
+    }
     // dynamicFormLogger.debug("Detailed form data", { context: { data, fieldCount: Object.keys(data).length } });
     // Convert to FormData for Server Action
     const formDataObj = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-     // if (value !== undefined && value !== null) {
-        if (value instanceof File) {
-          // Handle file uploads
-          formDataObj.append(key, value);
-        } else if (Array.isArray(value)) {
-          // Handle arrays by joining with semicolon
-          //this is used for multi-select and notes
-          formDataObj.append(key, value.join("; "));
-        } else if (
-          typeof value === "object" &&
-          !Array.isArray(value) &&
-          value !== null
-        ) {
-          //this is used for numberWithUnit that are sent as object with unit and value
-          formDataObj.append(key, JSON.stringify(value));
-        } else {
-          //this is used for other fields that are sent as string
-          formDataObj.append(key, value);
-        }
+      // if (value !== undefined && value !== null) {
+      if (value instanceof File) {
+        // Handle file uploads
+        formDataObj.append(key, value);
+      } else if (Array.isArray(value)) {
+        // Handle arrays by joining with semicolon
+        //this is used for multi-select and notes
+        formDataObj.append(key, value.join("; "));
+      } else if (
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        value !== null
+      ) {
+        //this is used for numberWithUnit that are sent as object with unit and value
+        formDataObj.append(key, JSON.stringify(value));
+      } else {
+        //this is used for other fields that are sent as string
+        formDataObj.append(key, value);
+      }
 
-     // }
+      // }
     });
 
-    dynamicFormLogger.debug("Form data before sending to server", { context: { formDataObj } });
+    thisLogger.debug("Form data before sending to server", {
+      context: { formDataObj },
+    });
 
     // Call the Server Action
     if (action) {
@@ -496,47 +339,60 @@ export function DynamicForm({
           is_admin,
           optionsValues,
           entity_id,
-          entity_type
+          entity_type,
         );
         toast.success("Form submitted successfully");
         // Reset form dirty state after successful submission
+      
         setIsFormDirty(false);
         setIsSubmitting(false);
+        setClickedCopyButtons(new Set())
         // Refresh the page after successful submission using Next.js router
         router.refresh();
+          setFileInputKey((key)=>key+1)
+       
       } catch (error) {
         toast.error("Failed to submit form");
 
-        dynamicFormLogger.error("Form error message received in client after server action failed", { 
-          error, 
-          context: { 
-            broker_id, 
-            is_admin, 
-            entity_id, 
-            entity_type,
-            fieldCount: Object.keys(data).length 
-          } 
-        });
+        thisLogger.error(
+          "Form error message received in client after server action failed",
+          {
+            error,
+            context: {
+              broker_id,
+              is_admin,
+              entity_id,
+              entity_type,
+              fieldCount: Object.keys(data).length,
+            },
+          },
+        );
         setIsSubmitting(false);
       }
     }
   }
 
-  const renderFormField = (option: Option, formField: any) => {
+
+  const renderFormField = (option: Option, formField: ControllerRenderProps<FieldValues, string>) => {
     switch (option.form_type) {
       case "numberWithUnit":
         const fieldError = form.formState.errors?.[option.slug];
-        const unitError = fieldError && typeof fieldError === 'object' && 'unit' in fieldError ? (fieldError as any).unit : undefined;
+        const unitError =
+          fieldError && typeof fieldError === "object" && "unit" in fieldError
+            ? (fieldError as any).unit
+            : undefined;
         return (
           <div>
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
+                placeholder={
+                  option.placeholder || `Enter ${option.name.toLowerCase()}`
+                }
                 min={option.min_constraint}
                 max={option.max_constraint}
                 value={formField.value?.value || ""}
-                onChange={e =>
+                onChange={(e) =>
                   formField.onChange({
                     ...formField.value,
                     value: parseFloat(e.target.value),
@@ -545,7 +401,7 @@ export function DynamicForm({
               />
               <Select
                 value={formField.value?.unit || ""}
-                onValueChange={unit =>
+                onValueChange={(unit) =>
                   formField.onChange({ ...formField.value, unit })
                 }
               >
@@ -554,7 +410,7 @@ export function DynamicForm({
                     "w-[120px]",
                     option.required === 1 &&
                       unitError &&
-                      "border-red-500 focus:border-red-500"
+                      "border-red-500 focus:border-red-500",
                   )}
                 >
                   <SelectValue placeholder="Unit" />
@@ -565,7 +421,7 @@ export function DynamicForm({
                       <SelectItem key={metaData?.value} value={metaData?.value}>
                         {metaData?.label}
                       </SelectItem>
-                    )
+                    ),
                   )}
                 </SelectContent>
               </Select>
@@ -626,7 +482,6 @@ export function DynamicForm({
               isMulti
               classNamePrefix="react-select"
               instanceId={option.slug} // Add stable instanceId to prevent hydration errors
-             
               onChange={(selected) => {
                 // Store the actual array of selected values
                 const values = selected
@@ -641,7 +496,7 @@ export function DynamicForm({
                 option.meta_data?.filter(
                   (metaData) =>
                     Array.isArray(formField.value) &&
-                    formField.value.includes(metaData.value)
+                    formField.value.includes(metaData.value),
                 ) || []
               }
               placeholder={
@@ -662,7 +517,10 @@ export function DynamicForm({
                 onCheckedChange={formField.onChange}
                 id={option.slug}
               />
-              <FormLabel htmlFor={option.slug} className="text-sm font-medium cursor-pointer select-none">
+              <FormLabel
+                htmlFor={option.slug}
+                className="text-sm font-medium cursor-pointer select-none"
+              >
                 {option.name}
               </FormLabel>
             </div>
@@ -723,7 +581,7 @@ export function DynamicForm({
                         size="sm"
                         onClick={() => {
                           const newNotes = formField.value.filter(
-                            (_: string, i: number) => i !== index
+                            (_: string, i: number) => i !== index,
                           );
                           formField.onChange(newNotes);
                         }}
@@ -757,7 +615,7 @@ export function DynamicForm({
           <div className="min-w-0 overflow-hidden">
             {formField.value && typeof formField.value === "string" && (
               <div className="text-sm text-muted-foreground mb-2 min-w-0 overflow-hidden">
-                <span>Current file:{" "}</span>
+                <span>Current file: </span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -782,6 +640,7 @@ export function DynamicForm({
                     >
                       <img
                         src={formField.value}
+                        key={Math.random()*1000}
                         alt="Current file"
                         style={{
                           maxWidth: 200,
@@ -798,6 +657,7 @@ export function DynamicForm({
               </div>
             )}
             <Input
+              key={fileInputKey}
               type="file"
               accept="image/*"
               onChange={(e) => {
@@ -805,6 +665,8 @@ export function DynamicForm({
                 if (file) {
                   formField.onChange(file);
                 }
+              
+                
               }}
             />
             {renderOptionHistory(option)}
@@ -815,12 +677,16 @@ export function DynamicForm({
           <div>
             <Input
               type={option.form_type === "number" ? "number" : "text"}
-              placeholder={option.placeholder || `Enter ${option.name.toLowerCase()}`}
+              placeholder={
+                option.placeholder || `Enter ${option.name.toLowerCase()}`
+              }
               {...formField}
               value={
                 option.form_type === "number"
-                  ? (formField.value === null || formField.value === undefined ? "" : formField.value)
-                  : (formField.value || "")
+                  ? formField.value === null || formField.value === undefined
+                    ? ""
+                    : formField.value
+                  : formField.value || ""
               }
             />
             {renderOptionHistory(option)}
@@ -836,54 +702,70 @@ export function DynamicForm({
         className="space-y-8"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-10 gap-y-8 w-full">
-        {options.map((option, idx) => {
-         
-          return (
-          <FormField
-            key={option.id}
-            control={form.control}
-            name={option.slug}
-            render={({ field: formField }) => (
-              <FormItem >
-                {option.form_type !== "checkbox" && (
-                  <div className="flex items-center gap-2">
-                    <FormLabel>{option.name}{option.required === 1 && <span className="text-red-500 text-lg font-bold align-super" aria-label="required">*</span>}</FormLabel>
-                    {option.tooltip && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{option.tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+          {options.map((option, idx) => {
+            return (
+              <FormField
+                key={option.id}
+                control={form.control}
+                name={option.slug}
+                render={({ field: formField }) => (
+                  <FormItem>
+                    {option.form_type !== "checkbox" && (
+                      <div className="flex items-center gap-2">
+                        <FormLabel>
+                          {option.name}
+                          {option.required === 1 && (
+                            <span
+                              className="text-red-500 text-lg font-bold align-super"
+                              aria-label="required"
+                            >
+                              *
+                            </span>
+                          )}
+                        </FormLabel>
+                        {option.tooltip && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{option.tooltip}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
                     )}
-                  </div>
+                    <FormControl>
+                      {renderFormField(option, formField)}
+                    </FormControl>
+                    {option.description && (
+                      <FormDescription>{option.description}</FormDescription>
+                    )}
+                    {/* Custom error display for notes fields */}
+                    {form.formState.errors[option.slug] &&
+                    option.form_type === "notes" ? (
+                      <div className="text-sm text-red-500 mt-1">
+                        {Array.isArray(form.formState.errors[option.slug])
+                          ? (
+                              form.formState.errors[
+                                option.slug
+                              ] as unknown as any[]
+                            ).map((error: any, index: number) => (
+                              <div key={index}>{error.message}</div>
+                            ))
+                          : (form.formState.errors[option.slug] as any)
+                              ?.message}
+                      </div>
+                    ) : (
+                      <FormMessage />
+                    )}
+                  </FormItem>
                 )}
-                <FormControl>{renderFormField(option, formField)}</FormControl>
-                {option.description && (
-                  <FormDescription>{option.description}</FormDescription>
-                )}
-                {/* Custom error display for notes fields */}
-                {form.formState.errors[option.slug] && option.form_type === "notes" ? (
-                  <div className="text-sm text-red-500 mt-1">
-                    {Array.isArray(form.formState.errors[option.slug]) 
-                      ? (form.formState.errors[option.slug] as unknown as any[]).map((error: any, index: number) => (
-                          <div key={index}>{error.message}</div>
-                        ))
-                      : (form.formState.errors[option.slug] as any)?.message
-                    }
-                  </div>
-                ) : (
-                  <FormMessage />
-                )}
-              </FormItem>
-            )}
-          />
-          );
-        })}
+              />
+            );
+          })}
         </div>
         <Button
           type="submit"
@@ -892,7 +774,7 @@ export function DynamicForm({
             "transition-all duration-300 font-medium",
             isFormDirty
               ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl"
-              : "bg-transparent border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-not-allowed"
+              : "bg-transparent border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-not-allowed",
           )}
         >
           {isFormDirty ? "Save Changes" : "No Changes to Save"}
@@ -900,4 +782,241 @@ export function DynamicForm({
       </form>
     </Form>
   );
+}
+
+
+function buildDefaultValues(
+  options: Option[],
+  optionsValues: OptionValue[],
+  is_admin: boolean,
+) {
+  return options.reduce((acc, option) => {
+    const optionValue = optionsValues?.find(
+      (optionValue) => optionValue.option_slug === option.slug,
+    );
+
+    if(!optionValue && option.form_type === "checkbox") {
+      return { ...acc, [option.slug]: false };
+    }
+
+    if (!optionValue) {
+      return { ...acc, [option.slug]: null };
+    }
+
+    const fieldValue = is_admin
+      ? optionValue.public_value === null ||
+        optionValue.public_value === "undefined"
+        ? optionValue.value
+        : optionValue.public_value
+      : optionValue.value;
+
+    const metadata = is_admin
+      ? optionValue.metadata?.public_value ?? optionValue.metadata?.value
+      : optionValue.metadata?.value;
+
+    switch (option.form_type) {
+      case "checkbox":
+        return { ...acc, [option.slug]: fieldValue === "1" };
+
+      case "multiple_select":
+        return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
+
+      case "notes":
+        return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [""] };
+
+      case "numberWithUnit":
+        return {
+          ...acc,
+          [option.slug]: {
+            value: fieldValue ? parseFloat(fieldValue) : null,
+            unit: metadata?.unit ?? null,
+          },
+        };
+
+      case "image":
+        return { ...acc, [option.slug]: fieldValue };
+
+      default:
+        return { ...acc, [option.slug]: fieldValue };
+    }
+  }, {});
+}
+
+
+function buildFormSchema(options: Option[]) {
+  const schemaObject: { [key: string]: any } = {};
+
+  for (const option of options) {
+    if (option.form_type === "numberWithUnit") {
+      schemaObject[option.slug] =
+        option.required === 1
+          ? z.object({
+              value: z.number(),
+              unit: z.string(),
+            })
+          : z
+              .object({
+                value: z.number(),
+                unit: z.string(),
+              })
+              .nullable()
+              .optional();
+
+      continue;
+    }
+
+    if (option.form_type === "image") {
+      schemaObject[option.slug] =
+        option.required === 1
+          ? z.instanceof(File).or(z.string())
+          : z.instanceof(File).or(z.string()).nullable().optional();
+
+      continue;
+    }
+
+    let fieldSchema;
+
+    switch (option.form_type) {
+      case "number": {
+        let numberSchema = z.number();
+
+        if (option.min_constraint) {
+          numberSchema = numberSchema.min(
+            option.min_constraint,
+            `${option.name} must be at least ${option.min_constraint}`,
+          );
+        }
+
+        if (option.max_constraint) {
+          numberSchema = numberSchema.max(
+            option.max_constraint,
+            `${option.name} must be at most ${option.max_constraint}`,
+          );
+        }
+
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) => (val === "" ? null : Number(val)),
+                numberSchema,
+              )
+            : z.preprocess(
+                (val) =>
+                  val === "" || val === null || val === undefined
+                    ? null
+                    : Number(val),
+                numberSchema.nullable().optional(),
+              );
+
+        break;
+      }
+
+      case "checkbox":
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) =>
+                  val === null || val === undefined ? false : Boolean(val),
+                z.boolean(),
+              )
+            : z.preprocess(
+                (val) =>
+                  val === null || val === undefined ? null : Boolean(val),
+                z.boolean().nullable().optional(),
+              );
+        break;
+
+      case "string":
+      case "textarea": {
+        let baseString = z.string();
+
+        if (option.min_constraint) {
+          baseString = baseString.min(
+            option.min_constraint,
+            `${option.name} must be at least ${option.min_constraint} characters`,
+          );
+        }
+
+        if (option.max_constraint) {
+          baseString = baseString.max(
+            option.max_constraint,
+            `${option.name} must be at most ${option.max_constraint} characters`,
+          );
+        }
+
+        if (option.required === 1) {
+          const minValue = option.min_constraint ?? 1;
+          baseString = baseString.min(minValue, `${option.name} is required`);
+
+          fieldSchema = z.preprocess(
+            (val) => (val === "" ? null : val),
+            baseString,
+          );
+        } else {
+          fieldSchema = z.preprocess(
+            (val) => (val === "" ? null : val),
+            baseString.nullable().optional(),
+          );
+        }
+
+        break;
+      }
+
+      case "multiple_select":
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) => {
+                  if (val === null || val === undefined) return [];
+                  if (Array.isArray(val)) return val;
+                  return [];
+                },
+                z
+                  .array(z.string())
+                  .min(1, `Please select at least one ${option.name}`),
+              )
+            : z.preprocess((val) => {
+                if (val === null || val === undefined) return [];
+                if (Array.isArray(val)) return val;
+                return [];
+              }, z.array(z.string()).optional());
+        break;
+
+      case "notes":
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) => {
+                  if (val === null || val === undefined) return [];
+                  if (Array.isArray(val)) return val;
+                  return [];
+                },
+                z
+                  .array(z.string().min(1, "Note cannot be empty"))
+                  .min(1, `Please enter at least one ${option.name}`),
+              )
+            : z.preprocess((val) => {
+                if (val === null || val === undefined) return [];
+                if (Array.isArray(val)) return val;
+                return [];
+              }, z.array(z.string()).optional());
+        break;
+
+      case "url":
+        fieldSchema =
+          option.required === 1
+            ? z.string().min(1, "URL is required").url({
+                message: "Invalid URL",
+              })
+            : z.string().url({ message: "Invalid URL" }).nullable().optional();
+        break;
+
+      default:
+        fieldSchema = z.string();
+    }
+
+    schemaObject[option.slug] = fieldSchema;
+  }
+
+  return z.object(schemaObject);
 }
