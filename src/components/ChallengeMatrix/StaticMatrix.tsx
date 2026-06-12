@@ -1183,7 +1183,8 @@ export default function StaticMatrix({
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Available for all challenges
+                      Applies to every amount in the selected step and
+                      category.
                     </TooltipContent>
                   </Tooltip>
                 </div>
