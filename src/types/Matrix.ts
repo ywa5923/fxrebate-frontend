@@ -82,6 +82,7 @@ export interface MatrixData {
 export interface StaticMatrixCell {
   id?: number | null;
   previous_value?: string | null;
+  previous_public_value?: string | null;
   value: string | null;
   public_value?: string | null;
   is_updated_entry?: boolean | number;

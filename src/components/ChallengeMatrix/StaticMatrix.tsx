@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleHelp,  CopyIcon, Save } from "lucide-react";
+import { CircleHelp, CopyIcon, Save } from "lucide-react";
 import PublishToggle from "@/components/ChallengeMatrix/PublishToggle";
 
 import {
@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { FiCopy } from "react-icons/fi";
+import { PreviousValues } from "@/components/ChallengeMatrix/PreviousValues";
 import {
   ColumnHeader,
   RowHeader,
@@ -89,7 +90,21 @@ export default function StaticMatrix({
   const [hasChanges, setHasChanges] = useState(false);
   const [isEmptyMatrix, setIsEmptyMatrix] = useState(false);
 
- 
+  // URL validation for the affiliate link inputs (checked on save)
+  const [linkErrors, setLinkErrors] = useState({
+    affiliate_link: false,
+    affiliate_master_link: false,
+  });
+  const [showLinkErrorDialog, setShowLinkErrorDialog] = useState(false);
+
+  const isValidUrl = (value: string): boolean => {
+    try {
+      const parsed = new URL(value.trim());
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
 
   const togglePublish = async (published: boolean) => {
     if (isEmptyMatrix) {
@@ -155,14 +170,19 @@ export default function StaticMatrix({
 
   const handleCloneMatrixForAllAmounts = async () => {
     let cloneApiUrl = `/challenges/${brokerId}/clone`;
-    let cloneApiResponse = await apiClient<any>(cloneApiUrl, UseTokenAuth.Yes, {
-      method: "POST",
-      body: JSON.stringify({
-        category_id: categoryId,
-        step_id: stepId,
-        amount_id: amountId,
-      }),
-    }, ErrorMode.Return);
+    let cloneApiResponse = await apiClient<any>(
+      cloneApiUrl,
+      UseTokenAuth.Yes,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          category_id: categoryId,
+          step_id: stepId,
+          amount_id: amountId,
+        }),
+      },
+      ErrorMode.Return,
+    );
     if (!cloneApiResponse.success) {
       // Show the detailed API error only outside production
       toast.error(
@@ -198,234 +218,222 @@ export default function StaticMatrix({
   };
 
   // Fetch headers and initial data when step changes
-  useEffect(() => {
-    const loadHeadersAndData = async () => {
-      if (!stepSlug || !categoryId || !stepId) {
-        setColumnHeaders([]);
-        setRowHeaders([]);
-        setMatrixData({});
+  const loadHeadersAndData = async () => {
+    if (!stepSlug || !categoryId || !stepId) {
+      setColumnHeaders([]);
+      setRowHeaders([]);
+      setMatrixData({});
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+
+      const params = new URLSearchParams({
+        category_id: categoryId.toString(),
+        step_id: stepId.toString(),
+        language,
+        ...(amountId ? { amount_id: amountId.toString() } : {}),
+        ...(zoneId !== null && zoneId !== undefined
+          ? { zone_id: zoneId.toString() }
+          : {}),
+      });
+
+      const challengeUrl =
+        type === "placeholder"
+          ? "/challenges/placeholders"
+          : `/challenges/${brokerId}`;
+
+      // Fetch headers and challenge data in parallel
+      const [headearsResponse, challengeResponse] = await Promise.all([
+        apiClient<MatrixHeaders>(
+          headersUrl,
+          UseTokenAuth.Yes,
+          {
+            method: "GET",
+          },
+          ErrorMode.Return,
+        ),
+        apiClient<ChalengeData & ChallengePlaceholders>(
+          `${challengeUrl}?${params.toString()}`,
+          true,
+          {
+            method: "GET",
+          },
+        ),
+      ]);
+
+      // Show detailed API errors only outside production
+      const isProd = process.env.NODE_ENV === "production";
+
+      if (!headearsResponse.success || !headearsResponse.data) {
+        toast.error(
+          isProd ? "Failed to load matrix" : headearsResponse.message,
+        );
         return;
       }
-      setLoading(true);
 
-      try {
-        const headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
+      if (!challengeResponse.success) {
+        toast.error(
+          isProd ? "Failed to load matrix data" : challengeResponse.message,
+        );
+        return;
+      }
 
-        const params = new URLSearchParams({
-          category_id: categoryId.toString(),
-          step_id: stepId.toString(),
-          language,
-          ...(amountId ? { amount_id: amountId.toString() } : {}),
-          ...(zoneId !== null && zoneId !== undefined
-            ? { zone_id: zoneId.toString() }
-            : {}),
+      if (!challengeResponse.data) {
+        toast.error("Failed to load matrix data" + "No data received");
+        return;
+      }
+
+      const { columnHeaders, rowHeaders } = headearsResponse.data;
+      setColumnHeaders(columnHeaders);
+      setRowHeaders(rowHeaders);
+
+      log.debug("Data received:", {
+        url: `/challenges?${params.toString()}`,
+        data: challengeResponse.data,
+        json: JSON.stringify(challengeResponse.data, null, 2),
+      });
+
+      let {
+        matrix: initialData,
+        is_published,
+        affiliate_master_link,
+        affiliate_link,
+        evaluation_cost_discount,
+        matrix_placeholders_array, //matrix_placeholders_array
+        affiliate_master_link_placeholder,
+        affiliate_link_placeholder,
+        evaluation_cost_discount_placeholder,
+      } = challengeResponse.data;
+
+      // Set the placeholder state
+      setIsPlaceholder(type === "placeholder" || false);
+      setIsPublished(is_published);
+      setHasChanges(false);
+
+      if (is_admin && type === "challenge") {
+   
+        if (
+          isValueEmpty(affiliate_link?.public_url) &&
+          !isValueEmpty(affiliate_link?.url)
+        ) {
+          affiliate_link.public_url = affiliate_link.url;
+          affiliate_link.has_copied_public_value = true;
+        }
+        if (
+          isValueEmpty(evaluation_cost_discount?.public_value) &&
+          !isValueEmpty(evaluation_cost_discount?.value)
+        ) {
+          evaluation_cost_discount.public_value =
+            evaluation_cost_discount.value;
+          evaluation_cost_discount.has_copied_public_value = true;
+        }
+        if (
+          isValueEmpty(affiliate_master_link?.public_url) &&
+          !isValueEmpty(affiliate_master_link?.url)
+        ) {
+          affiliate_master_link.public_url = affiliate_master_link.url;
+          affiliate_master_link.has_copied_public_value = true;
+        }
+
+        setMatrixExtraData({
+          affiliate_link: {
+            ...affiliate_link,
+            placeholder: affiliate_link_placeholder,
+          },
+          evaluation_cost_discount: {
+            ...evaluation_cost_discount,
+            placeholder: evaluation_cost_discount_placeholder,
+          },
+          affiliate_master_link: {
+            ...affiliate_master_link,
+            placeholder: affiliate_master_link_placeholder,
+          },
         });
-
-        const challengeUrl =
-          type === "placeholder"
-            ? "/challenges/placeholders"
-            : `/challenges/${brokerId}`;
-
-        // Fetch headers and challenge data in parallel
-        const [headearsResponse, challengeResponse] = await Promise.all([
-          apiClient<MatrixHeaders>(
-            headersUrl,
-            UseTokenAuth.Yes,
-            {
-              method: "GET",
-            },
-            ErrorMode.Return,
-          ),
-          apiClient<ChalengeData & ChallengePlaceholders>(
-            `${challengeUrl}?${params.toString()}`,
-            true,
-            {
-              method: "GET",
-            },
-          ),
-        ]);
-
-        // Show detailed API errors only outside production
-        const isProd = process.env.NODE_ENV === "production";
-
-        if (!headearsResponse.success || !headearsResponse.data) {
-          toast.error(
-            isProd ? "Failed to load matrix" : headearsResponse.message,
-          );
-          return;
-        }
-
-        if (!challengeResponse.success) {
-          toast.error(
-            isProd ? "Failed to load matrix data" : challengeResponse.message,
-          );
-          return;
-        }
-
-        if (!challengeResponse.data) {
-          toast.error("Failed to load matrix data" + "No data received")
-          return;
-        }
-
-        const { columnHeaders, rowHeaders } = headearsResponse.data;
-        setColumnHeaders(columnHeaders);
-        setRowHeaders(rowHeaders);
-
-        log.debug("Data received:", {
-          url: `/challenges?${params.toString()}`,
-          data: challengeResponse.data,
-          json: JSON.stringify(challengeResponse.data, null, 2),
+      } else {
+        //for user and in placeholder mode, the data is the same as received from the API
+        //TO DO need to remove placeholder?
+        setMatrixExtraData({
+          affiliate_link: {
+            ...affiliate_link,
+            placeholder: affiliate_link_placeholder,
+          },
+          evaluation_cost_discount: {
+            ...evaluation_cost_discount,
+            placeholder: evaluation_cost_discount_placeholder,
+          },
+          affiliate_master_link: {
+            ...affiliate_master_link,
+            placeholder: affiliate_master_link_placeholder,
+          },
         });
+      }
 
-        let {
-          matrix: initialData,
-          is_published,
-          affiliate_master_link,
-          affiliate_link,
-          evaluation_cost_discount,
-          matrix_placeholders_array, //matrix_placeholders_array
-          affiliate_master_link_placeholder,
-          affiliate_link_placeholder,
-          evaluation_cost_discount_placeholder,
-        } = challengeResponse.data;
+      if (initialData && Object.keys(initialData).length > 0) {
+        if (type === "challenge") {
+          const processedData = initialData.map((row) =>
+            row.map((cell) => {
+              const hasPublicValue = !isValueEmpty(cell.public_value);
+              const hasValue = !isValueEmpty(cell.value);
 
-        // Set the placeholder state
-        setIsPlaceholder(type === "placeholder" || false);
-        setIsPublished(is_published);
-        setHasChanges(false);
+              if (is_admin && !hasPublicValue && hasValue) {
+                cell.public_value = cell.value;
+                cell.has_copied_public_value = true;
+              }
 
-        if (is_admin && type === "challenge") {
-          //if is admin and type is challenge and not placeholder, then:
-          //if public data is empty, then  user data is transferred to public data
-          //the admin see only public data, user see only user data
-
-          // let publicAffiliateLink =
-          //   affiliate_link?.public_url ?? affiliate_link?.url;
-          // let publicEvaluationCostDiscount =
-          //   evaluation_cost_discount?.public_value ??
-          //   evaluation_cost_discount?.value;
-          // let publicMasterAffiliateLink =
-          //   affiliate_master_link?.public_url ?? affiliate_master_link?.url;
-
-          if(isValueEmpty(affiliate_link?.public_url)&&!isValueEmpty(affiliate_link?.url)) {
-            affiliate_link.public_url = affiliate_link.url;
-            affiliate_link.has_copied_public_value = true;
-          }
-          if(isValueEmpty(evaluation_cost_discount?.public_value)&&!isValueEmpty(evaluation_cost_discount?.value)) {
-            evaluation_cost_discount.public_value = evaluation_cost_discount.value;
-            evaluation_cost_discount.has_copied_public_value = true;
-          }
-          if(isValueEmpty(affiliate_master_link?.public_url)&&!isValueEmpty(affiliate_master_link?.url)) {
-            affiliate_master_link.public_url = affiliate_master_link.url;
-            affiliate_master_link.has_copied_public_value = true;
-          }
-
-          setMatrixExtraData({
-            affiliate_link: {
-              ...affiliate_link,
-             // public_url: publicAffiliateLink,
-              placeholder: affiliate_link_placeholder,
-            },
-            evaluation_cost_discount: {
-              ...evaluation_cost_discount,
-             // public_value: publicEvaluationCostDiscount,
-              placeholder: evaluation_cost_discount_placeholder,
-            },
-            affiliate_master_link: {
-              ...affiliate_master_link,
-             // public_url: publicMasterAffiliateLink,
-              placeholder: affiliate_master_link_placeholder,
-            },
-          });
+              return {
+                ...cell,
+                placeholder:
+                  matrix_placeholders_array?.[
+                    `${cell.row_slug}-${cell.col_slug}`
+                  ] ?? null,
+              };
+            }),
+          );
+          setMatrixData(processedData);
+          setIsEmptyMatrix(false);
         } else {
-          //for user and in placeholder mode, the data is the same as received from the API
-          //TO DO need to remove placeholder?
-          setMatrixExtraData({
-            affiliate_link: {
-              ...affiliate_link,
-              placeholder: affiliate_link_placeholder,
-            },
-            evaluation_cost_discount: {
-              ...evaluation_cost_discount,
-              placeholder: evaluation_cost_discount_placeholder,
-            },
-            affiliate_master_link: {
-              ...affiliate_master_link,
-              placeholder: affiliate_master_link_placeholder,
-            },
-          });
+          setMatrixData(initialData);
         }
-
-        if (initialData && Object.keys(initialData).length > 0) {
-          if (type === "challenge") {
-            
-            const processedData = initialData.map((row) =>
-              row.map((cell) => {
-                const hasPublicValue = !isValueEmpty(cell.public_value);
-                const hasValue = !isValueEmpty(cell.value);
-
-                // const publicValue = is_admin
-                //   ? hasPublicValue
-                //     ? cell.public_value
-                //     : cell.value
-                //   : cell.public_value;
-                //if is_admin and the public value is empty, then set the value to the public value
-                //also set a flag to indicate that the public value is empty
-                if(is_admin && !hasPublicValue && hasValue) {
-                  cell.public_value = cell.value;
-                  cell.has_copied_public_value = true;
-                }
-
-                return {
-                  ...cell,
-                  //public_value: publicValue,
-                  placeholder:
-                    matrix_placeholders_array?.[
-                      `${cell.row_slug}-${cell.col_slug}`
-                    ] ?? null,
-                };
-              }),
-            );
-            setMatrixData(processedData);
-            setIsEmptyMatrix(false);
-          } else {
-            setMatrixData(initialData);
-          }
-        } else {
-          // Create empty matrix structure
-          log.debug("No initial data, creating empty matrix structure", {});
-          const newMatrix: StaticMatrixData = {};
-          rowHeaders.forEach((r, rIdx) => {
-            newMatrix[rIdx] = [];
-            columnHeaders.forEach((c) => {
-              newMatrix[rIdx].push({
-                id: null,
-                value: "",
-                public_value: "",
-                ...(type != "placeholder"
-                  ? {
-                      placeholder:
-                        matrix_placeholders_array?.[r.slug + "-" + c.slug] ??
-                        null,
-                    }
-                  : {}),
-                row_slug: r.slug,
-                col_slug: c.slug,
-                type: c.form_type?.name || "text",
-              });
+      } else {
+        // Create empty matrix structure
+        log.debug("No initial data, creating empty matrix structure", {});
+        const newMatrix: StaticMatrixData = {};
+        rowHeaders.forEach((r, rIdx) => {
+          newMatrix[rIdx] = [];
+          columnHeaders.forEach((c) => {
+            newMatrix[rIdx].push({
+              id: null,
+              value: "",
+              public_value: "",
+              ...(type != "placeholder"
+                ? {
+                    placeholder:
+                      matrix_placeholders_array?.[r.slug + "-" + c.slug] ??
+                      null,
+                  }
+                : {}),
+              row_slug: r.slug,
+              col_slug: c.slug,
+              type: c.form_type?.name || "text",
             });
           });
-          setMatrixData(newMatrix);
-          setIsEmptyMatrix(true);
-        }
-      } catch (e) {
-        log.error("Failed to load headers or data", { error: e });
-        setColumnHeaders([]);
-        setRowHeaders([]);
-      } finally {
-        setLoading(false);
+        });
+        setMatrixData(newMatrix);
+        setIsEmptyMatrix(true);
       }
-    };
+    } catch (e) {
+      log.error("Failed to load headers or data", { error: e });
+      setColumnHeaders([]);
+      setRowHeaders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadHeadersAndData();
   }, [language, categoryId, stepId, amountId, zoneId, stepSlug]);
 
@@ -478,7 +486,6 @@ export default function StaticMatrix({
     showError: boolean,
   ) => {
     // In admin mode, use public_value for input, otherwise use value
-    //const sourceValue = is_admin ? (cell.is_updated_entry ? cell.value : cell.public_value) : cell.value;
     const sourceValue = is_admin ? cell.public_value : cell.value;
     // Values are plain text from the API
     const rawValue = sourceValue ?? "";
@@ -532,11 +539,13 @@ export default function StaticMatrix({
           {(() => {
             const cellKey = `${rowIndex}-${colIndex}`;
             const shouldShowCopy =
-              is_admin &&
-              !isPlaceholder &&
-              (!!cell.is_updated_entry || copiedCells.has(cellKey)) || cell.has_copied_public_value;
+              (is_admin &&
+                !isPlaceholder &&
+                (!!cell.is_updated_entry || copiedCells.has(cellKey))) ||
+              cell.has_copied_public_value;
             if (!shouldShowCopy) return null;
             const isGreen = copiedCells.has(cellKey) || cell.has_copied_public_value;
+              
             return (
               <Button
                 variant="outline"
@@ -551,17 +560,11 @@ export default function StaticMatrix({
                     next.add(cellKey);
                     return next;
                   });
-                  // Ensure green feedback
-                  e.currentTarget.classList.add(
-                    "bg-green-100",
-                    "border-green-500",
-                    "text-green-700",
-                  );
+                 
                 }}
                 className={cn(
                   "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
-                  isGreen &&
-                    "bg-green-100 border-green-500 text-green-700",
+                  isGreen && "bg-green-100 border-green-500 text-green-700",
                 )}
                 title="Copy broker value to public value"
               >
@@ -576,18 +579,27 @@ export default function StaticMatrix({
           </div>
         )}
         {is_admin && !isPlaceholder && (
-          <div className="space-y-1">
+          <div className="space-y-1 flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
             <div
               className={cn("text-xs min-h-[1rem]", {
                 "text-red-500 dark:text-red-400": cell.is_updated_entry,
-                "text-gray-500 dark:text-gray-400": !cell.is_updated_entry,
+              
               })}
-            >
-              <div>Broker Value: {formatText(cell.value)}</div>
-              {cell.value != cell.previous_value && (
-                <div>Previous Value: {formatText(cell.previous_value)}</div>
+            >Broker Value: {formatText(cell.value)}</div>
+             
+              {!isValueEmpty(cell.previous_value) && (
+                <PreviousValues
+                  label="Previous Value"
+                  previousValue={formatText(cell.previous_value)}
+                />
               )}
-            </div>
+              {!isValueEmpty(cell.previous_public_value) && (
+                <PreviousValues
+                  label="Previous Public Value"
+                  previousValue={formatText(cell.previous_public_value)}
+                />
+              )}
+            
           </div>
         )}
       </div>
@@ -621,8 +633,6 @@ export default function StaticMatrix({
     );
   };
 
-
-
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -638,6 +648,31 @@ export default function StaticMatrix({
         if (hasEmptyCells) {
           // setShowValidation(true);
           toast.error("Please fill in all required fields before saving");
+          return;
+        }
+      }
+
+      // Validate affiliate links: when not empty they must be valid URLs
+      if (type === "challenge") {
+        const affiliateLink =
+          (is_admin
+            ? matrixExtraData?.affiliate_link?.public_url
+            : matrixExtraData?.affiliate_link?.url) ?? "";
+        const masterLink =
+          (is_admin
+            ? matrixExtraData?.affiliate_master_link?.public_url
+            : matrixExtraData?.affiliate_master_link?.url) ?? "";
+
+        const errors = {
+          affiliate_link:
+            affiliateLink.trim() !== "" && !isValidUrl(affiliateLink),
+          affiliate_master_link:
+            masterLink.trim() !== "" && !isValidUrl(masterLink),
+        };
+        setLinkErrors(errors);
+
+        if (errors.affiliate_link || errors.affiliate_master_link) {
+          setShowLinkErrorDialog(true);
           return;
         }
       }
@@ -699,14 +734,15 @@ export default function StaticMatrix({
         return;
       }
 
-      
       setHasChanges(false);
       setIsEmptyMatrix(false);
+      setCopiedCells(new Set());
+      loadHeadersAndData();
       toast.success("Matrix data saved successfully");
-      console.log("Saved successfully:", response.data);
-      router.refresh();
+   
+      //router.refresh();
     } catch (e) {
-      console.error("Failed to save", e);
+      
       toast.error("Error saving matrix data");
     } finally {
       setSaving(false);
@@ -744,6 +780,9 @@ export default function StaticMatrix({
     );
   }
 
+  const matrixColumnCount = Math.max(columnHeaders.length, 1);
+  const matrixGridTemplateColumns = `200px repeat(${matrixColumnCount}, minmax(150px, 1fr))`;
+
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
@@ -756,93 +795,117 @@ export default function StaticMatrix({
           />
         )}
 
-      <div className="flex items-center gap-2 justify-end">
-        <AlertDialog>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 text-gray-600 dark:text-gray-300"
-                  aria-label="Clone table for all amounts"
+        <div className="flex items-center gap-2 justify-end">
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 text-gray-600 dark:text-gray-300"
+                    aria-label="Clone table for all amounts"
+                  >
+                    <CopyIcon className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={6}>
+                Copy this table to every amount in the selected step and
+                category.
+              </TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Clone table for all amounts?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will overwrite the existing table data for all amounts in
+                  the current step and category.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleCloneMatrixForAllAmounts}
+                  className="bg-green-100 hover:bg-green-200 text-green-800 border border-green-200"
                 >
-                  <CopyIcon className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              Copy this table to every amount in the selected step and
-              category.
-            </TooltipContent>
-          </Tooltip>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Clone table for all amounts?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                This will overwrite the existing table data for all amounts
-                in the current step and category.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleCloneMatrixForAllAmounts}
-                className="bg-green-100 hover:bg-green-200 text-green-800 border border-green-200"
-              >
-                Clone
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        {/* Save button */}
-        <Button
-          disabled={is_admin ? saving : saving || !stepSlug || !hasChanges}
-          onClick={handleSave}
-          variant="outline"
-          size="default"
-          className="h-9 bg-green-100 hover:bg-green-200 text-green-800 border-green-200 disabled:opacity-50"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? "Saving..." : "Save Table"}
-        </Button>
+                  Clone
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          {/* Save button */}
+          <Button
+            disabled={is_admin ? saving : saving || !stepSlug || !hasChanges}
+            onClick={handleSave}
+            variant="outline"
+            size="default"
+            className="h-9 bg-green-100 hover:bg-green-200 text-green-800 border-green-200 disabled:opacity-50"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Saving..." : "Save Table"}
+          </Button>
         </div>
       </div>
-      <Card className="relative">
+      {/* Invalid affiliate link dialog (shown on save) */}
+      <AlertDialog
+        open={showLinkErrorDialog}
+        onOpenChange={setShowLinkErrorDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Invalid link</AlertDialogTitle>
+            <AlertDialogDescription>
+              {linkErrors.affiliate_link && linkErrors.affiliate_master_link
+                ? "The Affiliate Link and the Master Affiliate Link are not valid URLs."
+                : linkErrors.affiliate_link
+                ? "The Affiliate Link is not a valid URL."
+                : "The Master Affiliate Link is not a valid URL."}{" "}
+              Please enter a full URL starting with http:// or https://.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-green-100 hover:bg-green-200 text-green-800 border border-green-200">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <Card className="relative max-w-full">
         <CardContent className="p-0 sm:p-6">
-          
-            <div
-              className="grid gap-3 min-w-max"
-              style={{
-                gridTemplateColumns:
-                  columnHeaders.length > 0
-                    ? `200px repeat(${columnHeaders.length}, minmax(150px, 1fr))`
-                    : `200px repeat(3, minmax(150px, 1fr))`,
-              }}
-            >
-              <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 min-h-[2.5rem] flex items-center">
-                Row / Column
+          <div className="w-full max-w-full overflow-x-auto">
+            <div className="flex min-w-max flex-col gap-3">
+              <div
+                className="grid gap-3"
+                style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+              >
+            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 min-h-[2.5rem] flex items-center">
+              Row / Column
+            </div>
+            {columnHeaders.length > 0 &&
+              columnHeaders.map((header, index) => (
+                <div
+                  key={index}
+                  className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 text-center min-h-[2.5rem] flex items-center justify-center"
+                >
+                  {header.name}
+                </div>
+              ))}
               </div>
-              {columnHeaders.length > 0 &&
-                columnHeaders.map((header, index) => (
+            {rowHeaders.length > 0 &&
+              rowHeaders.map((rowHeader, rowIndex) => {
+                //some rows headears are not visible to the broker, so we don't render them
+                if (!is_admin && !rowHeader.broker_can_see) {
+                  return null;
+                }
+                return (
                   <div
-                    key={index}
-                    className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 text-center min-h-[2.5rem] flex items-center justify-center"
+                    key={`row-${rowIndex}`}
+                    className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
+                    style={{ gridTemplateColumns: matrixGridTemplateColumns }}
                   >
-                    {header.name}
-                  </div>
-                ))}
-              {rowHeaders.length > 0 &&
-                rowHeaders.map((rowHeader, rowIndex) => {
-                 
-                  //some rows headears are not visible to the broker, so we don't render them
-                  if (!is_admin && !rowHeader.broker_can_see) {
-                    return null;
-                  }
-                  return (
-                  <div key={`row-${rowIndex}`} className="contents">
                     <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
                       {rowHeader.description && (
                         <Tooltip>
@@ -867,8 +930,8 @@ export default function StaticMatrix({
                       <span>{rowHeader.name}</span>
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
-                      const cellData =
-                        matrixData[rowIndex] && matrixData[rowIndex][colIndex];
+                      const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
+                        
                       return (
                         <div
                           key={cellData?.id ?? `cell-${rowIndex}-${colIndex}`}
@@ -890,339 +953,346 @@ export default function StaticMatrix({
                       );
                     })}
                   </div>
-                  );
-                })}
-              {/* Affiliate link row (separate from matrix data) */}
-              {(type === "challenge" || type === "placeholder") && (
-                <div className="contents">
-                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
-                    Evaluation Cost Discount
-                  </div>
-                  <div
-                    className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
-                    style={{
-                      gridColumn: `span ${Math.max(
-                        columnHeaders.length,
-                        1,
-                      )} / span ${Math.max(columnHeaders.length, 1)}`,
-                    }}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        {/*If is_admin=true and if publi_value is empty,then the value is copy in public value when the matrix extradata is set at the begining*/}
-                        <Input
-                          value={
-                            is_admin
-                              ? matrixExtraData?.evaluation_cost_discount
-                                  ?.public_value ?? ""
-                              : matrixExtraData?.evaluation_cost_discount
-                                  ?.value ?? ""
-                          }
-                          placeholder={
-                            matrixExtraData?.evaluation_cost_discount
-                              ?.placeholder ?? "Enter evaluation cost discount"
-                          }
-                          onChange={(e) =>{
-                              setHasChanges(true);
-                            setMatrixExtraData((prev: any) => ({
-                              ...prev,
-                              evaluation_cost_discount: {
-                                ...prev.evaluation_cost_discount,
-                                [is_admin && type === "challenge"
-                                  ? "public_value"
-                                  : "value"]: e.target.value,
-                                is_updated_entry: false,
-                              },
-                            }))
-                          }
-                          }
-                          className="flex-1 min-w-0"
-                        />
-                        {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
-                        {is_admin &&
-                          type === "challenge" &&
+                );
+              })}
+            {/* Affiliate link row (separate from matrix data) */}
+            {(type === "challenge" || type === "placeholder") && (
+              <>
+                <div
+                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
+                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                >
+                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
+                  Evaluation Cost Discount
+                </div>
+                <div
+                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  style={{
+                    gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
+                  }}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      {/*If is_admin=true and if publi_value is empty,then the value is copy in public value when the matrix extradata is set at the begining*/}
+                      <Input
+                        value={
+                          is_admin
+                            ? matrixExtraData?.evaluation_cost_discount
+                                ?.public_value ?? ""
+                            : matrixExtraData?.evaluation_cost_discount
+                                ?.value ?? ""
+                        }
+                        placeholder={
+                          matrixExtraData?.evaluation_cost_discount
+                            ?.placeholder ?? "Enter evaluation cost discount"
+                        }
+                        onChange={(e) => {
+                          setHasChanges(true);
+                          setMatrixExtraData((prev: any) => ({
+                            ...prev,
+                            evaluation_cost_discount: {
+                              ...prev.evaluation_cost_discount,
+                              [is_admin && type === "challenge"
+                                ? "public_value"
+                                : "value"]: e.target.value,
+                              is_updated_entry: false,
+                            },
+                          }));
+                        }}
+                        className="flex-1 min-w-0"
+                      />
+                      {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
+                      {is_admin &&
+                        type === "challenge" &&
                         (!!matrixExtraData?.evaluation_cost_discount
-                            ?.is_updated_entry || matrixExtraData?.evaluation_cost_discount?.has_copied_public_value) && (
-                            <Button
-                              variant="outline"
-                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
-                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.evaluation_cost_discount?.has_copied_public_value,
-                              })}
-                              size="sm"
-                              onClick={(e) => {
-                                matrixExtraData?.evaluation_cost_discount
-                                  ?.value &&
-                                  setMatrixExtraData((prev: any) => ({
-                                    ...prev,
-                                    evaluation_cost_discount: {
-                                      ...prev.evaluation_cost_discount,
-                                      public_value:
-                                        prev.evaluation_cost_discount.value,
-                                      is_updated_entry: false,
-                                    },
-                                  }));
-                                matrixExtraData?.evaluation_cost_discount
-                                  ?.value &&
-                                  e.currentTarget.classList.add(
-                                    "bg-green-100",
-                                    "border-green-500",
-                                    "text-green-700",
-                                  );
-                              }}
-                              
-                            >
-                              <FiCopy className="w-4 h-4" />
-                            </Button>
-                          )}
-                      </div>
-                      {is_admin && (
-                        <div
-                          className={cn("text-xs space-y-1", {
-                            "text-red-500 dark:text-red-400":
+                          ?.is_updated_entry ||
+                          matrixExtraData?.evaluation_cost_discount
+                            ?.has_copied_public_value) && (
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
+                              {
+                                "bg-green-100 border-green-500 text-green-700":
+                                  matrixExtraData?.evaluation_cost_discount
+                                    ?.has_copied_public_value,
+                              },
+                            )}
+                            size="sm"
+                            onClick={(e) => {
                               matrixExtraData?.evaluation_cost_discount
-                                ?.is_updated_entry,
-                            "text-gray-500 dark:text-gray-400": !matrixExtraData
-                              ?.evaluation_cost_discount?.is_updated_entry,
-                          })}
-                        >
-                          <div>
-                            Broker Value:{" "}
-                            {matrixExtraData?.evaluation_cost_discount?.value ??
-                              ""}
-                          </div>
-                          {matrixExtraData?.evaluation_cost_discount?.value !=
+                                ?.value &&
+                                setMatrixExtraData((prev: any) => ({
+                                  ...prev,
+                                  evaluation_cost_discount: {
+                                    ...prev.evaluation_cost_discount,
+                                      public_value:
+                                      prev.evaluation_cost_discount.value,
+                                      has_copied_public_value: true,
+                                  },
+                                }));
+                              
+                            }}
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </Button>
+                        )}
+                    </div>
+                    {is_admin && (
+                      <div
+                        className={cn("text-xs space-y-1", {
+                          "text-red-500 dark:text-red-400":
                             matrixExtraData?.evaluation_cost_discount
-                              ?.previous_value && (
-                            <div>
-                              Previous Value:{" "}
-                              {matrixExtraData?.evaluation_cost_discount
-                                ?.previous_value ?? ""}
-                            </div>
-                          )}
+                              ?.is_updated_entry,
+                          "text-gray-500 dark:text-gray-400": !matrixExtraData
+                            ?.evaluation_cost_discount?.is_updated_entry,
+                        })}
+                      >
+                        <div>
+                          Broker Value:{" "}
+                          {matrixExtraData?.evaluation_cost_discount?.value ??
+                            ""}
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
-                    Affiliate Link
-                  </div>
-                  <div
-                    className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
-                    style={{
-                      gridColumn: `span ${Math.max(
-                        columnHeaders.length,
-                        1,
-                      )} / span ${Math.max(columnHeaders.length, 1)}`,
-                    }}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={
-                            is_admin
-                              ? matrixExtraData?.affiliate_link?.public_url ??
-                                ""
-                              : matrixExtraData?.affiliate_link?.url ?? ""
-                          }
-                          placeholder={
-                            matrixExtraData?.affiliate_link?.placeholder ??
-                            "Enter affiliate link"
-                          }
-                          onChange={(e) =>{
-                              setHasChanges(true);
-                            setMatrixExtraData((prev: any) => ({
-                              ...prev,
-                              affiliate_link: {
-                                ...prev.affiliate_link,
-                                [is_admin && type === "challenge"
-                                  ? "public_url"
-                                  : "url"]: e.target.value,
-                                is_updated_entry: false,
-                              },
-                            }))
-                          }
-                          }
-                          className="flex-1 min-w-0"
-                        />
-
-                        {/*If admin show button to copy affiliate link's url to public url*/}
-                        {is_admin &&
-                          type === "challenge" &&
-                          !!matrixExtraData?.affiliate_link
-                            ?.is_updated_entry && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                matrixExtraData?.affiliate_link.url &&
-                                  setMatrixExtraData((prev: any) => ({
-                                    ...prev,
-                                    affiliate_link: {
-                                      ...prev.affiliate_link,
-                                      public_url: prev.affiliate_link.url,
-                                      is_updated_entry: false,
-                                    },
-                                  }));
-                                matrixExtraData?.affiliate_link.url &&
-                                  e.currentTarget.classList.add(
-                                    "bg-green-100",
-                                    "border-green-500",
-                                    "text-green-700",
-                                  );
-                              }}
-                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
-                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.affiliate_link?.has_copied_public_value,
-                              })}
-                            >
-                              <FiCopy className="w-4 h-4" />
-                            </Button>
-                          )}
+                        {!isValueEmpty(matrixExtraData?.evaluation_cost_discount?.previous_value) && (
+                         
+                          <PreviousValues
+                            label="Previous Value"
+                            previousValue={matrixExtraData?.evaluation_cost_discount?.previous_value ?? ""
+                            }
+                          />
+                        )}
                       </div>
-                      {is_admin && (
-                        <div
-                          className={cn("text-xs space-y-1", {
-                            "text-red-500 dark:text-red-400":
-                              matrixExtraData?.affiliate_link?.is_updated_entry,
-                            "text-gray-500 dark:text-gray-400": !matrixExtraData
-                              ?.affiliate_link?.is_updated_entry,
-                          })}
-                        >
-                          <div>
-                            Broker Value:{" "}
-                            {matrixExtraData?.affiliate_link?.url ?? ""}
-                          </div>
-                          {matrixExtraData?.affiliate_link?.url !=
-                            matrixExtraData?.affiliate_link?.previous_url && (
-                            <div>
-                              Previous Value:{" "}
-                              {matrixExtraData?.affiliate_link?.previous_url ??
-                                ""}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
-                    <span>Master Affiliate Link</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-xs cursor-help text-green-800 dark:text-gray-400">
-                          (info)
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Available for all challenges
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div
-                    className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col"
-                    style={{
-                      gridColumn: `span ${Math.max(
-                        columnHeaders.length,
-                        1,
-                      )} / span ${Math.max(columnHeaders.length, 1)}`,
-                    }}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={
-                            is_admin
-                              ? matrixExtraData?.affiliate_master_link
-                                  ?.public_url ?? ""
-                              : matrixExtraData?.affiliate_master_link?.url ??
-                                ""
-                          }
-                          placeholder={
-                            matrixExtraData?.affiliate_master_link
-                              ?.placeholder ?? "Enter affiliate link"
-                          }
-                          onChange={(e) =>{
-                             setHasChanges(true);
-                            setMatrixExtraData((prev: any) => ({
-                              ...prev,
-                              affiliate_master_link: {
-                                ...prev.affiliate_master_link,
-                                [is_admin && type === "challenge"
-                                  ? "public_url"
-                                  : "url"]: e.target.value,
-                                is_updated_entry: false,
-                              },
-                            }))
-                          }
-                          }
-                          className="flex-1 min-w-0"
-                        />
-                        {/*If admin show button to copy master affiliate link's url to public url*/}
-                        {is_admin &&
-                          type === "challenge" &&
-                          !!matrixExtraData?.affiliate_master_link
-                            ?.is_updated_entry && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                               
-                                matrixExtraData?.affiliate_master_link?.url &&
-                                  setMatrixExtraData((prev: any) => ({
-                                    ...prev,
-                                    affiliate_master_link: {
-                                      ...prev.affiliate_master_link,
-                                      public_url:
-                                        prev.affiliate_master_link.url,
-                                      is_updated_entry: false,
-                                    },
-                                  }));
-                                matrixExtraData?.affiliate_master_link?.url &&
-                                  e.currentTarget.classList.add(
-                                    "bg-green-100",
-                                    "border-green-500",
-                                    "text-green-700",
-                                  );
-                              }}
-                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
-                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.affiliate_master_link?.has_copied_public_value,
-                              })}
-                            >
-                              <FiCopy className="w-4 h-4" />
-                            </Button>
-                          )}
-                      </div>
-
-                      {is_admin && (
-                        <div
-                          className={cn("text-xs space-y-1", {
-                            "text-red-500 dark:text-red-400":
-                              matrixExtraData?.affiliate_master_link
-                                ?.is_updated_entry,
-                            "text-gray-500 dark:text-gray-400": !matrixExtraData
-                              ?.affiliate_master_link?.is_updated_entry,
-                          })}
-                        >
-                          <div>
-                            Broker Value:{" "}
-                            {matrixExtraData?.affiliate_master_link?.url ?? ""}
-                          </div>
-                          {matrixExtraData?.affiliate_master_link?.url !=
-                            matrixExtraData?.affiliate_master_link
-                              ?.previous_url && (
-                            <div>
-                              Previous Value:{" "}
-                              {matrixExtraData?.affiliate_master_link
-                                ?.previous_url ?? ""}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
-              )}
+                </div>
+
+                <div
+                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
+                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                >
+                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
+                  Affiliate Link
+                </div>
+                <div
+                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  style={{
+                    gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
+                  }}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={
+                          is_admin
+                            ? matrixExtraData?.affiliate_link?.public_url ?? ""
+                            : matrixExtraData?.affiliate_link?.url ?? ""
+                        }
+                        placeholder={
+                          matrixExtraData?.affiliate_link?.placeholder ??
+                          "Enter affiliate link"
+                        }
+                        onChange={(e) => {
+                          setHasChanges(true);
+                          setLinkErrors((prev) => ({
+                            ...prev,
+                            affiliate_link: false,
+                          }));
+                          setMatrixExtraData((prev: any) => ({
+                            ...prev,
+                            affiliate_link: {
+                              ...prev.affiliate_link,
+                              [is_admin && type === "challenge"
+                                ? "public_url"
+                                : "url"]: e.target.value,
+                              is_updated_entry: false,
+                            },
+                          }));
+                        }}
+                        className={cn(
+                          "flex-1 min-w-0",
+                          linkErrors.affiliate_link && "border-red-500",
+                        )}
+                      />
+
+                      {/*If admin show button to copy affiliate link's url to public url*/}
+                      {is_admin &&
+                        type === "challenge" &&
+                        !!matrixExtraData?.affiliate_link?.is_updated_entry && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              matrixExtraData?.affiliate_link.url &&
+                                setMatrixExtraData((prev: any) => ({
+                                  ...prev,
+                                  affiliate_link: {
+                                    ...prev.affiliate_link,
+                                    public_url: prev.affiliate_link.url,
+                                    has_copied_public_value: true,
+                                  },
+                                }));
+                              
+                            }}
+                            className={cn(
+                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
+                              {
+                                "bg-green-100 border-green-500 text-green-700":
+                                  matrixExtraData?.affiliate_link?.has_copied_public_value
+                              },
+                            )}
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </Button>
+                        )}
+                    </div>
+                    {is_admin && (
+                      <div
+                        className={cn("text-xs space-y-1", {
+                          "text-red-500 dark:text-red-400":
+                            matrixExtraData?.affiliate_link?.is_updated_entry,
+                          "text-gray-500 dark:text-gray-400": !matrixExtraData
+                            ?.affiliate_link?.is_updated_entry,
+                        })}
+                      >
+                        <div>
+                          Broker Value:{" "}
+                          {matrixExtraData?.affiliate_link?.url ?? ""}
+                        </div>
+                        {!isValueEmpty(matrixExtraData?.affiliate_link?.previous_url) && (
+                          <PreviousValues
+                            label="Previous Value"
+                            previousValue={matrixExtraData?.affiliate_link?.previous_url ?? ""}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                </div>
+                <div
+                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
+                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                >
+                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
+                  <span>Master Affiliate Link</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-xs cursor-help text-green-800 dark:text-gray-400">
+                        (info)
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Available for all challenges
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div
+                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  style={{
+                    gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
+                  }}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={
+                          is_admin
+                            ? matrixExtraData?.affiliate_master_link
+                                ?.public_url ?? ""
+                            : matrixExtraData?.affiliate_master_link?.url ?? ""
+                        }
+                        placeholder={
+                          matrixExtraData?.affiliate_master_link?.placeholder ??
+                          "Enter affiliate link"
+                        }
+                        onChange={(e) => {
+                          setHasChanges(true);
+                          setLinkErrors((prev) => ({
+                            ...prev,
+                            affiliate_master_link: false,
+                          }));
+                          setMatrixExtraData((prev: any) => ({
+                            ...prev,
+                            affiliate_master_link: {
+                              ...prev.affiliate_master_link,
+                              [is_admin && type === "challenge"
+                                ? "public_url"
+                                : "url"]: e.target.value,
+                              is_updated_entry: false,
+                            },
+                          }));
+                        }}
+                        className={cn(
+                          "flex-1 min-w-0",
+                          linkErrors.affiliate_master_link && "border-red-500",
+                        )}
+                      />
+                      {/*If admin show button to copy master affiliate link's url to public url*/}
+                      {is_admin &&
+                        type === "challenge" &&
+                        !!matrixExtraData?.affiliate_master_link
+                          ?.is_updated_entry && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              matrixExtraData?.affiliate_master_link?.url &&
+                                setMatrixExtraData((prev: any) => ({
+                                  ...prev,
+                                  affiliate_master_link: {
+                                    ...prev.affiliate_master_link,
+                                    public_url: prev.affiliate_master_link.url,
+                                    has_copied_public_value: true,
+                                  },
+                                }));
+                              
+                            }}
+                            className={cn(
+                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
+                              {
+                                "bg-green-100 border-green-500 text-green-700":
+                                  matrixExtraData?.affiliate_master_link?.has_copied_public_value,
+                                    
+                              },
+                            )}
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </Button>
+                        )}
+                    </div>
+
+                    {is_admin && (
+                      <div
+                        className={cn("text-xs space-y-1", {
+                          "text-red-500 dark:text-red-400":
+                            matrixExtraData?.affiliate_master_link
+                              ?.is_updated_entry,
+                          "text-gray-500 dark:text-gray-400": !matrixExtraData
+                            ?.affiliate_master_link?.is_updated_entry,
+                        })}
+                      >
+                        <div>
+                          Broker Value:{" "}
+                          {matrixExtraData?.affiliate_master_link?.url ?? ""}
+                        </div>
+                        {!isValueEmpty( matrixExtraData?.affiliate_master_link?.previous_url) && (
+                          <PreviousValues
+                            label="Previous Value"
+                            previousValue={matrixExtraData?.affiliate_master_link
+                              ?.previous_url ?? ""}
+                          />
+                        )}
+                       
+                      </div>
+                    )}
+                  </div>
+                </div>
+                </div>
+              </>
+            )}
             </div>
-          
+          </div>
         </CardContent>
         {renderLoadingOverlay()}
       </Card>
