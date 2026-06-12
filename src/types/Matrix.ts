@@ -78,6 +78,29 @@ export interface MatrixData {
   [rowIndex: number]: MatrixCell[];
 }
 
+// Cell shape returned by the challenges API (plain text values, row_slug/col_slug, db id)
+export interface StaticMatrixCell {
+  id?: number | null;
+  previous_value?: string | null;
+  value: string | null;
+  public_value?: string | null;
+  is_updated_entry?: boolean | number;
+  row_slug: string;
+  col_slug: string;
+  zone_id?: number | null;
+  row_id?: number | null;
+  column_id?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  type?: string;
+  placeholder?: string | null;
+  has_copied_public_value?: boolean | null;
+}
+
+export interface StaticMatrixData {
+  [rowIndex: number]: StaticMatrixCell[];
+}
+
 //row headears example
 // const rowHeaders2=[{
 //     name: "Header 1",

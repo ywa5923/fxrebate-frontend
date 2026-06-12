@@ -1,4 +1,4 @@
-import { MatrixCell } from "./Matrix";
+import { StaticMatrixCell } from "./Matrix";
 export interface ChallengeStep {
   id: number;
   name: string;
@@ -43,6 +43,7 @@ export interface AffiliateLink {
   slug: string;
   zone_id?: number | null;
   placeholder?: string | null;
+  has_copied_public_value?: boolean | null;
 }
 
 export interface EvaluationCostDiscount {
@@ -53,6 +54,7 @@ export interface EvaluationCostDiscount {
   is_updated_entry: number; // 1 or 0
   zone_id?: number | null;
   placeholder?: string | null;
+  has_copied_public_value?: boolean | null;
 }
 
 export interface ChalengeData extends ChallengeMatrixExtraData {
@@ -66,7 +68,7 @@ export interface ChalengeData extends ChallengeMatrixExtraData {
   amount_id?: number | null;
   zone_id?: number | null;
   is_admin?: boolean;
-  matrix: MatrixCell[][];
+  matrix: StaticMatrixCell[][];
 }
 
 export interface ChallengePlaceholders{

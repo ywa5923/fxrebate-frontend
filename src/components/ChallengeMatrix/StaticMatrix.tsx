@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleHelp, Save } from "lucide-react";
+import { CircleHelp,  CopyIcon, Save } from "lucide-react";
 import PublishToggle from "@/components/ChallengeMatrix/PublishToggle";
 
 import {
@@ -12,12 +12,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { FiCopy } from "react-icons/fi";
 import {
   ColumnHeader,
   RowHeader,
-  MatrixCell,
-  MatrixData,
+  StaticMatrixCell,
+  StaticMatrixData,
   MatrixHeaders,
 } from "@/types/Matrix";
 
@@ -64,7 +75,7 @@ export default function StaticMatrix({
 
   const [columnHeaders, setColumnHeaders] = useState<ColumnHeader[]>([]);
   const [rowHeaders, setRowHeaders] = useState<RowHeader[]>([]);
-  const [matrixData, setMatrixData] = useState<MatrixData>({});
+  const [matrixData, setMatrixData] = useState<StaticMatrixData>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
@@ -78,19 +89,12 @@ export default function StaticMatrix({
   const [hasChanges, setHasChanges] = useState(false);
   const [isEmptyMatrix, setIsEmptyMatrix] = useState(false);
 
-  //=========================== Dragging matrix horizontally variables ===========================
-  const matrixScrollRef = useRef<HTMLDivElement | null>(null);
-  const isDraggingRef = useRef(false);
-  const activePointerIdRef = useRef<number | null>(null);
-  const dragStartXRef = useRef(0);
-  const dragStartScrollLeftRef = useRef(0);
-  const [isDraggingMatrix, setIsDraggingMatrix] = useState(false);
-  //=========================== End Dragging matrix horizontally variables ===========================
+ 
 
   const togglePublish = async (published: boolean) => {
     if (isEmptyMatrix) {
       toast.error(
-        "Please save some table data first before changing the visibility.",
+        "Please save the table data first before changing the visibility.",
       );
       return;
     }
@@ -149,37 +153,46 @@ export default function StaticMatrix({
     }
   };
 
+  const handleCloneMatrixForAllAmounts = async () => {
+    let cloneApiUrl = `/challenges/${brokerId}/clone`;
+    let cloneApiResponse = await apiClient<any>(cloneApiUrl, UseTokenAuth.Yes, {
+      method: "POST",
+      body: JSON.stringify({
+        category_id: categoryId,
+        step_id: stepId,
+        amount_id: amountId,
+      }),
+    }, ErrorMode.Return);
+    if (!cloneApiResponse.success) {
+      // Show the detailed API error only outside production
+      toast.error(
+        process.env.NODE_ENV !== "production"
+          ? cloneApiResponse.message
+          : "Failed to clone matrix",
+      );
+      return;
+    }
+    toast.success("Matrix cloned successfully");
+    router.refresh();
+  };
+
   // Track which cells were copied so the copy button remains visible and green
   // Key format: `${rowIndex}-${colIndex}`
   const [copiedCells, setCopiedCells] = useState<Set<string>>(new Set());
   const router = useRouter();
 
-  const formatText = (value: any): string => {
+  const formatText = (value: string | null | undefined): string => {
     if (value == null) return "";
-    if (typeof value === "object") {
-      if ("text" in value) return String(value.text ?? "");
-    }
     return String(value);
   };
 
   // Validation helpers (applies only when is_admin is false)
-  const isValueEmpty = (value: any): boolean => {
+  const isValueEmpty = (value: string | null | undefined): boolean => {
     if (value == null) return true;
-    if (typeof value === "string") return value.trim() === "";
-    if (typeof value === "number") return false;
-    if (typeof value === "boolean") return false;
-    if (Array.isArray(value))
-      return value.length === 0 || value.every(isValueEmpty);
-    if (typeof value === "object") {
-      // Common API shape: { text: string }
-      if ("text" in value) return isValueEmpty((value as any).text);
-      const vals = Object.values(value as Record<string, unknown>);
-      return vals.length === 0 || vals.every(isValueEmpty);
-    }
-    return false;
+    return String(value).trim() === "";
   };
 
-  const isCellEmpty = (cell: MatrixCell): boolean => {
+  const isCellEmpty = (cell: StaticMatrixCell): boolean => {
     // Validate broker value only (public_value is for admin)
     return isValueEmpty(cell?.value);
   };
@@ -232,18 +245,25 @@ export default function StaticMatrix({
           ),
         ]);
 
+        // Show detailed API errors only outside production
+        const isProd = process.env.NODE_ENV === "production";
+
         if (!headearsResponse.success || !headearsResponse.data) {
-          toast.error(headearsResponse.message);
+          toast.error(
+            isProd ? "Failed to load matrix" : headearsResponse.message,
+          );
           return;
         }
 
         if (!challengeResponse.success) {
-          toast.error(challengeResponse.message);
+          toast.error(
+            isProd ? "Failed to load matrix data" : challengeResponse.message,
+          );
           return;
         }
 
         if (!challengeResponse.data) {
-          toast.error("No data received");
+          toast.error("Failed to load matrix data" + "No data received")
           return;
         }
 
@@ -279,28 +299,41 @@ export default function StaticMatrix({
           //if public data is empty, then  user data is transferred to public data
           //the admin see only public data, user see only user data
 
-          let publicAffiliateLink =
-            affiliate_link?.public_url ?? affiliate_link?.url;
-          let publicEvaluationCostDiscount =
-            evaluation_cost_discount?.public_value ??
-            evaluation_cost_discount?.value;
-          let publicMasterAffiliateLink =
-            affiliate_master_link?.public_url ?? affiliate_master_link?.url;
+          // let publicAffiliateLink =
+          //   affiliate_link?.public_url ?? affiliate_link?.url;
+          // let publicEvaluationCostDiscount =
+          //   evaluation_cost_discount?.public_value ??
+          //   evaluation_cost_discount?.value;
+          // let publicMasterAffiliateLink =
+          //   affiliate_master_link?.public_url ?? affiliate_master_link?.url;
+
+          if(isValueEmpty(affiliate_link?.public_url)&&!isValueEmpty(affiliate_link?.url)) {
+            affiliate_link.public_url = affiliate_link.url;
+            affiliate_link.has_copied_public_value = true;
+          }
+          if(isValueEmpty(evaluation_cost_discount?.public_value)&&!isValueEmpty(evaluation_cost_discount?.value)) {
+            evaluation_cost_discount.public_value = evaluation_cost_discount.value;
+            evaluation_cost_discount.has_copied_public_value = true;
+          }
+          if(isValueEmpty(affiliate_master_link?.public_url)&&!isValueEmpty(affiliate_master_link?.url)) {
+            affiliate_master_link.public_url = affiliate_master_link.url;
+            affiliate_master_link.has_copied_public_value = true;
+          }
 
           setMatrixExtraData({
             affiliate_link: {
               ...affiliate_link,
-              public_url: publicAffiliateLink,
+             // public_url: publicAffiliateLink,
               placeholder: affiliate_link_placeholder,
             },
             evaluation_cost_discount: {
               ...evaluation_cost_discount,
-              public_value: publicEvaluationCostDiscount,
+             // public_value: publicEvaluationCostDiscount,
               placeholder: evaluation_cost_discount_placeholder,
             },
             affiliate_master_link: {
               ...affiliate_master_link,
-              public_url: publicMasterAffiliateLink,
+             // public_url: publicMasterAffiliateLink,
               placeholder: affiliate_master_link_placeholder,
             },
           });
@@ -325,29 +358,30 @@ export default function StaticMatrix({
 
         if (initialData && Object.keys(initialData).length > 0) {
           if (type === "challenge") {
-            //the default value for is_published is true at database level
-            // setIsPublished(true);
+            
             const processedData = initialData.map((row) =>
               row.map((cell) => {
-                const hasPublicValue =
-                  cell.public_value &&
-                  Object.keys(cell.public_value).length > 0 &&
-                  Object.values(cell.public_value).some(
-                    (val) => val !== null && val !== undefined && val !== "",
-                  );
+                const hasPublicValue = !isValueEmpty(cell.public_value);
+                const hasValue = !isValueEmpty(cell.value);
 
-                const publicValue = is_admin
-                  ? hasPublicValue
-                    ? cell.public_value
-                    : cell.value
-                  : cell.public_value;
+                // const publicValue = is_admin
+                //   ? hasPublicValue
+                //     ? cell.public_value
+                //     : cell.value
+                //   : cell.public_value;
+                //if is_admin and the public value is empty, then set the value to the public value
+                //also set a flag to indicate that the public value is empty
+                if(is_admin && !hasPublicValue && hasValue) {
+                  cell.public_value = cell.value;
+                  cell.has_copied_public_value = true;
+                }
 
                 return {
                   ...cell,
-                  public_value: publicValue,
+                  //public_value: publicValue,
                   placeholder:
                     matrix_placeholders_array?.[
-                      `${cell.rowHeader}-${cell.colHeader}`
+                      `${cell.row_slug}-${cell.col_slug}`
                     ] ?? null,
                 };
               }),
@@ -360,13 +394,14 @@ export default function StaticMatrix({
         } else {
           // Create empty matrix structure
           log.debug("No initial data, creating empty matrix structure", {});
-          const newMatrix: MatrixData = {};
+          const newMatrix: StaticMatrixData = {};
           rowHeaders.forEach((r, rIdx) => {
             newMatrix[rIdx] = [];
             columnHeaders.forEach((c) => {
               newMatrix[rIdx].push({
-                value: { text: "" },
-                public_value: { text: "" },
+                id: null,
+                value: "",
+                public_value: "",
                 ...(type != "placeholder"
                   ? {
                       placeholder:
@@ -374,8 +409,8 @@ export default function StaticMatrix({
                         null,
                     }
                   : {}),
-                rowHeader: r.slug,
-                colHeader: c.slug,
+                row_slug: r.slug,
+                col_slug: c.slug,
                 type: c.form_type?.name || "text",
               });
             });
@@ -397,25 +432,21 @@ export default function StaticMatrix({
   const updateCellValue = (
     rowIndex: number,
     colIndex: number,
-    fieldName: string,
-    value: any,
+    value: string,
   ) => {
     setMatrixData((prev) => {
-      const next: MatrixData = { ...prev };
+      const next: StaticMatrixData = { ...prev };
 
       const row = [...(next[rowIndex] || [])];
-      const cell = { ...(row[colIndex] || {}) } as MatrixCell;
+      const cell = { ...(row[colIndex] || {}) } as StaticMatrixCell;
 
       if (is_admin && type === "challenge" && !isPlaceholder) {
         // In admin mode, update public_value
-        cell.public_value = {
-          ...(cell.public_value || {}),
-          [fieldName]: value,
-        };
+        cell.public_value = value;
         cell.is_updated_entry = false;
       } else {
         // In normal mode, update value
-        cell.value = { ...(cell.value || {}), [fieldName]: value };
+        cell.value = value;
       }
 
       row[colIndex] = cell;
@@ -425,19 +456,12 @@ export default function StaticMatrix({
     setHasChanges(true);
   };
 
-  const CopyValueToPublicValue = (
-    rowIndex: number,
-    colIndex: number,
-    fieldName: string,
-  ) => {
+  const CopyValueToPublicValue = (rowIndex: number, colIndex: number) => {
     setMatrixData((prev) => {
-      const next: MatrixData = { ...prev };
+      const next: StaticMatrixData = { ...prev };
       const row = [...(next[rowIndex] || [])];
-      const cell = { ...(row[colIndex] || {}) } as MatrixCell;
-      cell.public_value = {
-        ...(cell.public_value || {}),
-        [fieldName]: cell.value[fieldName],
-      };
+      const cell = { ...(row[colIndex] || {}) } as StaticMatrixCell;
+      cell.public_value = cell.value;
       cell.is_updated_entry = false;
       row[colIndex] = cell;
       next[rowIndex] = row;
@@ -446,33 +470,22 @@ export default function StaticMatrix({
   };
 
   const renderFormField = (
-    cell: MatrixCell,
+    cell: StaticMatrixCell,
     rowIndex: number,
     colIndex: number,
     isPlaceholder: boolean,
     isPercentage: boolean,
-    //percentageValue: number|null,
-    
     showError: boolean,
   ) => {
     // In admin mode, use public_value for input, otherwise use value
     //const sourceValue = is_admin ? (cell.is_updated_entry ? cell.value : cell.public_value) : cell.value;
     const sourceValue = is_admin ? cell.public_value : cell.value;
-    // Handle different value types from API
-    let rawValue = "";
+    // Values are plain text from the API
+    const rawValue = sourceValue ?? "";
     let placeholderText =
       type === "placeholder"
         ? "Enter placeholder value"
         : String(cell?.placeholder ?? "Enter text");
-
-    if (sourceValue && typeof sourceValue === "object") {
-      if ("text" in sourceValue) {
-        rawValue = String(sourceValue.text || "");
-      } else if (Array.isArray(sourceValue) && sourceValue.length > 0) {
-        // Handle case where value is an array with text
-        rawValue = String(sourceValue[0] || "");
-      }
-    }
 
     const asString = (v: unknown) =>
       v === undefined || v === null ? "" : String(v);
@@ -494,7 +507,7 @@ export default function StaticMatrix({
             <Input
               value={asString(rawValue)}
               onChange={(e) =>
-                updateCellValue(rowIndex, colIndex, "text", e.target.value)
+                updateCellValue(rowIndex, colIndex, e.target.value)
               }
               placeholder={placeholderText}
               className={cn(
@@ -521,17 +534,17 @@ export default function StaticMatrix({
             const shouldShowCopy =
               is_admin &&
               !isPlaceholder &&
-              (!!cell.is_updated_entry || copiedCells.has(cellKey));
+              (!!cell.is_updated_entry || copiedCells.has(cellKey)) || cell.has_copied_public_value;
             if (!shouldShowCopy) return null;
-            const isAlreadyGreen = copiedCells.has(cellKey);
+            const isGreen = copiedCells.has(cellKey) || cell.has_copied_public_value;
             return (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={(e) => {
-                  if (!cell?.value?.text) return;
+                  if (!cell?.value) return;
                   // Copy broker value -> public value
-                  CopyValueToPublicValue(rowIndex, colIndex, "text");
+                  CopyValueToPublicValue(rowIndex, colIndex);
                   // Mark as copied so the button persists and stays green
                   setCopiedCells((prev) => {
                     const next = new Set(prev);
@@ -546,8 +559,8 @@ export default function StaticMatrix({
                   );
                 }}
                 className={cn(
-                  "p-2 flex-shrink-0",
-                  isAlreadyGreen &&
+                  "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
+                  isGreen &&
                     "bg-green-100 border-green-500 text-green-700",
                 )}
                 title="Copy broker value to public value"
@@ -582,16 +595,17 @@ export default function StaticMatrix({
   };
 
   const renderCell = (
-    cell: MatrixCell,
+    cell: StaticMatrixCell,
     rowIndex: number,
     colIndex: number,
     isPercentage: boolean,
   ) => {
-    const showError = !is_admin && showValidation && isCellEmpty(cell);
+    //const showError = !is_admin && showValidation && isCellEmpty(cell);
+    const showError = false;
     return (
       <div className="w-full h-full">
         <div
-          key={`${rowIndex}-${colIndex}-${cell.colHeader}`}
+          key={cell.id ?? `${rowIndex}-${colIndex}-${cell.col_slug}`}
           className="w-full h-full"
         >
           {renderFormField(
@@ -608,53 +622,6 @@ export default function StaticMatrix({
   };
 
 
-  //=========================== Dragging matrix horizontally ===========================
-  const stopMatrixDragging = () => {
-    isDraggingRef.current = false;
-    activePointerIdRef.current = null;
-    setIsDraggingMatrix(false);
-  };
-
-  const handleMatrixPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Left-click only for mouse pointers
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-
-    const target = e.target as HTMLElement;
-    if (target.closest("input, textarea, button, [role='button']")) {
-      return;
-    }
-
-    const container = matrixScrollRef.current;
-    if (!container) return;
-
-    activePointerIdRef.current = e.pointerId;
-    isDraggingRef.current = true;
-    setIsDraggingMatrix(true);
-    dragStartXRef.current = e.clientX;
-    dragStartScrollLeftRef.current = container.scrollLeft;
-    container.setPointerCapture(e.pointerId);
-  };
-
-  const handleMatrixPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current || activePointerIdRef.current !== e.pointerId) return;
-
-    const container = matrixScrollRef.current;
-    if (!container) return;
-
-    const deltaX = e.clientX - dragStartXRef.current;
-    container.scrollLeft = dragStartScrollLeftRef.current - deltaX;
-  };
-
-  const handleMatrixPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (activePointerIdRef.current !== e.pointerId) return;
-
-    const container = matrixScrollRef.current;
-    if (container && container.hasPointerCapture(e.pointerId)) {
-      container.releasePointerCapture(e.pointerId);
-    }
-    stopMatrixDragging();
-  };
-  //=========================== End Dragging matrix horizontally ===========================
 
   const handleSave = async () => {
     try {
@@ -663,7 +630,7 @@ export default function StaticMatrix({
       // Check for empty cells if not admin
       if (!is_admin) {
         let hasEmptyCells = Object.values(matrixData).some((row) =>
-          row.some((cell: MatrixCell) => isCellEmpty(cell)),
+          row.some((cell: StaticMatrixCell) => isCellEmpty(cell)),
         );
 
         hasEmptyCells = false;
@@ -723,7 +690,12 @@ export default function StaticMatrix({
       );
 
       if (!response.success) {
-        toast.error(response.message);
+        // Show the detailed API error only outside production
+        toast.error(
+          process.env.NODE_ENV === "production"
+            ? "Failed to save matrix data"
+            : response.message,
+        );
         return;
       }
 
@@ -784,9 +756,50 @@ export default function StaticMatrix({
           />
         )}
 
+      <div className="flex items-center gap-2 justify-end">
+        <AlertDialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 text-gray-600 dark:text-gray-300"
+                  aria-label="Clone table for all amounts"
+                >
+                  <CopyIcon className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6}>
+              Copy this table to every amount in the selected step and
+              category.
+            </TooltipContent>
+          </Tooltip>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Clone table for all amounts?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This will overwrite the existing table data for all amounts
+                in the current step and category.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleCloneMatrixForAllAmounts}
+                className="bg-green-100 hover:bg-green-200 text-green-800 border border-green-200"
+              >
+                Clone
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         {/* Save button */}
         <Button
-          disabled={saving || !stepSlug || !hasChanges}
+          disabled={is_admin ? saving : saving || !stepSlug || !hasChanges}
           onClick={handleSave}
           variant="outline"
           size="default"
@@ -795,20 +808,11 @@ export default function StaticMatrix({
           <Save className="h-4 w-4 mr-2" />
           {saving ? "Saving..." : "Save Table"}
         </Button>
+        </div>
       </div>
       <Card className="relative">
         <CardContent className="p-0 sm:p-6">
-          <div
-            ref={matrixScrollRef}
-            className={cn(
-              "overflow-x-auto",
-              isDraggingMatrix ? "cursor-grabbing select-none" : "cursor-grab",
-            )}
-            onPointerDown={handleMatrixPointerDown}
-            onPointerMove={handleMatrixPointerMove}
-            onPointerUp={handleMatrixPointerUp}
-            onPointerCancel={stopMatrixDragging}
-          >
+          
             <div
               className="grid gap-3 min-w-max"
               style={{
@@ -840,7 +844,6 @@ export default function StaticMatrix({
                   return (
                   <div key={`row-${rowIndex}`} className="contents">
                     <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
-                      <span>{rowHeader.name}</span>
                       {rowHeader.description && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -855,19 +858,20 @@ export default function StaticMatrix({
                           <TooltipContent
                             side="top"
                             sideOffset={6}
-                            className="text-sm px-3.5 py-2"
+                            className="text-md px-3.5 py-2"
                           >
                             {rowHeader.description}
                           </TooltipContent>
                         </Tooltip>
                       )}
+                      <span>{rowHeader.name}</span>
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData =
                         matrixData[rowIndex] && matrixData[rowIndex][colIndex];
                       return (
                         <div
-                          key={`cell-${rowIndex}-${colIndex}`}
+                          key={cellData?.id ?? `cell-${rowIndex}-${colIndex}`}
                           className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center"
                         >
                           {cellData ? (
@@ -937,10 +941,13 @@ export default function StaticMatrix({
                         {/*If is_admin=true show button to copy evaluation cost discount's broker value to public value*/}
                         {is_admin &&
                           type === "challenge" &&
-                          !!matrixExtraData?.evaluation_cost_discount
-                            ?.is_updated_entry && (
+                        (!!matrixExtraData?.evaluation_cost_discount
+                            ?.is_updated_entry || matrixExtraData?.evaluation_cost_discount?.has_copied_public_value) && (
                             <Button
                               variant="outline"
+                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
+                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.evaluation_cost_discount?.has_copied_public_value,
+                              })}
                               size="sm"
                               onClick={(e) => {
                                 matrixExtraData?.evaluation_cost_discount
@@ -962,7 +969,7 @@ export default function StaticMatrix({
                                     "text-green-700",
                                   );
                               }}
-                              className="p-2 flex-shrink-0"
+                              
                             >
                               <FiCopy className="w-4 h-4" />
                             </Button>
@@ -1064,7 +1071,9 @@ export default function StaticMatrix({
                                     "text-green-700",
                                   );
                               }}
-                              className="p-2 flex-shrink-0"
+                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
+                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.affiliate_link?.has_copied_public_value,
+                              })}
                             >
                               <FiCopy className="w-4 h-4" />
                             </Button>
@@ -1174,7 +1183,9 @@ export default function StaticMatrix({
                                     "text-green-700",
                                   );
                               }}
-                              className="p-2 flex-shrink-0"
+                              className={cn("p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700", {
+                                "bg-green-100 border-green-500 text-green-700": matrixExtraData?.affiliate_master_link?.has_copied_public_value,
+                              })}
                             >
                               <FiCopy className="w-4 h-4" />
                             </Button>
@@ -1211,7 +1222,7 @@ export default function StaticMatrix({
                 </div>
               )}
             </div>
-          </div>
+          
         </CardContent>
         {renderLoadingOverlay()}
       </Card>

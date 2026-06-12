@@ -1,7 +1,7 @@
 "use client";
 
 import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 import AddTabBtn from "@/components/ChallengeMatrix/AddTabBtn";
