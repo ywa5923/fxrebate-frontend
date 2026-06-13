@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -771,11 +771,13 @@ export default function StaticMatrix({
   }
 
   const matrixColumnCount = Math.max(columnHeaders.length, 1);
-  const matrixGridTemplateColumns = `200px repeat(${matrixColumnCount}, minmax(150px, 1fr))`;
+  const matrixGridTemplateColumns = `minmax(150px, 190px) repeat(${matrixColumnCount}, minmax(0, 1fr))`;
+  const matrixMobileGridTemplateColumns = `200px repeat(${matrixColumnCount}, minmax(220px, 1fr))`;
+  const matrixMobileMinWidth = `${200 + matrixColumnCount * 220 + matrixColumnCount * 8}px`;
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {/* Public / Draft toggle (hidden in placeholder mode) */}
         {isPublished !== null && type !== "placeholder" && (
           <PublishToggle
@@ -865,22 +867,31 @@ export default function StaticMatrix({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Card className="relative max-w-full">
-        <CardContent className="p-0 sm:p-6">
+      <Card className="relative max-w-full overflow-hidden">
+        <CardContent className="p-0 sm:p-4 lg:p-6">
           <div className="w-full max-w-full overflow-x-auto">
-            <div className="flex min-w-max flex-col gap-3">
+            <div
+              className="flex w-full min-w-[var(--matrix-mobile-min-width)] flex-col gap-2 min-[1400px]:min-w-0"
+              style={
+                {
+                  "--matrix-mobile-min-width": matrixMobileMinWidth,
+                  "--matrix-grid-template": matrixGridTemplateColumns,
+                  "--matrix-grid-template-mobile":
+                    matrixMobileGridTemplateColumns,
+                } as CSSProperties
+              }
+            >
               <div
-                className="grid gap-3"
-                style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
               >
-            <div className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 min-h-[2.5rem] flex items-center">
+            <div className="font-semibold text-gray-700 dark:text-gray-300 px-2 py-2 border-b border-gray-200 dark:border-gray-700 min-h-[2.5rem] flex items-center min-w-0">
               Row / Column
             </div>
             {columnHeaders.length > 0 &&
               columnHeaders.map((header, index) => (
                 <div
                   key={index}
-                  className="font-semibold text-gray-700 dark:text-gray-300 p-2 border-b border-gray-200 dark:border-gray-700 text-center min-h-[2.5rem] flex items-center justify-center"
+                  className="font-semibold text-gray-700 dark:text-gray-300 px-2 py-2 border-b border-gray-200 dark:border-gray-700 text-center min-h-[2.5rem] flex items-center justify-center min-w-0 break-words"
                 >
                   {header.name}
                 </div>
@@ -895,10 +906,9 @@ export default function StaticMatrix({
                 return (
                   <div
                     key={`row-${rowIndex}`}
-                    className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
-                    style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                    className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
                   >
-                    <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
+                    <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2 min-w-0">
                       {rowHeader.description && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -919,7 +929,7 @@ export default function StaticMatrix({
                           </TooltipContent>
                         </Tooltip>
                       )}
-                      <span>{rowHeader.name}</span>
+                      <span className="min-w-0 break-words">{rowHeader.name}</span>
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
@@ -927,7 +937,7 @@ export default function StaticMatrix({
                       return (
                         <div
                           key={cellData?.id ?? `cell-${rowIndex}-${colIndex}`}
-                          className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center"
+                          className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center min-w-0"
                         >
                           {cellData ? (
                             renderCell(
@@ -951,10 +961,9 @@ export default function StaticMatrix({
             {(type === "challenge" || type === "placeholder") && (
               <>
                 <div
-                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
-                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                  className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
                 >
-                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
+                <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center min-w-0 break-words">
                   Evaluation Cost Discount
                 </div>
                 <div
@@ -1050,10 +1059,9 @@ export default function StaticMatrix({
                 </div>
 
                 <div
-                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
-                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                  className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
                 >
-                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center">
+                <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center min-w-0 break-words">
                   Affiliate Link
                 </div>
                 <div
@@ -1147,11 +1155,10 @@ export default function StaticMatrix({
                 </div>
                 </div>
                 <div
-                  className="grid min-w-max gap-3 overflow-x-auto md:overflow-x-visible"
-                  style={{ gridTemplateColumns: matrixGridTemplateColumns }}
+                  className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
                 >
-                <div className="font-medium text-gray-600 dark:text-gray-400 p-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2">
-                  <span>Master Affiliate Link</span>
+                <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2 min-w-0">
+                  <span className="min-w-0 break-words">Master Affiliate Link</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-xs cursor-help text-green-800 dark:text-gray-400">
