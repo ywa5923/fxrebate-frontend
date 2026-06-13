@@ -78,3 +78,7 @@ export interface ChallengePlaceholders{
   evaluation_cost_discount_placeholder: string | null;
 }
 
+export type DefaultChallengeCategoriesData = {
+  default_challenge_categories: ChallengeType[];
+  amount_currencies: Array<{ value: string; label: string }>;
+};

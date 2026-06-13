@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { FiCopy } from "react-icons/fi";
+import CopyBtn from "@/components/ChallengeMatrix/CopyBtn";
 import { PreviousValues } from "@/components/ChallengeMatrix/PreviousValues";
 import {
   ColumnHeader,
@@ -308,6 +308,7 @@ export default function StaticMatrix({
         evaluation_cost_discount_placeholder,
       } = challengeResponse.data;
 
+      
       // Set the placeholder state
       setIsPlaceholder(type === "placeholder" || false);
       setIsPublished(is_published);
@@ -338,21 +339,21 @@ export default function StaticMatrix({
           affiliate_master_link.has_copied_public_value = true;
         }
 
-        setMatrixExtraData({
-          affiliate_link: {
-            ...affiliate_link,
-            placeholder: affiliate_link_placeholder,
-          },
-          evaluation_cost_discount: {
-            ...evaluation_cost_discount,
-            placeholder: evaluation_cost_discount_placeholder,
-          },
-          affiliate_master_link: {
-            ...affiliate_master_link,
-            placeholder: affiliate_master_link_placeholder,
-          },
-        });
-      } else {
+        // setMatrixExtraData({
+        //   affiliate_link: {
+        //     ...affiliate_link,
+        //     placeholder: affiliate_link_placeholder,
+        //   },
+        //   evaluation_cost_discount: {
+        //     ...evaluation_cost_discount,
+        //     placeholder: evaluation_cost_discount_placeholder,
+        //   },
+        //   affiliate_master_link: {
+        //     ...affiliate_master_link,
+        //     placeholder: affiliate_master_link_placeholder,
+        //   },
+        // });
+      } 
         //for user and in placeholder mode, the data is the same as received from the API
         //TO DO need to remove placeholder?
         setMatrixExtraData({
@@ -369,7 +370,7 @@ export default function StaticMatrix({
             placeholder: affiliate_master_link_placeholder,
           },
         });
-      }
+      
 
       if (initialData && Object.keys(initialData).length > 0) {
         if (type === "challenge") {
@@ -399,7 +400,7 @@ export default function StaticMatrix({
         }
       } else {
         // Create empty matrix structure
-        log.debug("No initial data, creating empty matrix structure", {});
+      
         const newMatrix: StaticMatrixData = {};
         rowHeaders.forEach((r, rIdx) => {
           newMatrix[rIdx] = [];
@@ -448,7 +449,7 @@ export default function StaticMatrix({
       const row = [...(next[rowIndex] || [])];
       const cell = { ...(row[colIndex] || {}) } as StaticMatrixCell;
 
-      if (is_admin && type === "challenge" && !isPlaceholder) {
+      if ((is_admin && type === "challenge" && !isPlaceholder)) {
         // In admin mode, update public_value
         cell.public_value = value;
         cell.is_updated_entry = false;
@@ -485,8 +486,8 @@ export default function StaticMatrix({
     isPercentage: boolean,
     showError: boolean,
   ) => {
-    // In admin mode, use public_value for input, otherwise use value
-    const sourceValue = is_admin ? cell.public_value : cell.value;
+    // In admin mode or placeholder mode, use public_value for input, otherwise use value
+    const sourceValue = is_admin && type === "challenge" ? cell.public_value : cell.value;
     // Values are plain text from the API
     const rawValue = sourceValue ?? "";
     let placeholderText =
@@ -523,13 +524,13 @@ export default function StaticMatrix({
                 !is_admin && showError && "border-red-500",
               )}
             />
-            {isPercentage && (
-              <span className="pointer-events-none absolute right-2 top-1/2 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-md border border-emerald-300 bg-emerald-100 px-2 text-sm font-bold leading-none text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+            {isPercentage && type === "challenge" && (
+              <span className="pointer-events-none absolute right-2 top-1/2 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-md border border-gray-300 bg-gray-100 px-2 text-sm font-bold leading-none text-gray-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
                 %
               </span>
             )}
           </div>
-          {isPercentage && calculatedAmount !== null && (
+          {isPercentage && type === "challenge" && calculatedAmount !== null && (
             <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
               {calculatedAmount} {amountCurrency}
             </span>
@@ -547,29 +548,18 @@ export default function StaticMatrix({
             const isGreen = copiedCells.has(cellKey) || cell.has_copied_public_value;
               
             return (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
+              <CopyBtn
+                isGreen={!!isGreen}
+                onClick={() => {
                   if (!cell?.value) return;
-                  // Copy broker value -> public value
                   CopyValueToPublicValue(rowIndex, colIndex);
-                  // Mark as copied so the button persists and stays green
                   setCopiedCells((prev) => {
                     const next = new Set(prev);
                     next.add(cellKey);
                     return next;
                   });
-                 
                 }}
-                className={cn(
-                  "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
-                  isGreen && "bg-green-100 border-green-500 text-green-700",
-                )}
-                title="Copy broker value to public value"
-              >
-                <FiCopy className="w-4 h-4" />
-              </Button>
+              />
             );
           })()}
         </div>
@@ -708,7 +698,7 @@ export default function StaticMatrix({
           affiliate_master_link: matrixExtraData?.affiliate_master_link?.url,
         }),
       };
-      //console.log("Saving payload:", payload);
+     
 
       let saveUrl =
         type === "placeholder"
@@ -796,6 +786,7 @@ export default function StaticMatrix({
         )}
 
         <div className="flex items-center gap-2 justify-end">
+          {type === "challenge" && (
           <AlertDialog>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -836,6 +827,7 @@ export default function StaticMatrix({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          )}
           {/* Save button */}
           <Button
             disabled={is_admin ? saving : saving || !stepSlug || !hasChanges}
@@ -1008,34 +1000,24 @@ export default function StaticMatrix({
                           ?.is_updated_entry ||
                           matrixExtraData?.evaluation_cost_discount
                             ?.has_copied_public_value) && (
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
-                              {
-                                "bg-green-100 border-green-500 text-green-700":
-                                  matrixExtraData?.evaluation_cost_discount
-                                    ?.has_copied_public_value,
-                              },
-                            )}
-                            size="sm"
-                            onClick={(e) => {
-                              matrixExtraData?.evaluation_cost_discount
-                                ?.value &&
+                          <CopyBtn
+                            isGreen={
+                              !!matrixExtraData?.evaluation_cost_discount
+                                ?.has_copied_public_value
+                            }
+                            onClick={() => {
+                              matrixExtraData?.evaluation_cost_discount?.value &&
                                 setMatrixExtraData((prev: any) => ({
                                   ...prev,
                                   evaluation_cost_discount: {
                                     ...prev.evaluation_cost_discount,
-                                      public_value:
+                                    public_value:
                                       prev.evaluation_cost_discount.value,
-                                      has_copied_public_value: true,
+                                    has_copied_public_value: true,
                                   },
                                 }));
-                              
                             }}
-                          >
-                            <FiCopy className="w-4 h-4" />
-                          </Button>
+                          />
                         )}
                     </div>
                     {is_admin && (
@@ -1118,11 +1100,15 @@ export default function StaticMatrix({
                       {/*If admin show button to copy affiliate link's url to public url*/}
                       {is_admin &&
                         type === "challenge" &&
-                        !!matrixExtraData?.affiliate_link?.is_updated_entry && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
+                        (!!matrixExtraData?.affiliate_link?.is_updated_entry ||
+                          matrixExtraData?.affiliate_link
+                            ?.has_copied_public_value) && (
+                          <CopyBtn
+                            isGreen={
+                              !!matrixExtraData?.affiliate_link
+                                ?.has_copied_public_value
+                            }
+                            onClick={() => {
                               matrixExtraData?.affiliate_link.url &&
                                 setMatrixExtraData((prev: any) => ({
                                   ...prev,
@@ -1132,18 +1118,8 @@ export default function StaticMatrix({
                                     has_copied_public_value: true,
                                   },
                                 }));
-                              
                             }}
-                            className={cn(
-                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
-                              {
-                                "bg-green-100 border-green-500 text-green-700":
-                                  matrixExtraData?.affiliate_link?.has_copied_public_value
-                              },
-                            )}
-                          >
-                            <FiCopy className="w-4 h-4" />
-                          </Button>
+                          />
                         )}
                     </div>
                     {is_admin && (
@@ -1183,8 +1159,7 @@ export default function StaticMatrix({
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Applies to every amount in the selected step and
-                      category.
+                      This master affiliate link applies to all challenges
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -1232,12 +1207,16 @@ export default function StaticMatrix({
                       {/*If admin show button to copy master affiliate link's url to public url*/}
                       {is_admin &&
                         type === "challenge" &&
-                        !!matrixExtraData?.affiliate_master_link
-                          ?.is_updated_entry && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
+                        (!!matrixExtraData?.affiliate_master_link
+                          ?.is_updated_entry ||
+                          matrixExtraData?.affiliate_master_link
+                            ?.has_copied_public_value) && (
+                          <CopyBtn
+                            isGreen={
+                              !!matrixExtraData?.affiliate_master_link
+                                ?.has_copied_public_value
+                            }
+                            onClick={() => {
                               matrixExtraData?.affiliate_master_link?.url &&
                                 setMatrixExtraData((prev: any) => ({
                                   ...prev,
@@ -1247,19 +1226,8 @@ export default function StaticMatrix({
                                     has_copied_public_value: true,
                                   },
                                 }));
-                              
                             }}
-                            className={cn(
-                              "p-2 flex-shrink-0 bg-red-100 border-red-500 text-red-700",
-                              {
-                                "bg-green-100 border-green-500 text-green-700":
-                                  matrixExtraData?.affiliate_master_link?.has_copied_public_value,
-                                    
-                              },
-                            )}
-                          >
-                            <FiCopy className="w-4 h-4" />
-                          </Button>
+                          />
                         )}
                     </div>
 

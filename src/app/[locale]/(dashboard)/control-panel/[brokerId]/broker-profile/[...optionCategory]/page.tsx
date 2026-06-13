@@ -39,6 +39,7 @@ import { canAdminBroker } from "@/lib/auth-actions";
 import Companies from "./Companies";
 import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
 import { AffiliateLinksData } from "@/types/Url";
+import { DefaultChallengeCategoriesData } from "@/types/ChallengeType";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -301,11 +302,7 @@ export default async function BrokerProfilePage({
   if (categorySlug == "challenge-matrix") {
     let brokerChallengeCategoriesUrl = `/challenges/categories/${brokerId}`;
     let defaultChallengeCategoriesUrl = `/challenges/default-categories`;
-    type DefaultChallengeCategoriesData = {
-      default_challenge_categories: ChallengeType[];
-      amount_currencies: Array<{ value: string; label: string }>;
-    };
-
+   
     const [
       brokerChallengeCategoriesResponse,
       defaultChallengeCategoriesResponse,
@@ -348,11 +345,11 @@ export default async function BrokerProfilePage({
       notFound();
     }
     let brokerCategories = brokerChallengeCategoriesResponse.data ?? [];
-    let defaultCategories =
-      defaultChallengeCategoriesResponse.data?.default_challenge_categories ??
-      [];
-    let amountCurrencies =
-      defaultChallengeCategoriesResponse.data?.amount_currencies ?? [];
+    let defaultCategories =defaultChallengeCategoriesResponse.data?.default_challenge_categories ??[];
+      
+    
+    let amountCurrencies = defaultChallengeCategoriesResponse.data?.amount_currencies ?? [];
+      
 
     return (
       <ChallengeCategories
