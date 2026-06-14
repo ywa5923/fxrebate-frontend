@@ -235,7 +235,7 @@ export function renderFormField(
                       setTimeout(() => form.trigger(option.slug), 100);
                     }}
                   />
-                  {formField.value && formField.value.length > 1 && (
+                  {formField.value  && (
                     <Button
                       type="button"
                       variant="outline"
@@ -274,7 +274,7 @@ export function renderFormField(
               )}
             >
               <Plus className="h-4 w-4" />
-              Add note
+             
             </Button>
             {renderOptionHistory(option)}
           </div>

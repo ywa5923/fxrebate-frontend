@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -130,8 +131,8 @@ export function OptionsForm({
 
     return (
       <div
-        className={cn("text-sm text-muted-foreground mt-2", {
-          "text-red-500": isUpdatedEntry,
+        className={cn("text-sm text-muted-foreground mt-2 p-3", {
+          "border-1 border-red-500": isUpdatedEntry,
         })}
       >
         <div className="flex items-center justify-between">
@@ -139,42 +140,45 @@ export function OptionsForm({
             <BrokerPreviousValue
               brokerValue={brokerValue + " " + metadataUnit}
               previousValue={previousValue ?? ""}
+              {...(option.form_type === "notes" ? { splitBrokerValueBy: ";" } : {})}
             />
-            {/*<div>Broker value: {brokerValue + " " + metadataUnit}</div>
-            {!!showPrev && <div>Prev Value: {previousValue}</div>}
-            */}
+            
           </div>
           {(!!isUpdatedEntry || clickedCopyButtons?.has(option.slug)) &&
-            brokerValue !== null &&
-            brokerValue !== "undefined" && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  copyBrokerToPublic(option.slug);
-                  // Add to clicked buttons set
-                  setClickedCopyButtons((prev) =>
-                    new Set(prev).add(option.slug),
-                  );
-                  setIsFormDirty(true);
-                  e.currentTarget.classList.add(
-                    "bg-green-100",
-                    "border-green-500",
-                    "text-green-700",
-                  );
-                }}
-                className={cn(
-                  "p-1 h-6 w-6 flex-shrink-0",
-                  clickedCopyButtons?.has(option.slug)
-                    ? "bg-green-100 border-green-500 text-green-700"
-                    : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200",
-                )}
-                title="Copy broker value to public value"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
+             (
+              <div className="flex flex-shrink-0 items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    copyBrokerToPublic(option.slug);
+                    // Add to clicked buttons set
+                    setClickedCopyButtons((prev) =>
+                      new Set(prev).add(option.slug),
+                    );
+                    setIsFormDirty(true);
+                   
+                  }}
+                  className={cn(
+                    "p-1 h-6 w-6 flex-shrink-0",
+                    clickedCopyButtons?.has(option.slug)
+                      ? "bg-green-100 border-green-500 text-green-700"
+                      : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200",
+                  )}
+                  title="Copy broker value to public value"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+             
+                <Checkbox
+                  type="button"
+                  className="size-5 cursor-pointer border-green-800 hover:bg-green-100 data-[state=checked]:border-green-800 data-[state=checked]:bg-green-800 data-[state=checked]:text-white data-[state=checked]:hover:bg-green-900"
+                  title="Mark field as reviewed"
+                  aria-label="Mark field as reviewed"
+                />
+              </div>
             )}
         </div>
       </div>
@@ -399,6 +403,3 @@ export function OptionsForm({
     </Form>
   );
 }
-
-
-

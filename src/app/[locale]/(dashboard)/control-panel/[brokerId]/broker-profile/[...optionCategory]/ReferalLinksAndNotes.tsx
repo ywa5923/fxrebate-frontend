@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  LayoutGrid,
-  StickyNote,
-  CircleHelp,
-  Copy,
-} from "lucide-react";
+import { LayoutGrid, StickyNote, CircleHelp, Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -51,10 +46,10 @@ import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 import Multiselect from "react-select";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
-import  logger  from "@/lib/logger";
+import logger from "@/lib/logger";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 import { OptionsForm } from "@/components/OptionsForm/OptionsForm";
-
+import { Plus, Trash2 } from "lucide-react";
 type CopyField = "name" | "url" | "currency";
 
 const referralLinkFormSchema = z.object({
@@ -103,7 +98,6 @@ export default function ReferalLinksAndNotes({
   const [subIBLinks, setSubIBLinks] = useState<AffiliateLink[]>(SubIBLinks);
   const [selectedRow, setSelectedRow] = useState<AffiliateLink | null>(null);
 
-
   // Keep local CRUD state in sync when server data changes.
   useEffect(() => {
     setIBLinks(IBLinks);
@@ -131,18 +125,19 @@ export default function ReferalLinksAndNotes({
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   //keep the name for the copy field buttons.this is used in the renderCopyBtn function
-  const [clickedCopyBtns, setClickedCopyBtns] = useState<
-    Set<CopyField>
-  >(() => new Set());
+  const [clickedCopyBtns, setClickedCopyBtns] = useState<Set<CopyField>>(
+    () => new Set(),
+  );
 
   const watchedAccountTypeId = form.watch("accountTypeId");
   const watchedIsMasterLink = form.watch("isMasterLink");
- 
+
   //this function is used in the edit form to show the updated fields in red
   const getLabelClassName = (updatedFieldKey: string) =>
     cn(
       "text-sm font-medium",
-      selectedRow?.metadata?.updated_fields?.includes(updatedFieldKey) && is_admin
+      selectedRow?.metadata?.updated_fields?.includes(updatedFieldKey) &&
+        is_admin
         ? "text-red-600 dark:text-red-400"
         : "text-gray-700 dark:text-gray-200",
     );
@@ -178,19 +173,24 @@ export default function ReferalLinksAndNotes({
     setDialogMode("edit");
     setEditingId(row.id);
     setSelectedRow(row);
-  
+
     //if admin check what rows has empty public value and broker value is not empty
     //mark the fields that has empty public values with green color of the copy field buttons
     //this is done in renderCopyBtn function
-    if(is_admin && row.is_updated_entry === 1) {
-      const shouldBeUpdated = checkFieldsPublicValue(row, ["currency", "name", "url"]);
+    if (is_admin && row.is_updated_entry === 1) {
+      const shouldBeUpdated = checkFieldsPublicValue(row, [
+        "currency",
+        "name",
+        "url",
+      ]);
       setClickedCopyBtns(new Set(shouldBeUpdated));
     }
-  
-    const currency = is_admin? (row.public_currency ?? row.currency ?? ""): row.currency ?? "";
-    const name = is_admin ? (row.public_name ?? row.name ?? "") : (row.name ?? "");
-    const url = is_admin ? (row.public_url ?? row.url ?? "") : (row.url ?? "");
 
+    const currency = is_admin
+      ? row.public_currency ?? row.currency ?? ""
+      : row.currency ?? "";
+    const name = is_admin ? row.public_name ?? row.name ?? "" : row.name ?? "";
+    const url = is_admin ? row.public_url ?? row.url ?? "" : row.url ?? "";
 
     form.reset({
       accountTypeId: String(
@@ -214,7 +214,6 @@ export default function ReferalLinksAndNotes({
     const brokerValue = selectedRow?.[field];
     if (brokerValue == null || brokerValue === "") return;
     form.setValue(field, String(brokerValue));
-
   }
 
   function renderCopyBtn(field: CopyField) {
@@ -225,7 +224,9 @@ export default function ReferalLinksAndNotes({
     //   selectedRow.is_updated_entry === 1 &&
     //   selectedRow[field] != selectedRow[publicKey];
 
-    const showRedCopyHint = selectedRow.metadata?.updated_fields?.includes(field);
+    const showRedCopyHint = selectedRow.metadata?.updated_fields?.includes(
+      field,
+    );
     const clicked = clickedCopyBtns.has(field);
 
     return (
@@ -243,8 +244,8 @@ export default function ReferalLinksAndNotes({
           clicked
             ? "bg-green-100 border-green-500 text-green-700"
             : showRedCopyHint
-              ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
-              : "text-muted-foreground border-border hover:bg-muted/50",
+            ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
+            : "text-muted-foreground border-border hover:bg-muted/50",
         )}
         title="Copy broker value to public value"
       >
@@ -276,10 +277,14 @@ export default function ReferalLinksAndNotes({
       ? `/urls/broker/${brokerId}/affiliate-link/${editingId}`
       : `/urls/broker/${brokerId}/affiliate-link`;
     try {
-      const response = await apiClient<AffiliateLink>(serverUrl, UseTokenAuth.Yes, {
-        method: editingId ? "PUT" : "POST",
-        body: JSON.stringify(bodyPayload),
-      });
+      const response = await apiClient<AffiliateLink>(
+        serverUrl,
+        UseTokenAuth.Yes,
+        {
+          method: editingId ? "PUT" : "POST",
+          body: JSON.stringify(bodyPayload),
+        },
+      );
 
       if (response.success) {
         toast.success(
@@ -293,10 +298,16 @@ export default function ReferalLinksAndNotes({
         setClickedCopyBtns(new Set());
       } else {
         toast.error(response.message ?? "Failed to save referral link");
-        thisLogger.error("Failed to save referral link", { error:response.message, context: { brokerId, editingId } });
+        thisLogger.error("Failed to save referral link", {
+          error: response.message,
+          context: { brokerId, editingId },
+        });
       }
     } catch (error) {
-      thisLogger.error("Failed to save referral link", { error:error, context: { brokerId, editingId } });
+      thisLogger.error("Failed to save referral link", {
+        error: error,
+        context: { brokerId, editingId },
+      });
       toast.error("Failed to save referral link");
     }
   }
@@ -304,19 +315,29 @@ export default function ReferalLinksAndNotes({
   async function handleDeleteReferralLink(urlId: number) {
     const deleteUrl = `/urls/broker/${brokerId}/affiliate-link/${urlId}`;
     try {
-      const response = await apiClient<AffiliateLink>(deleteUrl, UseTokenAuth.Yes, {
-        method: "DELETE",
-      });
+      const response = await apiClient<AffiliateLink>(
+        deleteUrl,
+        UseTokenAuth.Yes,
+        {
+          method: "DELETE",
+        },
+      );
       if (response.success) {
         toast.success("Referral link deleted successfully");
         setConfirmDeleteId(null);
         router.refresh();
       } else {
         toast.error(response.message ?? "Failed to delete referral link");
-        thisLogger.error("Failed to delete referral link", { error:response.message, context: { brokerId, urlId } });
+        thisLogger.error("Failed to delete referral link", {
+          error: response.message,
+          context: { brokerId, urlId },
+        });
       }
     } catch (error) {
-      thisLogger.error("Failed to delete referral link", { error:error, context: { brokerId, urlId } });
+      thisLogger.error("Failed to delete referral link", {
+        error: error,
+        context: { brokerId, urlId },
+      });
       toast.error("Failed to delete referral link");
     }
   }
@@ -357,29 +378,36 @@ export default function ReferalLinksAndNotes({
         <Card className="border border-dashed border-gray-200 dark:border-gray-800 bg-[#fdfdfd] dark:bg-gray-800/40">
           <CardHeader>
             <div className="flex w-full items-start gap-2">
-              <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
               <div className="min-w-0 flex-1 w-full">
-                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <div className="text-2xl font-semibold text-gray-600 dark:text-gray-300">
                   Notes
                 </div>
-                  <div className="w-full pt-5 sm:pt-6 pb-5 sm:pb-6">
-                    <OptionsForm
-                    broker_id={brokerId}
-                    options={notesOptions}
-                    optionsValues={notesOptionsValues}
-                    is_admin={is_admin}
-                    entity_id={brokerId}
-                    entity_type={"broker"}
-                    action={submitBrokerProfile}
-                    display="vertical"
-                  />
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  New!!! now you can add various notes related to your
+                  accounts.
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-900 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
+                  <span>Click the</span>
+                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-dashed border-green-300 bg-white text-green-700 shadow-sm dark:border-green-800 dark:bg-gray-950 dark:text-green-300">
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span>icon to add one or more notes for every category</span>
                 </div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Notes are not implemented yet. This is temporary UI.
+            <div className="w-full pt-5 sm:pt-6 pb-5 sm:pb-6">
+              <OptionsForm
+                broker_id={brokerId}
+                options={notesOptions}
+                optionsValues={notesOptionsValues}
+                is_admin={is_admin}
+                entity_id={brokerId}
+                entity_type={"broker"}
+                action={submitBrokerProfile}
+                display="vertical"
+              />
             </div>
           </CardContent>
         </Card>
@@ -449,10 +477,13 @@ export default function ReferalLinksAndNotes({
                   }
                 />
                 {/* if admin show row.metadata.previous_relations_values.previous_account_type_name */}
-                {is_admin  && (
-                 <BrokerPreviousValue
+                {is_admin && (
+                  <BrokerPreviousValue
                     show="previous"
-                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_account_type_name}
+                    previousValue={
+                      selectedRow?.metadata?.previous_relations_values
+                        ?.previous_account_type_name
+                    }
                   />
                 )}
                 {form.formState.errors.accountTypeId ? (
@@ -460,8 +491,6 @@ export default function ReferalLinksAndNotes({
                     {form.formState.errors.accountTypeId.message}
                   </p>
                 ) : null}
-                
-                
               </div>
               <div className="space-y-1 min-w-0">
                 <div className={getLabelClassName("platform_urls")}>
@@ -559,11 +588,13 @@ export default function ReferalLinksAndNotes({
                     )
                   }
                 />
-                 {/* if admin show row.metadata.previous_relations_values.previous_platform_urls */}
-                 {is_admin  && (
-                 <BrokerPreviousValue
+                {/* if admin show row.metadata.previous_relations_values.previous_platform_urls */}
+                {is_admin && (
+                  <BrokerPreviousValue
                     show="previous"
-                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_platform_urls?.join("; ")}
+                    previousValue={selectedRow?.metadata?.previous_relations_values?.previous_platform_urls?.join(
+                      "; ",
+                    )}
                   />
                 )}
                 {form.formState.errors.platformUrls ? (
@@ -587,9 +618,7 @@ export default function ReferalLinksAndNotes({
                 />
               </div>
               <div className="space-y-1 min-w-0">
-                <div className={getLabelClassName("currency")}>
-                  Currency
-                </div>
+                <div className={getLabelClassName("currency")}>Currency</div>
                 <Controller
                   name="currency"
                   control={form.control}
@@ -667,16 +696,17 @@ export default function ReferalLinksAndNotes({
               {is_admin && (
                 <BrokerPreviousValue
                   show="previous"
-                  previousValue={selectedRow?.metadata?.previous_relations_values?.previous_is_master_link}
+                  previousValue={
+                    selectedRow?.metadata?.previous_relations_values
+                      ?.previous_is_master_link
+                  }
                 />
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-1">
-                <div className={getLabelClassName("name")}>
-                  Name
-                </div>
+                <div className={getLabelClassName("name")}>Name</div>
                 <Controller
                   name="name"
                   control={form.control}
@@ -706,9 +736,7 @@ export default function ReferalLinksAndNotes({
                 ) : null}
               </div>
               <div className="space-y-1">
-                <div className={getLabelClassName("url")}>
-                  Referral URL
-                </div>
+                <div className={getLabelClassName("url")}>Referral URL</div>
                 <Controller
                   name="url"
                   control={form.control}
