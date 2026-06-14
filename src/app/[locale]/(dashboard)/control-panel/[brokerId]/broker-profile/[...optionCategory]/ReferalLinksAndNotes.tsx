@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid, StickyNote, CircleHelp, Copy } from "lucide-react";
+import { LayoutGrid,  CircleHelp, Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -40,7 +40,7 @@ import { z } from "zod";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
+import { BrokerPreviousValue } from "@/components/OptionsForm/BrokerPreviousValue";
 import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 import Multiselect from "react-select";
@@ -48,8 +48,8 @@ import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
-import { OptionsForm } from "@/components/OptionsForm/OptionsForm";
-import { Plus, Trash2 } from "lucide-react";
+import { OptionsForm } from "@/components/OptionsForm";
+import { Plus } from "lucide-react";
 type CopyField = "name" | "url" | "currency";
 
 const referralLinkFormSchema = z.object({
@@ -220,9 +220,7 @@ export default function ReferalLinksAndNotes({
     if (!is_admin || dialogMode !== "edit" || !selectedRow) return null;
 
     const publicKey = `public_${field}` as keyof AffiliateLink;
-    // const showRedCopyHint =
-    //   selectedRow.is_updated_entry === 1 &&
-    //   selectedRow[field] != selectedRow[publicKey];
+   
 
     const showRedCopyHint = selectedRow.metadata?.updated_fields?.includes(
       field,
@@ -353,7 +351,7 @@ export default function ReferalLinksAndNotes({
             Referral links & notes
           </h1>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-            Referral links from server. Notes is placeholder.
+            Referral links 
           </p>
         </div>
       </div>

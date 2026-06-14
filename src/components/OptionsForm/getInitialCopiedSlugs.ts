@@ -12,8 +12,17 @@ export function getInitialCopiedSlugs(
       const optionValue = optionsValues.find(
         (ov) => ov.option_slug === option.slug,
       );
+      // if (
+      //   optionValue && optionValue.is_updated_entry === false &&
+      //   (optionValue.public_value === null ||
+      //     optionValue.public_value === "undefined") &&
+      //   optionValue.value !== null &&
+      //   optionValue.value !== "undefined"
+      // ) {
+      //   slugs.add(option.slug);
+      // }
       if (
-        optionValue && optionValue.is_updated_entry === false &&
+        optionValue  &&
         (optionValue.public_value === null ||
           optionValue.public_value === "undefined") &&
         optionValue.value !== null &&

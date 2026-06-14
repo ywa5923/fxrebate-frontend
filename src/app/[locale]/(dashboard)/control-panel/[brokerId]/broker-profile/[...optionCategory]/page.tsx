@@ -1,6 +1,6 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 //import { getOptionsValues } from "@/lib/getOptionsValues";
-import { Company, MatrixCell, Regulator, RegulatorList } from "@/types";
+import { Company, MatrixCell,  RegulatorList } from "@/types";
 import { notFound, redirect } from "next/navigation";
 //import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
@@ -599,7 +599,6 @@ export default async function BrokerProfilePage({
         broker_id={brokerId}
         options={matchedCategory.options as Option[]}
         optionsValues={optionsValues}
-        // action={submitBrokerProfile}
         is_admin={is_admin}
         entity_id={brokerId}
         entity_type="broker"

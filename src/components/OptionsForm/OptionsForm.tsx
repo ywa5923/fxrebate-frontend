@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import { Option, OptionValue } from "@/types";
 import { useRouter } from "next/navigation";
 import logger from "@/lib/logger";
-import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
+import { BrokerPreviousValue } from "@/components/OptionsForm/BrokerPreviousValue";
 import { buildFormSchema } from "./buildFormSchema";
 import { buildDefaultValues } from "./buildDefaultValues";
 import { getInitialCopiedSlugs } from "./getInitialCopiedSlugs";
@@ -84,6 +84,7 @@ export function OptionsForm({
   const [clickedCopyButtons, setClickedCopyButtons] =  useState<Set<string>>( () => getInitialCopiedSlugs(options, optionsValues, is_admin));
   
 
+  console.log("clicekd copyed",clickedCopyButtons);
    //this is used to refresh(empty)the file input when a new file is uploaded
     const [fileInputKey,setFileInputKey]=useState(0); 
 
@@ -94,7 +95,7 @@ export function OptionsForm({
   //sconsole.log("optionsValues", JSON.stringify(optionsValues, null, 2));
   //NOTE:
   //===Form initialization with optionsValues:===
-  //If admin is true, the form field value is set to the optionValue.public_value if it exists, otherwise it is set to the optionValue.value
+  //If admin is true, the form field value is set to the optionValue.public_value if it is null, otherwise it is set to the optionValue.value
   //this is used to auto populate the public values with the broker value if public_value is not set
   //The data submitted to server action by admin is considered as public_value,
   //===Form initialization with optionsValues:===s
@@ -135,8 +136,8 @@ export function OptionsForm({
           "border-1 border-red-500": isUpdatedEntry,
         })}
       >
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1">
             <BrokerPreviousValue
               brokerValue={brokerValue + " " + metadataUnit}
               previousValue={previousValue ?? ""}

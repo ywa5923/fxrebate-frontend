@@ -36,7 +36,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-import { BrokerPreviousValue } from "@/components/BrokerPreviousValue";
+import { BrokerPreviousValue } from "@/components/OptionsForm/BrokerPreviousValue";
 import { Copy, Plus, Pencil, Trash } from "lucide-react";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
