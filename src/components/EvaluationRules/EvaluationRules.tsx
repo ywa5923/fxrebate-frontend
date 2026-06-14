@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
   TooltipContent,
@@ -406,50 +407,57 @@ thisLogger.debug("Evaluation rules received in props",{context:evaluationRules})
                                 : []
                             }
                           />
-                          {!!is_admin && (!!isCopiedField || !!isUpdatedEntry) && (<div className="mt-2 flex w-full justify-end">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon-sm"
-                              className={cn("shrink-0",
-                                isCopiedField && "border-green-500 text-green-600 hover:bg-green-50",
-                                isUpdatedEntry && "border-red-500 text-red-600 hover:bg-red-50"
-                              )}
-    
- 
-                              title="Copy broker defaults"
-                              aria-label="Copy broker defaults"
-                              onClick={() => {
-                                //get the broker value from the initial values and set the form value to the broker value
-                                const brokerVal =
-                                  initialValues[name + "_broker_value"];
-                                const brokerValId =
-                                  String(brokerVal ?? "").split("#")[1] ?? "";
-                                //get the getter broker value from the initial values and set the form value to the broker value
-                                const getterVal =
-                                  initialValues[
-                                    getterFieldName + "_broker_value"
-                                  ];
-                                 
-                                setCopiedFields((prev)=>{
-                                  const next = new Set(prev);
-                                  next.add(name);
-                                  next.add(getterFieldName);
-                                  return next;
-                                });
-                                form.reset({
-                                  ...initialValues,
-                                  ...form.getValues(),
-                                  [name]: brokerValId,
-                                  [getterFieldName]: getterVal,
-                                  [name + "_is_updated_entry"]: 0,
-                                  
-                                });
-                              }}
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>)}
+                          {!!is_admin && (!!isCopiedField || !!isUpdatedEntry) && (
+                            <div className="mt-2 flex w-full justify-end">
+                              <div className="flex shrink-0 items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon-sm"
+                                  className={cn(
+                                    "shrink-0",
+                                    isCopiedField &&
+                                      "border-green-500 text-green-600 hover:bg-green-50",
+                                    isUpdatedEntry &&
+                                      "border-red-500 text-red-600 hover:bg-red-50",
+                                  )}
+                                  title="Copy broker defaults"
+                                  aria-label="Copy broker defaults"
+                                  onClick={() => {
+                                    const brokerVal =
+                                      initialValues[name + "_broker_value"];
+                                    const brokerValId =
+                                      String(brokerVal ?? "").split("#")[1] ?? "";
+                                    const getterVal =
+                                      initialValues[
+                                        getterFieldName + "_broker_value"
+                                      ];
+
+                                    setCopiedFields((prev) => {
+                                      const next = new Set(prev);
+                                      next.add(name);
+                                      next.add(getterFieldName);
+                                      return next;
+                                    });
+                                    form.reset({
+                                      ...initialValues,
+                                      ...form.getValues(),
+                                      [name]: brokerValId,
+                                      [getterFieldName]: getterVal,
+                                      [name + "_is_updated_entry"]: 0,
+                                    });
+                                  }}
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                                <Checkbox
+                                  className="size-5 cursor-pointer border-green-800 hover:bg-green-100 data-[state=checked]:border-green-800 data-[state=checked]:bg-green-800 data-[state=checked]:text-white data-[state=checked]:hover:bg-green-900"
+                                  title="Mark field as reviewed"
+                                  aria-label="Mark field as reviewed"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </FieldContent>
                       </Field>
                      
