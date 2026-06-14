@@ -1,7 +1,7 @@
 "use client";
 
 import { Company, DynamicTableRow, Option, Regulator, RegulatorList } from "@/types";
-import { DynamicForm } from "@/components/DynamicForm";
+import { OptionsForm } from "@/components/OptionsForm";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -126,7 +126,7 @@ export default function Companies({
           </p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
-              <DynamicForm
+              <OptionsForm
                 broker_id={broker_id}
                 options={options}
                 optionsValues={[]}
@@ -212,7 +212,7 @@ export default function Companies({
                       <Trash className="w-4 h-4" />
                     </Button>
                   </div>
-                  <DynamicForm
+                  <OptionsForm
                     broker_id={broker_id}
                     options={options}
                     optionsValues={company.option_values}

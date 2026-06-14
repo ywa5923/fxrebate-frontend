@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Copy, Info, LayoutGrid } from "lucide-react";
 import { EvaluationFormConfig, type EvaluationRule } from "./types";
+
 import {
   Select,
   SelectContent,
@@ -25,6 +26,8 @@ import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
+import { useState } from "react";
+import PreviousValues from "./PreviousValues";
 type EvaluationFormValues = Record<string, string|number>;
 
 export default function EvaluationRules({
@@ -39,6 +42,24 @@ export default function EvaluationRules({
   evaluationRules?: EvaluationRule[];
 }) {
   const thisLogger = logger.child("EvaluationRules");
+
+  const [copiedFields, setCopiedFields]=useState<Set<string>>(()=>{
+    if (!is_admin) return new Set();
+    const copied = new Set<string>();
+    for (const rule of evaluationRules ?? []) {
+      const key = rule.evaluation_rule_slug+"#"+rule.evaluation_rule_id;
+      if ( rule.evaluation_option_id != null && rule.public_evaluation_option_id == null){
+        copied.add(key);
+     }
+
+     if((rule.public_details==null || rule.public_details=="") && rule.details!=null && rule.details!="" ){
+      copied.add(key+"_getter");
+    }
+    }
+    return copied;
+  })
+
+  thisLogger.debug("Copied fields",{context:copiedFields});
   const section = useMemo(() => {
     const firstSection = Object.values(formConfig.sections)[0];
     return firstSection ?? null;
@@ -51,16 +72,17 @@ export default function EvaluationRules({
       config,
     }));
   }, [section]);
-  // example:fields
+  // example:fields->copy-trading is the option rule slug and 1 is it's id
   // [
   //   { name: "copy-trading#1", config: ... },
   //   { name: "scalping#2", config: ... }
   // ]
-console.log(evaluationRules);
+thisLogger.debug("Evaluation rules received in props",{context:evaluationRules});
   const initialValues = useMemo<EvaluationFormValues>(() => {
     const acc: EvaluationFormValues = {};
     for (const field of fields) {
       acc[field.name] = "";
+      acc[`${field.name}_is_updated_entry`] = 0;
       let fiedsIsGetter = field.config.options.some((option) => option.is_getter === 1);
       if(fiedsIsGetter){
         acc[`${field.name}_getter`] = "";
@@ -97,13 +119,17 @@ console.log(evaluationRules);
 
       const optionId = is_admin  ? (rule.public_evaluation_option_id ?? rule.evaluation_option_id) : rule.evaluation_option_id;
       acc[key] = String(optionId);
+
+     
       if(is_admin){
         acc[`${key}_broker_value`] = String(rule.evaluation_option_value)+"#"+String(rule.evaluation_option_id);
         acc[`${key}_previous_value`] = String(rule.previous_evaluation_option_value);
       }
       
-      
+      //==>getter meaning=====
+      //if an option is a getter, when user select it than an text input field is shown under the select box
      
+      //rule's getter are stored im details and public_details and previous_details in broker_evaluations table
        if(rule.is_getter === 1){
         const details = is_admin? (rule.public_details ?? rule.details)  : rule.details ;
         acc[`${key}_getter`] = details != null ? String(details) : "";
@@ -112,6 +138,10 @@ console.log(evaluationRules);
           acc[`${key}_getter_previous_value`] = String(rule.previous_details?? "");
         }
        }
+
+       //if admin selected a different option which is getter and broker has an other option wich is not getter
+       //then the admin shoud see it's getter
+       //is_getter_for_admin is established on backend in show method tat return evaluation rules
        if(is_admin && rule.is_getter_for_admin === 1){
         acc[`${key}_getter`]=rule.public_details?? "";
         acc[`${key}_getter_broker_value`] = String(rule.details?? "");
@@ -123,7 +153,6 @@ console.log(evaluationRules);
         acc[`${key}_is_updated_entry`] = 1;
        }
 
-      
     }
 
     return acc;
@@ -147,6 +176,22 @@ console.log(evaluationRules);
       ErrorMode.Return,
     );
     if (response.success) {
+      //clear the copied fields set when form is saved successfully
+      setCopiedFields((prev)=>{
+        const next = new Set(prev);
+        next.clear();
+        return next;
+      });
+
+      //set all is_updated_entry values to 0
+      const currentValues = form.getValues();
+      const clearedFlags = Object.fromEntries(
+      fields.map(({ name }) => [`${name}_is_updated_entry`, 0]));
+  
+      form.reset({
+       ...currentValues,
+       ...clearedFlags,
+      });
       toast.success("Evaluation rules saved successfully");
     } else {
       toast.error(response.message ?? "Failed to save evaluation rules");
@@ -201,10 +246,12 @@ console.log(evaluationRules);
                   }}
                   render={({ field }) => {
                     const getterFieldName = `${name}_getter`;
+                    const isCopiedField=copiedFields.has(name) || copiedFields.has(getterFieldName);
                     const selectedOption = rules_field_config.options.find(
                       (option) => String(option.value) === field.value,
                     );
                     const selectedOptionIsGetter = selectedOption?.is_getter === 1;
+
                     const fieldError = form.formState.errors[name];
 
                     const isUpdatedEntry =form.watch(`${name}_is_updated_entry`);
@@ -225,7 +272,15 @@ console.log(evaluationRules);
                               value={String(field.value ?? "")}
                                 onValueChange={(value) => {
                                   field.onChange(value);
-                                  
+                                  const option = rules_field_config.options.find(
+                                    (o) => String(o.value) === value
+                                  );
+                                  //if the selected option is not a getter, 
+                                  // set the getter value to empty string
+                                  //this send to server empty string to update the getter data (details column in broker_evaluations)
+                                  if (option?.is_getter !== 1) {
+                                    form.setValue(getterFieldName, "");
+                                  }
                                 }}
                             >
                               <SelectTrigger className="w-full">
@@ -267,21 +322,12 @@ console.log(evaluationRules);
                                   )}
                                 </p>
                                 <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                  Previous Value:{" "}
-                                  {form.getValues(
-                                    `${name}_previous_value`,
-                                  )}
+                                    
+                                <PreviousValues previousValues={String(form.getValues(`${name}_previous_value`))}></PreviousValues>
+                                      
+                                     
                                 </p>
-                                {/* If the selected option is not a getter but it have a previous getter value, show it */}
-                                {/* This is for the case when user change a getter value to other vlaue which is not a getter,previous geter value remain in db*/}
-                                {!selectedOptionIsGetter && form.getValues(`${name}_getter_previous_value`) !== "" && (
-                                  <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                    Previous Getter Value:{" "}
-                                    {form.getValues(
-                                      `${name}_getter_previous_value`,
-                                    )}
-                                  </p>
-                                )}
+                                
                               </div>
                             )}
                           </div>
@@ -313,6 +359,7 @@ console.log(evaluationRules);
                                       </TooltipProvider>
                                     )}
                                     <Input
+                                      key={getterFieldName}
                                       value={getterField.value ?? ""}
                                       onChange={getterField.onChange}
                                       placeholder="Enter value"
@@ -335,10 +382,7 @@ console.log(evaluationRules);
                                         )}
                                       </p>
                                       <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                        Previous Value:{" "}
-                                        {form.getValues(
-                                          `${getterFieldName}_previous_value`,
-                                        )}
+                                      <PreviousValues previousValues={String(form.getValues(`${getterFieldName}_previous_value`))}></PreviousValues>
                                       </p>
                                     </div>
                                   )}
@@ -362,12 +406,17 @@ console.log(evaluationRules);
                                 : []
                             }
                           />
-                          {is_admin && (<div className="mt-2 flex w-full justify-end">
+                          {!!is_admin && (!!isCopiedField || !!isUpdatedEntry) && (<div className="mt-2 flex w-full justify-end">
                             <Button
                               type="button"
                               variant="outline"
                               size="icon-sm"
-                              className="shrink-0"
+                              className={cn("shrink-0",
+                                isCopiedField && "border-green-500 text-green-600 hover:bg-green-50",
+                                isUpdatedEntry && "border-red-500 text-red-600 hover:bg-red-50"
+                              )}
+    
+ 
                               title="Copy broker defaults"
                               aria-label="Copy broker defaults"
                               onClick={() => {
@@ -382,6 +431,12 @@ console.log(evaluationRules);
                                     getterFieldName + "_broker_value"
                                   ];
                                  
+                                setCopiedFields((prev)=>{
+                                  const next = new Set(prev);
+                                  next.add(name);
+                                  next.add(getterFieldName);
+                                  return next;
+                                });
                                 form.reset({
                                   ...initialValues,
                                   ...form.getValues(),

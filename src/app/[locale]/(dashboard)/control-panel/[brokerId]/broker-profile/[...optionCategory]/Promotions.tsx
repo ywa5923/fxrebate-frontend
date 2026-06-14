@@ -1,7 +1,7 @@
 "use client";
 
 import { Option } from '@/types';
-import { DynamicForm } from '@/components/DynamicForm';
+
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { DynamicTableRow } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
 import logger from '@/lib/logger';
-import { OptionsForm } from '@/components/OptionsForm/OptionsForm';
+import { OptionsForm } from '@/components/OptionsForm';
 
 interface PromotionsProps {
   broker_id: number;
