@@ -318,6 +318,8 @@ export default function EvaluationRules({
                                   (o) => String(o.value) === value,
                                 );
 
+                                //set the is_updated_entry value to 0
+                                form.setValue(`${name}_is_updated_entry`, 0);
                                 //if the selected option is not a getter,
                                 // set the getter value to empty string
                                 //this send to server empty string to update the getter data (details column in broker_evaluations)
