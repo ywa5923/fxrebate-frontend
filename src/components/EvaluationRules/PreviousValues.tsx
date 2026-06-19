@@ -1,10 +1,14 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function PreviousValues({previousValues}: {previousValues: string}) {
-
-
+export default function PreviousValues({
+  previousValues,
+  label = "Previous Values",
+}: {
+  previousValues: string | null | undefined;
+  label?: string;
+}) {
     const previousParts =
-    previousValues != null && previousValues !== ""
+    previousValues != null && previousValues !== "" && previousValues !== undefined
       ? previousValues.split("->")
         .map((part) => part.trim())
         .filter(Boolean)
@@ -17,7 +21,9 @@ export default function PreviousValues({previousValues}: {previousValues: string
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-block w-fit self-start">Previous Value: {previousParts[0]}</span>
+        <span className="inline-block w-fit self-start">
+          {label}: {previousParts[0]}
+        </span>
       </TooltipTrigger>
       {previousParts.length > 0 && (
         <TooltipContent>

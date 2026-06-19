@@ -10,10 +10,11 @@ export interface EvaluationRule {
   is_getter_for_admin: 0 | 1;
   public_details: string | null;
   previous_evaluation_option_id: number | null;
-  previous_evaluation_option_value: string | null;
+  previous_evaluation_options: string | null;
   previous_details: string | null;
   evaluation_rule_slug: string;
   evaluation_option_value: string;
+  evaluation_option_label?: string | null;
   is_getter: 0 | 1;
   is_updated_entry: 0 | 1;
   created_at: string | null;
