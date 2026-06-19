@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import logger from "@/lib/logger";
 import { useState } from "react";
 import PreviousValues from "./PreviousValues";
-type EvaluationFormValues = Record<string, string | number>;
+type EvaluationFormValues = Record<string, string | number|null>;
 
 const buildCopiedFields = (
   evaluationRules: EvaluationRule[] | undefined,
@@ -147,7 +147,7 @@ export default function EvaluationRules({
       const optionId = is_admin
         ? (rule.public_evaluation_option_id ?? rule.evaluation_option_id)
         : rule.evaluation_option_id;
-      acc[key] = String(optionId);
+      acc[key] = optionId ? String(optionId) : "";
      
 
       if (is_admin) {
@@ -207,6 +207,7 @@ export default function EvaluationRules({
 
   const form = useForm<EvaluationFormValues>({
     defaultValues: initialValues,
+    shouldUnregister: true,
   });
 
   useEffect(() => {
@@ -215,18 +216,23 @@ export default function EvaluationRules({
   }, [initialValues, evaluationRules, is_admin, form]);
 
   const onSubmit = async (values: EvaluationFormValues) => {
-    thisLogger.info("Evaluation rules submitted", { context: { values } });
+   
     const saveEvaluationRulesUrl = "/evaluation-rules/" + brokerId;
 
+    const normalize = (v: string | number | null) =>
+     v === "" || v === "_none_" ? null : v;
     const dataToSend: EvaluationFormValues = {};
     //send only the options ids and getter values to the server
     for (const { name } of fields) {
-      dataToSend[name] = values[name];
+
+      dataToSend[name] = normalize(values[name]);
       const getterKey = `${name}_getter`;
-      if (getterKey in values) {
-        dataToSend[getterKey] = values[getterKey];
+      if (getterKey in values) { 
+        dataToSend[getterKey] = normalize(values[getterKey]);
       }
     }
+
+     thisLogger.info("Evaluation rules submitted", { context: { dataToSend } });
     const response = await apiClient<boolean>(
       saveEvaluationRulesUrl,
       UseTokenAuth.Yes,
@@ -297,14 +303,15 @@ export default function EvaluationRules({
                       selectedOption?.is_getter === 1;
 
                     const fieldError = form.formState.errors[name];
+                    const getterError = form.formState.errors[getterFieldName];
 
                     const selectedOptionGetterPlaceholder = selectedOption?.getter_placeholder ?? "Custom placeholder";
 
                     const isUpdatedEntry = form.watch(
                       `${name}_is_updated_entry`,
                     );
-                    const getterValue = form.watch(getterFieldName);
 
+                   
                     //check if field has getter previous values
                     const hasGetterPreviousValues = form.watch(
                       `${name}_getter_previous_value`,
@@ -324,10 +331,10 @@ export default function EvaluationRules({
                                   <TooltipTrigger asChild>
                                     <button
                                       type="button"
-                                      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+                                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
                                       aria-label="Show option description"
                                     >
-                                      <Info className="h-3.5 w-3.5" />
+                                      <Info className="h-4 w-4" />
                                     </button>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -342,7 +349,7 @@ export default function EvaluationRules({
                         <FieldContent className="min-w-0 space-y-1">
                           <div className="flex w-full min-w-0 flex-col gap-2">
                             <Select
-                              value={String(field.value ?? "")}
+                              value={field.value ? String(field.value) : ""}
                               onValueChange={(value) => {
                                 field.onChange(value);
                                 const option = rules_field_config.options.find(
@@ -356,6 +363,8 @@ export default function EvaluationRules({
                                 //this send to server empty string to update the getter data (details column in broker_evaluations)
                                 if (option?.is_getter !== 1) {
                                   form.setValue(getterFieldName, "");
+                                  //if before was selected a getter option with an eror message after submitting the form, clear that error
+                                  form.clearErrors(getterFieldName);
                                 }
                               }}
                             >
@@ -365,6 +374,12 @@ export default function EvaluationRules({
                                 />
                               </SelectTrigger>
                               <SelectContent>
+                               <SelectItem
+                                value="_none_"
+                                className="text-muted-foreground"
+                               >
+                                 Empty 
+                               </SelectItem>
                                 {rules_field_config.options.map((option) => (
                                   <SelectItem
                                     key={option.value}
@@ -420,22 +435,38 @@ export default function EvaluationRules({
                             <div className="flex w-full flex-col gap-2">
                               <div className="flex items-center gap-2">
                                 <Input
-                                  key={getterFieldName}
-                                  value={String(getterValue ?? "")}
+                                  {...form.register(getterFieldName, {
+                                    validate: (value) =>
+                                      !selectedOptionIsGetter ||
+                                      String(value ?? "").trim() !== "" ||
+                                      `${rules_field_config.label} details is required`,
+                                  })}
                                   onChange={(event) => {
                                     form.setValue(
                                       getterFieldName,
                                       event.target.value,
+                                      { shouldValidate: true },
                                     );
-                                    form.setValue(
-                                      `${name}_is_updated_entry`,
-                                      0,
-                                    );
+                                    form.setValue(`${name}_is_updated_entry`, 0);
                                   }}
                                   placeholder={selectedOptionGetterPlaceholder}
                                   className="w-full"
+                                  aria-invalid={!!getterError}
                                 />
                               </div>
+                              <FieldError
+                                errors={
+                                  getterError
+                                    ? [
+                                        {
+                                          message: String(
+                                            getterError.message ?? "",
+                                          ),
+                                        },
+                                      ]
+                                    : []
+                                }
+                              />
                               {is_admin && (
                                 <div
                                   className={cn(
