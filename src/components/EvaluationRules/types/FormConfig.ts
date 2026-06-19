@@ -3,6 +3,7 @@ export interface EvaluationFieldOption {
   label: string;
   is_getter: 0 | 1;
   description: string;
+  getter_placeholder?: string | null;
 }
 
 export interface EvaluationFieldValidation {

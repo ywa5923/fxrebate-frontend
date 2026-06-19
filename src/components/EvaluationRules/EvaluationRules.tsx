@@ -111,6 +111,7 @@ export default function EvaluationRules({
       );
       if (fiedsIsGetter) {
         acc[`${field.name}_getter`] = "";
+
         if (is_admin) {
           acc[`${field.name}_getter_broker_value`] = "";
           acc[`${field.name}_getter_previous_value`] = "";
@@ -147,6 +148,7 @@ export default function EvaluationRules({
         ? (rule.public_evaluation_option_id ?? rule.evaluation_option_id)
         : rule.evaluation_option_id;
       acc[key] = String(optionId);
+     
 
       if (is_admin) {
         acc[`${key}_broker_value_raw`] =
@@ -158,6 +160,9 @@ export default function EvaluationRules({
         acc[`${key}_broker_option_id`] = String(rule.evaluation_option_id);
 
         acc[`${key}_previous_value`] = String(rule.previous_evaluation_options);
+        acc[`${key}_getter_previous_value`] = String(rule.previous_details ?? "");
+          
+        
       }
 
       //==>getter meaning=====
@@ -172,9 +177,7 @@ export default function EvaluationRules({
 
         if (is_admin) {
           acc[`${key}_getter_broker_value`] = String(rule.details ?? "");
-          acc[`${key}_getter_previous_value`] = String(
-            rule.previous_details ?? "",
-          );
+          
         }
       }
 
@@ -189,7 +192,7 @@ export default function EvaluationRules({
           String(rule.details);
 
         //if is not getter for admin and is getter for broker, show the broker previous getter values when render the form
-        acc[`${key}_show_prev_getter`] = 1;
+        //acc[`${key}_show_prev_getter`] = 1;
 
         acc[`${key}_getter`] = rule.details ?? "";
       }
@@ -295,9 +298,17 @@ export default function EvaluationRules({
 
                     const fieldError = form.formState.errors[name];
 
+                    const selectedOptionGetterPlaceholder = selectedOption?.getter_placeholder ?? "Custom placeholder";
+
                     const isUpdatedEntry = form.watch(
                       `${name}_is_updated_entry`,
                     );
+                    const getterValue = form.watch(getterFieldName);
+
+                    //check if field has getter previous values
+                    const hasGetterPreviousValues = form.watch(
+                      `${name}_getter_previous_value`,
+                    ) !== "";
 
                     return (
                       <Field
@@ -389,15 +400,14 @@ export default function EvaluationRules({
                                 {/* if show_prev_getter is 1, show the previous getter values */}
                                 {/* this happens when is_getter is 1 and is_getter_for_admin is 0*/}
                                 {/* this is used to show the previous getter values in the admin view */}
-                                {initialValues[`${name}_show_prev_getter`] ===
-                                  1 && (
+                                {hasGetterPreviousValues && (
                                   <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
                                     <PreviousValues
                                       label="Previous Getter Values"
                                       previousValues={String(
                                         form.getValues(
                                           `${name}_getter_previous_value`,
-                                        ),
+                                        ) ?? "",
                                       )}
                                     ></PreviousValues>
                                   </p>
@@ -407,54 +417,53 @@ export default function EvaluationRules({
                           </div>
 
                           {selectedOptionIsGetter && (
-                            <Controller
-                              control={form.control}
-                              name={getterFieldName}
-                              defaultValue=""
-                              render={({ field: getterField }) => (
-                                <div className="flex w-full flex-col gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      key={getterFieldName}
-                                      value={getterField.value ?? ""}
-                                      onChange={(e)=>{
-                                        getterField.onChange(e.target.value);
-                                        //set the is_updated_entry value to 0
-                                        form.setValue(`${name}_is_updated_entry`, 0);
-                                      }}
-                                      placeholder="Enter a value"
-                                      className="w-full"
-                                    />
-                                  </div>
-                                  {is_admin && (
-                                    <div
-                                      className={cn(
-                                        "flex flex-col gap-1 border pt-2 px-2 pb-2 rounded-md",
-                                        isUpdatedEntry
-                                          ? "border-red-500 border-1 dark:border-red-500"
-                                          : "border-gray-200 dark:border-gray-700",
-                                      )}
-                                    >
-                                      <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                        Broker Value:{" "}
-                                        {form.getValues(
-                                          `${getterFieldName}_broker_value`,
-                                        )}
-                                      </p>
-                                      <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                        <PreviousValues
-                                          previousValues={String(
-                                            form.getValues(
-                                              `${getterFieldName}_previous_value`,
-                                            ),
-                                          )}
-                                        ></PreviousValues>
-                                      </p>
-                                    </div>
+                            <div className="flex w-full flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  key={getterFieldName}
+                                  value={String(getterValue ?? "")}
+                                  onChange={(event) => {
+                                    form.setValue(
+                                      getterFieldName,
+                                      event.target.value,
+                                    );
+                                    form.setValue(
+                                      `${name}_is_updated_entry`,
+                                      0,
+                                    );
+                                  }}
+                                  placeholder={selectedOptionGetterPlaceholder}
+                                  className="w-full"
+                                />
+                              </div>
+                              {is_admin && (
+                                <div
+                                  className={cn(
+                                    "flex flex-col gap-1 border pt-2 px-2 pb-2 rounded-md",
+                                    isUpdatedEntry
+                                      ? "border-red-500 border-1 dark:border-red-500"
+                                      : "border-gray-200 dark:border-gray-700",
                                   )}
+                                >
+                                  <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
+                                    Broker Value:{" "}
+                                    {form.getValues(
+                                      `${getterFieldName}_broker_value`,
+                                    )}
+                                  </p>
+                                  {/* <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
+                                    <PreviousValues
+                                      label="Previous Getter Values"
+                                      previousValues={String(
+                                        form.getValues(
+                                          `${getterFieldName}_previous_value`,
+                                        ),
+                                      )}
+                                    ></PreviousValues>
+                                  </p> */}
                                 </div>
                               )}
-                            />
+                            </div>
                           )}
 
                           <FieldError

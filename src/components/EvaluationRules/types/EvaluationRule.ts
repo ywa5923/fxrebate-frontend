@@ -15,6 +15,8 @@ export interface EvaluationRule {
   evaluation_rule_slug: string;
   evaluation_option_value: string;
   evaluation_option_label?: string | null;
+  getter_placeholder?: string | null;
+  public_getter_placeholder?: string | null;
   is_getter: 0 | 1;
   is_updated_entry: 0 | 1;
   created_at: string | null;
