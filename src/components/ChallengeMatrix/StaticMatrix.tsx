@@ -777,9 +777,9 @@ export default function StaticMatrix({
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className={cn("mb-4 flex flex-wrap items-center gap-3",is_admin && "justify-between",!is_admin && "justify-end")}>
         {/* Public / Draft toggle (hidden in placeholder mode) */}
-        {isPublished !== null && type !== "placeholder" && (
+        {isPublished !== null && type !== "placeholder" && is_admin && (
           <PublishToggle
             isPublished={isPublished}
             onToggle={togglePublish}
@@ -796,10 +796,10 @@ export default function StaticMatrix({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-9 w-9 text-gray-600 dark:text-gray-300"
+                    className="h-9 w-29 text-gray-600 dark:text-gray-300"
                     aria-label="Clone table for all amounts"
                   >
-                    <CopyIcon className="h-4 w-4" />
+                    <CopyIcon className="h-4 w-4" />Clone table
                   </Button>
                 </AlertDialogTrigger>
               </TooltipTrigger>
