@@ -305,7 +305,27 @@ export default function EvaluationRules({
                         className="items-start gap-0.5"
                       >
                         <FieldLabel className="w-full pt-0 md:!flex-none md:w-24 md:whitespace-nowrap md:pt-2">
-                          {rules_field_config.label}
+                          <span className="inline-flex items-center gap-1">
+                            {rules_field_config.label}
+                            {selectedOption?.description && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+                                      aria-label="Show option description"
+                                    >
+                                      <Info className="h-3.5 w-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {selectedOption.description}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </span>
                         </FieldLabel>
 
                         <FieldContent className="min-w-0 space-y-1">
@@ -344,12 +364,6 @@ export default function EvaluationRules({
                                 ))}
                               </SelectContent>
                             </Select>
-                            {!selectedOptionIsGetter &&
-                              selectedOption?.description && (
-                                <p className="min-w-0 w-full text-sm leading-relaxed text-muted-foreground whitespace-normal [overflow-wrap:anywhere] break-all">
-                                  {selectedOption.description}
-                                </p>
-                              )}
 
                             {is_admin && (
                               <div
@@ -400,24 +414,6 @@ export default function EvaluationRules({
                               render={({ field: getterField }) => (
                                 <div className="flex w-full flex-col gap-2">
                                   <div className="flex items-center gap-2">
-                                    {selectedOption?.description && (
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <button
-                                              type="button"
-                                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                                              aria-label="Show option description"
-                                            >
-                                              <Info className="h-4 w-4" />
-                                            </button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            {selectedOption.description}
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    )}
                                     <Input
                                       key={getterFieldName}
                                       value={getterField.value ?? ""}
