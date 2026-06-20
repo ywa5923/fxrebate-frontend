@@ -11,6 +11,7 @@ import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
+import { useParams } from "next/navigation";
 
 interface AmountsContainerProps {
   amounts: ChallengeAmount[];
@@ -44,7 +45,8 @@ export default function AmountsContainer({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   let log = logger.child('ChallengeMatrix/AmountsContainer');
-
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
   const [optimisticAmounts, setOptimisticAmounts] = useOptimistic(
     amounts,
     (_state, newAmounts: ChallengeAmount[]) => newAmounts,
@@ -105,6 +107,7 @@ export default function AmountsContainer({
           {optimisticAmounts.map((amount, index) => (
             <AmountItem
               key={amount.id}
+              locale={locale}
               amount={amount}
               index={index}
               isEditingHiddenState={isEditingHiddenState}

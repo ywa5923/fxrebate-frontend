@@ -2,8 +2,10 @@ import { cn } from "@/lib/utils";
 import { ChallengeAmount } from "@/types";
 import { X } from "lucide-react";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { formatAmount } from "./formatAmount";
 
 interface AmountItemProps {
+  locale: string;
   amount: ChallengeAmount;
   index: number;
   isEditingHiddenState: boolean;
@@ -16,7 +18,9 @@ interface AmountItemProps {
   isActive: boolean;
 }
 
+
 export default function AmountItem({
+  locale,
   amount,
   index,
   isEditingHiddenState,
@@ -53,8 +57,8 @@ export default function AmountItem({
             : "bg-white dark:bg-gray-800 text-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20",
       )}
     >
-      <span className="block md:inline">{amount.amount}</span>
-      <span className="block md:inline md:ml-1">{amount.currency}</span>
+      <span className="block md:inline">{formatAmount(amount.amount, amount.currency, locale)}</span>
+     
       {isEditingHiddenState && (
         <span
           role="button"

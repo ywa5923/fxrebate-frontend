@@ -24,7 +24,8 @@ import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
 import { ChallengeType } from "@/types";
-import { useCurrenciesStore } from "@/hooks/useCurrenciesStore";
+import { formatAmount } from "./formatAmount";
+import { useParams } from "next/navigation";
 
 type FormValues = { category?: string; step?: string; amount?: string, amountCurrency?: string };
 
@@ -60,7 +61,8 @@ export default function ChallengeTabForm({
   const isAmountType = tabType === "amount";
   const isCategoryType = tabType === "category";
 
-
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
 
   //let amountCurrencies: Array<{ label: string; value: string }> = [{value:"USD", label:"USD"},{value:"EUR", label:"EUR"},{value:"GBP", label:"GBP"},{value:"JPY", label:"JPY"}];
   //====0. For tabType=category==================================
@@ -282,7 +284,7 @@ export default function ChallengeTabForm({
                   <SelectContent>
                     {defaultAmounts.map((opt) => (
                       <SelectItem key={opt.id} value={String(opt.id)}>
-                        {opt.name.split(" ")[0]}
+                        {formatAmount(opt.name.split(" ")[0], null, locale)}
                       </SelectItem>
                     ))}
                   </SelectContent>
