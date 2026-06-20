@@ -756,9 +756,13 @@ export default function StaticMatrix({
   };
 
   // Show empty state if no headers
+  const matrixContainerClassName =
+    "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 px-2 sm:px-4";
+
   if (columnHeaders.length === 0 || rowHeaders.length === 0) {
     return (
-      <div className="w-full">
+      <div className={matrixContainerClassName}>
+        <div className="mx-auto w-full max-w-screen-2xl">
         <Card>
           <CardContent className="p-6">
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -766,17 +770,19 @@ export default function StaticMatrix({
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
 
   const matrixColumnCount = Math.max(columnHeaders.length, 1);
-  const matrixGridTemplateColumns = `minmax(150px, 190px) repeat(${matrixColumnCount}, minmax(0, 1fr))`;
+  const matrixGridTemplateColumns = `minmax(160px, 220px) repeat(${matrixColumnCount}, minmax(140px, 1fr))`;
   const matrixMobileGridTemplateColumns = `200px repeat(${matrixColumnCount}, minmax(220px, 1fr))`;
   const matrixMobileMinWidth = `${200 + matrixColumnCount * 220 + matrixColumnCount * 8}px`;
 
   return (
-    <div className="w-full">
+    <div className={matrixContainerClassName}>
+      <div className="mx-auto w-full max-w-screen-2xl">
       <div className={cn("mb-4 flex flex-wrap items-center gap-3",is_admin && "justify-between",!is_admin && "justify-end")}>
         {/* Public / Draft toggle (hidden in placeholder mode) */}
         {isPublished !== null && type !== "placeholder" && is_admin && (
@@ -1272,6 +1278,7 @@ export default function StaticMatrix({
         </CardContent>
         {renderLoadingOverlay()}
       </Card>
+      </div>
     </div>
   );
 }
