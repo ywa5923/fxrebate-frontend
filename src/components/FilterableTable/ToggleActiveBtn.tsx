@@ -3,7 +3,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ToggleRight, ToggleLeft } from "lucide-react";
-import { Broker } from "@/lib/broker-management";
+import { Broker } from "@/types";
 import { useRouter } from "next/navigation";
 
 
@@ -41,13 +41,13 @@ export default function ToggleActiveBtn({ url,broker }: { url: string,broker: Br
         )}
         <Button
           variant="ghost"
-          size="sm"
-          className={`h-9 w-9 p-0 ${broker.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+          size="icon"
+          className={`p-0 ${broker.is_active ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
           onClick={handleToggle}
           disabled={isPending}
           title={broker.is_active ? 'Deactivate broker' : 'Activate broker'}
         >
-          {broker.is_active ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
+          {broker.is_active ? <ToggleRight className="size-6" /> : <ToggleLeft className="size-6" />}
         </Button>
       </>
     );

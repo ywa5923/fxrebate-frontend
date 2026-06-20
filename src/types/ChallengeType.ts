@@ -28,12 +28,12 @@ export interface ChallengeTypesResponse {
 
 
 export interface ChallengeMatrixExtraData {
-  affiliate_link: AffiliateLink;
+  affiliate_link: ChallengeAffiliateLink;
   evaluation_cost_discount: EvaluationCostDiscount;
-  affiliate_master_link: AffiliateLink;
+  affiliate_master_link: ChallengeAffiliateLink;
 }
 
-export interface AffiliateLink {
+export interface ChallengeAffiliateLink {
   id?: number;
   url: string;
   public_url: string | null;

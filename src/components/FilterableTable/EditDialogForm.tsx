@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import XForm from "@/components/XForm/XForm";
+import XForm, { preventCloseOnPortalClick } from "@/components/XForm";
 import { XFormDefinition } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
@@ -39,12 +39,16 @@ export default function EditDialogForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenClose}>
-      <DialogContent className="max-h-[85vh] p-2 overflow-y-none">
+      <DialogContent className="max-h-[85vh] p-2 overflow-y-none"
+       onPointerDownOutside={preventCloseOnPortalClick}
+       onInteractOutside={preventCloseOnPortalClick}
+      >
         <DialogHeader className="p-2">
           <DialogTitle>Edit {resourceName}</DialogTitle>
           <DialogDescription>Edit the resource form data.</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] p-1">
+        <ScrollArea className="max-h-[70vh] p-1" >
+        
           <XForm
             getItemUrl={getItemUrl}
             resourceApiUrl={updateItemUrl}

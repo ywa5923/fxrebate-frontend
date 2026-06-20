@@ -4,10 +4,9 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
   } from "@/components/ui/dialog"
-  import { ScrollArea } from "@/components/ui/scroll-area";
-import XForm from "./XForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import XForm, { preventCloseOnPortalClick } from "@/components/XForm";
 
 export default function DialogAddBtn({
     formConfigApiUrl,
@@ -24,7 +23,10 @@ export default function DialogAddBtn({
   }) {
     return (
       <Dialog open={open} onOpenChange={onOpenClose}>
-        <DialogContent className="max-h-[85vh] p-2 overflow-y-hidden">
+        <DialogContent className="max-h-[85vh] p-2 overflow-y-hidden"
+        onPointerDownOutside={preventCloseOnPortalClick}
+        onInteractOutside={preventCloseOnPortalClick}
+        >
           <DialogHeader className="p-2">
             <DialogTitle>Add {resourceName}</DialogTitle>
             <DialogDescription>Add the resource form data.</DialogDescription>

@@ -8,9 +8,9 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
   import { Button } from "@/components/ui/button"
-  import XForm from "@/components/XForm/XForm"
+  import XForm, { preventCloseOnPortalClick } from "@/components/XForm"
 import { useState } from "react"
-//import { XFormDefinition } from "@/types"
+
 import {  PlusIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceName: string,addApiUrl: string } ) {
@@ -22,7 +22,7 @@ export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceNam
     };
     
   return (
- <Dialog open={open} modal={false} onOpenChange={setOpen}>
+ <Dialog open={open}  onOpenChange={setOpen}>
   <DialogTrigger asChild>
     <Button
       onClick={handleOpen}
@@ -34,7 +34,10 @@ export default function AddActionBtn( {  resourceName,addApiUrl }: { resourceNam
       <PlusIcon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
     </Button>
   </DialogTrigger>
-  <DialogContent className="max-h-[85vh] p-2 overflow-y-none">
+  <DialogContent className="max-h-[85vh] p-2 overflow-y-none"
+  onPointerDownOutside={preventCloseOnPortalClick}
+  onInteractOutside={preventCloseOnPortalClick}
+  >
     <DialogHeader className="p-2">
       <DialogTitle>Add {resourceName}</DialogTitle>
       <DialogDescription>

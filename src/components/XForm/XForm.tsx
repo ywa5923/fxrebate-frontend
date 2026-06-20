@@ -68,7 +68,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
 {
 
   const router = useRouter();
-  const log = logger.child('components/XForm/XForm.tsx');
+  const thisLogger = logger.child('components/XForm/XForm.tsx');
 
   //let [formDefaultValues, setFormDefaultValues] = useState<Record<string, any>>({});
   let [isLoading, setIsLoading] = useState(false);
@@ -83,13 +83,13 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
         if(mode === 'create' ){
          
           let formDefUrl = formConfigApiUrl ?? resourceApiUrl + "/form-config";
-          log.debug("fetching form configuration", {formDefUrl: formDefUrl});
+          thisLogger.debug("fetching form configuration", {formDefUrl: formDefUrl});
           const response = await apiClient<XFormDefinition>(formDefUrl, true);
           
           if(response.success && response.data){
             setFormConfigState(response.data);
           } else {
-            log.error("Failed to fetch form configuration", {formDefUrl: formDefUrl, message: response.message});
+            thisLogger.error("Failed to fetch form configuration", {formDefUrl: formDefUrl, message: response.message});
             toast.error("Failed to fetch form configuration");
             
           }
@@ -99,21 +99,21 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
         //in edit mode the formconfig is already fetched in table data fetch, so we need to fetch the item data
         if(mode === 'edit' && formConfig && getItemUrl && resourceId){
           let apiUrl = getItemUrl + "/" + resourceId;
-          const response = await apiClient<T>(apiUrl, true);
+          const response = await apiClient<any>(apiUrl, true);
 
           if (response.success && response.data) {
-            log.debug("response.data", {responseData: response.data});
-            log.debug("makeDefaultValues(formConfig, response.data as any)", {defaultValues: makeDefaultValues(formConfig, response.data as T)});
-            let defaultValues = makeDefaultValues(formConfig, response.data as T);
+            thisLogger.debug("response.data", {responseData: response.data});
+            thisLogger.debug("makeDefaultValues(formConfig, response.data as any)", {defaultValues: makeDefaultValues(formConfig, response.data as any)});
+            let defaultValues = makeDefaultValues(formConfig, response.data as any);
             requestAnimationFrame(() => form.reset(defaultValues));
           } else {
-           log.error("Failed to fetch item", {apiUrl: apiUrl, message: response.message});
+           thisLogger.error("Failed to fetch item", {apiUrl: apiUrl, message: response.message});
             toast.error("Failed to fetch item");
           }
         }
        
       } catch (err) {
-        log.error("Failed to fetch item", {error: err});
+        thisLogger.error("Failed to fetch item", {error: err});
         toast.error("Failed to load form data");
       } finally {
         setIsLoading(false);
@@ -167,7 +167,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
   
    let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
   
-   log.debug("Xform json submitted data", {apiUrl,jsonBody});
+   thisLogger.debug("Xform json submitted data", {apiUrl,jsonBody});
 
    const response = await apiClient<DynamicOption>(apiUrl, true, {
     method: method,
@@ -188,13 +188,12 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
    
     toast.error(response.message);
    }
-   log.debug("XFormData", data);
-   log.debug("XFormFlatData", formFlatData);
+   thisLogger.debug("XFormData", data);
+   thisLogger.debug("XFormFlatData", formFlatData);
   }
 
     return (
          <div className="m-2">
-                  <h1 className="text-2xl font-bold mb-4">XForm</h1>
                   {isLoading && (
                     <div className="flex items-center justify-center gap-3 rounded-lg border border-blue-100 bg-gradient-to-r from-white to-blue-50/50 p-4 shadow-sm ring-1 ring-blue-100">
                       <Loader2 className="h-20 w-20 animate-spin text-blue-200" />
