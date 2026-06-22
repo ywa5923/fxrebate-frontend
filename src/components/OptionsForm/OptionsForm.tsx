@@ -355,6 +355,7 @@ export function OptionsForm({
                         {option.info_sections &&
                           option.info_sections.length > 0 && (
                             <OptionInfoSections
+                              isAdmin={is_admin}
                               infoSections={option.info_sections}
                               optionName={option.name}
                             />

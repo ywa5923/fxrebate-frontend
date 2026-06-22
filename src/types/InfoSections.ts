@@ -10,7 +10,8 @@ export type InfoSection = {
 export type InfoSectionItem = {
     id?: number
     info_section_id?: number
-    title?: string|null
+    title: string
+    subtitle?: string|null
     description?: string|null
     published?: boolean
 }
