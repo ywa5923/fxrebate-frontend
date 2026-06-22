@@ -1,6 +1,7 @@
 import { BASE_URL } from "@/constants";
 import { OptionCategory } from "@/types";
 import logger from "@/lib/logger";
+import { getBearerToken } from "./auth-actions";
 
 export async function getCategoriesWithOptions(
   locale:string | null = null, 
@@ -10,7 +11,7 @@ export async function getCategoriesWithOptions(
 ): Promise<OptionCategory[]> {
 
     const thisLogger = logger.child("lib/getGategoriesWithOptions");
-    const url = new URL(`${BASE_URL}/option-categories`);
+   
   
     
     if (broker_id == null || Number.isNaN(broker_id)) {
@@ -18,7 +19,7 @@ export async function getCategoriesWithOptions(
     }
 
 
-    url.searchParams.append("broker_id", broker_id.toString());
+    const url = new URL(`${BASE_URL}/option-categories/${broker_id}`);
    
 
     if(locale!==null && locale!=='en'){
@@ -29,9 +30,14 @@ export async function getCategoriesWithOptions(
     }
    
     try {
-     
+     const token = await getBearerToken();
+     const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
      thisLogger.debug("URL for fetching option categories", {url:url.toString()});
-     const response = await fetch(url.toString(), { cache: "no-store" });
+     const response = await fetch(url.toString(), { cache: "no-store", headers });
      //link example:http://localhost:8080/api/v1/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers"
       
       if (!response.ok) {

@@ -333,7 +333,7 @@ export function OptionsForm({
                             </span>
                           )}
                           {is_admin &&
-                            (option.visible_for_user === 0 ||
+                            (option.visible_for_user == 0 ||
                               option.visible_for_user === false) && (
                               <span className="text-green-500 text-xs font-bold align-super">
                                 (Admin only)

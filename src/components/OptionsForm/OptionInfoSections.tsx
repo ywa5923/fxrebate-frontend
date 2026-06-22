@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +29,15 @@ export function OptionInfoSections({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           className={cn(
-            "inline-flex shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "h-7 rounded-full px-3 text-xs font-medium shadow-none",
+            "bg-sky-100 text-sky-800",
+            "hover:bg-sky-200 hover:text-sky-950",
+            "dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/60 dark:hover:text-sky-100",
             className,
           )}
           aria-label={
@@ -41,8 +46,8 @@ export function OptionInfoSections({
               : "View information"
           }
         >
-          <InfoIcon className="h-4 w-4 cursor-help" />
-        </button>
+          Learn more
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         {optionName ? (
