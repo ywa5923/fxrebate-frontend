@@ -94,6 +94,15 @@ interface LoggerConfig {
   logLevel: 'error' | 'warn' | 'info' | 'debug';
 }
 
+const logLevels = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+} as const;
+
+type LogLevel = keyof typeof logLevels;
+
 class Logger {
   private config: LoggerConfig = {
    // enableConsole: process.env.NODE_ENV !== 'production',
@@ -105,15 +114,12 @@ class Logger {
   };
 
 
-  private logLevels = {
-    error: 0,
-    warn: 1,
-    info: 2,
-    debug: 3
-  };
+  private logLevels = logLevels;
 
-  private shouldLog(level: string): boolean {
-    return this.logLevels[level as keyof typeof this.logLevels] <= this.logLevels[this.config.logLevel];
+  
+
+  private shouldLog(level: LogLevel): boolean {
+    return this.logLevels[level] <= this.logLevels[this.config.logLevel];
   }
 
   private formatMessage(level: string, message: string, meta?: LogMeta): string {
@@ -121,7 +127,7 @@ class Logger {
     return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
   }
 
-  private async sendToAPI(level: string, message: string, meta?: LogMeta): Promise<void> {
+  private async sendToAPI(level: LogLevel, message: string, meta?: LogMeta): Promise<void> {
     if (!this.config.enableAPI || !this.config.apiUrl || !this.shouldLog(level)) {
       return;
     }
@@ -166,7 +172,7 @@ class Logger {
     }
   }
 
-  private logToConsole(level: string, message: string, meta?: LogMeta): void {
+  private logToConsole(level: LogLevel, message: string, meta?: LogMeta): void {
     if (!this.config.enableConsole || !this.shouldLog(level)) return;
 
     const formattedMessage = this.formatMessage(level, message, meta);

@@ -33,7 +33,7 @@ export async function apiClient<T>(
   const log = logger.child("lib/api-client/apiClient");
   const requestUrl = `${BASE_URL}${url}`;
 
-  log.debug('##############ApiClient requestUrl',{requestUrl});
+  log.debug('ApiClient requestUrl',{requestUrl});
 
   let token = null;
   if (useCookieToken === UseTokenAuth.Yes || useCookieToken === true) {
@@ -106,14 +106,6 @@ export async function apiClient<T>(
 }
 
 
-// export  function searchParamsToString(searchParams: Record<string, string | string[] | undefined>): string {
-//   return new URLSearchParams(
-//     Object.entries(searchParams).reduce<Record<string, string>>((acc, [key, value]) => {
-//       if (typeof value === "string") acc[key] = value;
-//       else if (Array.isArray(value)) acc[key] = value.join(",");
-//       return acc;
-//     }, {})
-//   ).toString();
-// }
+
 
 

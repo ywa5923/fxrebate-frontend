@@ -92,6 +92,7 @@ export default async function BrokerProfilePage({
   const categoriesWithOptions = await getCategoriesWithOptions(
     "en",
     broker_type,
+    brokerId
   );
   //TO DO: MAKE API CALL TO GET OPTIONS ONLY BY aPPLICABLEfOR FIELD
   //http://localhost:8080/api/v1/option-categories?broker_type=broker

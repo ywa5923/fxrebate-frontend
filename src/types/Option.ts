@@ -1,4 +1,5 @@
 import { OptionValue } from "./OptionValue"
+import { InfoSection } from "./InfoSections"
 
 export interface Option {
     id: number
@@ -12,6 +13,8 @@ export interface Option {
     min_constraint?: number
     max_constraint?: number
     tooltip?: string
+    visible_for_user?: number|boolean
+    info_sections?: InfoSection[]
     meta_data?: { value: string; label: string }[]
     option_values?: OptionValue[]
   }

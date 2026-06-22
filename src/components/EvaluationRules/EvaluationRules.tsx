@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import logger from "@/lib/logger";
 import { useState } from "react";
 import PreviousValues from "./PreviousValues";
-type EvaluationFormValues = Record<string, string | number|null>;
+type EvaluationFormValues = Record<string, string | number | null>;
 
 const buildCopiedFields = (
   evaluationRules: EvaluationRule[] | undefined,
@@ -148,7 +148,6 @@ export default function EvaluationRules({
         ? (rule.public_evaluation_option_id ?? rule.evaluation_option_id)
         : rule.evaluation_option_id;
       acc[key] = optionId ? String(optionId) : "";
-     
 
       if (is_admin) {
         acc[`${key}_broker_value_raw`] =
@@ -160,9 +159,9 @@ export default function EvaluationRules({
         acc[`${key}_broker_option_id`] = String(rule.evaluation_option_id);
 
         acc[`${key}_previous_value`] = String(rule.previous_evaluation_options);
-        acc[`${key}_getter_previous_value`] = String(rule.previous_details ?? "");
-          
-        
+        acc[`${key}_getter_previous_value`] = String(
+          rule.previous_details ?? "",
+        );
       }
 
       //==>getter meaning=====
@@ -177,7 +176,6 @@ export default function EvaluationRules({
 
         if (is_admin) {
           acc[`${key}_getter_broker_value`] = String(rule.details ?? "");
-          
         }
       }
 
@@ -216,23 +214,21 @@ export default function EvaluationRules({
   }, [initialValues, evaluationRules, is_admin, form]);
 
   const onSubmit = async (values: EvaluationFormValues) => {
-   
     const saveEvaluationRulesUrl = "/evaluation-rules/" + brokerId;
 
     const normalize = (v: string | number | null) =>
-     v === "" || v === "_none_" ? null : v;
+      v === "" || v === "_none_" ? null : v;
     const dataToSend: EvaluationFormValues = {};
     //send only the options ids and getter values to the server
     for (const { name } of fields) {
-
       dataToSend[name] = normalize(values[name]);
       const getterKey = `${name}_getter`;
-      if (getterKey in values) { 
+      if (getterKey in values) {
         dataToSend[getterKey] = normalize(values[getterKey]);
       }
     }
 
-     thisLogger.info("Evaluation rules submitted", { context: { dataToSend } });
+    thisLogger.info("Evaluation rules submitted", { context: { dataToSend } });
     const response = await apiClient<boolean>(
       saveEvaluationRulesUrl,
       UseTokenAuth.Yes,
@@ -305,17 +301,24 @@ export default function EvaluationRules({
                     const fieldError = form.formState.errors[name];
                     const getterError = form.formState.errors[getterFieldName];
 
-                    const selectedOptionGetterPlaceholder = selectedOption?.getter_placeholder ?? "Custom placeholder";
+                    const selectedOptionGetterPlaceholder =
+                      selectedOption?.getter_placeholder ??
+                      "Custom placeholder";
 
                     const isUpdatedEntry = form.watch(
                       `${name}_is_updated_entry`,
                     );
 
-                   
                     //check if field has getter previous values
-                    const hasGetterPreviousValues = form.watch(
-                      `${name}_getter_previous_value`,
-                    ) !== "";
+                    const hasGetterPreviousValues =
+                      form.watch(`${name}_getter_previous_value`) !== "";
+
+                    const getterRegister = form.register(getterFieldName, {
+                      validate: (value) =>
+                        !selectedOptionIsGetter ||
+                        String(value ?? "").trim() !== "" ||
+                        `${rules_field_config.label} details is required`,
+                    });
 
                     return (
                       <Field
@@ -374,12 +377,12 @@ export default function EvaluationRules({
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                               <SelectItem
-                                value="_none_"
-                                className="text-muted-foreground"
-                               >
-                                 Empty 
-                               </SelectItem>
+                                <SelectItem
+                                  value="_none_"
+                                  className="text-muted-foreground"
+                                >
+                                  Empty
+                                </SelectItem>
                                 {rules_field_config.options.map((option) => (
                                   <SelectItem
                                     key={option.value}
@@ -434,7 +437,7 @@ export default function EvaluationRules({
                           {selectedOptionIsGetter && (
                             <div className="flex w-full flex-col gap-2">
                               <div className="flex items-center gap-2">
-                                <Input
+                                {/*<Input
                                   {...form.register(getterFieldName, {
                                     validate: (value) =>
                                       !selectedOptionIsGetter ||
@@ -448,6 +451,22 @@ export default function EvaluationRules({
                                       { shouldValidate: true },
                                     );
                                     form.setValue(`${name}_is_updated_entry`, 0);
+                                  }}
+                                  placeholder={selectedOptionGetterPlaceholder}
+                                  className="w-full"
+                                  aria-invalid={!!getterError}
+                                />*/}
+                                <Input
+                                  {...getterRegister}
+                                  onChange={(event) => {
+                                    //we use the original register.onChange because it calls the validate function and sets the error message,
+                                    //also it calls the isDirty function and sets the dirty state to true
+                                    getterRegister.onChange(event);
+
+                                    form.setValue(
+                                      `${name}_is_updated_entry`,
+                                      0,
+                                    );
                                   }}
                                   placeholder={selectedOptionGetterPlaceholder}
                                   className="w-full"

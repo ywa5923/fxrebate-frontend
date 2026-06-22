@@ -245,7 +245,7 @@ export default function Companies({
                   </p>
                 </div>
               )}
-              <div className="w-full min-w-0 mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="w-full min-w-0 mt-10 mb-10 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <CompanyRegulators
                   broker_id={broker_id}
                   company_id={company.id}

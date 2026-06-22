@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-
 import { cn } from "@/lib/utils";
 
 import { Copy } from "lucide-react";
@@ -38,7 +37,7 @@ import { buildDefaultValues } from "./buildDefaultValues";
 import { getInitialCopiedSlugs } from "./getInitialCopiedSlugs";
 import { copyBrokerValueToPublic } from "./copyBrokerValueToPublic";
 import { renderFormField } from "./renderFormField";
-
+import { OptionInfoSections } from "./OptionInfoSections";
 
 interface Props {
   broker_id: number;
@@ -58,8 +57,6 @@ interface Props {
   display?: "cols" | "vertical";
 }
 
-
-
 export function OptionsForm({
   broker_id,
   options,
@@ -72,26 +69,24 @@ export function OptionsForm({
 }: Props) {
   const router = useRouter();
 
-
-
-
   const [isFormDirty, setIsFormDirty] = useState(is_admin);
-    //console.log("option values: ",JSON.stringify(optionsValues,null,2))
- 
+  //console.log("option values: ",JSON.stringify(optionsValues,null,2))
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [originalOptionsValues, setOriginalOptionsValues] =  useState(()=>optionsValues);
-   
-  const [clickedCopyButtons, setClickedCopyButtons] =  useState<Set<string>>( () => getInitialCopiedSlugs(options, optionsValues, is_admin));
-  
+  const [originalOptionsValues, setOriginalOptionsValues] = useState(
+    () => optionsValues,
+  );
 
-  console.log("clicekd copyed",clickedCopyButtons);
-   //this is used to refresh(empty)the file input when a new file is uploaded
-    const [fileInputKey,setFileInputKey]=useState(0); 
+  const [clickedCopyButtons, setClickedCopyButtons] = useState<Set<string>>(
+    () => getInitialCopiedSlugs(options, optionsValues, is_admin),
+  );
 
-    const thisLogger = logger.child("OptionsForm Component");
+  console.log("clicekd copyed", clickedCopyButtons);
+  //this is used to refresh(empty)the file input when a new file is uploaded
+  const [fileInputKey, setFileInputKey] = useState(0);
 
-    
-   
+  const thisLogger = logger.child("OptionsForm Component");
+
   //sconsole.log("optionsValues", JSON.stringify(optionsValues, null, 2));
   //NOTE:
   //===Form initialization with optionsValues:===
@@ -99,8 +94,6 @@ export function OptionsForm({
   //this is used to auto populate the public values with the broker value if public_value is not set
   //The data submitted to server action by admin is considered as public_value,
   //===Form initialization with optionsValues:===s
-
-
 
   const copyBrokerToPublic = (optionSlug: string) => {
     copyBrokerValueToPublic({
@@ -141,69 +134,70 @@ export function OptionsForm({
             <BrokerPreviousValue
               brokerValue={brokerValue + " " + metadataUnit}
               previousValue={previousValue ?? ""}
-              {...(option.form_type === "notes" ? { splitBrokerValueBy: ";" } : {})}
+              {...(option.form_type === "notes"
+                ? { splitBrokerValueBy: ";" }
+                : {})}
             />
-            
           </div>
-          {(!!isUpdatedEntry || clickedCopyButtons?.has(option.slug)) &&
-             (
-              <div className="flex flex-shrink-0 items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    copyBrokerToPublic(option.slug);
-                    // Add to clicked buttons set
-                    setClickedCopyButtons((prev) =>
-                      new Set(prev).add(option.slug),
-                    );
-                    setIsFormDirty(true);
-                   
-                  }}
-                  className={cn(
-                    "p-1 h-6 w-6 flex-shrink-0",
-                    clickedCopyButtons?.has(option.slug)
-                      ? "bg-green-100 border-green-500 text-green-700"
-                      : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200",
-                  )}
-                  title="Copy broker value to public value"
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-             
-                <Checkbox
-                  type="button"
-                  className="size-5 cursor-pointer border-green-800 hover:bg-green-100 data-[state=checked]:border-green-800 data-[state=checked]:bg-green-800 data-[state=checked]:text-white data-[state=checked]:hover:bg-green-900"
-                  title="Mark field as reviewed"
-                  aria-label="Mark field as reviewed"
-                />
-              </div>
-            )}
+          {(!!isUpdatedEntry || clickedCopyButtons?.has(option.slug)) && (
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  copyBrokerToPublic(option.slug);
+                  // Add to clicked buttons set
+                  setClickedCopyButtons((prev) =>
+                    new Set(prev).add(option.slug),
+                  );
+                  setIsFormDirty(true);
+                }}
+                className={cn(
+                  "p-1 h-6 w-6 flex-shrink-0",
+                  clickedCopyButtons?.has(option.slug)
+                    ? "bg-green-100 border-green-500 text-green-700"
+                    : "bg-red-100 border-red-500 text-red-700 hover:bg-red-200",
+                )}
+                title="Copy broker value to public value"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+
+              <Checkbox
+                type="button"
+                className="size-5 cursor-pointer border-green-800 hover:bg-green-100 data-[state=checked]:border-green-800 data-[state=checked]:bg-green-800 data-[state=checked]:text-white data-[state=checked]:hover:bg-green-900"
+                title="Mark field as reviewed"
+                aria-label="Mark field as reviewed"
+              />
+            </div>
+          )}
         </div>
       </div>
     );
   };
 
-  
   const formSchema = React.useMemo(() => buildFormSchema(options), [options]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-     defaultValues: buildDefaultValues(options, optionsValues, is_admin),
-   
+    defaultValues: buildDefaultValues(options, optionsValues, is_admin),
   });
 
   // Watch form changes to enable/disable submit button
- // const formValues = form.watch();
+  // const formValues = form.watch();
   React.useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (type === "change") {
         setIsFormDirty(true);
         if (is_admin && name) {
           setOriginalOptionsValues((prev) => {
-            return prev.map((ov) => ov.option_slug === String(name) ? { ...ov, is_updated_entry: false } : ov);
+            return prev.map((ov) =>
+              ov.option_slug === String(name)
+                ? { ...ov, is_updated_entry: false }
+                : ov,
+            );
           });
         }
       }
@@ -212,15 +206,14 @@ export function OptionsForm({
   }, [form.watch]);
 
   React.useEffect(() => {
-  form.reset(buildDefaultValues(options, optionsValues, is_admin));
-  setOriginalOptionsValues(optionsValues);
-  setClickedCopyButtons(getInitialCopiedSlugs(options, optionsValues, is_admin));
-
-}, [optionsValues, options, is_admin, form]);
+    form.reset(buildDefaultValues(options, optionsValues, is_admin));
+    setOriginalOptionsValues(optionsValues);
+    setClickedCopyButtons(
+      getInitialCopiedSlugs(options, optionsValues, is_admin),
+    );
+  }, [optionsValues, options, is_admin, form]);
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
-    
-   
     thisLogger.debug("Form data before sending to server", {
       context: { data },
     });
@@ -277,14 +270,13 @@ export function OptionsForm({
         );
         toast.success("Form submitted successfully");
         // Reset form dirty state after successful submission
-      
+
         setIsFormDirty(false);
         setIsSubmitting(false);
-        setClickedCopyButtons(new Set())
+        setClickedCopyButtons(new Set());
         // Refresh the page after successful submission using Next.js router
         router.refresh();
-          setFileInputKey((key)=>key+1)
-       
+        setFileInputKey((key) => key + 1);
       } catch (error) {
         toast.error("Failed to submit form");
 
@@ -305,9 +297,6 @@ export function OptionsForm({
       }
     }
   }
-
-
-  
 
   return (
     <Form {...form}>
@@ -343,6 +332,13 @@ export function OptionsForm({
                               *
                             </span>
                           )}
+                          {is_admin &&
+                            (option.visible_for_user === 0 ||
+                              option.visible_for_user === false) && (
+                              <span className="text-green-500 text-xs font-bold align-super">
+                                (Admin only)
+                              </span>
+                            )}
                         </FormLabel>
                         {option.tooltip && (
                           <TooltipProvider>
@@ -356,10 +352,23 @@ export function OptionsForm({
                             </Tooltip>
                           </TooltipProvider>
                         )}
+                        {option.info_sections &&
+                          option.info_sections.length > 0 && (
+                            <OptionInfoSections
+                              infoSections={option.info_sections}
+                              optionName={option.name}
+                            />
+                          )}
                       </div>
                     )}
                     <FormControl>
-                      {renderFormField(option, formField, form, renderOptionHistory, fileInputKey)}
+                      {renderFormField(
+                        option,
+                        formField,
+                        form,
+                        renderOptionHistory,
+                        fileInputKey,
+                      )}
                     </FormControl>
                     {option.description && (
                       <FormDescription>{option.description}</FormDescription>
