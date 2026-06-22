@@ -235,8 +235,13 @@ function RegulatorAccordionItem({
             <HeaderSummary regulator={regulator} />
           </div>
           {regulator.rating && (
-            <span className="w-fit shrink-0 self-start rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 sm:self-center">
-              Rating: {regulator.rating}
+            <span className="w-fit shrink-0 self-start rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-900/40 sm:self-center">
+              <span className="font-medium text-gray-500 dark:text-gray-400">
+                Rating
+              </span>{" "}
+              <span className="font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+                {regulator.rating}
+              </span>
             </span>
           )}
           </div>
@@ -564,8 +569,11 @@ function SectionHeader({
   return (
     <div className="mb-4 flex w-full min-w-0 items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Scale className="h-6 w-6 text-green-700 dark:text-green-400" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-dashed border-green-300 dark:border-green-800">
+          <Scale
+            className="h-6 w-6 text-green-600 dark:text-green-400"
+            strokeWidth={1.5}
+          />
         </div>
         <div className="min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">

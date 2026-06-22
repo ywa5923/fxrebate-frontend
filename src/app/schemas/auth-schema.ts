@@ -4,6 +4,7 @@ export const BrokerInfoSchema = z.object({
     broker_id: z.number(),
     broker_type: z.string(),
     broker_trading_name: z.string().nullable(),
+    broker_logo: z.string().nullable().optional(),
     country_id: z.number(),
     country_code: z.string(),
     zone_id: z.number(),

@@ -153,7 +153,26 @@ const data = {
   ],
 }
 
-export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBrokerManager = false, userName, userEmail, brokerType, ...props }: React.ComponentProps<typeof Sidebar> & { brokerOptionsLinks?: any, teamManagementLink?: { name: string; url: string; icon: string } | null, isBrokerManager?: boolean, userName?: string, userEmail?: string, brokerType?: string }) {
+export function AppSidebar({
+  brokerOptionsLinks,
+  teamManagementLink = null,
+  isBrokerManager = false,
+  userName,
+  userEmail,
+  brokerType,
+  brokerLogo,
+  brokerTradingName,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  brokerOptionsLinks?: any;
+  teamManagementLink?: { name: string; url: string; icon: string } | null;
+  isBrokerManager?: boolean;
+  userName?: string;
+  userEmail?: string;
+  brokerType?: string;
+  brokerLogo?: string | null;
+  brokerTradingName?: string | null;
+}) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -194,9 +213,23 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
       <SidebarFooter className="border-t border-gray-200 dark:border-gray-800 group-data-[collapsible=icon]:hidden">
         <div className="p-3 sm:p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-              <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-            </div>
+            {brokerLogo ? (
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white p-1.5 dark:border-gray-700 dark:bg-gray-900">
+                <img
+                  src={brokerLogo}
+                  alt={
+                    brokerTradingName
+                      ? `${brokerTradingName} logo`
+                      : "Broker logo"
+                  }
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-800">
+                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                 {userName ?? "User"}
@@ -204,6 +237,11 @@ export function AppSidebar({ brokerOptionsLinks, teamManagementLink = null, isBr
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {userEmail ?? ""}
               </p>
+              {brokerTradingName && (
+                <p className="mt-1 truncate text-xs font-semibold text-gray-800 dark:text-gray-200">
+                  {brokerTradingName}
+                </p>
+              )}
               {brokerType && (
                 <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   {brokerType}
