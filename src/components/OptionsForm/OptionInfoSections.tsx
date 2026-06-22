@@ -9,135 +9,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { InfoSection, InfoSectionItem } from "@/types/InfoSections";
+import { InfoSection } from "@/types/InfoSections";
 import { cn } from "@/lib/utils";
+import { InfoHorizontalLayout } from "./InfoHorizontalLayout";
+import { InfoVerticalLayout, getVerticalDialogMaxWidthClass } from "./InfoVerticalLayout";
+import {
+  getVisibleSections,
+  type InfoSectionsLayout,
+} from "./OptionInfoSectionsShared";
 
 type Props = {
   infoSections: InfoSection[];
   optionName?: string;
   isAdmin?: boolean;
+  layout?: InfoSectionsLayout;
   className?: string;
 };
-
-const GRID_COLS_CLASS: Record<1 | 2 | 3, string> = {
-  1: "md:grid-cols-1",
-  2: "md:grid-cols-2",
-  3: "md:grid-cols-3",
-};
-
-const DIALOG_MAX_WIDTH_CLASS: Record<1 | 2 | 3, string> = {
-  1: "sm:max-w-lg",
-  2: "sm:max-w-3xl",
-  3: "sm:max-w-5xl",
-};
-
-function getVisibleItems(
-  items: InfoSectionItem[],
-  isAdmin?: boolean,
-): InfoSectionItem[] {
-  if (isAdmin) {
-    return items;
-  }
-  // Non-admin: hide unpublished items entirely.
-  return items.filter((item) => item.published === true);
-}
-
-function InfoSectionItemBlock({
-  item,
-  isUnpublished,
-}: {
-  item: InfoSectionItem;
-  isUnpublished?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "space-y-1",
-        isUnpublished && "text-muted-foreground/60",
-      )}
-    >
-      <h3
-        className={cn(
-          "text-sm font-semibold leading-snug",
-          isUnpublished && "text-muted-foreground/70",
-        )}
-      >
-        {item.title}
-      </h3>
-      {item.subtitle ? (
-        <p
-          className={cn(
-            "text-sm font-medium",
-            isUnpublished ? "text-muted-foreground/60" : "text-foreground/80",
-          )}
-        >
-          {item.subtitle}
-        </p>
-      ) : null}
-      {item.description ? (
-        <p
-          className={cn(
-            "text-sm leading-relaxed",
-            isUnpublished ? "text-muted-foreground/50 border-1 border-grey-500 p-2" : "text-muted-foreground",
-          )}
-        >
-          {item.description}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function InfoSectionColumn({
-  section,
-  isAdmin,
-}: {
-  section: InfoSection;
-  isAdmin?: boolean;
-}) {
-  const items = getVisibleItems(section.items ?? [], isAdmin);
-
-  return (
-    <div className="min-w-0 space-y-4">
-      <div className="space-y-2">
-        <h2 className="text-base font-semibold leading-snug">{section.title}</h2>
-        {section.subtitle ? (
-          <p className="text-sm font-medium text-foreground/80">
-            {section.subtitle}
-          </p>
-        ) : null}
-        {section.description ? (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {section.description}
-          </p>
-        ) : null}
-      </div>
-      {items.length > 0 ? (
-        <div className="space-y-4 border-t pt-4">
-          {items.map((item, index) => (
-            <InfoSectionItemBlock
-              key={item.id ?? `${item.title}-${index}`}
-              item={item}
-              isUnpublished={item.published === false}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 export function OptionInfoSections({
   infoSections,
   optionName,
   isAdmin,
+  layout = "vertical",
   className,
 }: Props) {
   if (!infoSections.length) {
     return null;
   }
 
-  const columnCount = Math.min(infoSections.length, 3) as 1 | 2 | 3;
+  const visibleSections = getVisibleSections(infoSections, isAdmin);
+  if (!visibleSections.length) {
+    return null;
+  }
+
+  const dialogMaxWidthClass =
+    layout === "horizontal"
+      ? "sm:max-w-3xl"
+      : getVerticalDialogMaxWidthClass(visibleSections.length);
 
   return (
     <Dialog>
@@ -148,9 +56,10 @@ export function OptionInfoSections({
           size="sm"
           className={cn(
             "h-7 rounded-full px-3 text-xs font-medium shadow-none",
-            "bg-sky-100 text-sky-800",
-            "hover:bg-sky-200 hover:text-sky-950",
-            "dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/60 dark:hover:text-sky-100",
+            "bg-green-100 text-green-800",
+            "hover:bg-green-200 hover:text-green-950",
+            "dark:bg-green-950/40 dark:text-green-400",
+            "dark:hover:bg-green-900/60 dark:hover:text-green-300",
             className,
           )}
           aria-label={
@@ -163,10 +72,7 @@ export function OptionInfoSections({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={cn(
-          "max-h-[85vh] overflow-y-auto",
-          DIALOG_MAX_WIDTH_CLASS[columnCount],
-        )}
+        className={cn("max-h-[85vh] overflow-y-auto", dialogMaxWidthClass)}
       >
         {optionName ? (
           <DialogHeader className="gap-0 pb-1">
@@ -181,7 +87,7 @@ export function OptionInfoSections({
                 <BookOpen className="size-5" aria-hidden />
               </div>
               <DialogTitle className="space-y-1 text-left leading-snug">
-                <span className="block text-sm font-medium text-muted-foreground">
+                <span className="block text-sm font-medium text-muted-foreground dark:text-green-100/70">
                   Learn more about
                 </span>
                 <span
@@ -197,20 +103,14 @@ export function OptionInfoSections({
             </div>
           </DialogHeader>
         ) : null}
-        <div
-          className={cn(
-            "grid grid-cols-1 gap-6",
-            GRID_COLS_CLASS[columnCount],
-          )}
-        >
-          {infoSections.map((section, index) => (
-            <InfoSectionColumn
-              key={section.id ?? `${section.title}-${index}`}
-              section={section}
-              isAdmin={isAdmin}
-            />
-          ))}
-        </div>
+        {layout === "horizontal" ? (
+          <InfoHorizontalLayout
+            sections={visibleSections}
+            isAdmin={isAdmin}
+          />
+        ) : (
+          <InfoVerticalLayout sections={visibleSections} isAdmin={isAdmin} />
+        )}
       </DialogContent>
     </Dialog>
   );

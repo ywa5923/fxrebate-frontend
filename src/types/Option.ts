@@ -14,6 +14,7 @@ export interface Option {
     max_constraint?: number
     tooltip?: string
     visible_for_user?: number|boolean
+    info_section_layout: "vertical" | "horizontal"
     info_sections?: InfoSection[]
     meta_data?: { value: string; label: string }[]
     option_values?: OptionValue[]
