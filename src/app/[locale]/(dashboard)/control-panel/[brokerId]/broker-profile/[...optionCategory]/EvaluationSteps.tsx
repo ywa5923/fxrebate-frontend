@@ -2,6 +2,7 @@
 
 import { Option } from "@/types";
 import { OptionsForm } from "@/components/OptionsForm";
+import { NotFoundEntity } from "@/components/NotFoundEntity";
 //import { DynamicForm } from "@/components/DynamicForm";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 import { useState, useEffect, useRef } from "react";
@@ -116,7 +117,7 @@ export default function EvaluationSteps({
       </div>
 
       {showNewStep && (
-        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+        <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
             New evaluation step
           </p>
@@ -195,9 +196,6 @@ export default function EvaluationSteps({
               {row.option_values && row.option_values.length > 0 ? (
                 <>
                   <div className="flex items-center justify-end gap-2 mb-1">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                      ID: {row.id}
-                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -279,30 +277,13 @@ export default function EvaluationSteps({
             </DialogContent>
           </Dialog>
         </>
-      ) : (
-        !showNewStep && (
-          <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-            <svg
-              className="w-16 h-16 text-gray-400 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">
-              No evaluation steps found
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-              Use the + button in the header to get started.
-            </p>
-          </div>
-        )
+      ) : !showNewStep && (
+        <NotFoundEntity
+          title="No evaluation steps found"
+          description="Click here or use the + button to add an evaluation step."
+          onClick={() => setShowNewStep(true)}
+          ariaLabel="Add evaluation step"
+        />
       )}
     </div>
   );

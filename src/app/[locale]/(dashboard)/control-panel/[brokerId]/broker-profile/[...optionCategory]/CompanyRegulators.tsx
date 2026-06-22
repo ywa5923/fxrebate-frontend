@@ -564,11 +564,11 @@ function SectionHeader({
   return (
     <div className="mb-4 flex w-full min-w-0 items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Scale className="h-4 w-4 text-green-700 dark:text-green-400" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+          <Scale className="h-6 w-6 text-green-700 dark:text-green-400" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
             Regulators
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400">

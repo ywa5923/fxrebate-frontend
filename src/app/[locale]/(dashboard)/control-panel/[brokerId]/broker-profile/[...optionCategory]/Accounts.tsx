@@ -2,6 +2,7 @@
 
 import {  DynamicTableRow, Option} from '@/types';
 import { DynamicForm } from '@/components/DynamicForm';
+import { NotFoundEntity } from '@/components/NotFoundEntity';
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import AccountLinks from './AccountLinks';
 import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { deleteAccountType } from '@/lib/accountType-request';
+//import { deleteAccountType } from '@/lib/accountType-request';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
@@ -112,7 +113,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
       
       {/* New Account Form */}
       {showNewAccount && (
-        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+        <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Account</p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
@@ -175,9 +176,6 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
               {account.option_values && account.option_values.length > 0 ? (
                 <>
                   <div className="flex items-center justify-end gap-2 mb-1">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                      ID: {account.id}
-                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -247,13 +245,12 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
           </Dialog>
         </>
       ) : !showNewAccount && (
-        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No accounts found</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Account" to get started.</p>
-        </div>
+        <NotFoundEntity
+          title="No accounts found"
+          description="Click here or use the + button to add an account."
+          onClick={() => setShowNewAccount(true)}
+          ariaLabel="Add account"
+        />
       )}
     </div>
   );

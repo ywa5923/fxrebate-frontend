@@ -153,6 +153,13 @@ export default function ReferalLinksAndNotes({
   }, [accountTypes, watchedAccountTypeId]);
 
   function openCreate() {
+    if (accountTypes.length === 0) {
+      toast.error(
+        "No account types found. Create an account type in My Trading Accounts before adding referral links.",
+      );
+      return;
+    }
+
     setDialogMode("create");
     setEditingId(null);
     setSelectedRow(null);
@@ -773,7 +780,12 @@ export default function ReferalLinksAndNotes({
               >
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button
+                type="submit"
+                className="bg-green-800 text-white hover:bg-green-900"
+              >
+                {dialogMode === "edit" ? "Update" : "Save"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

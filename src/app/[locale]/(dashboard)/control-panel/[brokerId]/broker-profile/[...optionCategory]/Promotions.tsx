@@ -16,6 +16,7 @@ import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
 import logger from '@/lib/logger';
 import { OptionsForm } from '@/components/OptionsForm';
+import { NotFoundEntity } from '@/components/NotFoundEntity';
 
 interface PromotionsProps {
   broker_id: number;
@@ -94,7 +95,7 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
       
       {/* New Promotion Form */}
       {showNewPromotion && (
-        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+        <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Promotion</p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
@@ -157,9 +158,6 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
               {promotion.option_values && promotion.option_values.length > 0 ? (
                 <>
                   <div className="flex items-center justify-end gap-2 mb-1">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                      ID: {promotion.id}
-                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -221,13 +219,12 @@ export default function Promotions({ broker_id, promotions, options, is_admin = 
           </Dialog>
         </>
       ) : !showNewPromotion && (
-        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-          </svg>
-          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No promotions found</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Click "Add New Promotion" to get started.</p>
-        </div>
+        <NotFoundEntity
+          title="No promotions found"
+          description='Click here or use the + button to add a promotion.'
+          onClick={() => setShowNewPromotion(true)}
+          ariaLabel="Add promotion"
+        />
       )}
     </div>
   );

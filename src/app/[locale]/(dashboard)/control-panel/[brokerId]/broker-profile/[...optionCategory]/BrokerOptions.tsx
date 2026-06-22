@@ -41,9 +41,6 @@ export default function BrokerOptions({
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-green-600 dark:text-green-400 font-mono">#{entity_id}</span>
-            </div>
           </div>
         </div>
         {/* Content */}

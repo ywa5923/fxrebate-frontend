@@ -138,7 +138,7 @@ export default function Companies({
       </div>
 
       {showNewCompany && (
-        <div className="mb-6 border-2 border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
+        <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
             New Company
           </p>
