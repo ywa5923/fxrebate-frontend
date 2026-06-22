@@ -1,10 +1,22 @@
 "use client";
 
-import { Company, DynamicTableRow, Option, Regulator, RegulatorList } from "@/types";
+import {
+  Company,
+  DynamicTableRow,
+  Option,
+  OptionValue,
+  RegulatorList,
+} from "@/types";
 import { OptionsForm } from "@/components/OptionsForm";
+import { NotFoundEntity } from "@/components/NotFoundEntity";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Plus, X, Trash, LayoutGrid } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,9 +31,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { UseTokenAuth } from "@/lib/enums";
-import  logger  from "@/lib/logger";
+import logger from "@/lib/logger";
 import CompanyRegulators from "./CompanyRegulators";
-
 
 interface Props {
   broker_id: number;
@@ -63,25 +74,32 @@ export default function Companies({
   }, [companies, activeTab]);
 
   async function handleDeleteCompany(companyId: number) {
-
-    try{
-    
+    try {
       const serverUrl = `/companies/${companyId}/broker/${broker_id}`;
-      const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
-       method: "DELETE",
-     });
-     if(response.success){
-       toast.success("Company deleted successfully!");
-       router.refresh();
-     }else{
-       toast.error(response.message ?? "Failed to delete company");
-       thisLogger.error("Failed to delete company", { error:response.message, context: { companyId,broker_id } });
-     }
-     }catch(error){
-       toast.error("Failed to delete company");
-       thisLogger.error("Failed to delete company", { error:error, context: { companyId,broker_id } });
-     }
-    
+      const response = await apiClient<DynamicTableRow>(
+        serverUrl,
+        UseTokenAuth.Yes,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.success) {
+        toast.success("Company deleted successfully!");
+        router.refresh();
+      } else {
+        toast.error(response.message ?? "Failed to delete company");
+        thisLogger.error("Failed to delete company", {
+          error: response.message,
+          context: { companyId, broker_id },
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to delete company");
+      thisLogger.error("Failed to delete company", {
+        error: error,
+        context: { companyId, broker_id },
+      });
+    }
   }
 
   return (
@@ -198,19 +216,32 @@ export default function Companies({
             >
               {company.option_values && company.option_values.length > 0 ? (
                 <>
-                  <div className="flex items-center justify-end gap-2 mb-1">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                      ID: {company.id}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                      onClick={() => setConfirmDeleteCompany(company.id)}
-                      title="Delete company"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                  <div className="w-full min-w-0 mt-10 mb-10 pt-8 ">
+                    <CompanyRegulators
+                      broker_id={broker_id}
+                      company_id={company.id}
+                      regulators={company.regulators}
+                      regulatorsList={regulatorsList}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-2 mb-10">
+                    <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+                      Company Profile
+                    </h1>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                          onClick={() => setConfirmDeleteCompany(company.id)}
+                          aria-label="Delete this company"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete this company</TooltipContent>
+                    </Tooltip>
                   </div>
                   <OptionsForm
                     broker_id={broker_id}
@@ -245,14 +276,6 @@ export default function Companies({
                   </p>
                 </div>
               )}
-              <div className="w-full min-w-0 mt-10 mb-10 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <CompanyRegulators
-                  broker_id={broker_id}
-                  company_id={company.id}
-                  regulators={company.regulators}
-                  regulatorsList={regulatorsList}
-                />
-              </div>
             </div>
           ))}
 
@@ -293,27 +316,12 @@ export default function Companies({
         </>
       ) : (
         !showNewCompany && (
-          <div className="text-center py-16 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-            <svg
-              className="w-16 h-16 text-gray-400 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">
-              No companies found
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-              Use the + button in the header to get started.
-            </p>
-          </div>
+          <NotFoundEntity
+            title="No companies found"
+            description="Click here or use the + button to add a company."
+            onClick={() => setShowNewCompany(true)}
+            ariaLabel="Add company"
+          />
         )
       )}
     </div>

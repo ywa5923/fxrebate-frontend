@@ -14,6 +14,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { Check, PlusCircle, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -73,20 +74,33 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          setInputValue("");
+          setIsCreating(false);
+          setNewOptionInput("");
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="outline" className={cn("w-full justify-between", className)}>
           {selected ? selected.label : placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] min-w-[220px] p-0"
+        align="start"
+      >
+        <Command shouldFilter={false}>
         {!isCreating && <CommandInput
             placeholder="Search or create..."
             value={inputValue}
             onValueChange={setInputValue}
           />}
-        
+        <CommandList>
         {filteredOptions.length === 0 && inputValue && !isCreating && (
               <CommandEmpty className="flex flex-col justify-between items-center px-3 py-2">
                 <span className="text-sm text-muted-foreground w-full">No results.</span>
@@ -145,17 +159,17 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
                   </div>
                 </div>
               ) : (
-                <CommandItem onSelect={handleCreateClick}>
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <PlusCircle className="w-4 h-4 mr-1" />
-                    Create new class of instruments
-                  </Button>
+                <CommandItem value="__create__" onSelect={handleCreateClick}>
+                  <PlusCircle className="w-4 h-4 mr-1" />
+                  Create new class of instruments
                 </CommandItem>
               )}
          
               {!isCreating && filteredOptions.map((option) => (
                 <CommandItem
                   key={option.value}
+                  value={option.value}
+                  keywords={[option.label]}
                   onSelect={() => handleSelect(option)}
                 >
                   {option.label}
@@ -165,7 +179,7 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
                 </CommandItem>
               ))}
             </CommandGroup>
-          
+        </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

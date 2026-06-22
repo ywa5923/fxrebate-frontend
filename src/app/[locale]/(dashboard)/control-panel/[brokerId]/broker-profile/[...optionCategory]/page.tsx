@@ -121,7 +121,7 @@ export default async function BrokerProfilePage({
     notFound();
   }
 
-  if (categorySlug == "companies-profiles") {
+  if (categorySlug == "company-profiles") {
     let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
     const regulatorsFetchUrl = '/regulators/list';
     const [companiesResponse, regulatorsResponse] = await Promise.all([

@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { NotFoundEntity } from "@/components/NotFoundEntity";
 import { Scale, ExternalLink, Loader2, Plus, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -217,7 +218,7 @@ function RegulatorAccordionItem({
   return (
     <AccordionItem
       value={String(regulator.id)}
-      className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-[#fdfdfd] px-0 dark:border-gray-700 dark:bg-gray-800/90"
+      className="w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-[#fdfdfd] px-0 last:border-b dark:border-gray-700 dark:bg-gray-800/90 dark:last:border-b dark:last:border-gray-700"
     >
       <div className="flex w-full items-stretch">
         <AccordionTrigger className="min-w-0 flex-1 px-4 py-4 hover:no-underline sm:px-5 [&>svg]:text-gray-500 dark:[&>svg]:text-gray-400">
@@ -527,33 +528,12 @@ export default function CompanyRegulators({
       />
 
       {regulators.length === 0 ? (
-        <button
-          type="button"
+        <NotFoundEntity
+          title="No regulators linked to this company"
+          description="Click here or use the + button to link a regulator."
           onClick={() => setAddDialogOpen(true)}
-          className={cn(
-            "group w-full rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-12 text-center transition-all duration-150",
-            "hover:border-green-500 hover:bg-green-50/50 dark:border-gray-700 dark:bg-gray-900/30",
-            "dark:hover:border-green-700 dark:hover:bg-green-950/20 sm:px-6 sm:py-14",
-          )}
-          aria-label="Link regulator"
-        >
-          <span
-            className={cn(
-              "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed transition-colors",
-              "border-gray-300 bg-white text-gray-400 group-hover:border-green-500 group-hover:text-green-600",
-              "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-500",
-              "dark:group-hover:border-green-600 dark:group-hover:text-green-400",
-            )}
-          >
-            <Plus className="h-8 w-8" strokeWidth={1.75} />
-          </span>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            No regulators linked to this company
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Click here or use the + button to link a regulator.
-          </p>
-        </button>
+          ariaLabel="Link regulator"
+        />
       ) : (
         <Accordion
           type="multiple"

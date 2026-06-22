@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {
+  useMemo,
+  useState,
+  useDeferredValue,
+  useCallback,
+  type UIEvent,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +20,7 @@ import {
   CommandInput,
   CommandItem,
   CommandEmpty,
+  CommandList,
 } from "@/components/ui/command";
 import { Check, PlusCircle, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +29,98 @@ type Option = {
   label: string;
   value: string;
 };
+
+const LARGE_LIST_THRESHOLD = 50;
+const VIRTUALIZATION_THRESHOLD = 80;
+const OPTION_ROW_HEIGHT = 32;
+const LIST_MAX_HEIGHT = 300;
+const LIST_OVERSCAN = 8;
+
+function OptionRow({
+  option,
+  selected,
+  onToggle,
+}: {
+  option: Option;
+  selected: boolean;
+  onToggle: (option: Option) => void;
+}) {
+  return (
+    <CommandItem
+      key={option.value}
+      value={option.value}
+      keywords={[option.label]}
+      onSelect={() => onToggle(option)}
+      className="cursor-pointer"
+      style={{ minHeight: OPTION_ROW_HEIGHT }}
+    >
+      {option.label}
+      {selected && <Check className="ml-auto w-4 h-4 text-green-500" />}
+    </CommandItem>
+  );
+}
+
+function VirtualizedOptionList({
+  options,
+  isSelected,
+  onToggle,
+}: {
+  options: Option[];
+  isSelected: (option: Option) => boolean;
+  onToggle: (option: Option) => void;
+}) {
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const handleScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    setScrollTop(event.currentTarget.scrollTop);
+  }, []);
+
+  const { startIndex, visibleOptions, offsetY, totalHeight } = useMemo(() => {
+    const visibleCount =
+      Math.ceil(LIST_MAX_HEIGHT / OPTION_ROW_HEIGHT) + LIST_OVERSCAN * 2;
+    const start = Math.max(
+      0,
+      Math.floor(scrollTop / OPTION_ROW_HEIGHT) - LIST_OVERSCAN,
+    );
+    const end = Math.min(options.length, start + visibleCount);
+
+    return {
+      startIndex: start,
+      visibleOptions: options.slice(start, end),
+      offsetY: start * OPTION_ROW_HEIGHT,
+      totalHeight: options.length * OPTION_ROW_HEIGHT,
+    };
+  }, [options, scrollTop]);
+
+  if (options.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className="overflow-y-auto border-t"
+      style={{ maxHeight: LIST_MAX_HEIGHT }}
+      onScroll={handleScroll}
+    >
+      <div className="relative w-full" style={{ height: totalHeight }}>
+        <CommandGroup
+          className="absolute inset-x-0 overflow-visible p-1"
+          style={{ transform: `translateY(${offsetY}px)` }}
+          aria-label={`Showing items ${startIndex + 1} to ${startIndex + visibleOptions.length} of ${options.length}`}
+        >
+          {visibleOptions.map((option) => (
+            <OptionRow
+              key={option.value}
+              option={option}
+              selected={isSelected(option)}
+              onToggle={onToggle}
+            />
+          ))}
+        </CommandGroup>
+      </div>
+    </div>
+  );
+}
 
 export function CreateMultiSelect({
   placeholder = "Select instrument",
@@ -38,15 +137,34 @@ export function CreateMultiSelect({
   const [inputValue, setInputValue] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [newOptionInput, setNewOptionInput] = useState("");
+  const deferredSearch = useDeferredValue(inputValue);
+
+  const selectedValues = useMemo(
+    () => new Set(initialSelected.map((item) => item.value)),
+    [initialSelected],
+  );
+
+  const filteredOptions = useMemo(() => {
+    const query = deferredSearch.trim().toLowerCase();
+    if (!query) {
+      return options;
+    }
+
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(query) ||
+        option.value.toLowerCase().includes(query),
+    );
+  }, [options, deferredSearch]);
+
+  const isLargeList = options.length > LARGE_LIST_THRESHOLD;
+  const useVirtualization = filteredOptions.length > VIRTUALIZATION_THRESHOLD;
 
   const toggleOption = (option: Option) => {
     const exists = initialSelected.find((item) => item.value === option.value);
-    let newSelected: Option[];
-    if (exists) {
-      newSelected = initialSelected.filter((item) => item.value !== option.value);
-    } else {
-      newSelected = [...initialSelected, option];
-    }
+    const newSelected = exists
+      ? initialSelected.filter((item) => item.value !== option.value)
+      : [...initialSelected, option];
     onChange?.(newSelected);
   };
 
@@ -61,8 +179,7 @@ export function CreateMultiSelect({
         label: newOptionInput.trim(),
         value: newOptionInput.trim().toLowerCase().replace(/\s+/g, "-"),
       };
-      const newSelected = [...initialSelected, newOption];
-      onChange?.(newSelected);
+      onChange?.([...initialSelected, newOption]);
       setIsCreating(false);
       setNewOptionInput("");
       setOpen(false);
@@ -75,25 +192,28 @@ export function CreateMultiSelect({
   };
 
   const removeOption = (value: string) => {
-    const newSelected = initialSelected.filter((i) => i.value !== value);
-    onChange?.(newSelected);
+    onChange?.(initialSelected.filter((item) => item.value !== value));
   };
 
-  const isSelected = (option: Option) =>
-    initialSelected.some((item) => item.value === option.value);
+  const isSelected = (option: Option) => selectedValues.has(option.value);
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setInputValue("");
+      setIsCreating(false);
+      setNewOptionInput("");
+    }
+  };
 
   return (
     <div className="w-full">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             className={cn(
-              "w-full h-auto min-h-[36px] flex justify-start items-start gap-1 bg-inherit py-1 px-2"
+              "w-full h-auto min-h-[36px] flex justify-start items-start gap-1 bg-inherit py-1 px-2",
             )}
             type="button"
           >
@@ -129,94 +249,125 @@ export function CreateMultiSelect({
             </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start" sideOffset={5}>
-          <Command>
-            {!isCreating && <CommandInput
-              placeholder="Search or create..."
-              value={inputValue}
-              onValueChange={setInputValue}
-            />}
-            {filteredOptions.length === 0 && inputValue && !isCreating && (
-              <CommandEmpty className="flex flex-col justify-between items-center px-3 py-2">
-                <span className="text-sm text-muted-foreground w-full">No results.</span>
-                <Button 
-                  onClick={() => {
-                    const newOption: Option = {
-                      label: inputValue,
-                      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
-                    };
-                    const newSelected = [...initialSelected, newOption];
-                    onChange?.(newSelected);
-                    setInputValue("");
-                    setOpen(false);
-                  }} 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start"
-                >
-                  <PlusCircle className="w-4 h-4 mr-1" />
-                  Add "{inputValue}" 
-                </Button>
-              </CommandEmpty>
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] min-w-[220px] p-0"
+          align="start"
+          sideOffset={5}
+        >
+          <Command shouldFilter={false}>
+            {!isCreating && (
+              <CommandInput
+                placeholder={
+                  isLargeList
+                    ? `Search ${options.length} instruments...`
+                    : "Search or create..."
+                }
+                value={inputValue}
+                onValueChange={setInputValue}
+              />
             )}
-            <CommandGroup>
-              {isCreating ? (
-                <div className="p-2 space-y-2">
-                  <Input
-                    placeholder="Enter new option name..."
-                    value={newOptionInput}
-                    onChange={(e) => setNewOptionInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveNewOption();
-                      }
-                    }}
-                  />
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleSaveNewOption}
-                      disabled={!newOptionInput.trim()}
-                    >
-                      <Save className="w-4 h-4 mr-1" />
-                      Save
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleCancelCreate}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+            <CommandList className="max-h-none overflow-visible">
+              {isLargeList && !isCreating && (
+                <div className="px-3 py-2 text-xs text-muted-foreground border-b">
+                  Scroll or search to browse {options.length} instruments.
                 </div>
-              ) : (
-                <CommandItem onSelect={handleCreateClick}>
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
+              )}
+
+              {filteredOptions.length === 0 && inputValue && !isCreating && (
+                <CommandEmpty className="flex flex-col justify-between items-center px-3 py-2">
+                  <span className="text-sm text-muted-foreground w-full">
+                    No results.
+                  </span>
+                  <Button
+                    onClick={() => {
+                      const newOption: Option = {
+                        label: inputValue,
+                        value: inputValue
+                          .toLowerCase()
+                          .replace(/\s+/g, "-"),
+                      };
+                      onChange?.([...initialSelected, newOption]);
+                      setInputValue("");
+                      setOpen(false);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-1" />
+                    Add &quot;{inputValue}&quot;
+                  </Button>
+                </CommandEmpty>
+              )}
+
+              <CommandGroup>
+                {isCreating ? (
+                  <div className="p-2 space-y-2">
+                    <Input
+                      placeholder="Enter new option name..."
+                      value={newOptionInput}
+                      onChange={(e) => setNewOptionInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSaveNewOption();
+                        }
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveNewOption}
+                        disabled={!newOptionInput.trim()}
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        Save
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelCreate}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <CommandItem value="__create__" onSelect={handleCreateClick}>
                     <PlusCircle className="w-4 h-4 mr-1" />
                     Create new instrument
-                  </Button>
-                </CommandItem>
-              )}
-              
-              {!isCreating && filteredOptions.map((option, index) => (
-                <CommandItem
-                  key={option.value + index}
-                  onSelect={() => toggleOption(option)}
-                  className="cursor-pointer"
-                >
-                  {option.label}
-                  {isSelected(option) && (
-                    <Check className="ml-auto w-4 h-4 text-green-500" />
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                  </CommandItem>
+                )}
+              </CommandGroup>
+
+              {!isCreating &&
+                (useVirtualization ? (
+                  <VirtualizedOptionList
+                    options={filteredOptions}
+                    isSelected={isSelected}
+                    onToggle={toggleOption}
+                  />
+                ) : (
+                  <div
+                    className="overflow-y-auto border-t"
+                    style={{ maxHeight: LIST_MAX_HEIGHT }}
+                  >
+                    <CommandGroup>
+                      {filteredOptions.map((option) => (
+                        <OptionRow
+                          key={option.value}
+                          option={option}
+                          selected={isSelected(option)}
+                          onToggle={toggleOption}
+                        />
+                      ))}
+                    </CommandGroup>
+                  </div>
+                ))}
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
     </div>
   );
 }
-
