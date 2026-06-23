@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
 import { Card, CardContent} from '@/components/ui/card';
 import AccountLinks from './AccountLinks';
-import { LinksGroupedByAccountId, LinksGroupedByType } from '@/types/AccountTypeLinks';
+import { LinkGroup, LinksGroupedByAccountId, LinksGroupedByType, LinksOptions } from '@/types/AccountTypeLinks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 //import { deleteAccountType } from '@/lib/accountType-request';
@@ -25,7 +25,8 @@ interface AccountsProps {
   is_admin?: boolean;
   linksGroupedByAccountId: LinksGroupedByAccountId;
   masterLinksGroupedByType: LinksGroupedByType;
-  linksGroups: Array<string>;
+  linksGroups: LinkGroup[];
+  linksOptions: LinksOptions;
 }
 //example of accountTypeUrls, grouped by acount_type_ID and then by url type,  and urls_groups
 //it also contains master-links which is a group of urls that are not associated with any account type 
@@ -41,7 +42,7 @@ interface AccountsProps {
 //   },
 //   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
 
-export default function Accounts({ broker_id, accounts = [], options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups }: AccountsProps) {
+export default function Accounts({ broker_id, accounts = [], options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups,linksOptions }: AccountsProps) {
   const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
   const [showNewAccount, setShowNewAccount] = useState(false);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
@@ -211,7 +212,9 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                links={linksGroupedByAccountId[account.id]??{}}
                master_links={masterLinksGroupedByType} 
                links_groups={linksGroups} 
+               linksOptions={linksOptions}
                is_admin={is_admin}
+              
                />
 
             </div>

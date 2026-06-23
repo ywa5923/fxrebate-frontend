@@ -212,6 +212,7 @@ export default async function BrokerProfilePage({
           accountTypesLinks?.master_links_grouped_by_type ?? {}
         }
         linksGroups={accountTypesLinks?.links_groups ?? []}
+        linksOptions={accountTypesLinks?.links_options ?? {}}
       />
     );
   }

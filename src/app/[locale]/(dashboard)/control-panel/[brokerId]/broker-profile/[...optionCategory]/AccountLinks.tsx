@@ -21,11 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Url} from "@/types/Url";
-import { LinksGroupedByType } from "@/types/AccountTypeLinks";
+import { LinkGroup, LinksGroupedByType, LinksOptions } from "@/types/AccountTypeLinks";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
-
 import {
   Dialog,
   DialogContent,
@@ -35,13 +34,18 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
 import { BrokerPreviousValue } from "@/components/OptionsForm/BrokerPreviousValue";
 import { Copy, Plus, Pencil, Trash } from "lucide-react";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
-import  logger  from "@/lib/logger";
-
+import logger from "@/lib/logger";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 
 const LinkFormSchema = z.object({
@@ -63,6 +67,7 @@ export default function AccountLinks({
   links,
   master_links,
   links_groups,
+  linksOptions, 
   is_admin,
 }: {
   broker_id: number;
@@ -70,6 +75,7 @@ export default function AccountLinks({
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
   links_groups: string[];
+  linksOptions: LinksOptions;
   is_admin: boolean;
 }) {
   const [editingLink, setEditingLink] = useState<Url | null>(null);
@@ -239,7 +245,7 @@ export default function AccountLinks({
 
   // Render links for a group
   function renderLinks(
-    type: string,
+    type: LinkGroup,
     accountLinks: Url[] = [],
     masterLinks: Url[] = []
   ) {
@@ -257,6 +263,7 @@ export default function AccountLinks({
           const displayUrl = is_admin ? link.public_url ?? link.url : link.url;
           const isMaster = link.urlable_id === null;
           const isUpdatedEntry = link.is_updated_entry === 1;
+      
           return (
             <div key={link.id} className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-3 flex-1">
@@ -376,9 +383,11 @@ export default function AccountLinks({
   }
 
   // Render add/edit form with fade effects
-  function renderForm(type: string) {
+  function renderForm(type: LinkGroup) {
     const isVisible =
       addingType === type || (editingLink && editingLink.url_type === type);
+      //some links in groups have selected list options to display in name field instead of the name value
+      const linkTypeOptions = linksOptions[type] ?? [];
 
     return (
       <div
@@ -399,6 +408,73 @@ export default function AccountLinks({
                 }}
                 className="space-y-3"
               >
+                {/* Name field */}
+                 {linkTypeOptions.length > 0 ? (
+                  <FormField
+                    control={form.control}
+                    name= "name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={getLabelClassName("name")}>Name</FormLabel>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-full min-w-0 max-w-full flex-1">
+                                <SelectValue placeholder="Select name" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {linkTypeOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.label}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          {/* Copy button for admins with updated entries */}
+                          {renderCopyBtn("name")}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ):(<FormField
+                  control={form.control}
+                  name= "name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={getLabelClassName("name")}>Name</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input {...field} className="flex-1" />
+                        </FormControl>
+                        {/* Copy button for admins with updated entries */}
+                        
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />)}
+                
+                {is_admin && editingLink && (
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <BrokerPreviousValue
+                        brokerValue={editingLink?.name}
+                        previousValue={editingLink?.previous_name}
+                      />
+                    </div>
+                    {renderCopyBtn("name")}
+                  </div>
+                )} 
+               
+                {/* URL field */}
                 <FormField
                   control={form.control}
                   name= "url"
@@ -428,34 +504,6 @@ export default function AccountLinks({
                   </div>
                 )} 
 
-                <FormField
-                  control={form.control}
-                  name= "name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className={getLabelClassName("name")}>Name</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <FormControl>
-                          <Input {...field} className="flex-1" />
-                        </FormControl>
-                        {/* Copy button for admins with updated entries */}
-                        
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {is_admin && editingLink && (
-                  <div className="mt-1 flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <BrokerPreviousValue
-                        brokerValue={editingLink?.name}
-                        previousValue={editingLink?.previous_name}
-                      />
-                    </div>
-                    {renderCopyBtn("name")}
-                  </div>
-                )} 
                
                 {/* Show "Is Master Link" only for admins when adding new link (not editing) */}
               

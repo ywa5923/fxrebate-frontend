@@ -648,6 +648,11 @@ export default function ReferalLinksAndNotes({
                     </Select>
                   )}
                 />
+                {form.formState.errors.currency ? (
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    {form.formState.errors.currency.message}
+                  </p>
+                ) : null}
                 {is_admin && selectedRow && (
                   <div className="mt-1 flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
