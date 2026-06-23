@@ -437,8 +437,6 @@ export default function AccountLinks({
                               </SelectContent>
                             </Select>
                           </FormControl>
-                          {/* Copy button for admins with updated entries */}
-                          {renderCopyBtn("name")}
                         </div>
                         <FormMessage />
                       </FormItem>
