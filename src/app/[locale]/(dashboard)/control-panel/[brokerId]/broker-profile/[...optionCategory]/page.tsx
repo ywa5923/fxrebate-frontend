@@ -14,7 +14,7 @@ import Accounts from "./Accounts";
 import BrokerOptions from "./BrokerOptions";
 import {
   EvaluationFormConfig,
-  EvaluationRules,
+  EvaluationRules2,
   type EvaluationRule,
 } from "@/components/EvaluationRules";
 import Rebates from "./Rebates";
@@ -403,7 +403,7 @@ export default async function BrokerProfilePage({
       : [];
 
     return (
-      <EvaluationRules
+      <EvaluationRules2
         key={brokerId}
         is_admin={is_admin}
         formConfig={evaluationRulesFormConfig}

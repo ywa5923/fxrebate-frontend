@@ -4,7 +4,7 @@ export interface EvaluationRule {
   broker_id: number;
   zone_id: number | null;
   evaluation_rule_id: number;
-  evaluation_option_id: number;
+  evaluation_option_id: number|null;
   public_evaluation_option_id: number | null;
   details: string | null;
   is_getter_for_admin: 0 | 1;
@@ -16,6 +16,8 @@ export interface EvaluationRule {
   evaluation_option_value: string;
   evaluation_option_label?: string | null;
   getter_placeholder?: string | null;
+  getter_type: "string" | "textarea"|"string_array";
+  public_getter_type: "string" | "textarea"|"string_array";
   public_getter_placeholder?: string | null;
   is_getter: 0 | 1;
   is_updated_entry: 0 | 1;

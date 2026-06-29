@@ -3,12 +3,13 @@ export interface EvaluationFieldOption {
   label: string;
   is_getter: 0 | 1;
   description: string;
-  getter_placeholder?: string | null;
+  getter_type: "string" | "textarea"|"string_array";
+  placeholder?: string | null;
 }
 
 export interface EvaluationFieldValidation {
   required: boolean;
-  exists: string;
+  exists?: string;
 }
 
 export interface SelectFieldConfig {
@@ -34,5 +35,6 @@ export type EvaluationFormSections = Record<string, EvaluationSection>;
 export interface EvaluationFormConfig {
   name: string;
   description: string;
-  sections: EvaluationFormSections;
+  sections?: EvaluationFormSections;
+  fields?: EvaluationFields;
 }
