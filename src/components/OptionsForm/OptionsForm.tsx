@@ -301,7 +301,13 @@ export function OptionsForm({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleServerActionSubmit)}
+        onSubmit={form.handleSubmit(
+          handleServerActionSubmit,
+          (errors) => {
+           thisLogger.debug("VALIDATION ERRORS:", errors);
+           thisLogger.debug("FORM VALUES:", form.getValues());
+          }
+        )}
         className="space-y-8"
       >
         <div

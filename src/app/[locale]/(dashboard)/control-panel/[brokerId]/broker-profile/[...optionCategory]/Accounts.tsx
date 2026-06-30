@@ -1,7 +1,7 @@
 "use client";
 
 import {  DynamicTableRow, Option} from '@/types';
-import { DynamicForm } from '@/components/DynamicForm';
+
 import { NotFoundEntity } from '@/components/NotFoundEntity';
 import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
 import  logger  from "@/lib/logger";
+import { OptionsForm } from '@/components/OptionsForm/OptionsForm';
 interface AccountsProps {
   broker_id: number;
   accounts?: DynamicTableRow[];
@@ -119,7 +120,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Account</p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
-              <DynamicForm
+              <OptionsForm
                 broker_id={broker_id}
                 options={options}
                 optionsValues={[]}
@@ -187,7 +188,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                       <Trash className="w-4 h-4" />
                     </Button>
                   </div>
-                  <DynamicForm
+                  <OptionsForm
                     broker_id={broker_id}
                     options={options}
                     optionsValues={account.option_values}
