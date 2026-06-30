@@ -44,6 +44,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import logger from "@/lib/logger";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { formatAmount } from "./formatAmount";
 
 interface StaticMatrixProps {
   brokerId?: number | undefined;
@@ -57,6 +58,7 @@ interface StaticMatrixProps {
   language: string;
   type: "challenge" | "placeholder";
   is_admin: boolean;
+  locale: string;
 }
 
 export default function StaticMatrix({
@@ -71,6 +73,7 @@ export default function StaticMatrix({
   type = "challenge",
   zoneId = null,
   is_admin = false,
+  locale = "en",
 }: StaticMatrixProps) {
   const log = logger.child("components/ui/StaticMatrix");
 
@@ -339,20 +342,7 @@ export default function StaticMatrix({
           affiliate_master_link.has_copied_public_value = true;
         }
 
-        // setMatrixExtraData({
-        //   affiliate_link: {
-        //     ...affiliate_link,
-        //     placeholder: affiliate_link_placeholder,
-        //   },
-        //   evaluation_cost_discount: {
-        //     ...evaluation_cost_discount,
-        //     placeholder: evaluation_cost_discount_placeholder,
-        //   },
-        //   affiliate_master_link: {
-        //     ...affiliate_master_link,
-        //     placeholder: affiliate_master_link_placeholder,
-        //   },
-        // });
+       
       } 
         //for user and in placeholder mode, the data is the same as received from the API
         //TO DO need to remove placeholder?
@@ -525,14 +515,14 @@ export default function StaticMatrix({
               )}
             />
             {isPercentage && type === "challenge" && (
-              <span className="pointer-events-none absolute right-2 top-1/2 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-md border border-gray-300 bg-gray-100 px-2 text-sm font-bold leading-none text-gray-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              <span className="pointer-events-none absolute right-2 top-1/2 inline-flex h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded-md bg-white px-2 text-xs font-semibold leading-none text-emerald-700 shadow-sm dark:bg-white dark:text-emerald-800">
                 %
               </span>
             )}
           </div>
           {isPercentage && type === "challenge" && calculatedAmount !== null && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {calculatedAmount} {amountCurrency}
+            <span className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-semibold tabular-nums text-emerald-800 whitespace-nowrap shadow-sm dark:bg-white dark:text-emerald-800">
+              {formatAmount(String(calculatedAmount), amountCurrency, locale)}
             </span>
           )}
           {/* Admin-only: show copy button when cell is updated OR already copied.

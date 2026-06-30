@@ -2,12 +2,9 @@
 
 import { ChallengeType,ChallengeStep,ChallengeAmount} from "@/types";
 import {  useState } from "react";
-
 import StaticMatrix from "@/components/ChallengeMatrix/StaticMatrix";
 import AddTabBtn from "@/components/ChallengeMatrix/AddTabBtn";
-
-
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { toast } from "sonner";
@@ -26,7 +23,6 @@ import CategoriesContainer from "./CategoriesContainer";
 import StepsContainer from "./StepsContainer";
 import AmountsContainer from "./AmountsContainer";
 
-//import { set } from "nprogress";
 
 interface ChallengeCategoriesProps {
   categories: ChallengeType[];
@@ -66,6 +62,9 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
       amountId: firstCategory.amounts[0]?.id || null,
     };
   });
+
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
 
    //categories are broker categories, for type=placeholder, the categories are the default categories
  let categoriesNotInBrokerList = defaultCategories?.filter((cat) => !categories.some((c) => c.slug === cat.slug)) ?? [];
@@ -239,6 +238,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
               categories={categories}
               defaultCategories={defaultCategories ?? []}
               amountCurrencies={amountCurrencies}
+              locale={locale}
             />
           ) : (
             <div className="min-h-[40px] md:min-h-[48px] flex items-center justify-center px-2">
@@ -271,6 +271,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   language="en"
                   type={type}
                   is_admin={is_admin}
+                  locale={locale}
                 />
               </div>
             ) : (

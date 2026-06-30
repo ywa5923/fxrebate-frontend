@@ -4,7 +4,6 @@ import {
   Company,
   DynamicTableRow,
   Option,
-  OptionValue,
   RegulatorList,
 } from "@/types";
 import { OptionsForm } from "@/components/OptionsForm";
