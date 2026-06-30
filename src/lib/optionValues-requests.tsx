@@ -6,26 +6,46 @@ import { OptionValue } from "@/types";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getBearerToken } from "./auth-actions";
 
-// Cloudflare R2 configuration
-const CLOUDFLARE_KEY = "f4807109289c15ecc5bedcdfbe77c1a0";
-const CLOUDFLARE_SECRET =
-  "5de2b2eb527358952463a07839858c1ad7bcac8714594c0c7117825849c4463b";
-const CLOUDFLARE_ENDPOINT =
-  "https://ea8d2289dfa7abbf5625cd3ab0cb3620.r2.cloudflarestorage.com";
-const CLOUDFLARE_BUCKET = "fxrebate";
-const CLOUDFLARE_PUBLIC_URL =
-  "https://pub-3cbdb33cc7ba41f996c3316b5dd20bbc.r2.dev";
+function getCloudflareR2Config() {
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET;
+  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
 
-// Define S3 client instance
-const s3Client = new S3Client({
-  region: "auto", // Cloudflare R2 uses "auto"
-  endpoint: CLOUDFLARE_ENDPOINT,
-  credentials: {
-    accessKeyId: CLOUDFLARE_KEY,
-    secretAccessKey: CLOUDFLARE_SECRET,
-  },
-  forcePathStyle: true, // Crucial for R2
-});
+  if (
+    !accessKeyId ||
+    !secretAccessKey ||
+    !endpoint ||
+    !bucket ||
+    !publicUrl
+  ) {
+    throw new Error(
+      "Missing Cloudflare R2 environment variables. Set CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY, CLOUDFLARE_R2_ENDPOINT, CLOUDFLARE_R2_BUCKET, and CLOUDFLARE_R2_PUBLIC_URL in .env.local"
+    );
+  }
+
+  return { accessKeyId, secretAccessKey, endpoint, bucket, publicUrl };
+}
+
+let s3Client: S3Client | null = null;
+
+function getS3Client(): S3Client {
+  if (!s3Client) {
+    const { accessKeyId, secretAccessKey, endpoint } = getCloudflareR2Config();
+    s3Client = new S3Client({
+      region: "auto",
+      endpoint,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+      forcePathStyle: true,
+    });
+  }
+
+  return s3Client;
+}
 
 async function uploadToCloudflareR2(
   file: File,
@@ -46,9 +66,11 @@ async function uploadToCloudflareR2(
     const uniqueFileName = `${timestamp}-${fileName}`;
     console.log(`Unique filename: ${uniqueFileName}`);
 
+    const { bucket, publicUrl } = getCloudflareR2Config();
+
     // Construct parameters for PutObjectCommand
     const putObjectParams = {
-      Bucket: CLOUDFLARE_BUCKET,
+      Bucket: bucket,
       Key: uniqueFileName,
       Body: buffer,
       ContentType: file.type,
@@ -58,7 +80,7 @@ async function uploadToCloudflareR2(
     const command = new PutObjectCommand(putObjectParams);
 
     console.log("Sending PutObjectCommand...");
-    const response = await s3Client.send(command);
+    const response = await getS3Client().send(command);
     console.log("PutObjectCommand response:", response);
 
     // Check if the upload was successful
@@ -69,9 +91,9 @@ async function uploadToCloudflareR2(
     }
 
     // Return the public URL
-    const publicUrl = `${CLOUDFLARE_PUBLIC_URL}/${uniqueFileName}`;
-    console.log(`File uploaded successfully: ${publicUrl}`);
-    return publicUrl;
+    const filePublicUrl = `${publicUrl}/${uniqueFileName}`;
+    console.log(`File uploaded successfully: ${filePublicUrl}`);
+    return filePublicUrl;
   } catch (error) {
     console.error("Error uploading to Cloudflare R2 with AWS SDK:", error);
     console.error("Error details:", {
