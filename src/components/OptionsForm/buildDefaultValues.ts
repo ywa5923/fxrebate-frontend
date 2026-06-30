@@ -37,7 +37,7 @@ export function buildDefaultValues(
           return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
   
         case "notes":
-          return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [""] };
+          return { ...acc, [option.slug]: fieldValue ? fieldValue.split("#-#") : [""] };
   
         case "numberWithUnit":
           return {

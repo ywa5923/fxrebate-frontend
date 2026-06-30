@@ -237,7 +237,7 @@ export function OptionsForm({
       } else if (Array.isArray(value)) {
         // Handle arrays by joining with semicolon
         //this is used for multi-select and notes
-        formDataObj.append(key, value.join("; "));
+        formDataObj.append(key, value.join("#-#"));
       } else if (
         typeof value === "object" &&
         !Array.isArray(value) &&

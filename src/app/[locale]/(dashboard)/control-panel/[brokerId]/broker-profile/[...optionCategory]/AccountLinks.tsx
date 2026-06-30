@@ -64,6 +64,7 @@ type CopyField="name"|"url"
 export default function AccountLinks({
   broker_id,
   account_type_id,
+  account_type_name,
   links,
   master_links,
   links_groups,
@@ -72,6 +73,7 @@ export default function AccountLinks({
 }: {
   broker_id: number;
   account_type_id: number;
+  account_type_name: string;
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
   links_groups: string[];
@@ -198,9 +200,10 @@ export default function AccountLinks({
     setEditingLink(null);
     setAddingType(type);
     ensureAccordionOpen(type);
+    const options = linksOptions[type as LinkGroup] ?? [];
     form.reset({
       url: "",
-      name: "",
+      name: options.length > 0 ? "" : account_type_name,
       type,
       is_master: false,
     });
@@ -433,7 +436,7 @@ export default function AccountLinks({
                         Name
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} className="flex-1" />
+                        <Input {...field} className="flex-1" disabled />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -555,7 +558,7 @@ export default function AccountLinks({
           </svg>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-              Account Links
+               Links for  {account_type_name} Account
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400">

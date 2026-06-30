@@ -207,8 +207,9 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                     </div>
                   )}
               <AccountLinks
-              broker_id={broker_id}
-              account_type_id={account?.id} 
+               broker_id={broker_id}
+               account_type_id={account?.id} 
+               account_type_name={account?.option_values?.find(option => option.option_slug === 'account_type_name')?.value ?? ''}
                links={linksGroupedByAccountId[account.id]??{}}
                master_links={masterLinksGroupedByType} 
                links_groups={linksGroups} 

@@ -107,10 +107,10 @@ export async function submitBrokerProfile(
   //if original option values are provided, then we are updating the broker profile
   //if original option values are not provided, then we are creating a new broker profile
 
-  optionValuesLogger.debug("##DYNAMIC-FORM###-Original option values received in server action from client:", {
+  optionValuesLogger.debug("#####OPTIONS-FORM###-Original option values received in server action from client:", {
       orginalOptionValues,
   });
-  optionValuesLogger.debug("##DYNAMIC-FORM###FormData received in server action from client:", {
+  optionValuesLogger.debug("#####OPTIONS-FORM###FormData received in server action from client:", {
     formData,
     entity_id,
     entity_type,
@@ -227,7 +227,7 @@ export async function submitBrokerProfile(
     entity_type: entity_type,
   };
 
-  optionValuesLogger.debug("##DYNAMIC-FORM###Formatted data for SENDING TO PHP API:", {
+  optionValuesLogger.debug("##OPTIONS-FORM###Formatted data for SENDING TO PHP API:", {
     context: {
       option_values: JSON.stringify(requestData,null,2),
     },
@@ -244,7 +244,7 @@ export async function submitBrokerProfile(
       ...(token && { Authorization: `Bearer ${token}` }),
     };
 
-    optionValuesLogger.debug("##DYNAMIC-FORM###Formatted data for SENDING TO PHP API:", {
+    optionValuesLogger.debug("#####OPTIONS-FORM###Formatted data for SENDING TO PHP API:", {
     context: {
       url:url,
       option_values: JSON.stringify(requestData,null,2),
