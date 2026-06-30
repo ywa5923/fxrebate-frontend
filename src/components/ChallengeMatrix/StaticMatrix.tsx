@@ -919,7 +919,7 @@ export default function StaticMatrix({
                           <TooltipContent
                             side="top"
                             sideOffset={6}
-                            className="text-md px-3.5 py-2"
+                            className="text-sm px-3.5 py-2"
                           >
                             {rowHeader.description}
                           </TooltipContent>
@@ -1166,7 +1166,11 @@ export default function StaticMatrix({
                         (info)
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent
+                      side="top"
+                      sideOffset={6}
+                      className="text-sm px-3.5 py-2"
+                    >
                       This master affiliate link applies to all challenges
                     </TooltipContent>
                   </Tooltip>
