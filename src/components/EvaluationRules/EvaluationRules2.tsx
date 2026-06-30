@@ -16,19 +16,19 @@ import {
   FieldDescription,
   FieldError,
   Field,
-} from "../ui/field";
-import { Input } from "../ui/input";
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "../ui/select";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
-import { Copy } from "lucide-react";
+import { Copy, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
@@ -94,7 +94,7 @@ export default function EvaluationRules2({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   //get the updated fields,which has is_updated_entry set to 1 in EvaluationRules 
@@ -146,9 +146,9 @@ export default function EvaluationRules2({
         );
       } else {
         form.setValue(name, optionId);
-     //   form.register(getterName);
+    
         form.setValue(getterName, rule.details ?? "", { shouldDirty: true });
-        //form.setValue(getterName, rule.details ?? "");
+       
       }
     } else {
       form.setValue(name, optionId);
@@ -159,7 +159,7 @@ export default function EvaluationRules2({
     setCopiedFields((prev) => {
       const next = new Set(prev);
       next.add(name);
-     // if (selectedOption?.is_getter == 1) next.add(getterName);
+  
       return [...next];
     });
   }
@@ -191,18 +191,18 @@ export default function EvaluationRules2({
     }
 
     thisLogger.info("Evaluation rules submitted", { context: { dataToSend } });
-    // const response = await apiClient<boolean>(
-    //   saveEvaluationRulesUrl,
-    //   UseTokenAuth.Yes,
-    //   { method: "POST", body: JSON.stringify(dataToSend) },
-    //   ErrorMode.Return,
-    // );
-    // if (response.success) {
-    //   toast.success("Evaluation rules saved successfully");
-    //   router.refresh();
-    // } else {
-    //   toast.error(response.message ?? "Failed to save evaluation rules");
-    // }
+    const response = await apiClient<boolean>(
+      saveEvaluationRulesUrl,
+      UseTokenAuth.Yes,
+      { method: "POST", body: JSON.stringify(dataToSend) },
+      ErrorMode.Return,
+    );
+    if (response.success) {
+      toast.success("Evaluation rules saved successfully");
+      router.refresh();
+    } else {
+      toast.error(response.message ?? "Failed to save evaluation rules");
+    }
   };
 
   function renderField(name: string, fieldConfig: SelectFieldConfig) {
@@ -321,7 +321,7 @@ export default function EvaluationRules2({
           control={form.control}
           name={`${name}_getter`}
           render={({ field,fieldState }) => (
-            <Field aria-invalid={fieldState.invalid}>
+            <Field className="mt-2" aria-invalid={fieldState.invalid}>
              
               <Input
                 {...field}
@@ -341,7 +341,7 @@ export default function EvaluationRules2({
           control={form.control}
           name={`${name}_getter`}
           render={({ field,fieldState }) => (
-            <Field aria-invalid={fieldState.invalid}>
+            <Field className="mt-2" aria-invalid={fieldState.invalid}>
              
               <Textarea
                 {...field}
@@ -408,13 +408,30 @@ export default function EvaluationRules2({
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="mx-4 grid grid-cols-1 items-start gap-x-6 gap-y-8 md:grid-cols-2">
+    <div className="container mx-auto px-2 sm:px-6 pt-6 pb-6">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 items-center justify-center">
+            <LayoutGrid className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-gray-900 sm:text-xl dark:text-gray-100">
+              Evaluation Rules
+            </h1>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+              Configuration & Settings
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="grid grid-cols-1 items-stretch gap-x-6 gap-y-8 md:grid-cols-2">
         {Object.entries(fields).map(([name, fieldConfig]) => (
           <div
             key={name}
             className={cn(
-              "rounded-lg border p-4",
+              "h-full rounded-lg border p-4",
               is_admin &&
                 updatedFields.includes(name) &&
                 "border-red-500",
@@ -428,7 +445,7 @@ export default function EvaluationRules2({
           </div>
         ))}
       </div>
-      <div className="mx-4 mt-6 flex justify-end">
+      <div className="my-8 flex justify-end">
         <Button
           type="submit"
           className="min-w-28 border border-green-700 bg-green-600 text-white hover:bg-green-700"
@@ -442,5 +459,6 @@ export default function EvaluationRules2({
         </Button>
       </div>
     </form>
+    </div>
   );
 }

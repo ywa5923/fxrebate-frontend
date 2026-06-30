@@ -49,7 +49,7 @@ export function StringArrayGetterField2({
         };
 
         return (
-          <Field data-invalid={fieldState.invalid}>
+          <Field className="mt-2" data-invalid={fieldState.invalid}>
             <FieldContent className="space-y-2">
               {items.map((item, index) => (
                 <div key={`${fieldName}-${index}`}>
@@ -78,18 +78,19 @@ export function StringArrayGetterField2({
 
               <Button
                 type="button"
-                size="icon"
-                variant="outline"
-                title="Add item"
-                aria-label="Add item"
-                className={cn(
-                  "h-7 w-7 shrink-0 rounded border transition-all duration-150",
-                  "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
-                  "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
-                )}
+                variant="ghost"
+                size="sm"
+                title="Add another item"
+                aria-label="Add another item"
                 onClick={addItem}
+                className={cn(
+                  "h-9 w-full justify-center gap-2 border border-dashed",
+                  "border-muted-foreground/30 text-muted-foreground",
+                  "hover:border-muted-foreground/50 hover:bg-muted/50 hover:text-foreground",
+                )}
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
+                Add another item
               </Button>
 
               {fieldState.error && (
