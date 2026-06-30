@@ -21,15 +21,17 @@ export default function PreviousValues({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-block w-fit self-start">
+        <span className="inline-block w-fit self-start text-xs text-gray-600 dark:text-gray-400 mt-2 mb-2">
           {label}: {previousParts[0]}
         </span>
       </TooltipTrigger>
       {previousParts.length > 0 && (
-        <TooltipContent>
-          <div className="flex flex-col gap-0.5">
+        <TooltipContent className="text-sm text-white">
+          <div className="flex flex-col divide-y divide-white/20">
             {previousParts.slice(1).map((part, index) => (
-              <span key={index}>{part}</span>
+              <span key={index} className="block py-1">
+                {part}
+              </span>
             ))}
           </div>
         </TooltipContent>

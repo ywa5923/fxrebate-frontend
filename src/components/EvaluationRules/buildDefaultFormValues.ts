@@ -26,11 +26,12 @@ type EvaluationFormValues = Record<string, string | number | Array<string> | nul
 //     "updated_at": "2026-03-20T12:47:25.000000Z"
 // },
 
-export default function buildDefaultFormValues(is_admin: boolean, formConfig: EvaluationFormConfig, evaluationRules: EvaluationRule[]) {
+export default function buildDefaultFormValues(is_admin: boolean, formConfig: EvaluationFormConfig, evaluationRules: EvaluationRule[]): [EvaluationFormValues, string[]] {
 
 
     const defaultValues: EvaluationFormValues = {};
     const zodSchema: Record<string, z.ZodTypeAny> = {};
+    const copiedValues: Array<string> = [];
   
 
     for (const [name, fieldConfig] of Object.entries(getFormFields(formConfig))) {
@@ -44,7 +45,25 @@ export default function buildDefaultFormValues(is_admin: boolean, formConfig: Ev
 
 
         if (is_admin) {
-            defaultValues[name] = String(ruleObject?.public_evaluation_option_id ?? "");
+            //if public values are empty ,copy the broker value to the public value
+            if ((ruleObject?.public_evaluation_option_id === null || ruleObject?.public_evaluation_option_id === undefined) && (ruleObject?.evaluation_option_id !== null && ruleObject?.evaluation_option_id !== undefined)) {
+                defaultValues[name] = String(ruleObject?.evaluation_option_id ?? "");
+                copiedValues.push(name);
+                //if the copied valuse is getter, copy the broker getter value to the public getter value
+                if (ruleObject?.is_getter == 1) {
+                    if (ruleObject.getter_type === "string" || ruleObject.getter_type === "textarea") {
+                        defaultValues[getterName] = ruleObject?.details ?? "";
+                        //zodSchema[getterName] = z.string();
+                    } else if (ruleObject.getter_type === "string_array") {
+                        defaultValues[getterName] = ruleObject?.details?.replace(/^#-#|#-#$/, "") ?.split("#-#") ?? []
+                        //zodSchema[getterName] = z.array(z.string());
+                    }
+                }
+            }else{
+                defaultValues[name] = String(ruleObject?.public_evaluation_option_id ?? "");
+            }
+
+           
             if (ruleObject?.is_getter_for_admin == 1) {
                 if (ruleObject.public_getter_type === "string" || ruleObject.public_getter_type === "textarea") {
                     defaultValues[getterName] = ruleObject?.public_details ?? "";
@@ -60,7 +79,7 @@ export default function buildDefaultFormValues(is_admin: boolean, formConfig: Ev
             if (ruleObject?.is_getter == 1) {
                 if (ruleObject.getter_type === "string" || ruleObject.getter_type === "textarea") {
                     defaultValues[getterName] = ruleObject?.details ?? "";
-                    zodSchema[getterName] = z.string();
+                    //zodSchema[getterName] = z.string();
                 } else if (ruleObject.getter_type === "string_array") {
                     defaultValues[getterName] = ruleObject?.details?.replace(/^#-#|#-#$/, "") ?.split("#-#") ?? []
                     //zodSchema[getterName] = z.array(z.string());
@@ -70,7 +89,7 @@ export default function buildDefaultFormValues(is_admin: boolean, formConfig: Ev
 
 
     }
-    return defaultValues;
+    return [defaultValues, copiedValues] as [EvaluationFormValues, string[]];
 }
 
 function getRuleData(ruleID: string, evaluationRules: EvaluationRule[]) {
