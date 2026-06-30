@@ -926,6 +926,11 @@ export default function StaticMatrix({
                         </Tooltip>
                       )}
                       <span className="min-w-0 break-words">{rowHeader.name}</span>
+                      {is_admin && !rowHeader.broker_can_see && (
+                        <span className="shrink-0 text-xs font-bold text-green-500">
+                          (Admin only)
+                        </span>
+                      )}
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];

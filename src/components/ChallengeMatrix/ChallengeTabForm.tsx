@@ -26,8 +26,14 @@ import { toast } from "sonner";
 import { ChallengeType } from "@/types";
 import { formatAmount } from "./formatAmount";
 import { useParams } from "next/navigation";
+import { ServerJsonResponse } from "@/lib/api-client";
 
-type FormValues = { category?: string; step?: string; amount?: string, amountCurrency?: string };
+type FormValues = {
+  category?: string;
+  step?: string;
+  amount?: string;
+  amountCurrency?: string;
+};
 
 const formSchema = z.object({
   category: z.string().optional(),
@@ -45,7 +51,7 @@ interface ChallengeTabFormProps {
   defaultCategories: ChallengeType[];
   addApiUrl: string;
   onSuccess?: () => void;
- amountCurrencies?: Array<{value:string,label:string}>;
+  amountCurrencies?: Array<{ value: string; label: string }>;
 }
 
 export default function ChallengeTabForm({
@@ -55,7 +61,7 @@ export default function ChallengeTabForm({
   defaultCategories,
   addApiUrl,
   onSuccess,
-  amountCurrencies
+  amountCurrencies,
 }: ChallengeTabFormProps) {
   const isStepType = tabType === "step";
   const isAmountType = tabType === "amount";
@@ -67,7 +73,7 @@ export default function ChallengeTabForm({
   //let amountCurrencies: Array<{ label: string; value: string }> = [{value:"USD", label:"USD"},{value:"EUR", label:"EUR"},{value:"GBP", label:"GBP"},{value:"JPY", label:"JPY"}];
   //====0. For tabType=category==================================
   //-the categories received in props are  the broker categories list
-  //-so we need to filter the defaultCategories received in props to get the categories that are not in the broker categories list 
+  //-so we need to filter the defaultCategories received in props to get the categories that are not in the broker categories list
   //-the user see in the form select box only the default categories that are not in the broker categories list
   //sent to backend api the id of a selected default category which is cloned and saved in the broker categories table
   //====1. For tabType=step and amount=========
@@ -77,8 +83,6 @@ export default function ChallengeTabForm({
   //sent to backend api the id of a selected defaultstep or amount which is cloned and saved in the broker step and amount tables
   //====2. Seelcted Category==================================
   //- the selected category recived in props is the category selected by broker, so it's the broker's category not default category
-  
-
 
   const categoriesList = useMemo(
     () =>
@@ -88,26 +92,24 @@ export default function ChallengeTabForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { category: "", step: "", amount: "" ,amountCurrency:""},
+    defaultValues: { category: "", step: "", amount: "", amountCurrency: "" },
   });
 
-  //const selectedCategoryId = form.watch("category");
   const selectedCategoryId = selectedCategory?.id.toString() ?? "";
 
   const stepsNotInBrokerList = useMemo((): ItemOption[] => {
-
     if (!isStepType || !selectedCategoryId) return [];
-    // const brokerSelectedCategory = categories?.find(
-    //   (c) => c.id === Number(selectedCategoryId),
-    // );
+
     const brokerSelectedCategory = selectedCategory;
     if (!brokerSelectedCategory) return [];
 
     //broker categories are challenge categories but with broker_id column different than null,
     //defaultCategores are chalenge categories defined by superadmin to be available for all brokers, they have broker_id column null in the database
     const selectedCategorySlug = brokerSelectedCategory.slug;
-    const defaultCategorySteps = defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.steps ?? [];
-     
+    const defaultCategorySteps =
+      defaultCategories?.find((c) => c.slug === selectedCategorySlug)?.steps ??
+      [];
+
     //const brokerSteps = categories?.find((c) => c.slug === selectedCategorySlug)?.steps ?? [];
     const brokerSteps = brokerSelectedCategory?.steps ?? [];
 
@@ -117,40 +119,40 @@ export default function ChallengeTabForm({
     );
 
     return filtered.map((s) => ({ id: s.id, name: s.name }));
-
   }, [isStepType, selectedCategoryId, categories, defaultCategories]);
 
- 
-
   const defaultAmounts = useMemo(() => {
-  return (
-    defaultCategories?.find((c) => c.slug === selectedCategory?.slug)?.amounts ?? []
-  ).map((a) => ({
-    id: a.id,
-    name: `${a.amount} ${a.currency}`,
-  }));
-}, [defaultCategories, selectedCategory?.slug]);
-
-  
+    return (
+      defaultCategories?.find((c) => c.slug === selectedCategory?.slug)
+        ?.amounts ?? []
+    ).map((a) => ({
+      id: a.id,
+      name: `${a.amount} ${a.currency}`,
+    }));
+  }, [defaultCategories, selectedCategory?.slug]);
 
   async function onSubmit(values: FormValues) {
-
     let searchParams = new URLSearchParams();
-    if(isStepType && values.step && selectedCategory){
-        searchParams.set("default_tab_id_to_clone", values.step);
-        searchParams.set("broker_challenge_category_id", selectedCategory.id.toString());
-    }else if(isAmountType && values.amount && selectedCategory){
-        searchParams.set("default_tab_id_to_clone", values.amount);
-        searchParams.set("broker_challenge_category_id", selectedCategory.id.toString());
-        //set currency for the amount tab type
-        searchParams.set("amount_currency", values.amountCurrency ?? "");
-    }else if(isCategoryType && values.category ){
-        searchParams.set("default_tab_id_to_clone", values.category);
+    if (isStepType && values.step && selectedCategory) {
+      searchParams.set("default_tab_id_to_clone", values.step);
+      searchParams.set(
+        "broker_challenge_category_id",
+        selectedCategory.id.toString(),
+      );
+    } else if (isAmountType && values.amount && selectedCategory) {
+      searchParams.set("default_tab_id_to_clone", values.amount);
+      searchParams.set(
+        "broker_challenge_category_id",
+        selectedCategory.id.toString(),
+      );
+      //set currency for the amount tab type
+      searchParams.set("amount_currency", values.amountCurrency ?? "");
+    } else if (isCategoryType && values.category) {
+      searchParams.set("default_tab_id_to_clone", values.category);
     }
-    console.log("formValues values", values,selectedCategory);
 
-    const response = await apiClient<unknown>(
-      addApiUrl+"?"+searchParams.toString(),
+    const response = await apiClient<any>(
+      addApiUrl + "?" + searchParams.toString(),
       UseTokenAuth.Yes,
       { method: "POST", body: JSON.stringify({ category_id: "categoryId" }) },
       ErrorMode.Return,
@@ -172,10 +174,7 @@ export default function ChallengeTabForm({
       (stepsNotInBrokerList.length === 0 || !form.watch("step"))
     )
       return true;
-    if (
-      isAmountType &&
-      (defaultAmounts.length === 0 || !form.watch("amount"))
-    )
+    if (isAmountType && (defaultAmounts.length === 0 || !form.watch("amount")))
       return true;
     return false;
   })();
@@ -189,31 +188,30 @@ export default function ChallengeTabForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  if (isStepType) form.setValue("step", "");
-                 if (isAmountType) form.setValue("amount", "");
-                }}
-                //value={field.value}
-               value={selectedCategory?.id.toString() ?? field.value}
-                //disabled={categoriesList.length === 0}
-                disabled={isStepType || isAmountType}
-               
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categoriesList.map((opt) => (
-                    <SelectItem key={opt.id} value={String(opt.id)}>
-                      {opt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {categoriesList.length > 0 && (
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    if (isStepType) form.setValue("step", "");
+                    if (isAmountType) form.setValue("amount", "");
+                  }}
+                  value={selectedCategory?.id.toString() ?? field.value}
+                  disabled={isStepType || isAmountType}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categoriesList.map((opt) => (
+                      <SelectItem key={opt.id} value={String(opt.id)}>
+                        {opt.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {categoriesList.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   No categories available
@@ -230,24 +228,31 @@ export default function ChallengeTabForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Step</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={stepsNotInBrokerList.length === 0}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a step" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {stepsNotInBrokerList.map((opt) => (
-                      <SelectItem key={opt.id} value={String(opt.id)}>
-                        {opt.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {stepsNotInBrokerList.length > 0 && (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={stepsNotInBrokerList.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a step" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {stepsNotInBrokerList.map((opt) => (
+                        <SelectItem key={opt.id} value={String(opt.id)}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {stepsNotInBrokerList.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No more steps to add
+                  </p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -265,65 +270,65 @@ export default function ChallengeTabForm({
         <br />
         {isAmountType && defaultAmounts.length > 0 && (
           <>
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={defaultAmounts.length === 0}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an amount" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {defaultAmounts.map((opt) => (
-                      <SelectItem key={opt.id} value={String(opt.id)}>
-                        {formatAmount(opt.name.split(" ")[0], null, locale)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="amountCurrency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Currency</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={defaultAmounts.length === 0}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {amountCurrencies && amountCurrencies.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.label}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={defaultAmounts.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an amount" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {defaultAmounts.map((opt) => (
+                        <SelectItem key={opt.id} value={String(opt.id)}>
+                          {formatAmount(opt.name.split(" ")[0], null, locale)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="amountCurrency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={defaultAmounts.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {amountCurrencies &&
+                        amountCurrencies.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.label}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </>
         )}
-       
 
         <Button
           type="submit"
