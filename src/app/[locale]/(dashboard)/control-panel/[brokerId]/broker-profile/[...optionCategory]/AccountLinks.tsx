@@ -558,7 +558,7 @@ export default function AccountLinks({
           </svg>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-              Account Links
+              Account Type Links For {account_type_name}
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400">

@@ -55,6 +55,7 @@ interface Props {
   entity_id?: number;
   entity_type?: string;
   display?: "cols" | "vertical";
+  onSuccess?: () => void;
 }
 
 export function OptionsForm({
@@ -66,6 +67,7 @@ export function OptionsForm({
   entity_id,
   entity_type,
   display = "cols",
+  onSuccess,
 }: Props) {
   const router = useRouter();
 
@@ -276,6 +278,7 @@ export function OptionsForm({
         setClickedCopyButtons(new Set());
         // Refresh the page after successful submission using Next.js router
         router.refresh();
+        onSuccess?.();
         setFileInputKey((key) => key + 1);
       } catch (error) {
         toast.error("Failed to submit form");

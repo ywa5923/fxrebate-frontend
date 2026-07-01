@@ -13,7 +13,7 @@ import AccountLinks from './AccountLinks';
 import { LinkGroup, LinksGroupedByAccountId, LinksGroupedByType, LinksOptions } from '@/types/AccountTypeLinks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-//import { deleteAccountType } from '@/lib/accountType-request';
+
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { UseTokenAuth } from '@/lib/enums';
@@ -42,6 +42,17 @@ interface AccountsProps {
 //     'master-links': { mobile: [Array] }
 //   },
 //   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
+
+function scrollToTabBottom(accountId: number) {
+  const tabEl = document.getElementById(`account-tab-${accountId}`);
+  if (!tabEl) return;
+
+  const bottom = tabEl.getBoundingClientRect().bottom + window.scrollY;
+  window.scrollTo({
+    top: Math.max(0, bottom - window.innerHeight),
+    behavior: "smooth",
+  });
+}
 
 export default function Accounts({ broker_id, accounts = [], options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups,linksOptions }: AccountsProps) {
   const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
@@ -170,6 +181,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
           {accounts.map((account, index) => (
             <div
               key={account.id}
+              id={`account-tab-${account.id}`}
               className={cn(
                 "bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-px border border-dashed border-gray-200 dark:border-gray-700",
                 activeTab === account.id.toString() ? "block" : "hidden"
@@ -196,6 +208,10 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                     is_admin={is_admin}
                     entity_id={account.id}
                     entity_type="account-type"
+                    onSuccess={() => {
+                      setTimeout(() => scrollToTabBottom(account.id), 150);
+                      setTimeout(() => scrollToTabBottom(account.id), 450);
+                    }}
                   />
                 </>
               ) : (
@@ -208,16 +224,15 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                     </div>
                   )}
               <AccountLinks
-               broker_id={broker_id}
-               account_type_id={account?.id} 
-               account_type_name={account?.option_values?.find(option => option.option_slug === 'account_type_name')?.value ?? ''}
-               links={linksGroupedByAccountId[account.id]??{}}
-               master_links={masterLinksGroupedByType} 
-               links_groups={linksGroups} 
-               linksOptions={linksOptions}
-               is_admin={is_admin}
-              
-               />
+                broker_id={broker_id}
+                account_type_id={account?.id}
+                account_type_name={account?.option_values?.find(option => option.option_slug === 'account_type_name')?.value ?? ''}
+                links={linksGroupedByAccountId[account.id] ?? {}}
+                master_links={masterLinksGroupedByType}
+                links_groups={linksGroups}
+                linksOptions={linksOptions}
+                is_admin={is_admin}
+              />
 
             </div>
           ))}
