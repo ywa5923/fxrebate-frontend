@@ -896,33 +896,35 @@ export default function StaticMatrix({
                     key={`row-${rowIndex}`}
                     className="grid w-full grid-cols-[var(--matrix-grid-template-mobile)] gap-2 min-[1400px]:grid-cols-[var(--matrix-grid-template)]"
                   >
-                    <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center gap-2 min-w-0">
-                      {rowHeader.description && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className="inline-flex shrink-0 items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                              aria-label={`${rowHeader.name} info`}
+                    <div className="font-medium text-gray-600 dark:text-gray-400 px-2 py-2 border-r border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center min-w-0">
+                      <span className="inline-flex items-center gap-1 min-w-0">
+                        <span className="break-words">{rowHeader.name}</span>
+                        {rowHeader.description && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex shrink-0 items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                aria-label={`${rowHeader.name} info`}
+                              >
+                                <CircleHelp className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              sideOffset={6}
+                              className="text-sm px-3.5 py-2"
                             >
-                              <CircleHelp className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            sideOffset={6}
-                            className="text-sm px-3.5 py-2"
-                          >
-                            {rowHeader.description}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <span className="min-w-0 break-words">{rowHeader.name}</span>
-                      {is_admin && !rowHeader.broker_can_see && (
-                        <span className="shrink-0 text-xs font-bold text-green-500">
-                          (Admin only)
-                        </span>
-                      )}
+                              {rowHeader.description}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        {is_admin && !rowHeader.broker_can_see && (
+                          <span className="shrink-0 text-xs font-bold text-green-500">
+                            (Admin only)
+                          </span>
+                        )}
+                      </span>
                     </div>
                     {columnHeaders.map((colHeader, colIndex) => {
                       const cellData = matrixData[rowIndex] && matrixData[rowIndex][colIndex];
