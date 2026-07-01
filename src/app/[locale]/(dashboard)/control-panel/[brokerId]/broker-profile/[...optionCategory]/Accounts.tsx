@@ -1,24 +1,35 @@
 "use client";
 
-import {  DynamicTableRow, Option} from '@/types';
+import { DynamicTableRow, Option } from "@/types";
 
-import { NotFoundEntity } from '@/components/NotFoundEntity';
-import { submitBrokerProfile } from '@/lib/optionValues-requests';
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Plus, X, Trash, LayoutGrid, AlertTriangle } from 'lucide-react';
-import { Card, CardContent} from '@/components/ui/card';
-import AccountLinks from './AccountLinks';
-import { LinkGroup, LinksGroupedByAccountId, LinksGroupedByType, LinksOptions } from '@/types/AccountTypeLinks';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { NotFoundEntity } from "@/components/NotFoundEntity";
+import { submitBrokerProfile } from "@/lib/optionValues-requests";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Plus, X, Trash, LayoutGrid, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import AccountLinks from "./AccountLinks";
+import {
+  LinkGroup,
+  LinksGroupedByAccountId,
+  LinksGroupedByType,
+  LinksOptions,
+} from "@/types/AccountTypeLinks";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api-client';
-import { UseTokenAuth } from '@/lib/enums';
-import  logger  from "@/lib/logger";
-import { OptionsForm } from '@/components/OptionsForm/OptionsForm';
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { UseTokenAuth } from "@/lib/enums";
+import logger from "@/lib/logger";
+import { OptionsForm } from "@/components/OptionsForm/OptionsForm";
 interface AccountsProps {
   broker_id: number;
   accounts?: DynamicTableRow[];
@@ -30,7 +41,7 @@ interface AccountsProps {
   linksOptions: LinksOptions;
 }
 //example of accountTypeUrls, grouped by acount_type_ID and then by url type,  and urls_groups
-//it also contains master-links which is a group of urls that are not associated with any account type 
+//it also contains master-links which is a group of urls that are not associated with any account type
 //master links are shown in the section of every account type
 //    {
 //     '12': {
@@ -43,21 +54,30 @@ interface AccountsProps {
 //   },
 //   url_groups: [ 'mobile', 'webplatform', 'swap', 'commission' ]
 
-function scrollToTabBottom(accountId: number) {
-  const tabEl = document.getElementById(`account-tab-${accountId}`);
-  if (!tabEl) return;
-
-  const bottom = tabEl.getBoundingClientRect().bottom + window.scrollY;
-  window.scrollTo({
-    top: Math.max(0, bottom - window.innerHeight),
-    behavior: "smooth",
-  });
+function scrollToBottom() {
+  document
+    .getElementById("bottom")
+    ?.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
-export default function Accounts({ broker_id, accounts = [], options, is_admin = false,  linksGroupedByAccountId,masterLinksGroupedByType,linksGroups,linksOptions }: AccountsProps) {
-  const [activeTab, setActiveTab] = useState<string>(accounts[0]?.id?.toString() || '');
+export default function Accounts({
+  broker_id,
+  accounts = [],
+  options,
+  is_admin = false,
+  linksGroupedByAccountId,
+  masterLinksGroupedByType,
+  linksGroups,
+  linksOptions,
+}: AccountsProps) {
+  const [activeTab, setActiveTab] = useState<string>(
+    accounts[0]?.id?.toString() || "",
+  );
   const [showNewAccount, setShowNewAccount] = useState(false);
-  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<number|null>(null);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<
+    number | null
+  >(null);
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const router = useRouter();
   const prevAccountsLength = useRef(accounts.length);
   const thisLogger = logger.child("Accounts");
@@ -66,9 +86,10 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
     if (accounts.length > prevAccountsLength.current) {
       // Set active tab to the latest account (last in the array)
       setActiveTab(accounts[accounts.length - 1].id.toString());
+      
     } else if (
       accounts.length > 0 &&
-      !accounts.some(account => account.id.toString() === activeTab)
+      !accounts.some((account) => account.id.toString() === activeTab)
     ) {
       // If current activeTab is invalid, set to first account
       setActiveTab(accounts[0].id.toString());
@@ -76,25 +97,33 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
     prevAccountsLength.current = accounts.length;
   }, [accounts, activeTab]);
 
-
   async function handleDeleteAccountType(accountId: number) {
-    
-    try{
-     // const response = await deleteAccountType(accountId,broker_id);
-     const serverUrl = `/account-types/${accountId}/broker/${broker_id}`;
-     const response = await apiClient<DynamicTableRow>(serverUrl, UseTokenAuth.Yes, {
-      method: "DELETE",
-    });
-    if(response.success){
-      toast.success("Account type deleted successfully!");
-      router.refresh();
-    }else{
-      toast.error(response.message ?? "Failed to delete account type");
-      thisLogger.error("Failed to delete account type", { error:response.message, context: { accountId,broker_id } });
-    }
-    }catch(error){
+    try {
+      // const response = await deleteAccountType(accountId,broker_id);
+      const serverUrl = `/account-types/${accountId}/broker/${broker_id}`;
+      const response = await apiClient<DynamicTableRow>(
+        serverUrl,
+        UseTokenAuth.Yes,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.success) {
+        toast.success("Account type deleted successfully!");
+        router.refresh();
+      } else {
+        toast.error(response.message ?? "Failed to delete account type");
+        thisLogger.error("Failed to delete account type", {
+          error: response.message,
+          context: { accountId, broker_id },
+        });
+      }
+    } catch (error) {
       toast.error("Failed to delete account type");
-     thisLogger.error("DELETE ACCOUNT TYPE ERROR", { error:error, context: { accountId,broker_id } });
+      thisLogger.error("DELETE ACCOUNT TYPE ERROR", {
+        error: error,
+        context: { accountId, broker_id },
+      });
     }
   }
 
@@ -106,8 +135,12 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             <LayoutGrid className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Accounts</h1>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Configuration & Settings</p>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+              Accounts
+            </h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Configuration & Settings
+            </p>
           </div>
         </div>
         <button
@@ -116,45 +149,66 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
             showNewAccount
               ? "border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-              : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
           )}
           title={showNewAccount ? "Cancel" : "New Account"}
         >
-          {showNewAccount ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+          {showNewAccount ? (
+            <X className="w-3.5 h-3.5" />
+          ) : (
+            <Plus className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
-      
+
       {/* New Account Form */}
       {showNewAccount && (
         <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
-          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">New Account</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
+            New Account
+          </p>
           <Card className="w-full border-0 shadow-none bg-[#ffffff] dark:bg-transparent">
             <CardContent>
               <OptionsForm
                 broker_id={broker_id}
                 options={options}
                 optionsValues={[]}
-                action={async (broker_id, formData, is_admin, optionsValues, entity_id, entity_type) => {
-                  await submitBrokerProfile(broker_id, formData, is_admin, optionsValues, entity_id, entity_type);
+                action={async (
+                  broker_id,
+                  formData,
+                  is_admin,
+                  optionsValues,
+                  entity_id,
+                  entity_type,
+                ) => {
+                  await submitBrokerProfile(
+                    broker_id,
+                    formData,
+                    is_admin,
+                    optionsValues,
+                    entity_id,
+                    entity_type,
+                  );
                   setShowNewAccount(false);
                 }}
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="account-type"
+                onSuccess={() => setSavedSuccessfully(true)}
               />
             </CardContent>
           </Card>
         </div>
       )}
-      
+
       {/* Tab Navigation */}
       {accounts.length > 0 ? (
         <>
           <div className="mb-2">
             <div className="flex overflow-x-auto scrollbar-hide gap-0 border-b border-gray-200 dark:border-gray-700">
               {accounts.map((account, index) => {
-                const isActive = activeTab === account.id.toString()
+                const isActive = activeTab === account.id.toString();
                 return (
                   <button
                     key={account.id}
@@ -163,20 +217,22 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                       "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
                       isActive
                         ? "text-gray-900 dark:text-white font-semibold"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium",
                     )}
                   >
-                    <span className="hidden sm:inline">Account {index + 1}</span>
+                    <span className="hidden sm:inline">
+                      Account {index + 1}
+                    </span>
                     <span className="sm:hidden">Acc {index + 1}</span>
                     {isActive && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-500" />
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
-          
+
           {/* Tab Content */}
           {accounts.map((account, index) => (
             <div
@@ -184,7 +240,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
               id={`account-tab-${account.id}`}
               className={cn(
                 "bg-[#fdfdfd] dark:bg-gray-800 rounded-lg px-6 py-px border border-dashed border-gray-200 dark:border-gray-700",
-                activeTab === account.id.toString() ? "block" : "hidden"
+                activeTab === account.id.toString() ? "block" : "hidden",
               )}
             >
               {account.option_values && account.option_values.length > 0 ? (
@@ -208,36 +264,98 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                     is_admin={is_admin}
                     entity_id={account.id}
                     entity_type="account-type"
-                    onSuccess={() => {
-                      setTimeout(() => scrollToTabBottom(account.id), 150);
-                      setTimeout(() => scrollToTabBottom(account.id), 450);
-                    }}
                   />
                 </>
               ) : (
-                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-                      <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-gray-500 dark:text-gray-400 font-medium">No configuration available</p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This account has no option values to configure.</p>
-                    </div>
-                  )}
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <svg
+                    className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">
+                    No configuration available
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                    This account has no option values to configure.
+                  </p>
+                </div>
+              )}
+
               <AccountLinks
                 broker_id={broker_id}
                 account_type_id={account?.id}
-                account_type_name={account?.option_values?.find(option => option.option_slug === 'account_type_name')?.value ?? ''}
+                account_type_name={
+                  account?.option_values?.find(
+                    (option) => option.option_slug === "account_type_name",
+                  )?.value ?? ""
+                }
                 links={linksGroupedByAccountId[account.id] ?? {}}
                 master_links={masterLinksGroupedByType}
                 links_groups={linksGroups}
                 linksOptions={linksOptions}
                 is_admin={is_admin}
               />
-
             </div>
           ))}
+          <div
+            id="bottom"
+            className="mt-6 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700"
+          >
+            <p className="text-xs text-center text-gray-400 dark:text-gray-500">
+              End of account configuration — add and manage links in the
+              sections above.
+            </p>
+          </div>
+          <Dialog
+            open={savedSuccessfully}
+            onOpenChange={(open) => {
+              if (!open) setSavedSuccessfully(false);
+            }}
+          >
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader className="text-left">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/60">
+                    <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="space-y-1 pt-0.5">
+                    <DialogTitle>Account type saved successfully</DialogTitle>
+                    <p className="text-sm text-muted-foreground">
+                      You can now complete the links associated with this
+                      account in the sections below.
+                    </p>
+                  </div>
+                </div>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                  onClick={() => {
+                    setSavedSuccessfully(false);
+                    setTimeout(() => scrollToBottom(), 150);
+                  }}
+                >
+                  OK
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           {/* Confirmation Dialog for Account Delete */}
-          <Dialog open={!!confirmDeleteAccount} onOpenChange={open => { if (!open) setConfirmDeleteAccount(null); }}>
+          <Dialog
+            open={!!confirmDeleteAccount}
+            onOpenChange={(open) => {
+              if (!open) setConfirmDeleteAccount(null);
+            }}
+          >
             <DialogContent className="sm:max-w-lg">
               <DialogHeader className="text-left">
                 <div className="flex items-start gap-4">
@@ -265,7 +383,10 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
                 </ul>
               </div>
               <DialogFooter className="gap-3">
-                <Button variant="outline" onClick={() => setConfirmDeleteAccount(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDeleteAccount(null)}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -283,14 +404,16 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             </DialogContent>
           </Dialog>
         </>
-      ) : !showNewAccount && (
-        <NotFoundEntity
-          title="No accounts found"
-          description="Click here or use the + button to add an account."
-          onClick={() => setShowNewAccount(true)}
-          ariaLabel="Add account"
-        />
+      ) : (
+        !showNewAccount && (
+          <NotFoundEntity
+            title="No accounts found"
+            description="Click here or use the + button to add an account."
+            onClick={() => setShowNewAccount(true)}
+            ariaLabel="Add account"
+          />
+        )
       )}
     </div>
   );
-} 
+}
