@@ -68,6 +68,17 @@ const UPDATED_FIELD_LABELS: Record<string, string> = {
   urlable_id: "isMaster",
 };
 
+function getFormHeaderWrapperClassName(isEditing: boolean): string {
+  const tint = isEditing
+    ? "bg-blue-50/80 dark:bg-blue-950/25"
+    : "bg-green-50/80 dark:bg-green-950/25";
+  const softBorder = isEditing
+    ? "border-blue-200/80 dark:border-blue-800/50"
+    : "border-green-200/80 dark:border-green-800/50";
+
+  return cn("rounded-md border border-dashed px-4 py-3.5", softBorder, tint);
+}
+
 export default function AccountLinks({
   broker_id,
   account_type_id,
@@ -401,6 +412,22 @@ export default function AccountLinks({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-3"
             >
+              <div
+                className={getFormHeaderWrapperClassName(!!editingLink)}
+              >
+                <h3 className="text-sm font-semibold text-foreground">
+                  {editingLink ? "Edit link" : "Add new link"}
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {editingLink
+                    ? "Update the link details for the "
+                    : "Create a new link for the "}
+                  <span className="font-medium text-foreground">
+                    {account_type_name}
+                  </span>{" "}
+                  account type.
+                </p>
+              </div>
               {linkTypeOptions.length > 0 ? (
                 <FormField
                   control={form.control}
