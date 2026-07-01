@@ -44,6 +44,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import logger from "@/lib/logger";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
+import { isValidUrl } from "@/lib/isValidUrl";
 import { formatAmount } from "./formatAmount";
 
 interface StaticMatrixProps {
@@ -99,15 +100,6 @@ export default function StaticMatrix({
     affiliate_master_link: false,
   });
   const [showLinkErrorDialog, setShowLinkErrorDialog] = useState(false);
-
-  const isValidUrl = (value: string): boolean => {
-    try {
-      const parsed = new URL(value.trim());
-      return parsed.protocol === "http:" || parsed.protocol === "https:";
-    } catch {
-      return false;
-    }
-  };
 
   const togglePublish = async (published: boolean) => {
     if (isEmptyMatrix) {
