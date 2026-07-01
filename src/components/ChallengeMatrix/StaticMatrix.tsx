@@ -938,7 +938,7 @@ export default function StaticMatrix({
                       return (
                         <div
                           key={cellData?.id ?? `cell-${rowIndex}-${colIndex}`}
-                          className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex items-center min-w-0"
+                          className="p-2  min-h-[4rem] flex items-center min-w-0"
                         >
                           {cellData ? (
                             renderCell(
@@ -968,7 +968,7 @@ export default function StaticMatrix({
                   Evaluation Cost Discount
                 </div>
                 <div
-                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  className="p-2 min-h-[4rem] flex flex-col min-w-0"
                   style={{
                     gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
                   }}
@@ -1066,7 +1066,7 @@ export default function StaticMatrix({
                   Affiliate Link
                 </div>
                 <div
-                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  className="p-2  min-h-[4rem] flex flex-col min-w-0"
                   style={{
                     gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
                   }}
@@ -1176,7 +1176,7 @@ export default function StaticMatrix({
                   </Tooltip>
                 </div>
                 <div
-                  className="p-2 border border-gray-200 dark:border-gray-700 min-h-[4rem] flex flex-col min-w-0"
+                  className="p-2  min-h-[4rem] flex flex-col min-w-0"
                   style={{
                     gridColumn: `span ${matrixColumnCount} / span ${matrixColumnCount}`,
                   }}
