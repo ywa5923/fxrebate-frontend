@@ -1,4 +1,5 @@
 import { Option } from "@/types";
+import { isValidUrl } from "@/lib/isValidUrl";
 import { z } from "zod";
 
 export function buildFormSchema(options: Option[]) {
@@ -163,13 +164,24 @@ export function buildFormSchema(options: Option[]) {
       case "url":
         fieldSchema =
           option.required === 1
-            ? z.string().min(1, "URL is required").url({
-              message: "Invalid URL",
-            })
+            ? z
+                .string()
+                .trim()
+                .min(1, "URL is required")
+                .refine(isValidUrl, {
+                  message: "Please enter a valid URL (https://example.com/)",
+                })
             : z.preprocess(
-              (value) => typeof value === "string" && value.trim() === "" ? null : value,
-              z.string().url({ message: "Invalid URL" }).nullable().optional()
-            )
+                (value) =>
+                  typeof value === "string" && value.trim() === "" ? null : value,
+                z
+                  .string()
+                  .nullable()
+                  .optional()
+                  .refine((val) => val == null || isValidUrl(val), {
+                    message: "Please enter a valid URL (https://example.com/)",
+                  }),
+              );
         break;
 
       default:
