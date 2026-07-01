@@ -7,7 +7,7 @@ import { submitBrokerProfile } from '@/lib/optionValues-requests';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Plus, X, Trash, LayoutGrid } from 'lucide-react';
+import { Plus, X, Trash, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { Card, CardContent} from '@/components/ui/card';
 import AccountLinks from './AccountLinks';
 import { LinkGroup, LinksGroupedByAccountId, LinksGroupedByType, LinksOptions } from '@/types/AccountTypeLinks';
@@ -177,7 +177,7 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
             >
               {account.option_values && account.option_values.length > 0 ? (
                 <>
-                  <div className="flex items-center justify-end gap-2 mb-1">
+                  <div className="mt-3 flex items-center justify-end gap-2 mb-1">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -223,14 +223,33 @@ export default function Accounts({ broker_id, accounts = [], options, is_admin =
           ))}
           {/* Confirmation Dialog for Account Delete */}
           <Dialog open={!!confirmDeleteAccount} onOpenChange={open => { if (!open) setConfirmDeleteAccount(null); }}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you sure you want to delete this account type?</DialogTitle>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader className="text-left">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/60">
+                    <AlertTriangle className="h-7 w-7 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div className="space-y-1 pt-0.5">
+                    <DialogTitle>Delete this account type?</DialogTitle>
+                    <p className="text-sm text-muted-foreground">
+                      This action is permanent and cannot be undone.
+                    </p>
+                  </div>
+                </div>
               </DialogHeader>
-              <div className="py-2">
-                This action cannot be undone.
+              <div className="rounded-lg border border-red-200/80 bg-red-50/60 px-4 py-3.5 dark:border-red-900/60 dark:bg-red-950/25">
+                <p className="text-sm font-semibold text-red-900 dark:text-red-100">
+                  Warning
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-red-800/90 dark:text-red-200/90">
+                  Deleting an account type will automatically remove:
+                </p>
+                <ul className="mt-2 space-y-1.5 pl-5 text-sm leading-relaxed text-red-800/90 list-disc marker:text-red-500 dark:text-red-200/90">
+                  <li>The associated column from the rebate matrix</li>
+                  <li>All related links, including affiliate links</li>
+                </ul>
               </div>
-              <DialogFooter>
+              <DialogFooter className="gap-3">
                 <Button variant="outline" onClick={() => setConfirmDeleteAccount(null)}>
                   Cancel
                 </Button>
