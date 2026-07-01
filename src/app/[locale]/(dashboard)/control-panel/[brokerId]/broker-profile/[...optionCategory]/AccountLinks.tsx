@@ -62,6 +62,12 @@ const LinkFormSchema = z.object({
 
 type CopyField="name"|"url"
 
+const UPDATED_FIELD_LABELS: Record<string, string> = {
+  name: "Link Title",
+  url: "URL",
+  urlable_id: "isMaster",
+};
+
 export default function AccountLinks({
   broker_id,
   account_type_id,
@@ -300,7 +306,9 @@ export default function AccountLinks({
                     {is_admin && isUpdatedEntry && (
                       <span className="text-xs text-red-700 dark:text-gray-200">
                         Updated fields:{" "}
-                        {link.metadata?.updated_fields?.join(", ")}
+                        {link.metadata?.updated_fields
+                          ?.map((f: string) => UPDATED_FIELD_LABELS[f] ?? f)
+                          .join(", ")}
                       </span>
                     )}
                   </div>
@@ -400,7 +408,7 @@ export default function AccountLinks({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={getLabelClassName("name")}>
-                        Name
+                        Platform
                       </FormLabel>
                       <FormControl>
                         <Select
@@ -408,7 +416,7 @@ export default function AccountLinks({
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger className="w-full min-w-0 max-w-full">
-                            <SelectValue placeholder="Select name" />
+                            <SelectValue placeholder="Select platform" />
                           </SelectTrigger>
                           <SelectContent>
                             {linkTypeOptions.map((option) => (
@@ -433,10 +441,10 @@ export default function AccountLinks({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={getLabelClassName("name")}>
-                        Name
+                        Link Title
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} className="flex-1" readOnly />
+                        <Input {...field} className="flex-1" disabled={true} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -452,7 +460,7 @@ export default function AccountLinks({
                       previousValue={editingLink.previous_name}
                     />
                   </div>
-                  {renderCopyBtn("name")}
+                  {linkTypeOptions.length > 0 && editingLink.metadata?.updated_fields?.includes("name") && renderCopyBtn("name")}
                 </div>
               )}
 
@@ -463,7 +471,7 @@ export default function AccountLinks({
                   <FormItem>
                     <FormLabel className={getLabelClassName("url")}>URL</FormLabel>
                     <FormControl>
-                      <Input {...field} className="flex-1" />
+                      <Input {...field} className="flex-1" placeholder="https://example.com/..." />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -478,7 +486,7 @@ export default function AccountLinks({
                       previousValue={editingLink.previous_url}
                     />
                   </div>
-                  {renderCopyBtn("url")}
+                  {editingLink.metadata?.updated_fields?.includes("url") && renderCopyBtn("url")}
                 </div>
               )}
 
