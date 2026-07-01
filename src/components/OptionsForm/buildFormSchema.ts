@@ -2,6 +2,35 @@ import { Option } from "@/types";
 import { isValidUrl } from "@/lib/isValidUrl";
 import { z } from "zod";
 
+const YEAR_ONLY_REGEX = /^\d{4}$/;
+const FULL_DATE_REGEX =
+  /^\d{4}[-/.](0[1-9]|1[0-2])[-/.](0[1-9]|[12]\d|3[01])$/;
+
+function isValidDateValue(value: string): boolean {
+  const trimmed = value.trim();
+
+  if (YEAR_ONLY_REGEX.test(trimmed)) {
+    const year = Number(trimmed);
+    return year >= 1000 && year <= 9999;
+  }
+
+  if (!FULL_DATE_REGEX.test(trimmed)) {
+    return false;
+  }
+
+  const [year, month, day] = trimmed
+    .replace(/[/.]/g, "-")
+    .split("-")
+    .map(Number);
+  const date = new Date(year, month - 1, day);
+
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
 export function buildFormSchema(options: Option[]) {
   const schemaObject: { [key: string]: any } = {};
 
@@ -84,6 +113,37 @@ export function buildFormSchema(options: Option[]) {
               z.boolean().nullable().optional(),
             );
         break;
+
+      
+      case "date": {
+        const dateMessage = `${option.name} must be a year (e.g. 2024) or a date (YYYY-MM-DD)`;
+
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) =>
+                  val === "" || val === null || val === undefined
+                    ? null
+                    : String(val).trim(),
+                z.string().refine(isValidDateValue, { message: dateMessage }),
+              )
+            : z.preprocess(
+                (val) =>
+                  typeof val === "string" && val.trim() === ""
+                    ? null
+                    : val === null || val === undefined
+                      ? null
+                      : String(val).trim(),
+                z
+                  .string()
+                  .nullable()
+                  .optional()
+                  .refine((val) => val == null || isValidDateValue(val), {
+                    message: dateMessage,
+                  }),
+              );
+        break;
+      }
 
       case "string":
       case "textarea": {

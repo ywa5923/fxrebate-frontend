@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Plus, X, Trash, LayoutGrid } from "lucide-react";
+import { Plus, X, Trash, LayoutGrid, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -41,6 +41,12 @@ interface Props {
   is_admin?: boolean;
 }
 
+function scrollToBottom() {
+  document
+    .getElementById("bottom")
+    ?.scrollIntoView({ behavior: "smooth", block: "end" });
+}
+
 export default function Companies({
   broker_id,
   companies,
@@ -56,6 +62,7 @@ export default function Companies({
   const [confirmDeleteCompany, setConfirmDeleteCompany] = useState<
     number | null
   >(null);
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const router = useRouter();
   const prevCompaniesLength = useRef(companies?.length || 0);
 
@@ -168,6 +175,7 @@ export default function Companies({
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="Company"
+                onSuccess={() => setSavedSuccessfully(true)}
               />
             </CardContent>
           </Card>
@@ -215,14 +223,7 @@ export default function Companies({
             >
               {company.option_values && company.option_values.length > 0 ? (
                 <>
-                  <div className="w-full min-w-0 mt-10 mb-10 pt-8 ">
-                    <CompanyRegulators
-                      broker_id={broker_id}
-                      company_id={company.id}
-                      regulators={company.regulators}
-                      regulatorsList={regulatorsList}
-                    />
-                  </div>
+                  
                   <div className="flex items-center justify-between gap-2 mb-10">
                     <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
                       Company Profile
@@ -251,6 +252,14 @@ export default function Companies({
                     entity_id={company.id}
                     entity_type="company"
                   />
+                  <div className="w-full min-w-0 mt-10 mb-10 pt-8 ">
+                    <CompanyRegulators
+                      broker_id={broker_id}
+                      company_id={company.id}
+                      regulators={company.regulators}
+                      regulatorsList={regulatorsList}
+                    />
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
@@ -277,6 +286,51 @@ export default function Companies({
               )}
             </div>
           ))}
+
+          <div
+            id="bottom"
+            className="mt-6 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700"
+          >
+            <p className="text-xs text-center text-gray-400 dark:text-gray-500">
+              End of company configuration — attach and manage regulators in the
+              sections above.
+            </p>
+          </div>
+
+          <Dialog
+            open={savedSuccessfully}
+            onOpenChange={(open) => {
+              if (!open) setSavedSuccessfully(false);
+            }}
+          >
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader className="text-left">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/60">
+                    <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="space-y-1 pt-0.5">
+                    <DialogTitle>Company details saved successfully</DialogTitle>
+                    <p className="text-sm text-muted-foreground">
+                      You can now attach regulators to this company in the
+                      section below.
+                    </p>
+                  </div>
+                </div>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                  onClick={() => {
+                    setSavedSuccessfully(false);
+                    setTimeout(() => scrollToBottom(), 150);
+                  }}
+                >
+                  OK
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <Dialog
             open={!!confirmDeleteCompany}
