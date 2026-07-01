@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { isValidUrl } from "@/lib/isValidUrl";
 
 
 const LinkFormSchema = z.object({
@@ -53,7 +54,7 @@ const LinkFormSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "URL is required" })
-    .url({ message: "Please enter a valid URL" }),
+    .refine(isValidUrl, { message: "Please enter a valid URL (https://example.com/)" }),
   name: z.string().trim().min(1, { message: "Name is required" }),
   type: z.string().min(1, { message: "Type is required" }),
   is_master: z.boolean().optional(),
@@ -155,10 +156,9 @@ export default function AccountLinks({
         : "text-gray-700 dark:text-gray-200",
     );
 
-  // Simulated server action
+ 
   async function onSubmit(data: z.infer<typeof LinkFormSchema>) {
    
-   // log.info("Form submitted with data:", { data, is_admin });
     try {
       // If editing, include the id
       const payload = {
