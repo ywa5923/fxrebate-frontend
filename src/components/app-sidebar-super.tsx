@@ -26,6 +26,7 @@ import {
   MoreVertical,
   LayoutTemplate,
   Plus,
+  Book,
   type LucideIcon
 } from "lucide-react"
 
@@ -95,6 +96,7 @@ const iconMap: Record<string, LucideIcon> = {
   Cog: Settings2,
   Translate: Languages,
   LayoutTemplate,
+  Book,
 }
 
 type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission'| 'brokerGroupPermission' | null;
@@ -316,6 +318,7 @@ export function AppSidebarSuper({
                   const isCountries = link.name === 'Countries';
                   const isDropdownLists = link.name === 'Dropdown Lists';
                   const isDynamicOptions = link.name === 'Dynamic Options';
+                  const isLearningCenter = link.name === 'Learning Center';
                   
                   return (
                     <SidebarMenuItem key={link.name}>
@@ -360,6 +363,13 @@ export function AppSidebarSuper({
                          <AddActionBtn
                           resourceName="Dynamic Options"
                           addApiUrl="/broker-options"
+                        />
+                        )}
+
+                        {isLearningCenter && (
+                          <AddActionBtn
+                          resourceName="Learning Center"
+                          addApiUrl="/info-sections"
                         />
                         )}
                       </div>

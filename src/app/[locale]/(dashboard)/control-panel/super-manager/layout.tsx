@@ -85,7 +85,13 @@ export default async function SuperManagerLayout({
     name: 'Challenge Placeholders',
     url: '/en/control-panel/super-manager/challenge-placeholders',
     icon: 'LayoutTemplate'
+  },
+  {
+    name: 'Learning Center',
+    url: '/en/control-panel/super-manager/learning-center',
+    icon: 'Book'
   }
+
 ]
 
   const sidebarI18nLinks = [
