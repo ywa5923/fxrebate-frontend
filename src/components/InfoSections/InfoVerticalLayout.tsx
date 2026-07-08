@@ -1,6 +1,6 @@
-import { InfoSection } from "@/types/InfoSections";
+import { InfoSection } from "@/types/InfoSection";
 import { cn } from "@/lib/utils";
-import { InfoSectionContent } from "./OptionInfoSectionsShared";
+import { InfoSectionContent } from "./InfoSectionsShared";
 
 const GRID_COLS_CLASS: Record<1 | 2 | 3, string> = {
   1: "md:grid-cols-1",

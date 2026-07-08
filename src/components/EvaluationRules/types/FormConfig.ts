@@ -1,3 +1,4 @@
+import { InfoSection } from "@/types/InfoSection";
 export interface EvaluationFieldOption {
   value: number;
   label: string;
@@ -37,4 +38,5 @@ export interface EvaluationFormConfig {
   description: string;
   sections?: EvaluationFormSections;
   fields?: EvaluationFields;
+  info_sections:Record<string, InfoSection[]>;
 }

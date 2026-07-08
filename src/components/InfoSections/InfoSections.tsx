@@ -9,14 +9,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { InfoSection } from "@/types/InfoSections";
+import { InfoSection } from "@/types/InfoSection";
 import { cn } from "@/lib/utils";
 import { InfoHorizontalLayout } from "./InfoHorizontalLayout";
 import { InfoVerticalLayout, getVerticalDialogMaxWidthClass } from "./InfoVerticalLayout";
 import {
   getVisibleSections,
   type InfoSectionsLayout,
-} from "./OptionInfoSectionsShared";
+} from "./InfoSectionsShared";
 
 type Props = {
   infoSections: InfoSection[];
@@ -26,7 +26,7 @@ type Props = {
   className?: string;
 };
 
-export function OptionInfoSections({
+export function InfoSections({
   infoSections,
   optionName,
   isAdmin,

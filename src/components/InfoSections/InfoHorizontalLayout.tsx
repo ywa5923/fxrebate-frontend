@@ -1,6 +1,6 @@
-import { InfoSection } from "@/types/InfoSections";
+import { InfoSection } from "@/types/InfoSection";
 import { cn } from "@/lib/utils";
-import { InfoSectionContent } from "./OptionInfoSectionsShared";
+import { InfoSectionContent } from "./InfoSectionsShared";
 
 type Props = {
   sections: InfoSection[];

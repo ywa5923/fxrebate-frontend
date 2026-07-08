@@ -37,7 +37,7 @@ import { buildDefaultValues } from "./buildDefaultValues";
 import { getInitialCopiedSlugs } from "./getInitialCopiedSlugs";
 import { copyBrokerValueToPublic } from "./copyBrokerValueToPublic";
 import { renderFormField } from "./renderFormField";
-import { OptionInfoSections } from "./OptionInfoSections";
+import { InfoSections } from "@/components/InfoSections";
 
 interface Props {
   broker_id: number;
@@ -363,7 +363,7 @@ export function OptionsForm({
                         )}
                         {option.info_sections &&
                           option.info_sections.length > 0 && (
-                            <OptionInfoSections
+                            <InfoSections
                               layout = {option.info_section_layout}
                               isAdmin={is_admin}
                               infoSections={option.info_sections}

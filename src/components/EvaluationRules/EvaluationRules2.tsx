@@ -37,6 +37,7 @@ import logger from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import PreviousValues from "./PreviousValues";
 import BrokerValue from "./BrokerValue";
+import { InfoSections } from "@/components/InfoSections";
 type Props = {
   formConfig: EvaluationFormConfig;
   brokerId: number;
@@ -210,7 +211,7 @@ export default function EvaluationRules2({
     const selectedOption = fieldConfig.options.find(
       (o) => String(o.value) === String(selectedValue),
     );
-
+    const infoSectionsForField = formConfig.info_sections[name];
     const optionDescription = selectedOption?.description ?? "";
 
     const showGetter = selectedOption?.is_getter == 1;
@@ -241,7 +242,17 @@ export default function EvaluationRules2({
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>{fieldConfig.label}
               {isRequired ? <span className="text-destructive ml-0.5" aria-hidden>*</span> : null}
+              {infoSectionsForField && infoSectionsForField.length > 0 && (
+              <InfoSections 
+              infoSections={infoSectionsForField} 
+              optionName={fieldConfig.label} 
+              isAdmin={is_admin} 
+              layout="horizontal" 
+              className="ml-2"
+              />
+            )}
             </FieldLabel>
+            
             {optionDescription && <FieldDescription>{optionDescription}</FieldDescription>}
             <Select
               value={

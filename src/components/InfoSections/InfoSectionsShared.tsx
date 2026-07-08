@@ -1,5 +1,5 @@
 import { ArrowDown } from "lucide-react";
-import { InfoSection, InfoSectionItem } from "@/types/InfoSections";
+import { InfoSection, InfoSectionItem } from "@/types/InfoSection";
 import { cn } from "@/lib/utils";
 
 export type InfoSectionsLayout = "vertical" | "horizontal";
