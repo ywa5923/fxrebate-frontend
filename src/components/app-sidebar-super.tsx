@@ -101,7 +101,7 @@ const iconMap: Record<string, LucideIcon> = {
   CheckCircle,
 }
 
-type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission'| 'brokerGroupPermission' | null;
+type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoCountryPermission' | 'seoZonePermission' | 'translatorCountryPermission'| 'brokerGroupPermission' |'translatorZonePermission' | null;
 
 export function AppSidebarSuper({ 
   userLinks = [], 
@@ -235,6 +235,8 @@ export function AppSidebarSuper({
                                   onOpenClose={() => setActiveDialog(null)}
                                 />
 
+                                
+
                             <DropdownMenuItem onSelect={(e) => {
                                      e.preventDefault();
                                   setActiveDialog("zoneTypePermission");
@@ -251,29 +253,56 @@ export function AppSidebarSuper({
 
                                  <DropdownMenuItem onSelect={(e) => {
                                      e.preventDefault();
-                                  setActiveDialog("seoTypePermission");
+                                  setActiveDialog("seoCountryPermission");
                                  }}>
-                               <Plus className="mr-2 h-4 w-4" /> Create SEO Type Permission
+                               <Plus className="mr-2 h-4 w-4" /> Create SEO Country Permission
                               </DropdownMenuItem>
                               <DialogAddBtn
-                                  resourceName="SEO Type Permission"
-                                  addApiUrl="/user-permissions/seo"
-                                  formConfigApiUrl="/user-permissions/form-config/seo"
-                                  open={activeDialog === "seoTypePermission"}
+                                  resourceName="SEO Country Permission"
+                                  addApiUrl="/user-permissions/seo_country"
+                                  formConfigApiUrl="/user-permissions/form-config/seo_country"
+                                  open={activeDialog === "seoCountryPermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+
+                               <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("seoZonePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create SEO Zone Permission
+                              </DropdownMenuItem>
+                              <DialogAddBtn
+                                  resourceName="SEO Zone Permission"
+                                  addApiUrl="/user-permissions/seo_zone"
+                                  formConfigApiUrl="/user-permissions/form-config/seo_zone"
+                                  open={activeDialog === "seoZonePermission"}
                                   onOpenClose={() => setActiveDialog(null)}
                                 />
 
                                  <DropdownMenuItem onSelect={(e) => {
                                      e.preventDefault();
-                                  setActiveDialog("translatorTypePermission");
+                                  setActiveDialog("translatorCountryPermission");
                                  }}>
-                               <Plus className="mr-2 h-4 w-4" /> Create Translator Type Permission
+                               <Plus className="mr-2 h-4 w-4" /> Create Translator Country Permission
                               </DropdownMenuItem>
                               <DialogAddBtn 
-                                  resourceName="Translator Type Permission"
-                                  addApiUrl="/user-permissions/translator"
-                                  formConfigApiUrl="/user-permissions/form-config/translator"
-                                  open={activeDialog === "translatorTypePermission"}
+                                  resourceName="Translator Country Permission"
+                                  addApiUrl="/user-permissions/translator_country"
+                                  formConfigApiUrl="/user-permissions/form-config/translator_country"
+                                  open={activeDialog === "translatorCountryPermission"}
+                                  onOpenClose={() => setActiveDialog(null)}
+                                />
+                                <DropdownMenuItem onSelect={(e) => {
+                                     e.preventDefault();
+                                  setActiveDialog("translatorZonePermission");
+                                 }}>
+                               <Plus className="mr-2 h-4 w-4" /> Create Translator Zone Permission
+                              </DropdownMenuItem>
+                              <DialogAddBtn 
+                                  resourceName="Translator Zone Permission"
+                                  addApiUrl="/user-permissions/translator_zone"
+                                  formConfigApiUrl="/user-permissions/form-config/translator_zone"
+                                  open={activeDialog === "translatorZonePermission"}
                                   onOpenClose={() => setActiveDialog(null)}
                                 />
 
@@ -322,6 +351,7 @@ export function AppSidebarSuper({
                   const isDynamicOptions = link.name === 'Dynamic Options';
                   const isLearningCenter = link.name === 'Learning Center';
                   const isEvaluationRules = link.name === 'Evaluation Rules';
+                  const isChallengeMatrixHeadears = link.name === 'Challenge Matrix Headears';
                   return (
                     <SidebarMenuItem key={link.name}>
                       <div className="flex items-center w-full">
@@ -378,6 +408,13 @@ export function AppSidebarSuper({
                           <AddActionBtn
                           resourceName="Evaluation Rules"
                           addApiUrl="/evaluation-rules2"
+                        />
+                        )}
+
+                        {isChallengeMatrixHeadears && (
+                          <AddActionBtn
+                          resourceName="Challenge Matrix Headears"
+                          addApiUrl="/challenge-matrix-headears"
                         />
                         )}
                       </div>

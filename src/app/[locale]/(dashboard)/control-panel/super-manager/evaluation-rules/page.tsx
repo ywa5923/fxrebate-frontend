@@ -7,7 +7,7 @@ import logger from '@/lib/logger';
 import {EvaluationRule} from '@/types';
 import {  SearchParams } from '@/types/SearchParams';
 import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
-import { InfoSection } from '@/types';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 

@@ -95,6 +95,11 @@ export default async function SuperManagerLayout({
     name: 'Evaluation Rules',
     url: '/en/control-panel/super-manager/evaluation-rules',
     icon: 'CheckCircle'
+  },
+  {
+    name: 'Challenge Matrix Headears',
+    url: '/en/control-panel/super-manager/challenge-matrix-headears',
+    icon: 'Table'
   }
 ]
 
