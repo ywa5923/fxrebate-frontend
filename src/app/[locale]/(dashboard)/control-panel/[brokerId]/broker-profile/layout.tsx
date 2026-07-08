@@ -31,6 +31,7 @@ import NProgressBar from '@/components/NProgressBar';
 import { getBrokerInfo } from '@/lib/auth-actions';
 import { apiClient } from '@/lib/api-client';
 import { ErrorMode, UseTokenAuth } from '@/lib/enums';
+import { isSuperAdmin } from '@/lib/permissions';
 
 
 async function getBrokerOptions2() {
@@ -75,15 +76,20 @@ export default async function DashboardLayout({
   redirect('/en');
   }
   let isBrokerManager=hasPermission(user, 'manage', 'broker', brokerId);
+  let isSuperAdminUser=isSuperAdmin(user);
+  console.log('isSuperAdminUser', isSuperAdminUser);
+  console.log('user', user);
 
   let teamManagementLink: { name: string; url: string; icon: string } | null = null;
-  if(isBrokerManager){
+  if(isBrokerManager || isSuperAdminUser){
     teamManagementLink = {
       name: 'Manage YourTeam',
       url: `/en/control-panel/${brokerId}/broker-profile/team-management`,  
       icon: "TrendingUp"
     }
   }
+
+   
 
   let optionCategoriesUrl = `/option-categories/get-list?broker_type=${brokerType}`;
   let optionCategoriesResponse = await apiClient<OptionCategory[]>(optionCategoriesUrl, UseTokenAuth.Yes, {

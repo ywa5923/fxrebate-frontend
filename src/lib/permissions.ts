@@ -73,5 +73,5 @@ export  function hasPermission(user: AuthUser, action: string, type: string, res
       let superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
       let superAdminName = process.env.SUPER_ADMIN_NAME;
       return user.user_type === 'platform_user' && user.email === superAdminEmail && user.name === superAdminName &&
-      (user?.permissions?.some(p => p.type === 'super_admin' && p.action === 'manage') || false);
+      (user?.permissions?.some(p => p.type === 'super-admin' && p.action === 'manage') || false);
   }

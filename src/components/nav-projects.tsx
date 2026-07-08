@@ -112,7 +112,7 @@ export function NavProjects({
     </SidebarGroup>
 
     {/* Settings Section */}
-    {isBrokerManager && teamManagementLink && (
+    {  teamManagementLink && (
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarGroupLabel>Settings</SidebarGroupLabel>
         <SidebarMenu>
