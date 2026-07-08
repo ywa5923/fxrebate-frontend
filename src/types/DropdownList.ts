@@ -1,5 +1,5 @@
 export interface DropdownList {
-  id?: number;
+  id: number;
   name: string;
   slug?: string;
   description?: string;
@@ -10,7 +10,7 @@ export interface DropdownList {
 
 
 export interface DropdownListOption {
-  id?: number;
+  id: number;
   label: string;
   value: string;
 }

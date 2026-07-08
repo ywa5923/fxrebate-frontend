@@ -224,7 +224,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
                                     case "select":
                                       return <FormSelect key={fieldKey} control={form.control} name={sectionKey + "." + fieldKey} label={f?.label} placeholder={f?.placeholder ?? "Select an option"} required={f?.required}>
                                         {f.options?.map((option: XFormOption) => {
-                                          return <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
+                                          return <SelectItem key={option.value.toString()} value={option.value.toString()}>{option.label}</SelectItem>
                                         })}
                                       </FormSelect>
                                       case "multiselect":

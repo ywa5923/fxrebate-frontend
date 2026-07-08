@@ -46,6 +46,6 @@ export interface XFormField {
     sections: Record<string, XFormSection>;
   }
   export interface XFormOption {
-    value: string|number;
+    value: string|number|boolean;
     label: string;
   }

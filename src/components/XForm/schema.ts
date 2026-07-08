@@ -43,7 +43,14 @@ function generateFieldsSchema(fields: Record<string, XFormField>): Record<string
         value: z.coerce.string()
       }));
     } else if (field.type === 'array_fields') {
-      baseSchema = z.array(z.object(generateFieldsSchema(field.fields ?? {})));
+      //baseSchema = z.array(z.object(generateFieldsSchema(field.fields ?? {})));
+      //add id to the array items
+      baseSchema = z.array(
+        z.object({
+          id: z.coerce.number().optional(),
+          ...generateFieldsSchema(field.fields ?? {}),
+        }),
+      );
     } else {
       baseSchema = z.any();
     }

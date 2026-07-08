@@ -27,6 +27,7 @@ import {
   LayoutTemplate,
   Plus,
   Book,
+  CheckCircle,
   type LucideIcon
 } from "lucide-react"
 
@@ -97,6 +98,7 @@ const iconMap: Record<string, LucideIcon> = {
   Translate: Languages,
   LayoutTemplate,
   Book,
+  CheckCircle,
 }
 
 type DialogType = 'brokerTypePermission' | 'countryTypePermission' | 'zoneTypePermission' | 'seoTypePermission' | 'translatorTypePermission'| 'brokerGroupPermission' | null;
@@ -319,7 +321,7 @@ export function AppSidebarSuper({
                   const isDropdownLists = link.name === 'Dropdown Lists';
                   const isDynamicOptions = link.name === 'Dynamic Options';
                   const isLearningCenter = link.name === 'Learning Center';
-                  
+                  const isEvaluationRules = link.name === 'Evaluation Rules';
                   return (
                     <SidebarMenuItem key={link.name}>
                       <div className="flex items-center w-full">
@@ -370,6 +372,12 @@ export function AppSidebarSuper({
                           <AddActionBtn
                           resourceName="Learning Center"
                           addApiUrl="/info-sections"
+                        />
+                        )}
+                        {isEvaluationRules && (
+                          <AddActionBtn
+                          resourceName="Evaluation Rules"
+                          addApiUrl="/evaluation-rules2"
                         />
                         )}
                       </div>

@@ -90,8 +90,12 @@ export default async function SuperManagerLayout({
     name: 'Learning Center',
     url: '/en/control-panel/super-manager/learning-center',
     icon: 'Book'
+  },
+  {
+    name: 'Evaluation Rules',
+    url: '/en/control-panel/super-manager/evaluation-rules',
+    icon: 'CheckCircle'
   }
-
 ]
 
   const sidebarI18nLinks = [
