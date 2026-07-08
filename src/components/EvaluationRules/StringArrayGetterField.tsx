@@ -1,10 +1,4 @@
-import {
-  Control,
-  Controller,
-  FieldValues,
-  useFieldArray,
-  useFormState,
-} from "react-hook-form";
+import { Control, Controller, FieldValues } from "react-hook-form";
 import { Plus, X } from "lucide-react";
 import { Field, FieldContent, FieldError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -28,70 +22,84 @@ export function StringArrayGetterField({
   placeholder,
 }: StringArrayGetterFieldProps) {
   const fieldName = `${name}_getter`;
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: fieldName,
-  });
-  const { errors } = useFormState({ control, name: fieldName });
-  const rootError = errors[fieldName]?.root;
-
-  
 
   return (
-    <Field data-invalid={!!rootError}>
-      <FieldContent className="space-y-2">
-        {fields.map((item, index) => (
-          <Controller
-            key={item.id}
-            control={control}
-            name={`${fieldName}.${index}`}
-            render={({ field, fieldState }) => (
-              <>
-                <InputGroup>
-                  <InputGroupInput
-                    {...field}
-                    value={field.value != null ? String(field.value) : ""}
-                    aria-invalid={fieldState.invalid}
-                    placeholder={placeholder ?? undefined}
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() => remove(index)}
-                      aria-label="Remove item"
-                    >
-                      <X className="h-4 w-4" />
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
+    <Controller
+      control={control}
+      name={fieldName}
+      render={({ field, fieldState }) => {
+        const items =
+          Array.isArray(field.value) && field.value.length > 0
+            ? field.value.map((v) => (v != null ? String(v) : ""))
+            : [""];
+
+        const updateItem = (index: number, value: string) => {
+          const next = [...items];
+          next[index] = value;
+          field.onChange(next);
+        };
+
+        const removeItem = (index: number) => {
+          const next = items.filter((_, i) => i !== index);
+          field.onChange(next.length > 0 ? next : [""]);
+        };
+
+        const addItem = () => {
+          field.onChange([...items, ""]);
+        };
+
+        return (
+          <Field className="mt-2" data-invalid={fieldState.invalid}>
+            <FieldContent className="space-y-2">
+              {items.map((item, index) => (
+                <div key={`${fieldName}-${index}`}>
+                  <InputGroup>
+                    <InputGroupInput
+                      value={item}
+                      onChange={(e) => updateItem(index, e.target.value)}
+                      onBlur={field.onBlur}
+                      placeholder={placeholder ?? undefined}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => removeItem(index)}
+                        aria-label="Remove item"
+                      >
+                        <X className="h-4 w-4" />
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                title="Add another item"
+                aria-label="Add another item"
+                onClick={addItem}
+                className={cn(
+                  "h-9 w-full justify-center gap-2 border border-dashed",
+                  "border-muted-foreground/30 text-muted-foreground",
+                  "hover:border-muted-foreground/50 hover:bg-muted/50 hover:text-foreground",
                 )}
-              </>
-            )}
-          />
-        ))}
+              >
+                <Plus className="h-4 w-4" />
+                Add another item
+              </Button>
 
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          title="Add item"
-          aria-label="Add item"
-          className={cn(
-            "h-7 w-7 shrink-0 rounded border transition-all duration-150",
-            "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
-            "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
-          )}
-          onClick={() => append("")}
-        >
-          <Plus className="h-3.5 w-3.5" /> 
-        </Button>
-
-        {rootError && <FieldError errors={[rootError]} />}
-      </FieldContent>
-    </Field>
+              {fieldState.error && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </FieldContent>
+          </Field>
+        );
+      }}
+    />
   );
 }

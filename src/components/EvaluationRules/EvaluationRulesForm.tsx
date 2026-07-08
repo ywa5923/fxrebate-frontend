@@ -6,7 +6,7 @@ import {
 } from "./types";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { StringArrayGetterField2 } from "./StringArrayGetterField2";
+import { StringArrayGetterField } from "./StringArrayGetterField";
 import { z } from "zod";
 import buildDefaultFormValues from "./buildDefaultFormValues";
 import getFormSchema from "./getFormSchema";
@@ -68,13 +68,13 @@ const SELECT_EMPTY_VALUE = "_none_";
 //     "updated_at": "2026-03-20T12:47:25.000000Z"
 // },
 
-export default function EvaluationRules2({
+export default function EvaluationRulesForm({
   formConfig,
   brokerId,
   is_admin,
   evaluationRules,
 }: Props) {
-  const thisLogger = logger.child("EvaluationRules2" );
+  const thisLogger = logger.child("EvaluationRulesForm" );
   const fields = getFormFields(formConfig);
   const router = useRouter();
   const formSchema = getFormSchema(formConfig);
@@ -368,7 +368,7 @@ export default function EvaluationRules2({
         />
       )}
       {showGetter && getterType === "string_array" && (
-        <StringArrayGetterField2
+        <StringArrayGetterField
           name={name}
           control={form.control}
           placeholder={getterPlaceholder}

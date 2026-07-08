@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { InfoSection } from "@/types/InfoSection";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoHorizontalLayout } from "./InfoHorizontalLayout";
 import { InfoVerticalLayout, getVerticalDialogMaxWidthClass } from "./InfoVerticalLayout";
 import {
@@ -72,7 +73,7 @@ export function InfoSections({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={cn("max-h-[85vh] overflow-y-auto", dialogMaxWidthClass)}
+        className={cn("max-h-[85vh] overflow-y-hidden", dialogMaxWidthClass)}
       >
         {optionName ? (
           <DialogHeader className="gap-0 pb-1">
@@ -103,14 +104,18 @@ export function InfoSections({
             </div>
           </DialogHeader>
         ) : null}
-        {layout === "horizontal" ? (
-          <InfoHorizontalLayout
-            sections={visibleSections}
-            isAdmin={isAdmin}
-          />
-        ) : (
-          <InfoVerticalLayout sections={visibleSections} isAdmin={isAdmin} />
-        )}
+        <ScrollArea className="max-h-[70vh]">
+          <div className="px-4 py-1 pr-6">
+            {layout === "horizontal" ? (
+              <InfoHorizontalLayout
+                sections={visibleSections}
+                isAdmin={isAdmin}
+              />
+            ) : (
+              <InfoVerticalLayout sections={visibleSections} isAdmin={isAdmin} />
+            )}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
