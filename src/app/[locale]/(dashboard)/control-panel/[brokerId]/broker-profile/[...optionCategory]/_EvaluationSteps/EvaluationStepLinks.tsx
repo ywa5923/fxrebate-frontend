@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Url} from "@/types/Url";
-import { LinkGroup, LinksGroupedByType, LinksOptions } from "@/types/AccountTypeLinks";
+import { LinkGroup, LinksGroupedByType, LinksOptions, EntityTypeLinks } from "@/types/TypeLinks";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
@@ -79,10 +79,10 @@ function getFormHeaderWrapperClassName(isEditing: boolean): string {
   return cn("rounded-md border border-dashed px-4 py-3.5", softBorder, tint);
 }
 
-export default function AccountLinks({
+export default function EvaluationStepLinks({
   broker_id,
-  account_type_id,
-  account_type_name,
+  evaluation_step_id,
+  evaluation_step_name,
   links,
   master_links,
   links_groups,
@@ -90,8 +90,8 @@ export default function AccountLinks({
   is_admin,
 }: {
   broker_id: number;
-  account_type_id: number;
-  account_type_name: string;
+  evaluation_step_id: number;
+  evaluation_step_name: string;
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
   links_groups: string[];
@@ -103,7 +103,7 @@ export default function AccountLinks({
   const [openAccordion, setOpenAccordion] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState<{
     id: number;
-    account_type_id: number | null;
+    evaluation_step_id: number | null;
     broker_id: number;
   } | null>(null);
 
@@ -111,7 +111,7 @@ export default function AccountLinks({
     () => new Set(),
   );
 
-  const thisLogger = logger.child("AccountLinks");
+  const thisLogger = logger.child("EvaluationStepLinks");
 
   const form = useForm<z.infer<typeof LinkFormSchema>>({
     resolver: zodResolver(LinkFormSchema as any),
@@ -181,7 +181,7 @@ export default function AccountLinks({
       const payload = {
         ...(editingLink ? { id: editingLink.id } : { id: null }),
         broker_id,
-        account_type_id: data.is_master ? null : account_type_id,
+        entity_type_id: data.is_master ? null : evaluation_step_id,
         url_type: data.type,
         name: data.name,
         url: data.url,
@@ -189,8 +189,8 @@ export default function AccountLinks({
       };
 
      const serverUrl = editingLink
-      ? `/account-type/broker/${broker_id}/url/${editingLink.id}`
-      : `/account-type/broker/${broker_id}/url`;
+      ? `/evaluation-step/broker/${broker_id}/url/${editingLink.id}`
+      : `/evaluation-step/broker/${broker_id}/url`;
   
       const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: editingLink ? "PUT" : "POST",
@@ -203,12 +203,12 @@ export default function AccountLinks({
         );
       } else {
         toast.error(response.message ?? "Failed to save link");
-        thisLogger.error("Failed to save link", { error:response.message, context: { payload,broker_id, account_type_id } });
+        thisLogger.error("Failed to save link", { error:response.message, context: { payload,broker_id, evaluation_step_id } });
       }
       
     } catch (error) {
       toast.error("Failed to save link");
-      thisLogger.error("Failed to save link", { error:error, context: { broker_id, account_type_id } });
+      thisLogger.error("Failed to save link", { error:error, context: { broker_id, evaluation_step_id } });
     }
     closeForm();
   }
@@ -220,7 +220,7 @@ export default function AccountLinks({
     const linksOptionsForType = linksOptions[type as LinkGroup] ?? [];
     form.reset({
       url: "",
-      name: linksOptionsForType.length > 0 ? "" : account_type_name,
+      name: linksOptionsForType.length > 0 ? "" : evaluation_step_name,
       type,
       is_master: false,
     });
@@ -228,12 +228,12 @@ export default function AccountLinks({
 
   async function handleDeleteClick(
     link_id: number,
-    account_type_id: number | null,
+    evaluation_step_id: number | null,
     broker_id: number
   ) {
     try {
      
-      const serverUrl = `/account-type/broker/${broker_id}/url/${link_id}`;
+      const serverUrl = `/evaluation-step/broker/${broker_id}/url/${link_id}`;
       const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: "DELETE",
       });
@@ -242,20 +242,20 @@ export default function AccountLinks({
         toast.success("Link deleted successfully!");
       } else {
         toast.error(response.message ?? "Failed to delete link");
-          thisLogger.error("Failed to delete link", { error:response.message, context: { broker_id, account_type_id } });
+          thisLogger.error("Failed to delete link", { error:response.message, context: { broker_id, evaluation_step_id } });
       }
      
     } catch (error) {
       toast.error("Failed to delete link");
-      thisLogger.error("Failed to delete link", { error:error, context: { broker_id, account_type_id } });
+      thisLogger.error("Failed to delete link", { error:error, context: { broker_id, evaluation_step_id } });
     }
   }
 
   // Count updated links by type
   function countUpdatedLinks(type: string): number {
-    const accountLinks = (links as LinksGroupedByType)[type] || [];
+    const evaluationStepLinks = (links as LinksGroupedByType)[type] || [];
     const masterLinksForType = (master_links as LinksGroupedByType)[type] || [];
-    return [...accountLinks, ...masterLinksForType].filter(
+    return [...evaluationStepLinks, ...masterLinksForType].filter(
       (link) => link.is_updated_entry === 1
     ).length;
   }
@@ -263,10 +263,10 @@ export default function AccountLinks({
   // Render links for a group
   function renderLinks(
     type: LinkGroup,
-    accountLinks: Url[] = [],
+    evaluationStepLinks: Url[] = [],
     masterLinks: Url[] = []
   ) {
-    const allLinks = [...accountLinks, ...masterLinks];
+    const allLinks = [...evaluationStepLinks, ...masterLinks];
 
     if (allLinks.length === 0) {
       return <div className="text-muted-foreground text-xs">No links</div>;
@@ -345,7 +345,7 @@ export default function AccountLinks({
                   size="icon"
                   className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
                   onClick={() =>
-                    setConfirmDelete({ id: link.id, account_type_id, broker_id })
+                    setConfirmDelete({ id: link.id, evaluation_step_id, broker_id })
                   }
                   title="Delete"
                   aria-label="Delete link"
@@ -423,9 +423,9 @@ export default function AccountLinks({
                     ? "Update the link details for the "
                     : "Create a new link for the "}
                   <span className="font-medium text-foreground">
-                    {account_type_name}
+                    {evaluation_step_name}
                   </span>{" "}
-                  account type.
+                  evaluation step.
                 </p>
               </div>
               {linkTypeOptions.length > 0 ? (
@@ -593,11 +593,11 @@ export default function AccountLinks({
           </svg>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-              Account Type Links For {account_type_name}
+              Evaluation Step Links For {evaluation_step_name}
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                Manage account-specific links
+                Manage evaluation step-specific links
               </span>
               <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -705,7 +705,7 @@ export default function AccountLinks({
                 if (confirmDelete) {
                   await handleDeleteClick(
                     confirmDelete.id,
-                    confirmDelete.account_type_id,
+                    confirmDelete.evaluation_step_id,
                     confirmDelete.broker_id
                   );
                   setConfirmDelete(null);

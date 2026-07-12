@@ -8,7 +8,7 @@ import { OptionValue } from "@/types";
 //import { getCompanies } from "@/lib/getCompanies";
 //import Companies from "./Companies";
 //import { getAccountTypes } from "@/lib/getAccountTypes";
-import Accounts from "./Accounts";
+
 //import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 
 import BrokerOptions from "./BrokerOptions";
@@ -21,7 +21,7 @@ import Rebates from "./Rebates";
 //import { getDynamicTable } from "@/lib/getDynamicTable";
 import Promotions from "./Promotions";
 import Contests from "./Contests";
-import EvaluationSteps from "./EvaluationSteps";
+
 //import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
 import { ChallengeType } from "@/types/ChallengeType";
@@ -33,14 +33,17 @@ import { apiClient } from "@/lib/api-client";
 import { MatrixHeaders } from "@/types/Matrix";
 
 import { DynamicTableRow } from "@/types";
-import { AccountTypeLinks } from "@/types/AccountTypeLinks";
+
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { canAdminBroker } from "@/lib/auth-actions";
 import Companies from "./Companies";
-import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
-import { AffiliateLinksData } from "@/types/Url";
+//import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
+//import { AffiliateLinksData } from "@/types/Url";
 import { DefaultChallengeCategoriesData } from "@/types/ChallengeType";
 import { EmptyStateWithAction } from "@/components/EmptyStateWithAction";
+import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
+import { MyAccountLinks } from "./_AccountLinks";
+import { MyReferalsAndNotes } from "./_ReferalsAndNotes";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -168,53 +171,12 @@ export default async function BrokerProfilePage({
     );
   }
   if (categorySlug == "my-trading-accounts") {
-    let accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
-    let accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
-
-    const [accountTypesLinksResponse, accountTypesResponse] = await Promise.all(
-      [
-        apiClient<AccountTypeLinks>(
-          accountTypesLinksFetchUrl,
-          UseTokenAuth.Yes,
-          { method: "GET", cache: "no-store" },
-          ErrorMode.Return,
-        ),
-        apiClient<DynamicTableRow[]>(
-          accountTypesFetchUrl,
-          UseTokenAuth.Yes,
-          { method: "GET", cache: "no-store" },
-          ErrorMode.Return,
-        ),
-      ],
-    );
-    if (!accountTypesLinksResponse.success || !accountTypesResponse.success) {
-      log.error("Error fetching account types links or account types", {
-        context: {
-          accountTypesLinks: accountTypesLinksResponse.message,
-          accountTypes: accountTypesResponse.message,
-        },
-      });
-      notFound();
-    }
-    const accountTypesLinks = accountTypesLinksResponse.data ?? null;
-    const accountTypes = accountTypesResponse.data ?? [];
-
-    return (
-      <Accounts
-        broker_id={brokerId}
-        accounts={accountTypes}
-        options={matchedCategory.options as Option[]}
-        is_admin={is_admin}
-        linksGroupedByAccountId={
-          accountTypesLinks?.links_grouped_by_account_id ?? {}
-        }
-        masterLinksGroupedByType={
-          accountTypesLinks?.master_links_grouped_by_type ?? {}
-        }
-        linksGroups={accountTypesLinks?.links_groups ?? []}
-        linksOptions={accountTypesLinks?.links_options ?? {}}
-      />
-    );
+    
+    return (<MyAccountLinks
+      brokerId={brokerId}
+      accountOptions={matchedCategory.options as Option[]}
+      is_admin={is_admin}
+    />)
   }
 
   if (categorySlug == "promotions") {
@@ -275,31 +237,11 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug === "evaluation-steps") {
-    const evaluationStepsFetchUrl = `/evaluation-steps/${brokerId}`;
-    const evaluationStepsResponse = await apiClient<DynamicTableRow[]>(
-      evaluationStepsFetchUrl,
-      UseTokenAuth.No,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!evaluationStepsResponse.success) {
-      log.error("Error fetching evaluation steps", {
-        context: { evaluationSteps: evaluationStepsResponse.message },
-      });
-      notFound();
-    }
-    const evaluationSteps = evaluationStepsResponse.data ?? [];
-
-    return (
-      <EvaluationSteps
-        broker_id={brokerId}
-        evaluationSteps={evaluationSteps}
-        options={matchedCategory.options as Option[]}
-        is_admin={is_admin}
-      />
-    );
+    return (<MyEvaluationSteps
+      brokerId={brokerId}
+      evaluationOptions={matchedCategory.options as Option[]}
+      is_admin={is_admin}
+    />)
   }
 
   if (categorySlug == "challenge-matrix") {
@@ -414,57 +356,63 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "referral-links-and-notes") {
-    let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
-    let notesOptionsValuesResponse = await apiClient<OptionValue[]>(
-      optionsValuesFetchUrl,
-      true,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!notesOptionsValuesResponse.success) {
-      log.error("Error fetching notes options values", {
-        context: { notesOptionsValues: notesOptionsValuesResponse.message },
-      });
-      notFound();
-    }
-    let notesOptionsValues = notesOptionsValuesResponse.data ?? [];
+    // let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
+    // let notesOptionsValuesResponse = await apiClient<OptionValue[]>(
+    //   optionsValuesFetchUrl,
+    //   true,
+    //   {
+    //     method: "GET",
+    //     cache: "no-store",
+    //   },
+    // );
+    // if (!notesOptionsValuesResponse.success) {
+    //   log.error("Error fetching notes options values", {
+    //     context: { notesOptionsValues: notesOptionsValuesResponse.message },
+    //   });
+    //   notFound();
+    // }
+    // let notesOptionsValues = notesOptionsValuesResponse.data ?? [];
 
-    let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
-    let referralLinksResponse = await apiClient<AffiliateLinksData>(
-      referralLinksFetchUrl,
-      UseTokenAuth.No,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!referralLinksResponse.success) {
-      log.error("Error fetching referral links", {
-        context: { referralLinks: referralLinksResponse.message },
-      });
-      notFound();
-    }
-    if (!referralLinksResponse.data?.account_types) {
-      log.error("No account types found", {
-        context: { referralLinks: referralLinksResponse.message },
-      });
-      throw new Error("No account types found");
-    }
+    // let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
+    // let referralLinksResponse = await apiClient<AffiliateLinksData>(
+    //   referralLinksFetchUrl,
+    //   UseTokenAuth.No,
+    //   {
+    //     method: "GET",
+    //     cache: "no-store",
+    //   },
+    // );
+    // if (!referralLinksResponse.success) {
+    //   log.error("Error fetching referral links", {
+    //     context: { referralLinks: referralLinksResponse.message },
+    //   });
+    //   notFound();
+    // }
+    // if (!referralLinksResponse.data?.account_types) {
+    //   log.error("No account types found", {
+    //     context: { referralLinks: referralLinksResponse.message },
+    //   });
+    //   throw new Error("No account types found");
+    // }
 
-    return (
-      <ReferalLinksAndNotes
-        is_admin={is_admin}
-        brokerId={brokerId}
-        accountTypes={referralLinksResponse.data?.account_types ?? []}
-        currencyList={referralLinksResponse.data.currency_list}
-        IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []}
-        SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []}
-        notesOptions={matchedCategory.options as Option[]}
-        notesOptionsValues={notesOptionsValues}
-      />
-    );
+    // return (
+    //   <ReferalLinksAndNotes
+    //     is_admin={is_admin}
+    //     brokerId={brokerId}
+    //     accountTypes={referralLinksResponse.data?.account_types ?? []}
+    //     currencyList={referralLinksResponse.data.currency_list}
+    //     IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []}
+    //     SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []}
+    //     notesOptions={matchedCategory.options as Option[]}
+    //     notesOptionsValues={notesOptionsValues}
+    //   />
+    // );
+    return (<MyReferalsAndNotes
+      brokerId={brokerId}
+      notesOptions={matchedCategory.options as Option[]}
+      optionCategoryId={categoryId}
+      is_admin={is_admin}
+    />)
   }
 
   if (categorySlug == "rebates") {

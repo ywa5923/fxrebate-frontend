@@ -58,7 +58,7 @@ export async function apiClient<T>(
     });
 
     
-    if (!response.ok ) {
+    if (!response.ok || serverJsonResponse?.success === false ) {
      
       let message = serverJsonResponse?.message ?? `Request failed with status ${status}`;
     

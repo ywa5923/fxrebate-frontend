@@ -12,10 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import AccountLinks from "./AccountLinks";
 import {
   LinkGroup,
-  LinksGroupedByAccountId,
+  LinksGroupedByEntityId,
   LinksGroupedByType,
   LinksOptions,
-} from "@/types/AccountTypeLinks";
+} from "@/types/TypeLinks";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ interface AccountsProps {
   accounts?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
-  linksGroupedByAccountId: LinksGroupedByAccountId;
+  linksGroupedByEntityId: LinksGroupedByEntityId;
   masterLinksGroupedByType: LinksGroupedByType;
   linksGroups: LinkGroup[];
   linksOptions: LinksOptions;
@@ -65,7 +65,7 @@ export default function Accounts({
   accounts = [],
   options,
   is_admin = false,
-  linksGroupedByAccountId,
+  linksGroupedByEntityId,
   masterLinksGroupedByType,
   linksGroups,
   linksOptions,
@@ -298,7 +298,7 @@ export default function Accounts({
                     (option) => option.option_slug === "account_type_name",
                   )?.value ?? ""
                 }
-                links={linksGroupedByAccountId[account.id] ?? {}}
+                links={linksGroupedByEntityId[account.id] ?? {}}
                 master_links={masterLinksGroupedByType}
                 links_groups={linksGroups}
                 linksOptions={linksOptions}
