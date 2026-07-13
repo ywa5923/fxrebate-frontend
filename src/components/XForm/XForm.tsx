@@ -151,6 +151,8 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
   });
  
   const { isDirty, isValid, isSubmitting } = form.formState;
+
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     //if second param is true, it will skip empty values si empty values are not sent to the server
    let formFlatData = flattenObject(data);
@@ -178,7 +180,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
    
     toast.success(method === 'POST' ? "Item created successfully" : "Item updated successfully");
 
-    mode=='create'&&router.refresh();
+    router.refresh();
 
     if(onSubmitted){
       //call the onSubmitted function to cloase the modal form by setting the open state to false

@@ -16,11 +16,12 @@ import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { FormBase } from "./form-components";
 import { FormControlFunc } from "./types";
+import { XFormOption as MultiSelectOption} from "@/types/xform";
 
-interface MultiSelectOption {
-  value: string | number;
-  label: string;
-}
+// interface MultiSelectOption {
+//   value: string | number | boolean;
+//   label: string;
+// }
 
 interface MultiSelectResponse {
   data?: MultiSelectOption[];
