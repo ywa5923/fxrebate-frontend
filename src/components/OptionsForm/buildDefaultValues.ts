@@ -35,7 +35,7 @@ export function buildDefaultValues(
   
         case "multiple_select":
         case "country_multiple_select":
-          return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
+          return { ...acc, [option.slug]: fieldValue ? fieldValue.split("#-#") : [] };
   
         case "notes":
           return { ...acc, [option.slug]: fieldValue ? fieldValue.split("#-#") : [""] };
