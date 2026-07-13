@@ -91,7 +91,7 @@ export default function EvaluationStepLinks({
 }: {
   broker_id: number;
   evaluation_step_id: number;
-  evaluation_step_name: string;
+  evaluation_step_name: string|null;
   links: LinksGroupedByType | {};
   master_links: LinksGroupedByType | {};
   links_groups: string[];
@@ -220,7 +220,7 @@ export default function EvaluationStepLinks({
     const linksOptionsForType = linksOptions[type as LinkGroup] ?? [];
     form.reset({
       url: "",
-      name: linksOptionsForType.length > 0 ? "" : evaluation_step_name,
+      name: linksOptionsForType.length > 0 ? "" : evaluation_step_name?? "",
       type,
       is_master: false,
     });
@@ -471,7 +471,7 @@ export default function EvaluationStepLinks({
                         Link Title
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} className="flex-1" disabled={true} />
+                        <Input {...field} className="flex-1"  />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -593,7 +593,7 @@ export default function EvaluationStepLinks({
           </svg>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-              Evaluation Step Links For {evaluation_step_name}
+             {evaluation_step_name? "Evaluation Step Links For " + evaluation_step_name : "All Links for current evaluation step"}
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm text-gray-500 dark:text-gray-400">

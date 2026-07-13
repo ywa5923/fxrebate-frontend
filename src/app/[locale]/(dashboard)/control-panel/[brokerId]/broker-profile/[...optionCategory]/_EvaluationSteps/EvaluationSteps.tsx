@@ -293,7 +293,7 @@ export default function EvaluationSteps({
               <EvaluationStepLinks
                 broker_id={broker_id}
                 evaluation_step_id={evaluationStep.id}
-                evaluation_step_name="Evaluation Step"
+                evaluation_step_name={null}
                   
                 links={linksGroupedByEvaluationStepId[evaluationStep.id] ?? {}}
                 master_links={masterLinksGroupedByType}
