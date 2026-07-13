@@ -32,7 +32,10 @@ export function copyBrokerValueToPublic({
       value: parseFloat(optionValue.value) || 0,
       unit: optionValue.metadata?.value?.unit || "",
     });
-  } else if (option?.form_type === "multiple_select") {
+  } else if (
+    option?.form_type === "multiple_select" ||
+    option?.form_type === "country_multiple_select"
+  ) {
     form.setValue(optionSlug, optionValue.value?.split("; "));
   } else if (option?.form_type === "notes") {
     form.setValue(optionSlug, optionValue.value?.split("; "));

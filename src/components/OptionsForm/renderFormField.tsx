@@ -14,6 +14,7 @@ import { FormLabel } from "@/components/ui/form";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Flag } from "@/components/Flag";
 import { getCountryCode } from "@/lib/getCountryCode";
+import { formatCountryOptionLabel } from "@/lib/formatCountryOptionLabel";
 
 export function renderFormField(
     option: Option,
@@ -145,7 +146,7 @@ export function renderFormField(
                       <span className="flex items-center gap-2">
                         <Flag
                           country={getCountryCode(metaData?.value)}
-                          
+                          className="rounded-sm"
                         />
                         {metaData?.label}
                       </span>
@@ -173,6 +174,37 @@ export function renderFormField(
 
                 // Trigger validation after selection changes
                 // setTimeout(() => form.trigger(field.slug), 100);
+              }}
+              value={
+                option.meta_data?.filter(
+                  (metaData) =>
+                    Array.isArray(formField.value) &&
+                    formField.value.includes(metaData.value),
+                ) || []
+              }
+              placeholder={
+                option.placeholder || `Select ${option.name.toLowerCase()}`
+              }
+              name={option.name}
+              id={option.slug}
+            />
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "country_multiple_select":
+        return (
+          <div>
+            <Multiselect
+              options={option.meta_data}
+              isMulti
+              classNamePrefix="react-select"
+              instanceId={option.slug}
+              formatOptionLabel={formatCountryOptionLabel}
+              onChange={(selected) => {
+                const values = selected
+                  ? selected.map((item) => item.value)
+                  : [];
+                formField.onChange(values);
               }}
               value={
                 option.meta_data?.filter(

@@ -182,6 +182,7 @@ export function buildFormSchema(options: Option[]) {
       }
 
       case "multiple_select":
+      case "country_multiple_select":
         fieldSchema =
           option.required === 1
             ? z.preprocess(

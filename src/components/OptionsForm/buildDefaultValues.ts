@@ -34,6 +34,7 @@ export function buildDefaultValues(
           return { ...acc, [option.slug]: fieldValue === "1" };
   
         case "multiple_select":
+        case "country_multiple_select":
           return { ...acc, [option.slug]: fieldValue ? fieldValue.split("; ") : [] };
   
         case "notes":
