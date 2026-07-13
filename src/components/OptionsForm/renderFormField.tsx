@@ -115,7 +115,10 @@ export function renderFormField(
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
                   option.meta_data.map((metaData: any) => (
-                    <SelectItem key={metaData?.id} value={metaData?.value}>
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
                       {metaData?.label}
                     </SelectItem>
                   ))}
@@ -142,7 +145,10 @@ export function renderFormField(
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
                   option.meta_data.map((metaData: any) => (
-                    <SelectItem key={metaData?.id} value={metaData?.value}>
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
                       <span className="flex items-center gap-2">
                         <Flag
                           country={getCountryCode(metaData?.value)}
