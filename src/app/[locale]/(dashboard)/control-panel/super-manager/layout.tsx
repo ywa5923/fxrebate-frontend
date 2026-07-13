@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { satoshi } from '@/lib/fonts';
-import '@/app/globals.css';
+//import '@/app/globals.css';
+import "flag-icons/css/flag-icons.min.css";
 import { Providers } from '@/providers/Theme';
 import { AppSidebarSuper } from "@/components/app-sidebar-super"
 

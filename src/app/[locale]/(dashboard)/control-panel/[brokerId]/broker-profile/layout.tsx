@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { satoshi } from '@/lib/fonts';
 import { Providers } from '@/providers/Theme';
 import { AppSidebar } from "@/components/app-sidebar"
-
+import "flag-icons/css/flag-icons.min.css";
 import { BASE_URL } from '@/constants';
 import { AuthUser, OptionCategory } from '@/types';
 import { isAuthenticated } from '@/lib/auth-actions';

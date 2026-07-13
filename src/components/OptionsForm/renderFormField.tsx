@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Flag } from "@/components/Flag";
 
 export function renderFormField(
     option: Option,
@@ -114,6 +115,42 @@ export function renderFormField(
                   option.meta_data.map((metaData: any) => (
                     <SelectItem key={metaData?.id} value={metaData?.value}>
                       {metaData?.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "country_select":
+        return (
+          <div>
+            <Select
+              onValueChange={formField.onChange}
+              defaultValue={formField.value}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    option.placeholder || `Select ${option.name.toLowerCase()}`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {option.meta_data &&
+                  Array.isArray(option.meta_data) &&
+                  option.meta_data.map((metaData: any) => (
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Flag
+                          country={metaData?.value}
+                          className="rounded-sm"
+                        />
+                        {metaData?.label}
+                      </span>
                     </SelectItem>
                   ))}
               </SelectContent>
