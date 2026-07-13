@@ -13,6 +13,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Flag } from "@/components/Flag";
+import { getCountryCode } from "@/lib/getCountryCode";
 
 export function renderFormField(
     option: Option,
@@ -100,7 +101,7 @@ export function renderFormField(
           <div>
             <Select
               onValueChange={formField.onChange}
-              defaultValue={formField.value}
+              value={formField.value ?? undefined}
             >
               <SelectTrigger>
                 <SelectValue
@@ -126,8 +127,8 @@ export function renderFormField(
         return (
           <div>
             <Select
+              value={formField.value ?? undefined}
               onValueChange={formField.onChange}
-              defaultValue={formField.value}
             >
               <SelectTrigger>
                 <SelectValue
@@ -140,14 +141,11 @@ export function renderFormField(
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
                   option.meta_data.map((metaData: any) => (
-                    <SelectItem
-                      key={metaData?.id ?? metaData?.value}
-                      value={metaData?.value}
-                    >
+                    <SelectItem key={metaData?.id} value={metaData?.value}>
                       <span className="flex items-center gap-2">
                         <Flag
-                          country={metaData?.value}
-                          className="rounded-sm"
+                          country={getCountryCode(metaData?.value)}
+                          
                         />
                         {metaData?.label}
                       </span>
