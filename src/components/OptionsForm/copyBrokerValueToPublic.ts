@@ -36,7 +36,8 @@ export function copyBrokerValueToPublic({
     option?.form_type === "multiple_select" ||
     option?.form_type === "country_multiple_select" ||
     option?.form_type === "fiat_currency_multiple_select" ||
-    option?.form_type === "crypto_currency_multiple_select"
+    option?.form_type === "crypto_currency_multiple_select" ||
+    option?.form_type === "funding_method_multiple_select"
   ) {
     form.setValue(optionSlug, optionValue.value?.split("#-#"));
   } else if (option?.form_type === "notes") {

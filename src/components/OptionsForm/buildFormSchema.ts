@@ -211,6 +211,7 @@ export function buildFormSchema(options: Option[]) {
       case "country_multiple_select":
       case "fiat_currency_multiple_select":
       case "crypto_currency_multiple_select":
+      case "funding_method_multiple_select":
         fieldSchema =
           option.required === 1
             ? z.preprocess(

@@ -15,10 +15,12 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { Flag } from "@/components/Flag";
 import { FiatCurrencyIcon } from "@/components/FiatCurrencyIcon";
 import { CryptoCurrencyIcon } from "@/components/CryptoCurrencyIcon";
+import { FundingMethodIcon } from "@/components/FundingMethodIcon";
 import { getCountryCode } from "@/lib/getCountryCode";
 import { formatCountryOptionLabel } from "@/lib/formatCountryOptionLabel";
 import { formatFiatCurrencyOptionLabel } from "@/lib/formatFiatCurrencyOptionLabel";
 import { formatCryptoCurrencyOptionLabel } from "@/lib/formatCryptoCurrencyOptionLabel";
+import { formatFundingMethodOptionLabel } from "@/lib/formatFundingMethodOptionLabel";
 
 export function renderFormField(
     option: Option,
@@ -232,6 +234,39 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
+      case "funding_method_select":
+        return (
+          <div>
+            <Select
+              value={formField.value ?? undefined}
+              onValueChange={formField.onChange}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    option.placeholder || `Select ${option.name.toLowerCase()}`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {option.meta_data &&
+                  Array.isArray(option.meta_data) &&
+                  option.meta_data.map((metaData: any) => (
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
+                      <span className="flex items-center gap-2">
+                        <FundingMethodIcon method={metaData?.value} />
+                        {metaData?.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {renderOptionHistory(option)}
+          </div>
+        );
       case "multiple_select":
         return (
           <div>
@@ -337,6 +372,37 @@ export function renderFormField(
               classNamePrefix="react-select"
               instanceId={option.slug}
               formatOptionLabel={formatCryptoCurrencyOptionLabel}
+              onChange={(selected) => {
+                const values = selected
+                  ? selected.map((item) => item.value)
+                  : [];
+                formField.onChange(values);
+              }}
+              value={
+                option.meta_data?.filter(
+                  (metaData) =>
+                    Array.isArray(formField.value) &&
+                    formField.value.includes(metaData.value),
+                ) || []
+              }
+              placeholder={
+                option.placeholder || `Select ${option.name.toLowerCase()}`
+              }
+              name={option.name}
+              id={option.slug}
+            />
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "funding_method_multiple_select":
+        return (
+          <div>
+            <Multiselect
+              options={option.meta_data}
+              isMulti
+              classNamePrefix="react-select"
+              instanceId={option.slug}
+              formatOptionLabel={formatFundingMethodOptionLabel}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
