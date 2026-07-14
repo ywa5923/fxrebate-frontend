@@ -136,7 +136,7 @@ export default function EvaluationSteps({
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
-              Accounts
+              Evaluation Steps
             </h1>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               Configuration & Settings
