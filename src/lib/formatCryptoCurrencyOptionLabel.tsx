@@ -1,4 +1,5 @@
 import { CryptoCurrencyIcon } from "@/components/CryptoCurrencyIcon";
+import { getCryptoCurrencyCode } from "@/lib/getCryptoCurrencyCode";
 
 export function formatCryptoCurrencyOptionLabel(option: {
   value: string;
@@ -6,7 +7,7 @@ export function formatCryptoCurrencyOptionLabel(option: {
 }) {
   return (
     <span className="flex items-center gap-2">
-      <CryptoCurrencyIcon currency={option.value} />
+      <CryptoCurrencyIcon currency={getCryptoCurrencyCode(option.value)} />
       {option.label}
     </span>
   );

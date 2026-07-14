@@ -17,6 +17,7 @@ import { FiatCurrencyIcon } from "@/components/FiatCurrencyIcon";
 import { CryptoCurrencyIcon } from "@/components/CryptoCurrencyIcon";
 import { FundingMethodIcon } from "@/components/FundingMethodIcon";
 import { getCountryCode } from "@/lib/getCountryCode";
+import { getCryptoCurrencyCode } from "@/lib/getCryptoCurrencyCode";
 import { formatCountryOptionLabel } from "@/lib/formatCountryOptionLabel";
 import { formatFiatCurrencyOptionLabel } from "@/lib/formatFiatCurrencyOptionLabel";
 import { formatCryptoCurrencyOptionLabel } from "@/lib/formatCryptoCurrencyOptionLabel";
@@ -224,7 +225,9 @@ export function renderFormField(
                       value={metaData?.value}
                     >
                       <span className="flex items-center gap-2">
-                        <CryptoCurrencyIcon currency={metaData?.value} />
+                        <CryptoCurrencyIcon
+                          currency={getCryptoCurrencyCode(metaData?.value)}
+                        />
                         {metaData?.label}
                       </span>
                     </SelectItem>
