@@ -45,7 +45,7 @@ export function renderFormField(
                 onChange={(e) =>
                   formField.onChange({
                     ...formField.value,
-                    value: parseFloat(e.target.value),
+                    value: e.target.value,
                   })
                 }
               />
@@ -57,7 +57,6 @@ export function renderFormField(
               >
                 <SelectTrigger
                   className={cn(
-                    "w-[120px]",
                     option.required === 1 &&
                       unitError &&
                       "border-red-500 focus:border-red-500",

@@ -35,21 +35,47 @@ export function buildFormSchema(options: Option[]) {
   const schemaObject: { [key: string]: any } = {};
 
   for (const option of options) {
+    // if (option.form_type === "numberWithUnit") {
+    //   schemaObject[option.slug] =
+    //     option.required === 1
+    //       ? z.object({
+    //         value: z.number(),
+    //         unit: z.string(),
+    //       })
+    //       : z
+    //         .object({
+    //           value: z.number(),
+    //           unit: z.string(),
+    //         })
+    //         .nullable()
+    //         .optional();
+
+    //   continue;
+    // }
     if (option.form_type === "numberWithUnit") {
       schemaObject[option.slug] =
         option.required === 1
           ? z.object({
-            value: z.number(),
-            unit: z.string(),
-          })
-          : z
-            .object({
-              value: z.number(),
+              value: z.preprocess(
+                (val) => (val === "" ? null : Number(val)),
+                z.number(),
+              ),
               unit: z.string(),
             })
-            .nullable()
-            .optional();
-
+          : z
+              .object({
+                value: z.preprocess(
+                  (val) =>
+                    val === "" || val === null || val === undefined
+                      ? null
+                      : Number(val),
+                  z.number(),
+                ),
+                unit: z.string(),
+              })
+              .nullable()
+              .optional();
+    
       continue;
     }
 
