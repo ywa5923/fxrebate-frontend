@@ -35,6 +35,8 @@ export function buildDefaultValues(
   
         case "multiple_select":
         case "country_multiple_select":
+        case "fiat_currency_multiple_select":
+        case "crypto_currency_multiple_select":
           return { ...acc, [option.slug]: fieldValue ? fieldValue.split("#-#") : [] };
   
         case "notes":

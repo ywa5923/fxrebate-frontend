@@ -13,8 +13,12 @@ import { Plus, Trash2 } from "lucide-react";
 import { FormLabel } from "@/components/ui/form";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Flag } from "@/components/Flag";
+import { FiatCurrencyIcon } from "@/components/FiatCurrencyIcon";
+import { CryptoCurrencyIcon } from "@/components/CryptoCurrencyIcon";
 import { getCountryCode } from "@/lib/getCountryCode";
 import { formatCountryOptionLabel } from "@/lib/formatCountryOptionLabel";
+import { formatFiatCurrencyOptionLabel } from "@/lib/formatFiatCurrencyOptionLabel";
+import { formatCryptoCurrencyOptionLabel } from "@/lib/formatCryptoCurrencyOptionLabel";
 
 export function renderFormField(
     option: Option,
@@ -162,6 +166,72 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
+      case "fiat_currency_select":
+        return (
+          <div>
+            <Select
+              value={formField.value ?? undefined}
+              onValueChange={formField.onChange}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    option.placeholder || `Select ${option.name.toLowerCase()}`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {option.meta_data &&
+                  Array.isArray(option.meta_data) &&
+                  option.meta_data.map((metaData: any) => (
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
+                      <span className="flex items-center gap-2">
+                        <FiatCurrencyIcon currency={metaData?.value} />
+                        {metaData?.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "crypto_currency_select":
+        return (
+          <div>
+            <Select
+              value={formField.value ?? undefined}
+              onValueChange={formField.onChange}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    option.placeholder || `Select ${option.name.toLowerCase()}`
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {option.meta_data &&
+                  Array.isArray(option.meta_data) &&
+                  option.meta_data.map((metaData: any) => (
+                    <SelectItem
+                      key={metaData?.id ?? metaData?.value}
+                      value={metaData?.value}
+                    >
+                      <span className="flex items-center gap-2">
+                        <CryptoCurrencyIcon currency={metaData?.value} />
+                        {metaData?.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {renderOptionHistory(option)}
+          </div>
+        );
       case "multiple_select":
         return (
           <div>
@@ -205,6 +275,68 @@ export function renderFormField(
               classNamePrefix="react-select"
               instanceId={option.slug}
               formatOptionLabel={formatCountryOptionLabel}
+              onChange={(selected) => {
+                const values = selected
+                  ? selected.map((item) => item.value)
+                  : [];
+                formField.onChange(values);
+              }}
+              value={
+                option.meta_data?.filter(
+                  (metaData) =>
+                    Array.isArray(formField.value) &&
+                    formField.value.includes(metaData.value),
+                ) || []
+              }
+              placeholder={
+                option.placeholder || `Select ${option.name.toLowerCase()}`
+              }
+              name={option.name}
+              id={option.slug}
+            />
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "fiat_currency_multiple_select":
+        return (
+          <div>
+            <Multiselect
+              options={option.meta_data}
+              isMulti
+              classNamePrefix="react-select"
+              instanceId={option.slug}
+              formatOptionLabel={formatFiatCurrencyOptionLabel}
+              onChange={(selected) => {
+                const values = selected
+                  ? selected.map((item) => item.value)
+                  : [];
+                formField.onChange(values);
+              }}
+              value={
+                option.meta_data?.filter(
+                  (metaData) =>
+                    Array.isArray(formField.value) &&
+                    formField.value.includes(metaData.value),
+                ) || []
+              }
+              placeholder={
+                option.placeholder || `Select ${option.name.toLowerCase()}`
+              }
+              name={option.name}
+              id={option.slug}
+            />
+            {renderOptionHistory(option)}
+          </div>
+        );
+      case "crypto_currency_multiple_select":
+        return (
+          <div>
+            <Multiselect
+              options={option.meta_data}
+              isMulti
+              classNamePrefix="react-select"
+              instanceId={option.slug}
+              formatOptionLabel={formatCryptoCurrencyOptionLabel}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
