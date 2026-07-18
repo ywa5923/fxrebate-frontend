@@ -36,6 +36,7 @@
   --spacing-8xl: 1440px;
 
   --animate-marquee: marquee var(--marquee-duration, 25s) linear infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes marquee {
     from {
@@ -43,6 +44,12 @@
     }
     to {
       transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
     }
   }
 }

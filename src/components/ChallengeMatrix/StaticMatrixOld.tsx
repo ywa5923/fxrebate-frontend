@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect,  useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import CopyBtn from "@/components/ChallengeMatrix/CopyBtn";
 import { PreviousValues } from "@/components/ChallengeMatrix/PreviousValues";
-import {
-  MatrixLoadingOverlay,
-  MatrixSkeleton,
-} from "@/components/ChallengeMatrix/MatrixLoading";
-import { createEmptyMatrix } from "@/components/ChallengeMatrix/createEmptyMatrix";
 import {
   ColumnHeader,
   RowHeader,
@@ -387,11 +382,27 @@ export default function StaticMatrix({
         }
       } else {
         // Create empty matrix structure
-        const newMatrix = createEmptyMatrix({
-          rowHeaders,
-          columnHeaders,
-          type,
-          matrixPlaceholdersArray: matrix_placeholders_array,
+      
+        const newMatrix: StaticMatrixData = {};
+        rowHeaders.forEach((r, rIdx) => {
+          newMatrix[rIdx] = [];
+          columnHeaders.forEach((c) => {
+            newMatrix[rIdx].push({
+              id: null,
+              value: "",
+              public_value: "",
+              ...(type != "placeholder"
+                ? {
+                    placeholder:
+                      matrix_placeholders_array?.[r.slug + "-" + c.slug] ??
+                      null,
+                  }
+                : {}),
+              row_slug: r.slug,
+              col_slug: c.slug,
+              type: c.form_type?.name || "text",
+            });
+          });
         });
         setMatrixData(newMatrix);
         setIsEmptyMatrix(true);
@@ -711,23 +722,34 @@ export default function StaticMatrix({
     }
   };
 
+  // Show loading overlay instead of replacing entire layout
+  const renderLoadingOverlay = () => {
+    if (!loading) return null;
+    return (
+      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Loading matrix...
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   // Show empty state if no headers
   const matrixContainerClassName =
-    "relative w-full max-w-full min-w-0 px-2 sm:px-4";
+    "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 px-2 sm:px-4";
 
   if (columnHeaders.length === 0 || rowHeaders.length === 0) {
     return (
       <div className={matrixContainerClassName}>
-        <div className="mx-auto w-full max-w-[1800px]">
-        <Card className="relative">
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            {loading ? (
-              <MatrixSkeleton />
-            ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                No matrix data available
-              </div>
-            )}
+        <div className="mx-auto w-full max-w-screen-2xl">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              No matrix data available
+            </div>
           </CardContent>
         </Card>
         </div>
@@ -742,7 +764,7 @@ export default function StaticMatrix({
 
   return (
     <div className={matrixContainerClassName}>
-      <div className="mx-auto w-full max-w-[1800px]">
+      <div className="mx-auto w-full max-w-screen-2xl">
       <div className={cn("mb-4 flex flex-wrap items-center gap-3",is_admin && "justify-between",!is_admin && "justify-end")}>
         {/* Public / Draft toggle (hidden in placeholder mode) */}
         {isPublished !== null && type !== "placeholder" && is_admin && (
@@ -1247,7 +1269,7 @@ export default function StaticMatrix({
             </div>
           </div>
         </CardContent>
-      <MatrixLoadingOverlay loading={loading} />
+        {renderLoadingOverlay()}
       </Card>
       </div>
     </div>

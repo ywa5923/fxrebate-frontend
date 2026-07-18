@@ -161,7 +161,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
 
   return (
     <div className="flex items-center justify-center px-2 sm:px-4 py-6 sm:py-8">
-      <div className="w-full max-w-6xl">
+      <div className="w-full max-w-[1400px]">
         
         {/* Header */}
         <div className="text-center mb-8">
