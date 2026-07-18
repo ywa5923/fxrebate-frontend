@@ -29,21 +29,16 @@ import {
   MatrixLoadingOverlay,
   MatrixSkeleton,
 } from "@/components/ChallengeMatrix/MatrixLoading";
-import { createEmptyMatrix } from "@/components/ChallengeMatrix/createEmptyMatrix";
+import { loadMatrixData } from "@/components/ChallengeMatrix/loadMatrixData";
 import {
   ColumnHeader,
   RowHeader,
   StaticMatrixCell,
   StaticMatrixData,
-  MatrixHeaders,
 } from "@/types/Matrix";
 
 import { toast } from "sonner";
-import {
-  ChallengeMatrixExtraData,
-  ChalengeData,
-  ChallengePlaceholders,
-} from "@/types";
+import { ChallengeMatrixExtraData, ChalengeData } from "@/types";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
@@ -228,174 +223,28 @@ export default function StaticMatrix({
     setLoading(true);
 
     try {
-      const headersUrl = `/challenges/matrix/headers?language=${language}&col_group=${stepSlug}&row_group=challenge`;
-
-      const params = new URLSearchParams({
-        category_id: categoryId.toString(),
-        step_id: stepId.toString(),
+      const result = await loadMatrixData({
+        brokerId,
+        categoryId,
+        stepId,
+        stepSlug,
+        amountId,
+        zoneId,
         language,
-        ...(amountId ? { amount_id: amountId.toString() } : {}),
-        ...(zoneId !== null && zoneId !== undefined
-          ? { zone_id: zoneId.toString() }
-          : {}),
+        type,
+        is_admin,
       });
 
-      const challengeUrl =
-        type === "placeholder"
-          ? "/challenges/placeholders"
-          : `/challenges/${brokerId}`;
+      if (!result.success) return;
 
-      // Fetch headers and challenge data in parallel
-      const [headearsResponse, challengeResponse] = await Promise.all([
-        apiClient<MatrixHeaders>(
-          headersUrl,
-          UseTokenAuth.Yes,
-          {
-            method: "GET",
-          },
-          ErrorMode.Return,
-        ),
-        apiClient<ChalengeData & ChallengePlaceholders>(
-          `${challengeUrl}?${params.toString()}`,
-          true,
-          {
-            method: "GET",
-          },
-        ),
-      ]);
-
-      // Show detailed API errors only outside production
-      const isProd = process.env.NODE_ENV === "production";
-
-      if (!headearsResponse.success || !headearsResponse.data) {
-        toast.error(
-          isProd ? "Failed to load matrix" : headearsResponse.message,
-        );
-        return;
-      }
-
-      if (!challengeResponse.success) {
-        toast.error(
-          isProd ? "Failed to load matrix data" : challengeResponse.message,
-        );
-        return;
-      }
-
-      if (!challengeResponse.data) {
-        toast.error("Failed to load matrix data" + "No data received");
-        return;
-      }
-
-      const { columnHeaders, rowHeaders } = headearsResponse.data;
-      setColumnHeaders(columnHeaders);
-      setRowHeaders(rowHeaders);
-
-      log.debug("Data received:", {
-        url: `/challenges?${params.toString()}`,
-        data: challengeResponse.data,
-        json: JSON.stringify(challengeResponse.data, null, 2),
-      });
-
-      let {
-        matrix: initialData,
-        is_published,
-        affiliate_master_link,
-        affiliate_link,
-        evaluation_cost_discount,
-        matrix_placeholders_array, //matrix_placeholders_array
-        affiliate_master_link_placeholder,
-        affiliate_link_placeholder,
-        evaluation_cost_discount_placeholder,
-      } = challengeResponse.data;
-
-      
-      // Set the placeholder state
-      setIsPlaceholder(type === "placeholder" || false);
-      setIsPublished(is_published);
+      setColumnHeaders(result.columnHeaders);
+      setRowHeaders(result.rowHeaders);
+      setIsPlaceholder(result.isPlaceholder);
+      setIsPublished(result.isPublished);
       setHasChanges(false);
-
-      if (is_admin && type === "challenge") {
-   
-        if (
-          isValueEmpty(affiliate_link?.public_url) &&
-          !isValueEmpty(affiliate_link?.url)
-        ) {
-          affiliate_link.public_url = affiliate_link.url;
-          affiliate_link.has_copied_public_value = true;
-        }
-        if (
-          isValueEmpty(evaluation_cost_discount?.public_value) &&
-          !isValueEmpty(evaluation_cost_discount?.value)
-        ) {
-          evaluation_cost_discount.public_value =
-            evaluation_cost_discount.value;
-          evaluation_cost_discount.has_copied_public_value = true;
-        }
-        if (
-          isValueEmpty(affiliate_master_link?.public_url) &&
-          !isValueEmpty(affiliate_master_link?.url)
-        ) {
-          affiliate_master_link.public_url = affiliate_master_link.url;
-          affiliate_master_link.has_copied_public_value = true;
-        }
-
-       
-      } 
-        //for user and in placeholder mode, the data is the same as received from the API
-        //TO DO need to remove placeholder?
-        setMatrixExtraData({
-          affiliate_link: {
-            ...affiliate_link,
-            placeholder: affiliate_link_placeholder,
-          },
-          evaluation_cost_discount: {
-            ...evaluation_cost_discount,
-            placeholder: evaluation_cost_discount_placeholder,
-          },
-          affiliate_master_link: {
-            ...affiliate_master_link,
-            placeholder: affiliate_master_link_placeholder,
-          },
-        });
-      
-
-      if (initialData && Object.keys(initialData).length > 0) {
-        if (type === "challenge") {
-          const processedData = initialData.map((row) =>
-            row.map((cell) => {
-              const hasPublicValue = !isValueEmpty(cell.public_value);
-              const hasValue = !isValueEmpty(cell.value);
-
-              if (is_admin && !hasPublicValue && hasValue) {
-                cell.public_value = cell.value;
-                cell.has_copied_public_value = true;
-              }
-
-              return {
-                ...cell,
-                placeholder:
-                  matrix_placeholders_array?.[
-                    `${cell.row_slug}-${cell.col_slug}`
-                  ] ?? null,
-              };
-            }),
-          );
-          setMatrixData(processedData);
-          setIsEmptyMatrix(false);
-        } else {
-          setMatrixData(initialData);
-        }
-      } else {
-        // Create empty matrix structure
-        const newMatrix = createEmptyMatrix({
-          rowHeaders,
-          columnHeaders,
-          type,
-          matrixPlaceholdersArray: matrix_placeholders_array,
-        });
-        setMatrixData(newMatrix);
-        setIsEmptyMatrix(true);
-      }
+      setMatrixExtraData(result.matrixExtraData);
+      setMatrixData(result.matrixData);
+      setIsEmptyMatrix(result.isEmptyMatrix);
     } catch (e) {
       log.error("Failed to load headers or data", { error: e });
       setColumnHeaders([]);

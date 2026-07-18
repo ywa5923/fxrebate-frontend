@@ -62,6 +62,11 @@ interface StaticMatrixProps {
   locale: string;
 }
 
+{/* 
+  This component is no longer used. It is kept here for reference.
+  It works well,but there is a little probblem with responsiveness of the container div containing the matrix.
+*/}
+
 export default function StaticMatrix({
   brokerId,
   categoryId,
