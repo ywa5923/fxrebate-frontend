@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -58,6 +59,7 @@ interface EditMemberDialogProps {
 }
 
 export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditMemberDialogProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [deleteMode, setDeleteMode] = useState(false)
 
@@ -76,7 +78,6 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
     try {
       const result = await updateBrokerTeamUser(userId, {
         name: data.name,
-        email: data.email,
         permission_action: data.permissionAction,
         is_active: data.isActive,
       })
@@ -84,7 +85,7 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
       if (result.success) {
         form.reset()
         onClose()
-        window.location.reload()
+        router.refresh()
       } else {
         form.setError('root', { message: result.message })
       }
@@ -97,17 +98,13 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this team member?")) {
-      return
-    }
-
     setIsLoading(true)
     try {
       const result = await deleteBrokerTeamUser(userId)
-      
       if (result.success) {
         onClose()
-        window.location.reload()
+        setDeleteMode(false)
+        router.refresh()
       } else {
         alert(result.message || "Failed to delete user")
       }
@@ -120,7 +117,15 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setDeleteMode(false)
+          onClose()
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[500px]">
         {!deleteMode ? (
           <>
@@ -154,10 +159,10 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
                     <FormItem>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
+                        <Input type="email" placeholder="john@example.com" {...field} disabled />
                       </FormControl>
                       <FormDescription>
-                        Update the email address for this team member
+                        Email cannot be changed
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

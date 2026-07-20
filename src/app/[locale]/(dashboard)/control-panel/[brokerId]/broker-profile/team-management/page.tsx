@@ -4,25 +4,23 @@ import { canManageBroker } from '@/lib/permissions';
 import { redirect } from 'next/navigation';
 import logger from '@/lib/logger';
 import { TeamUser, BrokerTeam } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Users, 
   Mail, 
-  Calendar, 
   Shield, 
   CheckCircle, 
   XCircle, 
   Plus,
   UserPlus,
-  Settings,
   Crown,
   Clock
 } from 'lucide-react';
 import { AddMemberDialog } from './AddMemberDialog';
 import { UserActions } from './UserActions';
-import { hasPermission } from '@/lib/permissions';
+
 
 interface TeamManagementPageProps {
   params: Promise<{ brokerId: string }>;
@@ -35,7 +33,6 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
   // Check authentication
   const loggedUser = await isAuthenticated();
   if (!loggedUser) {
-    pageLogger.warn('User not authenticated, redirecting to login',{user_id: loggedUser?.id,user_email: loggedUser?.email,user_name: loggedUser?.name});
     redirect('/en');
   }
  
@@ -45,15 +42,19 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
   const brokerInfo = await getBrokerInfo(brokerId);
 
 
-  const canAdmin= canManageBroker(brokerId,loggedUser,brokerInfo)
+  //isManager means the logged in user has permission to manage the broker: broker:manage:{brokerId} or is platform admin or superadmin
+  const isManager = canManageBroker(loggedUser,brokerInfo);
 
-  if (!canAdmin) {
-    pageLogger.warn('!!!!!!!!User does not have permission to access team management', {
+  if (!isManager) {
+    pageLogger.error('User does not have permission to access team management', {
       userId: loggedUser.id,
+      userType: loggedUser.user_type,
       brokerId
     });
-    //redirect(`/en/control-panel/${brokerId}/broker-profile/1/general-information`);
+    redirect(`/en/control-panel/${brokerId}/broker-profile/1/general-information`);
   }
+
+
   
 
   // Fetch team data
@@ -70,12 +71,8 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Team Management</h1>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your broker team members and permissions</p>
           </div>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col  sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <AddMemberDialog brokerId={brokerId} />
-            <Button variant="outline" className="w-full sm:w-auto">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
           </div>
         </div>
 
@@ -136,7 +133,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                   {/*If the logged in user has same id as team user,he is a team user */}
                   {/*This page is shown only for permision.action === 'manage' */}
                   {/*So if the ids are same,logged in user is a team user with permission.action === 'manage' */}
-                  {loggedUser.id != user.id && <UserActions user={user} />}
+                  {isManager && loggedUser.id != user.id && <UserActions user={user} />}
                 </div>
 
                 {/* User Status */}
@@ -164,7 +161,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                   {user.last_login_at ? (
                     <>
                       <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                      Last login: {new Date(user.last_login_at).toLocaleDateString()}
+                      Last login: {new Date(user.last_login_at).toLocaleString()}
                     </>
                   ) : null}
                 </div>
@@ -193,15 +190,17 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
           
           {/* Add Member Card */}
           <AddMemberDialog brokerId={brokerId}>
-            <Card className="border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer group">
-              <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px]">
-                <div className="w-12 h-12 bg-gray-100 group-hover:bg-gray-200 rounded-full flex items-center justify-center mb-4 transition-colors">
-                  <Plus className="h-6 w-6 text-gray-400 group-hover:text-gray-600" />
-                </div>
-                <h3 className="font-semibold text-gray-600 group-hover:text-gray-800 mb-2">Add New Member</h3>
-                <p className="text-sm text-gray-500 text-center">Invite a new team member to join your broker team</p>
-              </CardContent>
-            </Card>
+            <div
+              role="button"
+              tabIndex={0}
+              className="group flex w-full flex-col items-center justify-center min-h-[200px] rounded-xl border-2 border-dashed border-gray-300 bg-card p-6 text-card-foreground shadow-sm transition-colors hover:border-gray-400 cursor-pointer"
+            >
+              <div className="w-12 h-12 bg-gray-100 group-hover:bg-gray-200 rounded-full flex items-center justify-center mb-4 transition-colors">
+                <Plus className="h-6 w-6 text-gray-400 group-hover:text-gray-600" />
+              </div>
+              <h3 className="font-semibold text-gray-600 group-hover:text-gray-800 mb-2">Add New Member</h3>
+              <p className="text-sm text-gray-500 text-center">Invite a new team member to join your broker team</p>
+            </div>
           </AddMemberDialog>
         </div>
 

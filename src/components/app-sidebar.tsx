@@ -156,7 +156,7 @@ const data = {
 export function AppSidebar({
   brokerOptionsLinks,
   teamManagementLink = null,
-  isBrokerManager = false,
+  isBrokerAdmin = false,
   userName,
   userEmail,
   brokerType,
@@ -166,7 +166,7 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & {
   brokerOptionsLinks?: any;
   teamManagementLink?: { name: string; url: string; icon: string } | null;
-  isBrokerManager?: boolean;
+  isBrokerAdmin?: boolean;
   userName?: string;
   userEmail?: string;
   brokerType?: string;
@@ -179,7 +179,7 @@ export function AppSidebar({
      
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
-        <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} isBrokerManager={isBrokerManager} />
+        <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} />
 
         <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
           <div className="rounded-xl bg-[#ffffff] dark:bg-gray-900 p-4">
@@ -231,9 +231,16 @@ export function AppSidebar({
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                {userName ?? "User"}
-              </p>
+              <div className="flex items-center gap-2 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  {userName ?? "User"}
+                </p>
+                {isBrokerAdmin && (
+                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                    Admin
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {userEmail ?? ""}
               </p>

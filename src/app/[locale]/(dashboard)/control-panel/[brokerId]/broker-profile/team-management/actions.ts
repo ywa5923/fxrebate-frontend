@@ -40,22 +40,14 @@ export async function addMemberToBroker(
       }),
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      actionLogger.error('API request failed', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText,
-        brokerId,
-        email
-      })
-      throw new Error(`Failed to add user: ${errorText}`)
-    }
-
     const data = await response.json()
 
     if (!data.success) {
-      throw new Error(data.message || 'Failed to add user to team')
+      const errorMessage = Object.values(data.errors ?? {})
+        .flat()
+        .join('; ')
+
+      throw new Error(errorMessage || data.message || 'Request failed')
     }
 
     actionLogger.info('User added to broker team successfully', {
@@ -91,7 +83,7 @@ export async function addMemberToBroker(
 export async function updateBrokerTeamUser(
   userId: number,
   data: {
-    email: string
+  
     name: string
     permission_action: string
     is_active: boolean
@@ -116,22 +108,30 @@ export async function updateBrokerTeamUser(
       body: JSON.stringify(data),
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      actionLogger.error('API request failed', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText,
-        userId
-      })
-      throw new Error(`Failed to update user: ${errorText}`)
-    }
+    // if (!response.ok) {
+    //   const errorText = await response.text()
+    //   actionLogger.error('API request failed', {
+    //     status: response.status,
+    //     statusText: response.statusText,
+    //     errorBody: errorText,
+    //     userId
+    //   })
+    //   throw new Error(`Failed to update user: ${errorText}`)
+    // }
 
     const result = await response.json()
 
+    if (!result.success) {
+      const errorMessage = Object.values(result.errors ?? {})
+        .flat()
+        .join('; ')
+
+      throw new Error(errorMessage || result.message || 'Request failed')
+    }
+
     actionLogger.info('Broker team user updated successfully', { userId })
 
-    revalidatePath(`/en/control-panel`, 'page')
+    revalidatePath('/[locale]/control-panel/[brokerId]/broker-profile/team-management', 'page')
 
     return {
       success: true,
@@ -186,7 +186,7 @@ export async function deleteBrokerTeamUser(userId: number) {
 
     actionLogger.info('Broker team user deleted successfully', { userId })
 
-    revalidatePath(`/en/control-panel`, 'page')
+    revalidatePath('/[locale]/control-panel/[brokerId]/broker-profile/team-management', 'page')
 
     return {
       success: true,

@@ -7,7 +7,7 @@ import { BASE_URL } from '@/constants';
 import { AuthUser, OptionCategory } from '@/types';
 import { isAuthenticated } from '@/lib/auth-actions';
 import logger from '@/lib/logger';
-import { hasPermission } from '@/lib/permissions';
+
 import { notFound, redirect } from 'next/navigation';
 import {
   Breadcrumb,
@@ -31,28 +31,9 @@ import NProgressBar from '@/components/NProgressBar';
 import { getBrokerInfo } from '@/lib/auth-actions';
 import { apiClient } from '@/lib/api-client';
 import { ErrorMode, UseTokenAuth } from '@/lib/enums';
-import { isSuperAdmin } from '@/lib/permissions';
+import { canManageBroker, isAdminOfBroker } from '@/lib/permissions';
 
 
-async function getBrokerOptions2() {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/broker_options?language[eq]=en&all_columns[eq]=1&broker_type[eq]=brokers`,
-      { next: { revalidate:0 } } // Revalidate every hour
-    )
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    
-    const responseData = await response.json()
-    
-    return responseData.data; // Fallback to original format if structure is different
-  } catch (error) {
-    console.error('Error fetching broker options:', error)
-    throw error
-  }
-}
 
 export default async function DashboardLayout({
   children,
@@ -66,28 +47,23 @@ export default async function DashboardLayout({
   const brokerInfo = await getBrokerInfo(brokerId);
   const brokerType = brokerInfo.broker_type;
   let layoutLogger = logger.child('control-panel/[brokerId]/broker-profile/layout.tsx');
-
-
- 
-
   const user: AuthUser | null = await isAuthenticated();
   if (!user) {
   layoutLogger.info('User not authenticated, redirecting to login');
   redirect('/en');
   }
-  let isBrokerManager=hasPermission(user, 'manage', 'broker', brokerId);
-  let isSuperAdminUser=isSuperAdmin(user);
-  console.log('isSuperAdminUser', isSuperAdminUser);
-  console.log('user', user);
 
-  let teamManagementLink: { name: string; url: string; icon: string } | null = null;
-  if(isBrokerManager || isSuperAdminUser){
-    teamManagementLink = {
-      name: 'Manage YourTeam',
-      url: `/en/control-panel/${brokerId}/broker-profile/team-management`,  
-      icon: "TrendingUp"
-    }
-  }
+
+  let userCanManageBroker = canManageBroker(user, brokerInfo);
+  let userIsAdminOfBroker = isAdminOfBroker(user, brokerInfo);
+
+  const teamManagementLink = userCanManageBroker
+    ? {
+        name: 'Manage YourTeam',
+        url: `/en/control-panel/${brokerId}/broker-profile/team-management`,
+        icon: 'TrendingUp',
+      }
+    : null
 
    
 
@@ -122,7 +98,7 @@ export default async function DashboardLayout({
           <AppSidebar
             brokerOptionsLinks={sidebarOptionsLinks}
             teamManagementLink={teamManagementLink}
-            isBrokerManager={isBrokerManager}
+            isBrokerAdmin={userIsAdminOfBroker}
             userName={user?.name}
             userEmail={user?.email}
             brokerType={brokerType}

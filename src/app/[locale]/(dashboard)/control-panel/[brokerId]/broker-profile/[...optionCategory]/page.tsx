@@ -35,7 +35,7 @@ import { MatrixHeaders } from "@/types/Matrix";
 import { DynamicTableRow } from "@/types";
 
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
-import { canAdminBroker } from "@/lib/auth-actions";
+//import { canAdminBroker } from "@/lib/auth-actions";
 import Companies from "./Companies";
 //import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
 //import { AffiliateLinksData } from "@/types/Url";
@@ -44,6 +44,7 @@ import { EmptyStateWithAction } from "@/components/EmptyStateWithAction";
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
 import { MyReferalsAndNotes } from "./_ReferalsAndNotes";
+import { isAdminOfBroker } from "@/lib/permissions";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -70,12 +71,15 @@ export default async function BrokerProfilePage({
 
   //========Check if user can administer broker=============
   // // Get user permissions and broker context
-   const is_admin= await canAdminBroker(brokerId);
+  // const is_admin= await canAdminBroker(brokerId);
+ // let is_admin = isAdminOfBroker(user, brokerInfo);
 
  // const is_admin = false;
   let brokerInfo = await getBrokerInfo(brokerId);
   let broker_type = brokerInfo.broker_type;
-  console.log("User authenticated successfully", {
+  
+  let is_admin = isAdminOfBroker(user, brokerInfo);
+ log.debug("User authenticated successfully", {
     user: user,
     is_admin: is_admin,
   });
@@ -89,7 +93,7 @@ export default async function BrokerProfilePage({
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   if (!categoryId) {
-    console.log("No category ID provided");
+    log.error("No category ID provided");
     notFound();
   }
 

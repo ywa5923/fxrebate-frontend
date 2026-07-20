@@ -9,6 +9,8 @@ export const BrokerInfoSchema = z.object({
     country_code: z.string(),
     zone_id: z.number(),
     zone_code: z.string(),
+    broker_groups_ids: z.array(z.union([z.number(), z.string()])).nullable(),
+    broker_groups_names: z.array(z.string()).nullable(),
   });
 export type BrokerInfo = z.infer<typeof BrokerInfoSchema>;
 

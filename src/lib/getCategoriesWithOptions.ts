@@ -29,6 +29,7 @@ export async function getCategoriesWithOptions(
         url.searchParams.append("broker_type", broker_type);
     }
    
+   thisLogger.debug("URL for fetching option categories", {url:url.toString()});
     try {
      const token = await getBearerToken();
      const headers: HeadersInit = {

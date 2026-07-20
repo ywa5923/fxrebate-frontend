@@ -84,7 +84,7 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to add user"
-      form.setError('root', { message: errorMessage })
+      //form.setError('root', { message: errorMessage })
     } finally {
       setIsLoading(false)
     }

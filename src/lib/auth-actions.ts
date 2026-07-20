@@ -5,7 +5,7 @@ import { BASE_URL } from '@/constants';
 import logger from './logger';
 import { MagicLinkAuthResponse, AuthUserResponse, BrokerInfoResponse } from '@/types';
 
-import { BrokerInfoSchema,BrokerInfo,AuthUser, AuthUserSchema } from '@/app/schemas/auth-schema';
+import { BrokerInfo,AuthUser, AuthUserSchema } from '@/app/schemas/auth-schema';
 
 
 /**
@@ -245,7 +245,7 @@ export async function getLoggedInUserData(): Promise<AuthUser> {
       throw new Error('User data not found in response');
     }
 
-    log.debug('333333333333333333333333333333333User data fetched successfully', { user: responseData.user });
+    log.debug('3User data fetched successfully', { user: responseData.user });
 
     // const user: AuthUser = AuthUserSchema.parse(responseData.user);
     // log.debug('User data fetched successfully', { user: user });
@@ -293,16 +293,13 @@ export async function isAuthenticated(): Promise<AuthUser | null> {
 export async function isSuperAdmin(): Promise<boolean> {
   const user = await isAuthenticated();
   if (!user) return false;
-
   if(user != null && user.role === 'super-admin' && user.user_type === 'platform_user'){
-    //check also for permission type: super-admin and action: manage
+   
     return user?.permissions?.some(p =>
       p.type === 'super-admin' && p.action === 'manage'
     ) || false;
   }
   return false;
-  // return user.user_type === 'platform_user' &&
-  //   (user?.permissions?.some(p => p.type === 'super_admin' && p.action === 'manage') || false);
 }
 
 
@@ -310,44 +307,44 @@ export async function isSuperAdmin(): Promise<boolean> {
 //Ok
 //check if user can administer broker
 
-export async function canAdminBroker(brokerId: number): Promise<boolean> {
-  let log = logger.child('lib/auth-actions/canAdminBroker');
-  try {
-    const brokerInfo = await getBrokerInfo(brokerId);
-    const user = await getLoggedInUserData();
+// export async function canAdminBroker(brokerId: number): Promise<boolean> {
+//   let log = logger.child('lib/auth-actions/canAdminBroker');
+//   try {
+//     const brokerInfo = await getBrokerInfo(brokerId);
+//     const user = await getLoggedInUserData();
     
-    if(user != null && user.role === 'super-admin'){
-      //check also for permission type: super-admin and action: manage
-      return user?.permissions?.some(p =>
-        p.type === 'super-admin' && p.action === 'manage'
-      ) || false;
-    }
-    //check permissions for the user to manage the broker
-    if (user.user_type === 'platform_user') {
-      return user?.permissions?.some(p =>
-        p.action === 'manage' &&
-        ((p.type === 'country' && p.resource_id === brokerInfo.country_id) ||
-          (p.type === 'zone' && p.resource_id === brokerInfo.zone_id)
-           || (p.type === 'broker' && p.resource_id === brokerId))
-      ) || false;
+//     if(user != null && user.role === 'super-admin'){
+//       //check also for permission type: super-admin and action: manage
+//       return user?.permissions?.some(p =>
+//         p.type === 'super-admin' && p.action === 'manage'
+//       ) || false;
+//     }
+//     //check permissions for the user to manage the broker
+//     if (user.user_type === 'platform_user') {
+//       return user?.permissions?.some(p =>
+//         p.action === 'manage' &&
+//         ((p.type === 'country' && p.resource_id === brokerInfo.country_id) ||
+//           (p.type === 'zone' && p.resource_id === brokerInfo.zone_id)
+//            || (p.type === 'broker' && p.resource_id === brokerId))
+//       ) || false;
 
 
-    // } else if (user.user_type === 'team_user') {
-    //   return user?.permissions?.some(p =>
-    //     p.type === 'broker' &&
-    //     p.action === 'manage' &&
-    //     p.resource_id === brokerId
-    //   ) || false;
-    }else{
-      return false;
-    }
-  } catch (error) {
-    log.error('!!================!!Error checking broker admin permissions', { error: error instanceof Error ? error.message : 'Unknown error' });
-    return false;
-  }
+//     // } else if (user.user_type === 'team_user') {
+//     //   return user?.permissions?.some(p =>
+//     //     p.type === 'broker' &&
+//     //     p.action === 'manage' &&
+//     //     p.resource_id === brokerId
+//     //   ) || false;
+//     }else{
+//       return false;
+//     }
+//   } catch (error) {
+//     log.error('!!================!!Error checking broker admin permissions', { error: error instanceof Error ? error.message : 'Unknown error' });
+//     return false;
+//   }
 
 
-}
+// }
 
 
 

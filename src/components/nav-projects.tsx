@@ -53,7 +53,6 @@ const iconMap: Record<string, LucideIcon> = {
 export function NavProjects({
   projects,
   teamManagementLink = null,
-  isBrokerManager = false,
 }: {
   projects: {
     name: string
@@ -61,7 +60,6 @@ export function NavProjects({
     icon: string
   }[]
   teamManagementLink?: { name: string; url: string; icon: string } | null,
-  isBrokerManager?: boolean,
 }) {
   const { isMobile } = useSidebar()
   const pathname = usePathname()
