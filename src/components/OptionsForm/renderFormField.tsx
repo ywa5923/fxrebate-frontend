@@ -103,7 +103,7 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
-      case "select":
+      case "single_select":
         return (
           <div>
             <Select
@@ -133,7 +133,7 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
-      case "country_select":
+      case "country_single_select":
         return (
           <div>
             <Select
@@ -169,7 +169,7 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
-      case "fiat_currency_select":
+      case "fiat_currency_single_select":
         return (
           <div>
             <Select
@@ -202,7 +202,7 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
-      case "crypto_currency_select":
+      case "crypto_currency_single_select":
         return (
           <div>
             <Select
@@ -237,7 +237,7 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
-      case "funding_method_select":
+      case "funding_method_single_select":
         return (
           <div>
             <Select

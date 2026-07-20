@@ -35,23 +35,7 @@ export function buildFormSchema(options: Option[]) {
   const schemaObject: { [key: string]: any } = {};
 
   for (const option of options) {
-    // if (option.form_type === "numberWithUnit") {
-    //   schemaObject[option.slug] =
-    //     option.required === 1
-    //       ? z.object({
-    //         value: z.number(),
-    //         unit: z.string(),
-    //       })
-    //       : z
-    //         .object({
-    //           value: z.number(),
-    //           unit: z.string(),
-    //         })
-    //         .nullable()
-    //         .optional();
-
-    //   continue;
-    // }
+    
     if (option.form_type === "numberWithUnit") {
       schemaObject[option.slug] =
         option.required === 1
@@ -206,6 +190,23 @@ export function buildFormSchema(options: Option[]) {
 
         break;
       }
+
+      case "single_select":
+      case "country_single_select":
+      case "fiat_currency_single_select":
+      case "crypto_currency_single_select":
+      case "funding_method_single_select":
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                (val) => (val === "" ? null : val),
+                z.string().min(1, `Please select a ${option.name}`),
+              )
+            : z.preprocess(
+                (val) => (val === "" ? null : val),
+                z.string().nullable().optional(),
+              );
+        break;
 
       case "multiple_select":
       case "country_multiple_select":

@@ -32,6 +32,13 @@ export function buildDefaultValues(
       switch (option.form_type) {
         case "checkbox":
           return { ...acc, [option.slug]: fieldValue === "1" };
+
+        case "single_select":
+        case "country_single_select":
+        case "fiat_currency_single_select":
+        case "crypto_currency_single_select":
+        case "funding_method_single_select":
+          return { ...acc, [option.slug]: fieldValue };
   
         case "multiple_select":
         case "country_multiple_select":
