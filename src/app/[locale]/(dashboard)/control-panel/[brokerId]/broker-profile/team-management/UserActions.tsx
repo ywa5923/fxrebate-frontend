@@ -13,10 +13,11 @@ import { MoreVertical, Edit, Trash2 } from "lucide-react"
 import { EditMemberDialog } from "./EditMemberDialog"
 
 interface UserActionsProps {
+  brokerId: number
   user: TeamUser
 }
 
-export function UserActions({ user }: UserActionsProps) {
+export function UserActions({ brokerId, user }: UserActionsProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   
   // Get permission action from resource_permissions
@@ -41,6 +42,7 @@ export function UserActions({ user }: UserActionsProps) {
       </div>
 
       <EditMemberDialog
+        brokerId={brokerId}
         userId={user.id}
         initialData={{
           name: user.name,

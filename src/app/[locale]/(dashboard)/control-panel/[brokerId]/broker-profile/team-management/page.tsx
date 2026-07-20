@@ -133,7 +133,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                   {/*If the logged in user has same id as team user,he is a team user */}
                   {/*This page is shown only for permision.action === 'manage' */}
                   {/*So if the ids are same,logged in user is a team user with permission.action === 'manage' */}
-                  {isManager && loggedUser.id != user.id && <UserActions user={user} />}
+                  {isManager && loggedUser.id != user.id && <UserActions brokerId={brokerId} user={user} />}
                 </div>
 
                 {/* User Status */}
@@ -193,13 +193,13 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
             <div
               role="button"
               tabIndex={0}
-              className="group flex w-full flex-col items-center justify-center min-h-[200px] rounded-xl border-2 border-dashed border-gray-300 bg-card p-6 text-card-foreground shadow-sm transition-colors hover:border-gray-400 cursor-pointer"
+              className="group flex w-full flex-col items-center justify-center min-h-[200px] rounded-xl border border-dashed border-gray-300 bg-white/70 p-6 text-card-foreground shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-white hover:shadow-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
             >
-              <div className="w-12 h-12 bg-gray-100 group-hover:bg-gray-200 rounded-full flex items-center justify-center mb-4 transition-colors">
-                <Plus className="h-6 w-6 text-gray-400 group-hover:text-gray-600" />
+              <div className="w-11 h-11 rounded-full border border-gray-200 bg-gray-50 group-hover:bg-gray-100 flex items-center justify-center mb-4 transition-colors">
+                <Plus className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
               </div>
-              <h3 className="font-semibold text-gray-600 group-hover:text-gray-800 mb-2">Add New Member</h3>
-              <p className="text-sm text-gray-500 text-center">Invite a new team member to join your broker team</p>
+              <h3 className="font-medium text-gray-800 mb-1">Add New Member</h3>
+              <p className="text-sm text-gray-500 text-center max-w-[200px]">Invite someone to join your broker team</p>
             </div>
           </AddMemberDialog>
         </div>
@@ -213,10 +213,15 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No Team Members</h3>
               <p className="text-gray-600 mb-6">Get started by adding your first team member</p>
-              <Button className="bg-gray-700 hover:bg-gray-800 text-white">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add First Member
-              </Button>
+              <AddMemberDialog brokerId={brokerId}>
+                <Button
+                  variant="outline"
+                  className="h-10 px-4 border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 hover:border-gray-400"
+                >
+                  <UserPlus className="h-4 w-4 mr-2 text-gray-600" />
+                  Add First Member
+                </Button>
+              </AddMemberDialog>
             </CardContent>
           </Card>
         )}

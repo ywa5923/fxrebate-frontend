@@ -94,8 +94,11 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button className="bg-gray-700 hover:bg-gray-800 text-white w-full sm:w-auto">
-            <UserPlus className="h-4 w-4 mr-2" />
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto h-10 px-4 border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:text-gray-900"
+          >
+            <UserPlus className="h-4 w-4 mr-2 text-gray-600" />
             Add Member
           </Button>
         )}
@@ -182,7 +185,11 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="bg-gray-700 hover:bg-gray-800 text-white">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-green-800 hover:bg-green-900 text-white shadow-sm"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

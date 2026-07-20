@@ -47,6 +47,7 @@ const editMemberSchema = z.object({
 type EditMemberFormValues = z.infer<typeof editMemberSchema>
 
 interface EditMemberDialogProps {
+  brokerId: number
   userId: number
   initialData: {
     name: string
@@ -58,7 +59,7 @@ interface EditMemberDialogProps {
   onClose: () => void
 }
 
-export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditMemberDialogProps) {
+export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClose }: EditMemberDialogProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [deleteMode, setDeleteMode] = useState(false)
@@ -76,7 +77,7 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
   async function onSubmit(data: EditMemberFormValues) {
     setIsLoading(true)
     try {
-      const result = await updateBrokerTeamUser(userId, {
+      const result = await updateBrokerTeamUser(brokerId, userId, {
         name: data.name,
         permission_action: data.permissionAction,
         is_active: data.isActive,
@@ -100,7 +101,7 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
   async function handleDelete() {
     setIsLoading(true)
     try {
-      const result = await deleteBrokerTeamUser(userId)
+      const result = await deleteBrokerTeamUser(brokerId, userId)
       if (result.success) {
         onClose()
         setDeleteMode(false)
@@ -239,7 +240,7 @@ export function EditMemberDialog({ userId, initialData, isOpen, onClose }: EditM
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="bg-gray-700 hover:bg-gray-800 text-white">
+                  <Button type="submit" disabled={isLoading} className="bg-green-800 hover:bg-green-900 text-white shadow-sm">
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -26,7 +26,7 @@ export async function addMemberToBroker(
       permissionAction
     })
 
-    const response = await fetch(`${BASE_URL}/broker-team-user`, {
+    const response = await fetch(`${BASE_URL}/brokers/${brokerId}/broker-team-user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,9 +81,9 @@ export async function addMemberToBroker(
  * Update a broker team user
  */
 export async function updateBrokerTeamUser(
+  brokerId: number,
   userId: number,
   data: {
-  
     name: string
     permission_action: string
     is_active: boolean
@@ -97,9 +97,9 @@ export async function updateBrokerTeamUser(
       throw new Error('Authentication token not found')
     }
 
-    actionLogger.debug('Updating broker team user', { userId, data })
+    actionLogger.debug('Updating broker team user', { brokerId, userId, data })
 
-    const response = await fetch(`${BASE_URL}/broker-team-user/${userId}`, {
+    const response = await fetch(`${BASE_URL}/brokers/${brokerId}/broker-team-user/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -107,17 +107,6 @@ export async function updateBrokerTeamUser(
       },
       body: JSON.stringify(data),
     })
-
-    // if (!response.ok) {
-    //   const errorText = await response.text()
-    //   actionLogger.error('API request failed', {
-    //     status: response.status,
-    //     statusText: response.statusText,
-    //     errorBody: errorText,
-    //     userId
-    //   })
-    //   throw new Error(`Failed to update user: ${errorText}`)
-    // }
 
     const result = await response.json()
 
@@ -129,9 +118,9 @@ export async function updateBrokerTeamUser(
       throw new Error(errorMessage || result.message || 'Request failed')
     }
 
-    actionLogger.info('Broker team user updated successfully', { userId })
+    actionLogger.info('Broker team user updated successfully', { brokerId, userId })
 
-    revalidatePath('/[locale]/control-panel/[brokerId]/broker-profile/team-management', 'page')
+    revalidatePath(`/en/control-panel/${brokerId}/broker-profile/team-management`)
 
     return {
       success: true,
@@ -142,6 +131,7 @@ export async function updateBrokerTeamUser(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     actionLogger.error('Error updating broker team user', {
       error: errorMessage,
+      brokerId,
       userId
     })
     return {
@@ -154,7 +144,7 @@ export async function updateBrokerTeamUser(
 /**
  * Delete a broker team user
  */
-export async function deleteBrokerTeamUser(userId: number) {
+export async function deleteBrokerTeamUser(brokerId: number, userId: number) {
   const actionLogger = logger.child('DeleteTeamUserAction')
   
   try {
@@ -163,9 +153,9 @@ export async function deleteBrokerTeamUser(userId: number) {
       throw new Error('Authentication token not found')
     }
 
-    actionLogger.debug('Deleting broker team user', { userId })
+    actionLogger.debug('Deleting broker team user', { brokerId, userId })
 
-    const response = await fetch(`${BASE_URL}/broker-team-user/${userId}`, {
+    const response = await fetch(`${BASE_URL}/brokers/${brokerId}/broker-team-user/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -179,14 +169,15 @@ export async function deleteBrokerTeamUser(userId: number) {
         status: response.status,
         statusText: response.statusText,
         errorBody: errorText,
+        brokerId,
         userId
       })
       throw new Error(`Failed to delete user: ${errorText}`)
     }
 
-    actionLogger.info('Broker team user deleted successfully', { userId })
+    actionLogger.info('Broker team user deleted successfully', { brokerId, userId })
 
-    revalidatePath('/[locale]/control-panel/[brokerId]/broker-profile/team-management', 'page')
+    revalidatePath(`/en/control-panel/${brokerId}/broker-profile/team-management`)
 
     return {
       success: true,
@@ -197,6 +188,7 @@ export async function deleteBrokerTeamUser(userId: number) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     actionLogger.error('Error deleting broker team user', {
       error: errorMessage,
+      brokerId,
       userId
     })
     return {
