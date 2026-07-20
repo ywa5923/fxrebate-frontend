@@ -55,7 +55,7 @@ type Props = {
     UAH: "UA",
     KZT: "KZ",
     RSD: "RS",
-    ALL: "AL",
+  //  ALL: "AL", This is not a country, so we don't need to add it to the list
   };
   
   export function FiatCurrencyIcon({
