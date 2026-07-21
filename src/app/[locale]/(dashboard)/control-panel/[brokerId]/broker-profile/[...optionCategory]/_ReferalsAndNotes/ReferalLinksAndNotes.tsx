@@ -44,6 +44,8 @@ import { BrokerPreviousValue } from "@/components/OptionsForm/BrokerPreviousValu
 import { ReferralLinksTabHeader } from "./ReferralLinksTabHeader";
 import { ReferralLinksTabContent } from "./ReferralLinksTabContent";
 import Multiselect from "react-select";
+import { useTheme } from "next-themes";
+import { getReactSelectStyles } from "@/lib/reactSelectStyles";
 import { checkFieldsPublicValue } from "@/lib/checkFieldsPublicValue";
 import { UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
@@ -90,6 +92,8 @@ export default function ReferalLinksAndNotes({
   notesOptionsValues,
 }: Props) {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const thisLogger = logger.child("ReferalLinksAndNotes");
   const [activeTab, setActiveTab] = useState<AffiliateLinkTabType>(
     "sign-up-ib-affiliate-link",
@@ -523,72 +527,7 @@ export default function ReferalLinksAndNotes({
                         getOptionLabel={(o) => o.label}
                         placeholder="Select platform URLs…"
                         isClearable
-                        styles={{
-                          control: (base, state) => ({
-                            ...base,
-                            minHeight: 40,
-                            borderRadius: 8,
-                            borderColor: state.isFocused
-                              ? "#22c55e"
-                              : "#e5e7eb",
-                            boxShadow: state.isFocused
-                              ? "0 0 0 2px rgba(34,197,94,0.2)"
-                              : "none",
-                            "&:hover": {
-                              borderColor: "#22c55e",
-                            },
-                          }),
-                          valueContainer: (base) => ({
-                            ...base,
-                            padding: "4px 6px",
-                            gap: "4px",
-                          }),
-                          multiValue: (base) => ({
-                            ...base,
-                            backgroundColor: "#f0fdf4",
-                            border: "1px solid #bbf7d0",
-                            borderRadius: 6,
-                            padding: "2px 4px",
-                          }),
-                          multiValueLabel: (base) => ({
-                            ...base,
-                            color: "#166534",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            padding: "0 4px",
-                          }),
-                          multiValueRemove: (base) => ({
-                            ...base,
-                            color: "#166534",
-                            borderRadius: 4,
-                            ":hover": {
-                              backgroundColor: "#dcfce7",
-                              color: "#14532d",
-                            },
-                          }),
-                          option: (base, state) => ({
-                            ...base,
-                            backgroundColor: state.isSelected
-                              ? "#22c55e"
-                              : state.isFocused
-                              ? "#f0fdf4"
-                              : "white",
-                            color: state.isSelected ? "white" : "#111827",
-                            cursor: "pointer",
-                            ":active": {
-                              backgroundColor: "#16a34a",
-                            },
-                          }),
-                          menu: (base) => ({
-                            ...base,
-                            borderRadius: 8,
-                            overflow: "hidden",
-                          }),
-                          menuList: (base) => ({
-                            ...base,
-                            padding: 4,
-                          }),
-                        }}
+                        styles={getReactSelectStyles(isDark)}
                       />
                     )
                   }

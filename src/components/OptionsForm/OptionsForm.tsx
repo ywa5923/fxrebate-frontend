@@ -38,6 +38,7 @@ import { getInitialCopiedSlugs } from "./getInitialCopiedSlugs";
 import { copyBrokerValueToPublic } from "./copyBrokerValueToPublic";
 import { renderFormField } from "./renderFormField";
 import { InfoSections } from "@/components/InfoSections";
+import { useTheme } from "next-themes";
 
 interface Props {
   broker_id: number;
@@ -70,6 +71,8 @@ export function OptionsForm({
   onSuccess,
 }: Props) {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const [isFormDirty, setIsFormDirty] = useState(is_admin);
   //console.log("option values: ",JSON.stringify(optionsValues,null,2))
@@ -379,6 +382,8 @@ export function OptionsForm({
                         form,
                         renderOptionHistory,
                         fileInputKey,
+                        display,
+                        isDark,
                       )}
                     </FormControl>
                     {option.description && (
