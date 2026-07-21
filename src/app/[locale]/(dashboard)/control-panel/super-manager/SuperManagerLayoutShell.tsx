@@ -1,0 +1,151 @@
+
+import { cn } from '@/lib/utils';
+import { satoshi } from '@/lib/fonts';
+//import '@/app/globals.css';
+import "flag-icons/css/flag-icons.min.css";
+import { Providers } from '@/providers/Theme';
+import { AppSidebarSuper } from "@/components/app-sidebar-super"
+
+import { isAuthenticated, isSuperAdmin } from '@/lib/auth-actions';
+import logger from '@/lib/logger';
+import { redirect } from 'next/navigation';
+import { BreadcrumbsSuperManager } from "@/components/breadcrumbs-super-manager"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
+
+export default async function SuperManagerLayoutShell({params, children}: {params: Promise<{locale: string}>, children: React.ReactNode}) {
+  
+    const layoutLogger = logger.child('control-panel/super-manager/layout.tsx');
+
+    const isSuper = await isSuperAdmin();
+  
+    if (!isSuper) {
+      layoutLogger.info('User not authenticated, redirecting to login');
+      redirect('/en');
+    }
+  
+  
+   
+    const loggedUser = await isAuthenticated();
+    if (!loggedUser) {
+      layoutLogger.info('User not authenticated, redirecting to login');
+      redirect('/en');
+    }
+    const sidebarUserLinks = [
+      {
+        name: 'Brokers',
+        url: '/en/control-panel/super-manager/brokers',
+        icon: 'Building'
+      },
+      {
+        name: 'Platform Users',
+        url: '/en/control-panel/super-manager/platform-users',
+        icon: 'Users'
+      },
+      {
+        name: 'Broker Groups',
+        url: '/en/control-panel/super-manager/broker-groups',
+        icon: 'UserGroups'
+      },
+      {
+        name: 'User Permissions',
+        url: '/en/control-panel/super-manager/user-permissions',
+        icon: 'Shield'
+      }
+    ];
+  
+    const sidebarSettingsLinks = [
+    {
+      name: 'Countries',
+      url: '/en/control-panel/super-manager/countries',
+      icon: 'MapPin'
+    },
+    {
+      name: 'Zones',
+      url: '/en/control-panel/super-manager/zones',
+      icon: 'Compass'
+    },
+    {
+      name: 'Dropdown Lists',
+      url: '/en/control-panel/super-manager/dropdown-lists',
+      icon: 'List'
+    },
+    {
+      name: 'Dynamic Options',
+      url: '/en/control-panel/super-manager/dynamic-options',
+      icon: 'Options'
+    },
+    {
+      name: 'Challenge Placeholders',
+      url: '/en/control-panel/super-manager/challenge-placeholders',
+      icon: 'LayoutTemplate'
+    },
+    {
+      name: 'Learning Center',
+      url: '/en/control-panel/super-manager/learning-center',
+      icon: 'Book'
+    },
+    {
+      name: 'Evaluation Rules',
+      url: '/en/control-panel/super-manager/evaluation-rules',
+      icon: 'CheckCircle'
+    },
+    {
+      name: 'Challenge Matrix Headears',
+      url: '/en/control-panel/super-manager/challenge-matrix-headears',
+      icon: 'Table'
+    }
+  ]
+  
+    const sidebarI18nLinks = [
+      {
+        name: 'System Languages',
+        url: '/en/control-panel/super-manager/system-languages',
+        icon: 'Flag',
+        prefetch: false
+      },
+      {
+        name: 'Translations',
+        url: '/en/control-panel/super-manager/translations',
+        icon: 'FileText',
+        prefetch: false
+      },
+    ]
+  
+    return (
+      <div className={cn(satoshi.variable, 'h-screen overflow-hidden bg-[#FFF] dark:bg-black')}>
+        <Providers>
+          <SidebarProvider>
+            <AppSidebarSuper 
+              userLinks={sidebarUserLinks} 
+              settingsLinks={sidebarSettingsLinks}
+              i18nLinks={sidebarI18nLinks}
+              userName={loggedUser?.name}
+              userEmail={loggedUser?.email}
+            />
+            <SidebarInset className="flex flex-col h-screen overflow-hidden">
+              <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                <div className="flex items-center gap-2 px-3 sm:px-4 w-full">
+                  <SidebarTrigger className="-ml-1" />
+                  <Separator
+                    orientation="vertical"
+                    className="mr-2 h-4 hidden sm:block"
+                  />
+                  <BreadcrumbsSuperManager />
+                </div>
+              </header>
+              <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-y-auto overflow-x-hidden">
+                {children}
+              </main>
+            </SidebarInset>
+          </SidebarProvider>
+        </Providers>
+        <Toaster />
+      </div>
+    );
+}
