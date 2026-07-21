@@ -272,7 +272,13 @@ export async function getLoggedInUserData(): Promise<AuthUser> {
  * Returns user data if authenticated, null if not
  */
 export async function isAuthenticated(): Promise<AuthUser | null> {
+
   const log = logger.child('lib/auth-actions/isAuthenticated');
+  const bearerToken = await getBearerToken();
+
+  if (!bearerToken) {
+    return null;
+  }
   try {
     const user = await getLoggedInUserData();
      log.debug('########User authenticated successfully', { userId: user.id, userType: user.user_type });
@@ -281,8 +287,7 @@ export async function isAuthenticated(): Promise<AuthUser | null> {
     log.error('!!================!!Authentication check failed', {
       error: error instanceof Error ? error.message : 'Unknown error'
     });
-    //throw error;
-    return null;
+    throw error;
   }
 }
 
@@ -304,47 +309,7 @@ export async function isSuperAdmin(): Promise<boolean> {
 
 
 
-//Ok
-//check if user can administer broker
 
-// export async function canAdminBroker(brokerId: number): Promise<boolean> {
-//   let log = logger.child('lib/auth-actions/canAdminBroker');
-//   try {
-//     const brokerInfo = await getBrokerInfo(brokerId);
-//     const user = await getLoggedInUserData();
-    
-//     if(user != null && user.role === 'super-admin'){
-//       //check also for permission type: super-admin and action: manage
-//       return user?.permissions?.some(p =>
-//         p.type === 'super-admin' && p.action === 'manage'
-//       ) || false;
-//     }
-//     //check permissions for the user to manage the broker
-//     if (user.user_type === 'platform_user') {
-//       return user?.permissions?.some(p =>
-//         p.action === 'manage' &&
-//         ((p.type === 'country' && p.resource_id === brokerInfo.country_id) ||
-//           (p.type === 'zone' && p.resource_id === brokerInfo.zone_id)
-//            || (p.type === 'broker' && p.resource_id === brokerId))
-//       ) || false;
-
-
-//     // } else if (user.user_type === 'team_user') {
-//     //   return user?.permissions?.some(p =>
-//     //     p.type === 'broker' &&
-//     //     p.action === 'manage' &&
-//     //     p.resource_id === brokerId
-//     //   ) || false;
-//     }else{
-//       return false;
-//     }
-//   } catch (error) {
-//     log.error('!!================!!Error checking broker admin permissions', { error: error instanceof Error ? error.message : 'Unknown error' });
-//     return false;
-//   }
-
-
-// }
 
 
 
