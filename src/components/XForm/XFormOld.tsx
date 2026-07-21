@@ -28,14 +28,6 @@ import logger from "@/lib/logger";
 
 
 //==============Make default values for the form==============//
-/** Select options use "1"/"0"; API may send true/false/1/0/"1"/"0". */
-function toSelectValue(value: unknown): string {
-  if (value === true || value === 1 || value === "1") return "1";
-  if (value === false || value === 0 || value === "0") return "0";
-  if (value == null) return "";
-  return String(value);
-}
-
 //Generate default values for empty form or form with data
 function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefinition, rowData: T): Record<string, any> {
   const defaultData: Record<string, any> = {};
@@ -45,31 +37,14 @@ function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefin
     Object.entries(section.fields ?? {}).forEach(([fieldKey, f]: [string, XFormField]) => {
       
       let fieldValue = null;
-      if (Object.keys(rowData).length > 0) {
-        if (f.type === "select") {
-          fieldValue = toSelectValue(rowData[fieldKey]);
-        } else if (f.type === "array_field" || f.type === "array_fields") {
-          //for array_field and array_fields, the rowData[fieldKey] is an array of objects
-          
-          const rows = Array.isArray(rowData[fieldKey]) ? rowData[fieldKey] : [];
-          fieldValue = rows.map((row: Record<string, any>) => {
-            const item = { ...row };
-            Object.entries(f.fields ?? {}).forEach(([subKey, subField]) => {
-              if (subField.type === "select") {
-                item[subKey] = toSelectValue(item[subKey]);
-              }
-            });
-            return item;
-          });
-        } else {
-          fieldValue = rowData[fieldKey];
-        }
-      } else {
+      if(Object.keys(rowData).length > 0){
+        fieldValue = (f.type =='select' && rowData[fieldKey] !== undefined && rowData[fieldKey] !== null)? (rowData[fieldKey]).toString(): rowData[fieldKey];
+      }else{
         if (f.type === 'checkbox' || f.type === 'boolean') fieldValue = false;
-        else if (f.type === 'number') fieldValue = '';
-        else if (f.type === 'multiselect') fieldValue = [];
-        else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = [];
-        else fieldValue = '';
+      else if (f.type === 'number') fieldValue = '';
+      else if (f.type === 'multiselect') fieldValue = [];
+      else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = Array.isArray(fieldValue) ? fieldValue : [];
+      else fieldValue = '';
       }
       sectionDefaultValue[fieldKey] = fieldValue ;
     });

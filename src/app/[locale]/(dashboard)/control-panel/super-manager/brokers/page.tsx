@@ -1,6 +1,5 @@
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+
 import logger from '@/lib/logger';
 import { apiClient } from '@/lib/api-client';
 import { FilterableTable, FTColumnsConfig, FTFilters, FTPagination } from '@/components/FilterableTable';

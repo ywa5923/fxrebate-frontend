@@ -1,6 +1,6 @@
 //import { AuthUser, BrokerInfo } from "@/types";
 import { BrokerInfo, AuthUser } from '@/app/schemas/auth-schema';
-import logger from "./logger";
+
 /**
  * Check if user has specific permission
  */

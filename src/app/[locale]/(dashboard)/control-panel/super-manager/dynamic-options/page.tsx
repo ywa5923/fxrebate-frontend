@@ -7,8 +7,7 @@ import logger from '@/lib/logger';
 import {DynamicOption} from '@/types';
 import {  SearchParams } from '@/types/SearchParams';
 import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+
 
 interface DynamicOptionsPageProps {
     searchParams: Promise<SearchParams<DynamicOption>>;

@@ -4,12 +4,10 @@ import { apiClient } from '@/lib/api-client';
 
 import logger from '@/lib/logger';
 
-import {DynamicOption} from '@/types';
 import {  SearchParams } from '@/types/SearchParams';
 import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 import { InfoSection } from '@/types';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+
 
 interface LearningCenterPageProps {
     searchParams: Promise<SearchParams<InfoSection>>;

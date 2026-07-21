@@ -8,8 +8,7 @@ import {EvaluationRule} from '@/types';
 import {  SearchParams } from '@/types/SearchParams';
 import { getQueryStringFromSearchParams } from '@/lib/getQueryStringFromSearchParams';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+
 
 interface EvaluationRulesPageProps {
     searchParams: Promise<SearchParams<EvaluationRule>>;
