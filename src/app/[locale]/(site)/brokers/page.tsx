@@ -6,7 +6,7 @@ import { BrokersSearchParams } from "@/types";
 import { BrokerOptions } from "@/types";
 import { AutoTable } from "./AutoTable";
 import Pagination from "./Paginations";
-export const dynamic = "force-dynamic";
+
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 
 type Params = { locale: string };
