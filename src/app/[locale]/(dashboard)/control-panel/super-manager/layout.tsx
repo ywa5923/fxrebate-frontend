@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import LogoLayoutSkeleton from '@/components/LogoLayoutSkeleton';
 import SuperManagerLayoutShell from './SuperManagerLayoutShell';
 
 export default async function SuperManagerLayout({
@@ -9,7 +10,7 @@ export default async function SuperManagerLayout({
   params: Promise<{ locale: string }>;
 }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LogoLayoutSkeleton />}>
       <SuperManagerLayoutShell params={params}>
         {children}
       </SuperManagerLayoutShell>

@@ -1,5 +1,5 @@
-
 import { Suspense } from "react";
+import LogoLayoutSkeleton from "@/components/LogoLayoutSkeleton";
 import BrokerProfileLayoutShell from "./BrokerProfileLayoutShell";
 
 export default async function DashboardLayout({
@@ -11,7 +11,7 @@ export default async function DashboardLayout({
 }) {
   
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LogoLayoutSkeleton />}>
       <BrokerProfileLayoutShell params={params}>
         {children}
       </BrokerProfileLayoutShell>

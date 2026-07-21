@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import LogoLayoutSkeleton from '@/components/LogoLayoutSkeleton';
 import PlatformManagerLayoutShell from './PlatformManagerLayoutShell';
 
 export default async function PlatformManagerLayout({
@@ -7,7 +8,7 @@ export default async function PlatformManagerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LogoLayoutSkeleton />}>
       <PlatformManagerLayoutShell>{children}</PlatformManagerLayoutShell>
     </Suspense>
   );
