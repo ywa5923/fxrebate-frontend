@@ -122,9 +122,8 @@ class Logger {
     return this.logLevels[level] <= this.logLevels[this.config.logLevel];
   }
 
-  private formatMessage(level: string, message: string, meta?: LogMeta): string {
-    const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+  private formatMessage(level: string, message: string): string {
+    return `[${level.toUpperCase()}] ${message}`;
   }
 
   private async sendToAPI(level: LogLevel, message: string, meta?: LogMeta): Promise<void> {
