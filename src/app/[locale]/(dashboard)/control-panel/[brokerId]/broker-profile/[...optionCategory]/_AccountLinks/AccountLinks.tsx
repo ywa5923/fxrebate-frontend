@@ -88,6 +88,8 @@ export default function AccountLinks({
   links_groups,
   linksOptions, 
   is_admin,
+  can_edit = true,
+  can_manage = true,
 }: {
   broker_id: number;
   account_type_id: number;
@@ -97,7 +99,10 @@ export default function AccountLinks({
   links_groups: string[];
   linksOptions: LinksOptions;
   is_admin: boolean;
+  can_edit?: boolean;
+  can_manage?: boolean;
 }) {
+  const canSaveEdits = can_edit || can_manage;
   const [editingLink, setEditingLink] = useState<Url | null>(null);
   const [addingType, setAddingType] = useState<string | null>(null);
   const [openAccordion, setOpenAccordion] = useState<string[]>([]);
@@ -326,32 +331,36 @@ export default function AccountLinks({
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30"
-                  onClick={() => {
-                    openEdit(link);
-                  }}
-                  title="Edit"
-                  aria-label="Edit link"
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                  onClick={() =>
-                    setConfirmDelete({ id: link.id, account_type_id, broker_id })
-                  }
-                  title="Delete"
-                  aria-label="Delete link"
-                >
-                  <Trash className="w-4 h-4" />
-                </Button>
+                {canSaveEdits && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30"
+                    onClick={() => {
+                      openEdit(link);
+                    }}
+                    title="Edit"
+                    aria-label="Edit link"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                )}
+                {can_manage && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                    onClick={() =>
+                      setConfirmDelete({ id: link.id, account_type_id, broker_id })
+                    }
+                    title="Delete"
+                    aria-label="Delete link"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             </div>
           );
@@ -552,7 +561,12 @@ export default function AccountLinks({
               <div className="flex gap-2 pt-2">
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium"
+                  disabled={
+                    editingLink
+                      ? !canSaveEdits // Save existing link
+                      : !can_manage // Add new link
+                  }
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {editingLink ? "Save Changes" : "Add Link"}
                 </Button>
@@ -648,20 +662,22 @@ export default function AccountLinks({
                   )}
                 </div>
               </AccordionTrigger>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                title="Add link"
-                className={cn(
-                  "mr-4 h-7 w-7 shrink-0 rounded border transition-all duration-150",
-                  "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
-                  "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
-                )}
-                onClick={() => handleAddClick(type)}
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
+              {can_manage && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  title="Add link"
+                  className={cn(
+                    "mr-4 h-7 w-7 shrink-0 rounded border transition-all duration-150",
+                    "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
+                    "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
+                  )}
+                  onClick={() => handleAddClick(type)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
             <AccordionContent>
               <div className="space-y-4">

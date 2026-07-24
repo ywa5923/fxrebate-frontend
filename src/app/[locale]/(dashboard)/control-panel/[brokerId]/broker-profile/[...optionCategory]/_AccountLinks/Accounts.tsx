@@ -311,6 +311,8 @@ export default function Accounts({
                 links_groups={linksGroups}
                 linksOptions={linksOptions}
                 is_admin={is_admin}
+                can_edit={can_edit}
+                can_manage={can_manage}
               />
             </div>
           ))}
