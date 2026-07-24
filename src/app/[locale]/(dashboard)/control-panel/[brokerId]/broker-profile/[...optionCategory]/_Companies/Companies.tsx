@@ -39,6 +39,8 @@ interface Props {
   regulatorsList: RegulatorList;
   options: Option[];
   is_admin?: boolean;
+  can_edit?: boolean;
+  can_manage?: boolean;
 }
 
 function scrollToBottom() {
@@ -53,6 +55,8 @@ export default function Companies({
   regulatorsList,
   options,
   is_admin = false,
+  can_edit = true,
+  can_manage = true,
 }: Props) {
   const thisLogger = logger.child("CompaniesComponent");
   const [activeTab, setActiveTab] = useState<string>(
@@ -143,7 +147,7 @@ export default function Companies({
         </button>
       </div>
 
-      {showNewCompany && (
+      {showNewCompany && can_manage && (
         <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
             New Company
@@ -175,6 +179,7 @@ export default function Companies({
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="Company"
+                can_edit={can_edit}
                 onSuccess={() => setSavedSuccessfully(true)}
               />
             </CardContent>
@@ -228,7 +233,7 @@ export default function Companies({
                     <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
                       Company Profile
                     </h1>
-                    <Tooltip>
+                    {can_manage && <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
@@ -242,6 +247,7 @@ export default function Companies({
                       </TooltipTrigger>
                       <TooltipContent>Delete this company</TooltipContent>
                     </Tooltip>
+                    }
                   </div>
                   <OptionsForm
                     broker_id={broker_id}
@@ -251,6 +257,7 @@ export default function Companies({
                     is_admin={is_admin}
                     entity_id={company.id}
                     entity_type="company"
+                    can_edit={can_edit}
                   />
                   <div className="w-full min-w-0 mt-10 mb-10 pt-8 ">
                     <CompanyRegulators
@@ -371,8 +378,12 @@ export default function Companies({
         !showNewCompany && (
           <NotFoundEntity
             title="No companies found"
-            description="Click here or use the + button to add a company."
-            onClick={() => setShowNewCompany(true)}
+            description={
+              can_manage
+                ? "Click here or use the + button to add a company."
+                : "No companies are configured for this broker yet."
+            }
+            onClick={can_manage ? () => setShowNewCompany(true) : undefined}
             ariaLabel="Add company"
           />
         )

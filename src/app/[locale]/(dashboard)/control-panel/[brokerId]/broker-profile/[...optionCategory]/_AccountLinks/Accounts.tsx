@@ -35,6 +35,8 @@ interface AccountsProps {
   accounts?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
+  can_edit?: boolean;
+  can_manage?: boolean;
   linksGroupedByEntityId: LinksGroupedByEntityId;
   masterLinksGroupedByType: LinksGroupedByType;
   linksGroups: LinkGroup[];
@@ -65,6 +67,8 @@ export default function Accounts({
   accounts = [],
   options,
   is_admin = false,
+  can_edit = true,
+  can_manage = true,
   linksGroupedByEntityId,
   masterLinksGroupedByType,
   linksGroups,
@@ -162,7 +166,7 @@ export default function Accounts({
       </div>
 
       {/* New Account Form */}
-      {showNewAccount && (
+      {showNewAccount && can_manage && (
         <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
           {/* Header with icon and text */}
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
@@ -195,6 +199,7 @@ export default function Accounts({
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="account-type"
+                can_edit={can_edit}
                 onSuccess={() => setSavedSuccessfully(true)}
               />
             </CardContent>
@@ -246,15 +251,17 @@ export default function Accounts({
               {account.option_values && account.option_values.length > 0 ? (
                 <>
                   <div className="mt-3 flex items-center justify-end gap-2 mb-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                      onClick={() => setConfirmDeleteAccount(account.id)}
-                      title="Delete account"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    {can_manage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                        onClick={() => setConfirmDeleteAccount(account.id)}
+                        title="Delete account"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                   <OptionsForm
                     broker_id={broker_id}
@@ -264,6 +271,7 @@ export default function Accounts({
                     is_admin={is_admin}
                     entity_id={account.id}
                     entity_type="account-type"
+                    can_edit={can_edit}
                   />
                 </>
               ) : (
@@ -408,8 +416,12 @@ export default function Accounts({
         !showNewAccount && (
           <NotFoundEntity
             title="No accounts found"
-            description="Click here or use the + button to add an account."
-            onClick={() => setShowNewAccount(true)}
+            description={
+              can_manage
+                ? "Click here or use the + button to add an account."
+                : "No trading accounts are configured for this broker yet."
+            }
+            onClick={can_manage ? () => setShowNewAccount(true) : undefined}
             ariaLabel="Add account"
           />
         )

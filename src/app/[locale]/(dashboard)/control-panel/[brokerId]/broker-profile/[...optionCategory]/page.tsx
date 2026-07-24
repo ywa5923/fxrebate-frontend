@@ -36,7 +36,7 @@ import { DynamicTableRow } from "@/types";
 
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 //import { canAdminBroker } from "@/lib/auth-actions";
-import Companies from "./Companies";
+
 //import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
 //import { AffiliateLinksData } from "@/types/Url";
 import { DefaultChallengeCategoriesData } from "@/types/ChallengeType";
@@ -44,7 +44,8 @@ import { EmptyStateWithAction } from "@/components/EmptyStateWithAction";
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
 import { MyReferalsAndNotes } from "./_ReferalsAndNotes";
-import { isAdminOfBroker } from "@/lib/permissions";
+import { canEditBroker, canManageBroker, isAdminOfBroker } from "@/lib/permissions";
+import { MyCompanies } from "./_Companies";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
 
@@ -79,6 +80,8 @@ export default async function BrokerProfilePage({
   let broker_type = brokerInfo.broker_type;
   
   let is_admin = isAdminOfBroker(user, brokerInfo);
+  let can_edit = canEditBroker(user, brokerInfo);
+  let can_manage = canManageBroker(user, brokerInfo);
  log.debug("User authenticated successfully", {
     user: user,
     is_admin: is_admin,
@@ -130,49 +133,14 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "company-profiles") {
-    let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
-    const regulatorsFetchUrl = '/regulators/list';
-    const [companiesResponse, regulatorsResponse] = await Promise.all([
-      apiClient<Company[]>(
-        companiesFetchUrl,
-        true,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-      ),
-      apiClient<RegulatorList>(
-        regulatorsFetchUrl,
-        true,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-      ),
-    ]);
-    if (!companiesResponse.success || !regulatorsResponse.success) {
-      log.error("Error fetching companies or regulators", {
-        context: {
-          companies: companiesResponse.message,
-          regulators: regulatorsResponse.message,
-        },
-      });
-      notFound();
-    }
-    let companies = companiesResponse.data ?? [];
-    let regulators = regulatorsResponse.data ?? [];
-    return (
-      <>
-        
-        <Companies
-          broker_id={brokerId}
-          companies={companies}
-          regulatorsList={regulators}
-          options={matchedCategory.options as Option[]}
-          is_admin={is_admin}
-        />
-      </>
-    );
+    
+    return (<MyCompanies
+      brokerId={brokerId}
+      companyOptions={matchedCategory.options as Option[]}
+      is_admin={is_admin}
+      can_edit={can_edit}
+      can_manage={can_manage}
+    />)
   }
   if (categorySlug == "my-trading-accounts") {
     
@@ -180,6 +148,8 @@ export default async function BrokerProfilePage({
       brokerId={brokerId}
       accountOptions={matchedCategory.options as Option[]}
       is_admin={is_admin}
+      can_edit={can_edit}
+      can_manage={can_manage}
     />)
   }
 
@@ -360,57 +330,7 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "referral-links-and-notes") {
-    // let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
-    // let notesOptionsValuesResponse = await apiClient<OptionValue[]>(
-    //   optionsValuesFetchUrl,
-    //   true,
-    //   {
-    //     method: "GET",
-    //     cache: "no-store",
-    //   },
-    // );
-    // if (!notesOptionsValuesResponse.success) {
-    //   log.error("Error fetching notes options values", {
-    //     context: { notesOptionsValues: notesOptionsValuesResponse.message },
-    //   });
-    //   notFound();
-    // }
-    // let notesOptionsValues = notesOptionsValuesResponse.data ?? [];
-
-    // let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
-    // let referralLinksResponse = await apiClient<AffiliateLinksData>(
-    //   referralLinksFetchUrl,
-    //   UseTokenAuth.No,
-    //   {
-    //     method: "GET",
-    //     cache: "no-store",
-    //   },
-    // );
-    // if (!referralLinksResponse.success) {
-    //   log.error("Error fetching referral links", {
-    //     context: { referralLinks: referralLinksResponse.message },
-    //   });
-    //   notFound();
-    // }
-    // if (!referralLinksResponse.data?.account_types) {
-    //   log.error("No account types found", {
-    //     context: { referralLinks: referralLinksResponse.message },
-    //   });
-    //   throw new Error("No account types found");
-    // }
-
-    // return (
-    //   <ReferalLinksAndNotes
-    //     is_admin={is_admin}
-    //     brokerId={brokerId}
-    //     accountTypes={referralLinksResponse.data?.account_types ?? []}
-    //     currencyList={referralLinksResponse.data.currency_list}
-    //     IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []}
-    //     SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []}
-    //     notesOptions={matchedCategory.options as Option[]}
-    //     notesOptionsValues={notesOptionsValues}
-    //   />
-    // );
+  
     return (<MyReferalsAndNotes
       brokerId={brokerId}
       notesOptions={matchedCategory.options as Option[]}

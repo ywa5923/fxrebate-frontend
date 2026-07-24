@@ -57,6 +57,7 @@ interface Props {
   entity_type?: string;
   display?: "cols" | "vertical";
   onSuccess?: () => void;
+  can_edit?: boolean;
 }
 
 export function OptionsForm({
@@ -69,6 +70,7 @@ export function OptionsForm({
   entity_type,
   display = "cols",
   onSuccess,
+  can_edit = true,
 }: Props) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
@@ -219,6 +221,10 @@ export function OptionsForm({
   }, [optionsValues, options, is_admin, form]);
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
+    if (!can_edit) {
+      toast.error("You do not have permission to edit this profile");
+      return;
+    }
     thisLogger.debug("Form data before sending to server", {
       context: { data },
     });
@@ -415,15 +421,19 @@ export function OptionsForm({
         </div>
         <Button
           type="submit"
-          disabled={!isFormDirty}
+          disabled={!can_edit || !isFormDirty}
           className={cn(
             "transition-all duration-300 font-medium",
-            isFormDirty
+            can_edit && isFormDirty
               ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl"
               : "bg-transparent border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-not-allowed",
           )}
         >
-          {isFormDirty ? "Save Changes" : "No Changes to Save"}
+          {!can_edit
+            ? "View Only"
+            : isFormDirty
+              ? "Save Changes"
+              : "No Changes to Save"}
         </Button>
       </form>
     </Form>
