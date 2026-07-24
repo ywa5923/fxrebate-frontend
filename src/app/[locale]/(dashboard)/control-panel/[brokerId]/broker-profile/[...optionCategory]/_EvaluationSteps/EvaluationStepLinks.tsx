@@ -343,7 +343,7 @@ export default function EvaluationStepLinks({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                  className="h-9 w-9 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 ring-1 ring-inset ring-red-500/50 dark:ring-red-500/60 hover:ring-red-500/70 dark:hover:ring-red-400/70 transition-colors"
                   onClick={() =>
                     setConfirmDelete({ id: link.id, evaluation_step_id, broker_id })
                   }
@@ -651,12 +651,12 @@ export default function EvaluationStepLinks({
               <Button
                 type="button"
                 size="icon"
-                variant="outline"
+                variant="ghost"
                 title="Add link"
                 className={cn(
-                  "mr-4 h-7 w-7 shrink-0 rounded border transition-all duration-150",
-                  "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400",
-                  "hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300",
+                  "mr-4 h-7 w-7 shrink-0 rounded-md transition-all duration-150 ring-1 ring-inset",
+                  "ring-gray-300 dark:ring-gray-500 text-gray-500 dark:text-gray-400",
+                  "hover:ring-gray-400 dark:hover:ring-gray-400 hover:text-gray-600 dark:hover:text-gray-300",
                 )}
                 onClick={() => handleAddClick(type)}
               >
