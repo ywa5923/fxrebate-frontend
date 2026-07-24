@@ -1,36 +1,17 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
-//import { getOptionsValues } from "@/lib/getOptionsValues";
-import { Company, MatrixCell,  RegulatorList } from "@/types";
 import { notFound, redirect } from "next/navigation";
-//import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
-//import { getCompanies } from "@/lib/getCompanies";
-//import Companies from "./Companies";
-//import { getAccountTypes } from "@/lib/getAccountTypes";
 
-//import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
-
-import Rebates from "./Rebates";
 import { MyPromotions } from "./_Promotions";
 import { MyContests } from "./_Contests";
 import { MyEvaluationRules } from "./_EvaluationRules";
 import { MyBrokerOptions } from "./_BrokerOptions";
 import { MyChallengeCategories } from "./_ChallengeCategories";
+import { MyRebates } from "./_Rebates";
 
-//import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import logger from "@/lib/logger";
 import { getBrokerInfo, isAuthenticated } from "@/lib/auth-actions";
 
-import { apiClient } from "@/lib/api-client";
-
-import { MatrixHeaders } from "@/types/Matrix";
-
-import { ErrorMode, UseTokenAuth } from "@/lib/enums";
-//import { canAdminBroker } from "@/lib/auth-actions";
-
-//import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
-//import { AffiliateLinksData } from "@/types/Url";
-import { EmptyStateWithAction } from "@/components/EmptyStateWithAction";
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
 import { MyReferalsAndNotes } from "./_ReferalsAndNotes";
@@ -207,78 +188,13 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "rebates") {
-    let headersFetchUrl = `/matrix/headers/${brokerId}?language=en&matrix_id=Matrix-1&broker_id_strict=0&with_account_type_columns=1`;
-    let matrixDataFetchUrl = `/matrix/${brokerId}?matrix_name=Matrix-1`;
-
-    const [headersResponse, matrixDataResponse] = await Promise.all([
-      apiClient<MatrixHeaders>(
-        headersFetchUrl,
-        UseTokenAuth.Yes,
-        { method: "GET", cache: "no-store" },
-        ErrorMode.Return,
-      ),
-      apiClient<MatrixCell[][]>(
-        matrixDataFetchUrl,
-        UseTokenAuth.Yes,
-        { method: "GET", cache: "no-store" },
-        ErrorMode.Return,
-      ),
-    ]);
-    if (!headersResponse.success || !matrixDataResponse.success) {
-      log.error("Error fetching matrix headers or matrix data", {
-        context: {
-          hedears: headersResponse.message,
-          matrixData: matrixDataResponse.message,
-        },
-      });
-      notFound();
-    }
-    const columnHeaders = headersResponse.data?.columnHeaders ?? [];
-    const rowHeaders = headersResponse.data?.rowHeaders ?? [];
-    const initialMatrixData = matrixDataResponse.data ?? [];
-
-    if (columnHeaders.length === 0) {
-      let tradingAccountCategoryId = categoriesWithOptions.find(
-        (category) => category.slug === "my-trading-accounts",
-      )?.id;
-      if (!tradingAccountCategoryId) {
-        log.error("Trading account category not found", {
-          context: { categoriesWithOptions: categoriesWithOptions },
-        });
-        notFound();
-      }
-      return (
-        <EmptyStateWithAction
-          messages={{
-            title: "No Account Types Found",
-            description:
-              "You need to create account types before you can configure the rebates matrix.",
-            buttonLabel: "Go to Account Types",
-          }}
-          href={`/en/control-panel/${brokerId}/broker-profile/${tradingAccountCategoryId}/my-trading-accounts`}
-        />
-      );
-    }
-
     return (
-      <>
-        <Rebates
-          rowHeaders={rowHeaders}
-          columnHeaders={columnHeaders}
-          initialMatrixData={initialMatrixData}
-          is_admin={is_admin}
-          brokerId={brokerId}
-        />
-        {is_admin && (
-          <Rebates
-            rowHeaders={rowHeaders}
-            columnHeaders={columnHeaders}
-            initialMatrixData={initialMatrixData}
-            is_admin={false}
-            brokerId={brokerId}
-          />
-        )}
-      </>
+      <MyRebates
+        brokerId={brokerId}
+        is_admin={is_admin}
+        can_edit={can_edit}
+        categoriesWithOptions={categoriesWithOptions}
+      />
     );
   } else {
     return (

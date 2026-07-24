@@ -51,6 +51,7 @@ interface DynamicMatrixProps {
   initialMatrix?: MatrixCell[][];
   //initialMatrix: MatrixData
   is_admin: boolean;
+  can_edit?: boolean;
   brokerId: number;
 }
 
@@ -60,6 +61,7 @@ export function DynamicMatrix({
   onChange,
   initialMatrix,
   is_admin,
+  can_edit = true,
   brokerId,
 }: DynamicMatrixProps) {
   const log = logger.child("components/ui/DynamicMatrix");
@@ -326,6 +328,9 @@ export function DynamicMatrix({
   };
 
   const handleSave = async () => {
+    if (!can_edit) {
+      return;
+    }
     const errors = validateMatrix();
 
     if (Object.keys(errors).length > 0) {
@@ -407,7 +412,7 @@ export function DynamicMatrix({
           onClick={handleSave}
           variant="outline"
           size="default"
-          disabled={status === "loading"}
+          disabled={!can_edit || status === "loading"}
           className={`h-9 ml-auto ${
             status === "error"
               ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200"
@@ -415,7 +420,9 @@ export function DynamicMatrix({
           }`}
         >
           <Save className="h-4 w-4 mr-2" />
-          {status === "loading"
+          {!can_edit
+            ? "View Only"
+            : status === "loading"
             ? "Saving..."
             : status === "success"
             ? "Saved"

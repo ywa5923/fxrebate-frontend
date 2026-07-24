@@ -5,21 +5,20 @@ import { Settings} from "lucide-react";
 import { cn } from "@/lib/utils"
 
 export default function Rebates({
- 
-  rowHeaders, 
-  columnHeaders, 
-  initialMatrixData, 
+  rowHeaders,
+  columnHeaders,
+  initialMatrixData,
   is_admin,
-  brokerId
+  can_edit = true,
+  brokerId,
 }: {
-  
-  rowHeaders: RowHeader[], 
-  columnHeaders: ColumnHeader[], 
-  initialMatrixData: MatrixCell[][], 
-  is_admin: boolean,
-  brokerId: number
+  rowHeaders: RowHeader[];
+  columnHeaders: ColumnHeader[];
+  initialMatrixData: MatrixCell[][];
+  is_admin: boolean;
+  can_edit?: boolean;
+  brokerId: number;
 }) {
-  
   return (
     <div className="space-y-1 p-3 sm:p-6 bg-[#ffffff] dark:bg-gray-950">
       {/* Header Section */}
@@ -43,6 +42,7 @@ export default function Rebates({
               columnHeaders={columnHeaders}
               initialMatrix={initialMatrixData}
               is_admin={is_admin}
+              can_edit={can_edit}
             />
           </CardContent>
         </Card>
