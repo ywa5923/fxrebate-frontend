@@ -31,7 +31,7 @@ import NProgressBar from '@/components/NProgressBar';
 import { getBrokerInfo } from '@/lib/auth-actions';
 import { apiClient } from '@/lib/api-client';
 import { ErrorMode, UseTokenAuth } from '@/lib/enums';
-import { canManageBroker, isAdminOfBroker } from '@/lib/permissions';
+import { canEditBroker, canManageBroker, isAdminOfBroker, isSuperAdmin } from '@/lib/permissions';
 
 
 type Props={
@@ -54,6 +54,8 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
   
     let userCanManageBroker = canManageBroker(user, brokerInfo);
     let userIsAdminOfBroker = isAdminOfBroker(user, brokerInfo);
+    let userIsSuperAdmin = isSuperAdmin(user);
+    let userCanEditBroker = canEditBroker(user, brokerInfo);
   
     const teamManagementLink = userCanManageBroker
       ? {
@@ -97,6 +99,8 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
               brokerOptionsLinks={sidebarOptionsLinks}
               teamManagementLink={teamManagementLink}
               isBrokerAdmin={userIsAdminOfBroker}
+              isSuperAdmin={userIsSuperAdmin}
+              canEditBroker={userCanEditBroker}
               userName={user?.name}
               userEmail={user?.email}
               brokerType={brokerType}

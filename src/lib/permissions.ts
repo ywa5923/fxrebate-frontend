@@ -16,16 +16,31 @@ export function hasPermission(user: AuthUser, action: string, type: string, reso
 }
 
 export function canManageBroker(user: AuthUser, brokerInfo: BrokerInfo): boolean {
-
-  if (!user || !brokerInfo) return false;
+  if (!user) return false;
   if (isSuperAdmin(user)) return true;
+  if (!brokerInfo) return false;
   if (isAdminOfBroker(user, brokerInfo)) return true;
-
 
   if (user.user_type === 'team_user') {
     return user?.permissions?.some(p =>
       p.type === 'broker' &&
       p.action === 'manage' &&
+      p.resource_id === brokerInfo.broker_id
+    ) || false;
+  }
+  return false;
+}
+
+export function canEditBroker(user: AuthUser, brokerInfo: BrokerInfo): boolean {
+  if (!user) return false;
+  if (isSuperAdmin(user)) return true;
+  if (!brokerInfo) return false;
+  if (isAdminOfBroker(user, brokerInfo)) return true;
+
+  if (user.user_type === 'team_user') {
+    return user?.permissions?.some(p =>
+      p.type === 'broker' &&
+      p.action === 'edit' &&
       p.resource_id === brokerInfo.broker_id
     ) || false;
   }

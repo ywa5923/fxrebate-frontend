@@ -7,12 +7,16 @@ import {
   PieChart,
   LogOut,
   Users,
-  HelpCircle,
   MessageCircle,
   ExternalLink,
+  Crown,
+  Pencil,
+  Eye,
 } from "lucide-react"
 
 import { NavProjects } from "@/components/nav-projects"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
 import {
   Sidebar,
@@ -157,6 +161,8 @@ export function AppSidebar({
   brokerOptionsLinks,
   teamManagementLink = null,
   isBrokerAdmin = false,
+  isSuperAdmin = false,
+  canEditBroker = false,
   userName,
   userEmail,
   brokerType,
@@ -167,12 +173,17 @@ export function AppSidebar({
   brokerOptionsLinks?: any;
   teamManagementLink?: { name: string; url: string; icon: string } | null;
   isBrokerAdmin?: boolean;
+  isSuperAdmin?: boolean;
+  canEditBroker?: boolean;
   userName?: string;
   userEmail?: string;
   brokerType?: string;
   brokerLogo?: string | null;
   brokerTradingName?: string | null;
 }) {
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
+  const superManagerHref = `/${locale}/control-panel/super-manager`;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -182,6 +193,39 @@ export function AppSidebar({
         <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} />
 
         <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
+          {isSuperAdmin && (
+            <Link
+              href={superManagerHref}
+              className="mb-3 flex items-center gap-2 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/45 px-3 py-2.5 text-sm font-medium text-rose-800 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/55 transition-colors"
+            >
+              <Crown className="h-4 w-4 shrink-0" />
+              <span>Super Admin Panel</span>
+            </Link>
+          )}
+          <div
+            className={`mb-3 flex items-start gap-2 rounded-lg border px-3 py-2.5 ${
+              canEditBroker
+                ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/35"
+                : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+            }`}
+          >
+            {canEditBroker ? (
+              <Pencil className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-700 dark:text-green-400" />
+            ) : (
+              <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
+            )}
+            <p
+              className={`text-xs leading-relaxed ${
+                canEditBroker
+                  ? "text-green-800 dark:text-green-300"
+                  : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              {canEditBroker
+                ? "You have edit access to this broker profile."
+                : "View-only access. You cannot edit this broker profile."}
+            </p>
+          </div>
           <div className="rounded-xl bg-[#ffffff] dark:bg-gray-900 p-4">
             <div className="mb-2">
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Need Help?</p>
@@ -235,11 +279,15 @@ export function AppSidebar({
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                   {userName ?? "User"}
                 </p>
-                {isBrokerAdmin && (
+                {isSuperAdmin ? (
+                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-900/45 dark:text-rose-300">
+                    Super Admin
+                  </span>
+                ) : isBrokerAdmin ? (
                   <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">
                     Admin
                   </span>
-                )}
+                ) : null}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {userEmail ?? ""}
@@ -262,7 +310,7 @@ export function AppSidebar({
             className="w-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
             onClick={async () => {
               await logoutUser();
-              window.location.href = '/en';
+              window.location.href = `/${locale}`;
             }}
           >
             <LogOut className="h-4 w-4 mr-2" />
