@@ -62,14 +62,14 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
   const team: BrokerTeam = teamResponse.data;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Team Management</h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your broker team members and permissions</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Team Management</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">Manage your broker team members and permissions</p>
           </div>
           <div className="flex flex-col  sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <AddMemberDialog brokerId={brokerId} />
@@ -77,22 +77,22 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
         </div>
 
         {/* Team Overview Card */}
-        <Card className="bg-white text-gray-800 border shadow-xl">
+        <Card className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border dark:border-gray-800 shadow-xl">
           <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto sm:mx-0">
-                  <Users className="h-8 w-8 text-gray-600" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto sm:mx-0">
+                  <Users className="h-8 w-8 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div className="text-center sm:text-left">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{team.name}</h2>
-                  <p className="text-gray-600 mt-1 text-sm sm:text-base">{team.description}</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">{team.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">{team.description}</p>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start mt-3 space-x-2 sm:space-x-4">
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200">
+                    <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                       <Users className="h-3 w-3 mr-1" />
                       {team.users.length} Members
                     </Badge>
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200">
+                    <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                       {team.is_active ? (
                         <><CheckCircle className="h-3 w-3 mr-1" /> Active</>
                       ) : (
@@ -103,8 +103,8 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                 </div>
               </div>
               <div className="text-center sm:text-right">
-                <div className="text-3xl sm:text-4xl font-bold text-gray-800">{team.users.length}</div>
-                <div className="text-gray-600 text-sm">Total Members</div>
+                <div className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100">{team.users.length}</div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">Total Members</div>
               </div>
             </div>
           </CardContent>
@@ -113,17 +113,17 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
         {/* Team Members Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {team.users.map((user: TeamUser) => (
-            <Card key={user.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card key={user.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-gray-900 border dark:border-gray-800">
               <CardContent className="p-6">
                 {/* User Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className="w-12 h-12 bg-gradient-to-br from-gray-900 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-900 to-green-600 dark:from-gray-700 dark:to-green-700 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                       {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{user.name}</h3>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500 truncate">
+                      <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-gray-100 truncate">{user.name}</h3>
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                         <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
                         <span className="truncate">{user.email}</span>
                       </div>
@@ -140,7 +140,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                 <div className="flex flex-wrap items-center gap-2 mb-4">
                   <Badge 
                     variant={user.is_active ? "default" : "secondary"}
-                    className={user.is_active ? "bg-gray-100 text-gray-800" : "bg-red-50 text-red-600"}
+                    className={user.is_active ? "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200" : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"}
                   >
                     {user.is_active ? (
                       <><CheckCircle className="h-3 w-3 mr-1" /> Active</>
@@ -149,7 +149,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                     )}
                   </Badge>
                   {user.email_verified_at && (
-                    <Badge variant="outline" className="text-gray-600 border-gray-200">
+                    <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
                       <Shield className="h-3 w-3 mr-1" />
                       Verified
                     </Badge>
@@ -157,7 +157,7 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                 </div>
 
                 {/* Last Login */}
-                <div className="flex items-center text-xs sm:text-sm text-gray-500 mb-4 min-h-[24px]">
+                <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 min-h-[24px]">
                   {user.last_login_at ? (
                     <>
                       <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
@@ -169,13 +169,13 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
                 {/* Permissions */}
                 {user.resource_permissions.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">Permissions:</h4>
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Permissions:</h4>
                     <div className="flex flex-wrap gap-1">
                       {user.resource_permissions.map((permission) => (
                         <Badge 
                           key={permission.id} 
                           variant="outline" 
-                          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                          className="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
                         >
                           {permission.action === 'manage' && <Crown className="h-3 w-3 mr-1" />}
                           {permission.action} {permission.permission_type}
@@ -193,32 +193,32 @@ export default async function TeamManagementPage({ params }: TeamManagementPageP
             <div
               role="button"
               tabIndex={0}
-              className="group flex w-full flex-col items-center justify-center min-h-[200px] rounded-xl border border-dashed border-gray-300 bg-white/70 p-6 text-card-foreground shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-white hover:shadow-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+              className="group flex w-full flex-col items-center justify-center min-h-[200px] rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 p-6 text-card-foreground shadow-sm transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-900 hover:shadow-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
             >
-              <div className="w-11 h-11 rounded-full border border-gray-200 bg-gray-50 group-hover:bg-gray-100 flex items-center justify-center mb-4 transition-colors">
-                <Plus className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+              <div className="w-11 h-11 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 group-hover:bg-gray-100 dark:group-hover:bg-gray-700 flex items-center justify-center mb-4 transition-colors">
+                <Plus className="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
               </div>
-              <h3 className="font-medium text-gray-800 mb-1">Add New Member</h3>
-              <p className="text-sm text-gray-500 text-center max-w-[200px]">Invite someone to join your broker team</p>
+              <h3 className="font-medium text-gray-800 dark:text-gray-100 mb-1">Add New Member</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[200px]">Invite someone to join your broker team</p>
             </div>
           </AddMemberDialog>
         </div>
 
         {/* Empty State */}
         {team.users.length === 0 && (
-          <Card className="text-center py-12">
+          <Card className="text-center py-12 bg-white dark:bg-gray-900 border dark:border-gray-800">
             <CardContent>
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users className="h-10 w-10 text-gray-400" />
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="h-10 w-10 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Team Members</h3>
-              <p className="text-gray-600 mb-6">Get started by adding your first team member</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No Team Members</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Get started by adding your first team member</p>
               <AddMemberDialog brokerId={brokerId}>
                 <Button
                   variant="outline"
-                  className="h-10 px-4 border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 hover:border-gray-400"
+                  className="h-10 px-4 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500"
                 >
-                  <UserPlus className="h-4 w-4 mr-2 text-gray-600" />
+                  <UserPlus className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
                   Add First Member
                 </Button>
               </AddMemberDialog>

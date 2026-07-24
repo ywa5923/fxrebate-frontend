@@ -163,6 +163,7 @@ export function AppSidebar({
   isBrokerAdmin = false,
   isSuperAdmin = false,
   canEditBroker = false,
+  canManageBroker = false,
   userName,
   userEmail,
   brokerType,
@@ -175,6 +176,7 @@ export function AppSidebar({
   isBrokerAdmin?: boolean;
   isSuperAdmin?: boolean;
   canEditBroker?: boolean;
+  canManageBroker?: boolean;
   userName?: string;
   userEmail?: string;
   brokerType?: string;
@@ -184,6 +186,7 @@ export function AppSidebar({
   const params = useParams();
   const locale = (params?.locale as string) || "en";
   const superManagerHref = `/${locale}/control-panel/super-manager`;
+  const hasWriteAccess = canManageBroker || canEditBroker;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -204,26 +207,30 @@ export function AppSidebar({
           )}
           <div
             className={`mb-3 flex items-start gap-2 rounded-lg border px-3 py-2.5 ${
-              canEditBroker
+              hasWriteAccess
                 ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/35"
                 : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
             }`}
           >
-            {canEditBroker ? (
+            {canManageBroker ? (
+              <Crown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-700 dark:text-green-400" />
+            ) : canEditBroker ? (
               <Pencil className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-700 dark:text-green-400" />
             ) : (
               <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
             )}
             <p
               className={`text-xs leading-relaxed ${
-                canEditBroker
+                hasWriteAccess
                   ? "text-green-800 dark:text-green-300"
                   : "text-slate-600 dark:text-slate-400"
               }`}
             >
-              {canEditBroker
-                ? "You have edit access to this broker profile."
-                : "View-only access. You cannot edit this broker profile."}
+              {canManageBroker
+                ? "You have manage access to this broker profile."
+                : canEditBroker
+                  ? "You have edit access to this broker profile."
+                  : "View-only access. You cannot edit this broker profile."}
             </p>
           </div>
           <div className="rounded-xl bg-[#ffffff] dark:bg-gray-900 p-4">

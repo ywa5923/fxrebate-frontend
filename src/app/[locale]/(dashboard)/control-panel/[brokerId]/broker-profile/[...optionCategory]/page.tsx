@@ -1,17 +1,14 @@
 import { getCategoriesWithOptions } from "@/lib/getCategoriesWithOptions";
 import { notFound, redirect } from "next/navigation";
 import { AuthUser, Option, OptionCategory } from "@/types";
-
 import { MyPromotions } from "./_Promotions";
 import { MyContests } from "./_Contests";
 import { MyEvaluationRules } from "./_EvaluationRules";
 import { MyBrokerOptions } from "./_BrokerOptions";
 import { MyChallengeCategories } from "./_ChallengeCategories";
 import { MyRebates } from "./_Rebates";
-
 import logger from "@/lib/logger";
 import { getBrokerInfo, isAuthenticated } from "@/lib/auth-actions";
-
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
 import { MyReferalsAndNotes } from "./_ReferalsAndNotes";

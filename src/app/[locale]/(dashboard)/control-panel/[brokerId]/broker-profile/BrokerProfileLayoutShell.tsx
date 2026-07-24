@@ -101,6 +101,7 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
               isBrokerAdmin={userIsAdminOfBroker}
               isSuperAdmin={userIsSuperAdmin}
               canEditBroker={userCanEditBroker}
+              canManageBroker={userCanManageBroker}
               userName={user?.name}
               userEmail={user?.email}
               brokerType={brokerType}

@@ -96,17 +96,17 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
         {children || (
           <Button
             variant="outline"
-            className="w-full sm:w-auto h-10 px-4 border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:text-gray-900"
+            className="w-full sm:w-auto h-10 px-4 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
           >
-            <UserPlus className="h-4 w-4 mr-2 text-gray-600" />
+            <UserPlus className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
             Add Member
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle>Add New Team Member</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">Add New Team Member</DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-400">
             Invite a new user to join your broker team. They will receive an email invitation.
           </DialogDescription>
         </DialogHeader>
@@ -171,7 +171,7 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
             />
 
             {form.formState.errors.root && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+              <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md p-3">
                 {form.formState.errors.root.message}
               </div>
             )}
@@ -182,13 +182,14 @@ export function AddMemberDialog({ brokerId, children }: AddMemberDialogProps) {
                 variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isLoading}
+                className="border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-green-800 hover:bg-green-900 text-white shadow-sm"
+                className="bg-green-800 hover:bg-green-900 dark:bg-green-700 dark:hover:bg-green-600 text-white shadow-sm"
               >
                 {isLoading ? (
                   <>

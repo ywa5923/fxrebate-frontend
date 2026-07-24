@@ -127,12 +127,12 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
         }
       }}
     >
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
         {!deleteMode ? (
           <>
             <DialogHeader>
-              <DialogTitle>Edit Team Member</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Team Member</DialogTitle>
+              <DialogDescription className="text-gray-600 dark:text-gray-400">
                 Update the team member's information and permissions.
               </DialogDescription>
             </DialogHeader>
@@ -200,7 +200,7 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
                   control={form.control}
                   name="isActive"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-gray-200 dark:border-gray-700 p-4">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -218,7 +218,7 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
                 />
 
                 {form.formState.errors.root && (
-                  <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+                  <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md p-3">
                     {form.formState.errors.root.message}
                   </div>
                 )}
@@ -237,10 +237,11 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
                     variant="outline"
                     onClick={onClose}
                     disabled={isLoading}
+                    className="border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="bg-green-800 hover:bg-green-900 text-white shadow-sm">
+                  <Button type="submit" disabled={isLoading} className="bg-green-800 hover:bg-green-900 dark:bg-green-700 dark:hover:bg-green-600 text-white shadow-sm">
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -260,8 +261,8 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Delete Team Member</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-gray-900 dark:text-gray-100">Delete Team Member</DialogTitle>
+              <DialogDescription className="text-gray-600 dark:text-gray-400">
                 Are you sure you want to delete this team member? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
@@ -271,6 +272,7 @@ export function EditMemberDialog({ brokerId, userId, initialData, isOpen, onClos
                 variant="outline"
                 onClick={() => setDeleteMode(false)}
                 disabled={isLoading}
+                className="border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
               >
                 Cancel
               </Button>
