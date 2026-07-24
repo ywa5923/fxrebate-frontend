@@ -30,6 +30,8 @@ interface ChallengeCategoriesProps {
   brokerId?: number ;
   type: "challenge" | "placeholder";
   is_admin: boolean;
+  can_edit?: boolean;
+  can_manage?: boolean;
   amountCurrencies?: Array<{value:string,label:string}>;
 }
 
@@ -45,7 +47,7 @@ type DeleteConfirmation = {
   name: string;
 } | null;
 
-function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin, amountCurrencies }: ChallengeCategoriesProps) {
+function ChallengeCategories({ categories, defaultCategories, brokerId, type, is_admin, can_edit = true, can_manage = true, amountCurrencies }: ChallengeCategoriesProps) {
   //const [hiddenState, setHiddenState] = useLocalStorage<HiddenState>("hidden-challenge-state", { categories: [], steps: [], amounts: [] });
   const [isEditingHiddenState, setIsEditingHiddenState] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation>(null);
@@ -171,7 +173,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
             Select a challenge category to get started
           </p>
-          {type === "challenge" && (
+          {type === "challenge" && can_manage && (
             <div className="mt-3 flex items-center justify-center gap-2">
             <button
               type="button"
@@ -271,6 +273,7 @@ function ChallengeCategories({ categories, defaultCategories, brokerId, type, is
                   language="en"
                   type={type}
                   is_admin={is_admin}
+                  can_edit={can_edit}
                   locale={locale}
                 />
               </div>

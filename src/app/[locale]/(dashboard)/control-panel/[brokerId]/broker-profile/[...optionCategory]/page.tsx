@@ -15,10 +15,9 @@ import { MyPromotions } from "./_Promotions";
 import { MyContests } from "./_Contests";
 import { MyEvaluationRules } from "./_EvaluationRules";
 import { MyBrokerOptions } from "./_BrokerOptions";
+import { MyChallengeCategories } from "./_ChallengeCategories";
 
 //import { getChallengeCategories } from "@/lib/getChallengeCategories";
-import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
-import { ChallengeType } from "@/types/ChallengeType";
 import logger from "@/lib/logger";
 import { getBrokerInfo, isAuthenticated } from "@/lib/auth-actions";
 
@@ -31,7 +30,6 @@ import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 
 //import ReferalLinksAndNotes from "./ReferalLinksAndNotes";
 //import { AffiliateLinksData } from "@/types/Url";
-import { DefaultChallengeCategoriesData } from "@/types/ChallengeType";
 import { EmptyStateWithAction } from "@/components/EmptyStateWithAction";
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
@@ -178,66 +176,12 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "challenge-matrix") {
-    let brokerChallengeCategoriesUrl = `/challenges/categories/${brokerId}`;
-    let defaultChallengeCategoriesUrl = `/challenges/default-categories`;
-   
-    const [
-      brokerChallengeCategoriesResponse,
-      defaultChallengeCategoriesResponse,
-    ] = await Promise.all([
-      apiClient<ChallengeType[]>(
-        brokerChallengeCategoriesUrl,
-        UseTokenAuth.Yes,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-        ErrorMode.Return,
-      ),
-      apiClient<DefaultChallengeCategoriesData>(
-        defaultChallengeCategoriesUrl,
-        UseTokenAuth.Yes,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-        ErrorMode.Return,
-      ),
-    ]);
-
-    if (
-      !brokerChallengeCategoriesResponse.success ||
-      !defaultChallengeCategoriesResponse.success
-    ) {
-      log.error(
-        "Error fetching broker challenge categories or default challenge categories",
-        {
-          context: {
-            brokerChallengeCategories:
-              brokerChallengeCategoriesResponse.message,
-            defaultChallengeCategories:
-              defaultChallengeCategoriesResponse.message,
-          },
-        },
-      );
-      notFound();
-    }
-    let brokerCategories = brokerChallengeCategoriesResponse.data ?? [];
-    let defaultCategories =defaultChallengeCategoriesResponse.data?.default_challenge_categories ??[];
-      
-    
-    let amountCurrencies = defaultChallengeCategoriesResponse.data?.amount_currencies ?? [];
-      
-
     return (
-      <ChallengeCategories
-        key={brokerId}
-        is_admin={is_admin}
-        categories={brokerCategories}
-        defaultCategories={defaultCategories}
+      <MyChallengeCategories
         brokerId={brokerId}
-        type="challenge"
-        amountCurrencies={amountCurrencies}
+        is_admin={is_admin}
+        can_edit={can_edit}
+        can_manage={can_manage}
       />
     );
   }

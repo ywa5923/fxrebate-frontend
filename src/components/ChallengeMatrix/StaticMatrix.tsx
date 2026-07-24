@@ -59,6 +59,7 @@ interface StaticMatrixProps {
   language: string;
   type: "challenge" | "placeholder";
   is_admin: boolean;
+  can_edit?: boolean;
   locale: string;
 }
 
@@ -74,6 +75,7 @@ export default function StaticMatrix({
   type = "challenge",
   zoneId = null,
   is_admin = false,
+  can_edit = true,
   locale = "en",
 }: StaticMatrixProps) {
   const log = logger.child("components/ui/StaticMatrix");
@@ -444,6 +446,9 @@ export default function StaticMatrix({
   };
 
   const handleSave = async () => {
+    if (!can_edit) {
+      return;
+    }
     try {
       setSaving(true);
 
@@ -647,14 +652,21 @@ export default function StaticMatrix({
           )}
           {/* Save button */}
           <Button
-            disabled={is_admin ? saving : saving || !stepSlug || !hasChanges}
+            disabled={
+              !can_edit ||
+              (is_admin ? saving : saving || !stepSlug || !hasChanges)
+            }
             onClick={handleSave}
             variant="outline"
             size="default"
             className="h-9 bg-green-100 hover:bg-green-200 text-green-800 border-green-200 disabled:opacity-50"
           >
             <Save className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : "Save Table"}
+            {!can_edit
+              ? "View Only"
+              : saving
+                ? "Saving..."
+                : "Save Table"}
           </Button>
         </div>
       </div>
