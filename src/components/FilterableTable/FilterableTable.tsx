@@ -160,8 +160,8 @@ export default function FilterableTable<T extends { id: number | string }>({
             className={cn(
               "inline-flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm",
               isTrue
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-600"
+                ? "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300"
+                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
             )}
           >
             {isTrue ? "Yes" : "No"}
@@ -171,7 +171,7 @@ export default function FilterableTable<T extends { id: number | string }>({
     } else {
       const displayValue = colType === "json" ? JSON.stringify(value) : value;
       return (
-        <span className=" text-sm text-gray-800 block max-w-[28ch] break-all">
+        <span className=" text-sm text-gray-800 dark:text-gray-200 block max-w-[28ch] break-all">
           {displayValue}
         </span>
       );
@@ -253,7 +253,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                 srcStr.startsWith("http://") || srcStr.startsWith("https://");
               if (!startsWithHttp) {
                 return (
-                  <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                     No logo
                   </div>
                 );
@@ -302,7 +302,7 @@ export default function FilterableTable<T extends { id: number | string }>({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 w-7 p-0 shrink-0 border-blue-300 hover:bg-blue-50"
+                className="h-7 w-7 p-0 shrink-0 border-blue-300 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                 onClick={(e) => {
                  // e.stopPropagation();
                   //dialogFormState.mode === null &&
@@ -310,17 +310,14 @@ export default function FilterableTable<T extends { id: number | string }>({
                 }}
                 title={`Edit ${propertyNameToDisplay ?? "Item"}`}
               >
-                <PencilIcon className="h-4 w-4 text-blue-700" />
+                <PencilIcon className="h-4 w-4 text-blue-700 dark:text-blue-400" />
               </Button>
             )}
             {dashboardUrl && (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 w-7 p-0 shrink-0 border-gray-300 hover:bg-orange-400"
-                style={{ color: "#1f2937" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#111827")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#1f2937")}
+                className="h-7 w-7 p-0 shrink-0 border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 hover:bg-orange-400 hover:text-gray-900 dark:hover:bg-orange-500/80"
                 onClick={() => {
                   if (!dashboardUrl) return;
                   window.location.href = dashboardUrl.replace(
@@ -330,10 +327,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                 }}
                 title={`Go to broker dashboard: ${item.id}`}
               >
-                <ArrowUpRight
-                  className="h-4 w-4"
-                  style={{ color: "inherit" }}
-                />
+                <ArrowUpRight className="h-4 w-4" />
               </Button>
             )}
             {deleteUrl && (
@@ -388,7 +382,7 @@ export default function FilterableTable<T extends { id: number | string }>({
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600 dark:text-gray-400">
         <div>
           Showing {from} to {to} of {total} dynamic options
         </div>
@@ -398,7 +392,7 @@ export default function FilterableTable<T extends { id: number | string }>({
               onClick={handleClearFilters}
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+              className="border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-800 dark:hover:text-red-300"
             >
               <Eraser className="h-4 w-4" />
               <span>Clear Filters</span>
@@ -408,7 +402,7 @@ export default function FilterableTable<T extends { id: number | string }>({
             variant="default"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className="gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300"
+            className="gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-dashed border-blue-300 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800"
             title={showFilters ? "Hide Filters" : "Advanced Filters"}
           >
             <Filter className="h-4 w-4" />
@@ -427,7 +421,7 @@ export default function FilterableTable<T extends { id: number | string }>({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                className="h-8 px-2 sm:px-3 gap-2 shrink-0 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-800 dark:hover:text-blue-300"
               >
                 <Sliders className="h-4 w-4" />
                 <span className="hidden sm:inline">Select Columns</span>
@@ -470,9 +464,9 @@ export default function FilterableTable<T extends { id: number | string }>({
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border w-full" style={{ maxWidth: "100%" }}>
+      <div className="rounded-md border border-gray-200 dark:border-gray-800 w-full" style={{ maxWidth: "100%" }}>
         <div
-          className="overflow-x-auto"
+          className="overflow-x-auto dark:[scrollbar-color:#4b5563_#111827]"
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "#9ca3af #f3f4f6",
@@ -488,7 +482,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                   {headerGroup.headers.map((header, index) => (
                     <TableHead
                       key={header.id}
-                      className={index === 0 ? "bg-gray-100 font-bold" : ""}
+                      className={index === 0 ? "bg-gray-100 dark:bg-gray-900 font-bold" : ""}
                     >
                       {header.isPlaceholder
                         ? null
@@ -511,7 +505,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                     {row.getVisibleCells().map((cell, index) => (
                       <TableCell
                         key={cell.id}
-                        className={index === 0 ? "bg-gray-50 font-medium" : ""}
+                        className={index === 0 ? "bg-gray-50 dark:bg-gray-900/50 font-medium" : ""}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

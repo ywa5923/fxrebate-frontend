@@ -222,17 +222,17 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
     return (
          <div className="m-2">
                   {isLoading && (
-                    <div className="flex items-center justify-center gap-3 rounded-lg border border-blue-100 bg-gradient-to-r from-white to-blue-50/50 p-4 shadow-sm ring-1 ring-blue-100">
-                      <Loader2 className="h-20 w-20 animate-spin text-blue-200" />
-                      <span className="text-grey-100 text-lg font-medium tracking-wide">Loading...</span>
+                    <div className="flex items-center justify-center gap-3 rounded-lg border border-blue-100 dark:border-blue-900 bg-gradient-to-r from-white to-blue-50/50 dark:from-gray-950 dark:to-blue-950/30 p-4 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900">
+                      <Loader2 className="h-20 w-20 animate-spin text-blue-200 dark:text-blue-700" />
+                      <span className="text-gray-600 dark:text-gray-300 text-lg font-medium tracking-wide">Loading...</span>
                     </div>
                   )}
                  { !isLoading && formConfig && <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit,(errors) => console.log('form errors:', errors))}>
                         {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, XFormSection]) => {
                           return (
-                            <FieldSet key={sectionKey} className="mb-4 pb-4 p-5 border-2 border-dashed border-grey-300 rounded-md">
-                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5  hover:bg-blue-100 text-blue-700 border border-dashed border-blue-300 rounded-md">{(section.label ?? sectionKey).toUpperCase()}</FieldLegend>
+                            <FieldSet key={sectionKey} className="mb-4 pb-4 p-5 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md">
+                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-blue-100 dark:hover:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-dashed border-blue-300 dark:border-blue-800 rounded-md">{(section.label ?? sectionKey).toUpperCase()}</FieldLegend>
                             <FieldDescription>
                               {section?.description ?? ""}
                             </FieldDescription>
@@ -280,9 +280,9 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
                             </FieldSet>
                           );
                         })}
-                        <div className="flex justify-center items-center mt-3 py-2 bg-gray-50">
+                        <div className="flex justify-center items-center mt-3 py-2 bg-gray-50 dark:bg-gray-900/60">
 
-                        <Button disabled={!isDirty ||  isSubmitting} variant="outline" className="text-green-700 hover:text-green-800 border-green-700 hover:border-green-800 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
+                        <Button disabled={!isDirty ||  isSubmitting} variant="outline" className="text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 border-green-700 dark:border-green-600 hover:border-green-800 dark:hover:border-green-500 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
                         </div>
                       </form>
                  </Form>

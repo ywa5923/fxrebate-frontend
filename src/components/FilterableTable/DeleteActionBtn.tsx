@@ -53,7 +53,7 @@ export default function DeleteActionBtn( { deleteUrl, resourceId, resourcetoDele
             <DialogTrigger asChild>
                 <Button
                     onClick={() => setOpen(true)}
-                    className="h-8 w-8 p-0 text-red-700 hover:text-red-800 hover:bg-red-50 border border-red-200 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+                    className="h-8 w-8 p-0 text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 dark:focus-visible:ring-red-800"
                     variant="ghost"
                     size="sm"
                     title={`Delete ${resourcetoDelete ?? "item"}`}

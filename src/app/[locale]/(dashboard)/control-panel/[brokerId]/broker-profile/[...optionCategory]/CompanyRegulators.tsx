@@ -132,7 +132,7 @@ function DetailItem({
   if (!value) return null;
 
   return (
-    <div className={cn("min-w-0 w-full", className)}>
+    <div className={cn("min-w-0 w-full  mt-2", className)}>
       <dt className="text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
         {label}
       </dt>

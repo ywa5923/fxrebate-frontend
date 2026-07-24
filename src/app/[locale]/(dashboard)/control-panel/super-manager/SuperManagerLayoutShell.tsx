@@ -17,6 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import ThemeToggleDashboard from "@/components/ThemeToggleDashboard"
 
 export default async function SuperManagerLayoutShell({params, children}: {params: Promise<{locale: string}>, children: React.ReactNode}) {
   
@@ -137,6 +138,9 @@ export default async function SuperManagerLayoutShell({params, children}: {param
                     className="mr-2 h-4 hidden sm:block"
                   />
                   <BreadcrumbsSuperManager />
+                  <div className="ml-auto">
+                    <ThemeToggleDashboard />
+                  </div>
                 </div>
               </header>
               <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-y-auto overflow-x-hidden">

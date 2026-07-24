@@ -127,8 +127,7 @@ export default function FilterSection2<T>({
   return (
     <>
      <div
-      className="bg-white dark:bg-white border-2 border-dashed border-blue-300 rounded-lg p-4 space-y-4 w-full"
-      style={{ backgroundColor: "#ffffff" }}
+      className="bg-white dark:bg-gray-950 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-lg p-4 space-y-4 w-full"
     >
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
@@ -165,7 +164,7 @@ export default function FilterSection2<T>({
                     className={cn(
                       "w-full",
                       searchParams.get(key) &&
-                        "border-blue-600 ring-1 ring-blue-300"
+                        "border-blue-600 ring-1 ring-blue-300 dark:border-blue-500 dark:ring-blue-800"
                     )}
                   >
                     <SelectValue placeholder="Select an option" />
@@ -186,7 +185,7 @@ export default function FilterSection2<T>({
                   <Button 
                   variant="outline" 
                   size="sm" 
-                  className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                  className="border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-800 dark:hover:text-red-300"
                    onClick={() => {handleFilterDelete(key)}}>
                    <XCircle className="h-4 w-4" aria-hidden="true" />
                    <span className="sr-only">Clear filter</span>
@@ -227,14 +226,14 @@ export default function FilterSection2<T>({
                 className={cn(
                   "w-full",
                   searchParams.get(key) &&
-                    "border-blue-600 ring-1 ring-blue-300"
+                    "border-blue-600 ring-1 ring-blue-300 dark:border-blue-500 dark:ring-blue-800"
                 )}
               />
                {activeFilters[key]  && 
                   <Button 
                   variant="outline" 
                   size="sm" 
-                  className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                  className="border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-800 dark:hover:text-red-300"
                    onClick={() => {handleFilterDelete(key)}}>
                    <XCircle className="h-4 w-4" aria-hidden="true" />
                    <span className="sr-only">Clear filter</span>

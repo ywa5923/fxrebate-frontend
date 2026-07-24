@@ -123,10 +123,15 @@ export function AppSidebarSuper({
       <SidebarContent>
         {/* Logo */}
         <div className="w-full mt-4 mb-4 flex items-center justify-center group-data-[collapsible=icon]:hidden">
-          <img 
-            src="/assets/darkFxRebate-logo.svg" 
-            alt="FXREBATE Logo" 
-            className="h-10 w-auto"
+          <img
+            src="/assets/darkFxRebate-logo.svg"
+            alt="FXREBATE Logo"
+            className="h-10 w-auto block dark:hidden"
+          />
+          <img
+            src="/assets/lightFxRebate-logo.svg"
+            alt="FXREBATE Logo"
+            className="h-10 w-auto hidden dark:block"
           />
         </div>
 
@@ -166,8 +171,8 @@ export function AppSidebarSuper({
                             {...(link.prefetch === false ? { prefetch: false } : {})}
                             className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
-                                ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
-                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
+                                ? 'bg-[#308360] text-white hover:bg-[#276B52] dark:hover:bg-[#276B52] px-4 py-3' 
+                                : 'text-gray-800 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-slate-800/50 hover:text-green-600 dark:hover:text-green-400 px-3 py-2'
                             }`}
                           >
                             <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
@@ -201,7 +206,7 @@ export function AppSidebarSuper({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-slate-800"
                               >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
@@ -361,8 +366,8 @@ export function AppSidebarSuper({
                             {...(link.prefetch === false ? { prefetch: false } : {})}
                             className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                               isActive 
-                                ? 'bg-[#308360] text-white hover:bg-[#276B52] px-4 py-3' 
-                                : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
+                                ? 'bg-[#308360] text-white hover:bg-[#276B52] dark:hover:bg-[#276B52] px-4 py-3' 
+                                : 'text-gray-800 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-slate-800/50 hover:text-green-600 dark:hover:text-green-400 px-3 py-2'
                             }`}
                           >
                             <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
@@ -446,8 +451,8 @@ export function AppSidebarSuper({
                           {...(link.prefetch === false ? { prefetch: false } : {})}
                           className={`flex items-center w-full rounded-md transition-all duration-200 font-medium text-sm ${
                             isActive 
-                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-3' 
-                              : 'text-gray-800 hover:bg-green-50 hover:text-green-600 px-3 py-2'
+                              ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 px-4 py-3' 
+                              : 'text-gray-800 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-slate-800/50 hover:text-green-600 dark:hover:text-green-400 px-3 py-2'
                           }`}
                         >
                           <IconComponent className="mr-3 h-4 w-4 flex-shrink-0" />
