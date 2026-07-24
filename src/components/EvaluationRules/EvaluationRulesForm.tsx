@@ -42,6 +42,7 @@ type Props = {
   formConfig: EvaluationFormConfig;
   brokerId: number;
   is_admin: boolean;
+  can_edit?: boolean;
   evaluationRules?: EvaluationRule[];
 };
 
@@ -72,6 +73,7 @@ export default function EvaluationRulesForm({
   formConfig,
   brokerId,
   is_admin,
+  can_edit = true,
   evaluationRules,
 }: Props) {
   const thisLogger = logger.child("EvaluationRulesForm" );
@@ -165,7 +167,10 @@ export default function EvaluationRulesForm({
     });
   }
 
-  const onSubmit =async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!can_edit) {
+      return;
+    }
     const saveEvaluationRulesUrl = "/evaluation-rules/" + brokerId;
 
    
@@ -459,14 +464,19 @@ export default function EvaluationRulesForm({
       <div className="my-8 flex justify-end">
         <Button
           type="submit"
-          className="min-w-28 border border-green-700 bg-green-600 text-white hover:bg-green-700"
+          disabled={!can_edit}
+          className={
+            can_edit
+              ? "min-w-28 border border-green-700 bg-green-600 text-white hover:bg-green-700"
+              : "min-w-28"
+          }
           onClick={() => {
             thisLogger.info("Form values before validation", {
               context: { values: form.getValues() },
             });
           }}
         >
-          Save
+          {can_edit ? "Save" : "View Only"}
         </Button>
       </div>
     </form>

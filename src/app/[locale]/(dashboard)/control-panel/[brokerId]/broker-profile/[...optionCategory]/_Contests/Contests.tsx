@@ -23,12 +23,13 @@ import { apiClient } from "@/lib/api-client";
 import { UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
 
-
 interface ContestsProps {
   broker_id: number;
   contests?: DynamicTableRow[];
   options: Option[];
   is_admin?: boolean;
+  can_edit?: boolean;
+  can_manage?: boolean;
 }
 
 export default function Contests({
@@ -36,6 +37,8 @@ export default function Contests({
   contests,
   options,
   is_admin = false,
+  can_edit = true,
+  can_manage = true,
 }: ContestsProps) {
   const [activeTab, setActiveTab] = useState<string>(
     contests?.[0]?.id?.toString() || "",
@@ -47,17 +50,15 @@ export default function Contests({
   const router = useRouter();
   const prevContestsLength = useRef(contests?.length || 0);
   const thisLogger = logger.child("ContestsComponent");
+
   useEffect(() => {
-    // If a new contest is added
     if (contests && contests.length > prevContestsLength.current) {
-      // Set active tab to the latest contest (last in the array)
       setActiveTab(contests[contests.length - 1].id.toString());
     } else if (
       contests &&
       contests.length > 0 &&
       !contests.some((contest) => contest.id.toString() === activeTab)
     ) {
-      // If current activeTab is invalid, set to first contest
       setActiveTab(contests[0].id.toString());
     }
     prevContestsLength.current = contests?.length || 0;
@@ -109,6 +110,7 @@ export default function Contests({
           </div>
         </div>
         <button
+          type="button"
           onClick={() => setShowNewContest(!showNewContest)}
           className={cn(
             "h-7 w-7 inline-flex items-center justify-center rounded border transition-all duration-150",
@@ -126,10 +128,8 @@ export default function Contests({
         </button>
       </div>
 
-      {/* New Contest Form */}
-      {showNewContest && (
+      {showNewContest && can_manage && (
         <div className="mb-6 border border-dashed border-green-500 dark:border-green-800 rounded-lg p-4">
-          {/* Header with icon and text */}
           <p className="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400 mb-4">
             New Contest
           </p>
@@ -160,13 +160,13 @@ export default function Contests({
                 is_admin={is_admin}
                 entity_id={0}
                 entity_type="contest"
+                can_edit={can_edit}
               />
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Tab Navigation */}
       {contests && contests.length > 0 ? (
         <>
           <div className="mb-2">
@@ -176,6 +176,7 @@ export default function Contests({
                 return (
                   <button
                     key={contest.id}
+                    type="button"
                     onClick={() => setActiveTab(contest.id.toString())}
                     className={cn(
                       "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
@@ -197,8 +198,7 @@ export default function Contests({
             </div>
           </div>
 
-          {/* Tab Content */}
-          {contests.map((contest, index) => (
+          {contests.map((contest) => (
             <div
               key={contest.id}
               className={cn(
@@ -209,15 +209,17 @@ export default function Contests({
               {contest.option_values && contest.option_values.length > 0 ? (
                 <>
                   <div className="flex items-center justify-end gap-2 mb-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
-                      onClick={() => setConfirmDeleteContest(contest.id)}
-                      title="Delete contest"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    {can_manage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 border border-red-200 dark:border-red-800 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+                        onClick={() => setConfirmDeleteContest(contest.id)}
+                        title="Delete contest"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                   <OptionsForm
                     broker_id={broker_id}
@@ -227,6 +229,7 @@ export default function Contests({
                     is_admin={is_admin}
                     entity_id={contest.id}
                     entity_type="contest"
+                    can_edit={can_edit}
                   />
                 </>
               ) : (
@@ -255,7 +258,6 @@ export default function Contests({
             </div>
           ))}
 
-          {/* Confirmation Dialog for Contest Delete */}
           <Dialog
             open={!!confirmDeleteContest}
             onOpenChange={(open) => {
@@ -295,8 +297,12 @@ export default function Contests({
         !showNewContest && (
           <NotFoundEntity
             title="No contests found"
-            description="Click here or use the + button to add a contest."
-            onClick={() => setShowNewContest(true)}
+            description={
+              can_manage
+                ? "Click here or use the + button to add a contest."
+                : "No contests are configured for this broker yet."
+            }
+            onClick={can_manage ? () => setShowNewContest(true) : undefined}
             ariaLabel="Add contest"
           />
         )

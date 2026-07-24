@@ -4,23 +4,17 @@ import { Company, MatrixCell,  RegulatorList } from "@/types";
 import { notFound, redirect } from "next/navigation";
 //import { DynamicForm } from "@/components/DynamicForm";
 import { AuthUser, Option, OptionCategory } from "@/types";
-import { OptionValue } from "@/types";
 //import { getCompanies } from "@/lib/getCompanies";
 //import Companies from "./Companies";
 //import { getAccountTypes } from "@/lib/getAccountTypes";
 
 //import { getAccountTypeUrls } from "@/lib/getAccountTypeUrls";
 
-import BrokerOptions from "./BrokerOptions";
-import {
-  EvaluationFormConfig,
-  EvaluationRulesForm,
-  type EvaluationRule,
-} from "@/components/EvaluationRules";
 import Rebates from "./Rebates";
-//import { getDynamicTable } from "@/lib/getDynamicTable";
-import Promotions from "./Promotions";
-import Contests from "./Contests";
+import { MyPromotions } from "./_Promotions";
+import { MyContests } from "./_Contests";
+import { MyEvaluationRules } from "./_EvaluationRules";
+import { MyBrokerOptions } from "./_BrokerOptions";
 
 //import { getChallengeCategories } from "@/lib/getChallengeCategories";
 import ChallengeCategories from "@/components/ChallengeMatrix/ChallengeCategories";
@@ -31,8 +25,6 @@ import { getBrokerInfo, isAuthenticated } from "@/lib/auth-actions";
 import { apiClient } from "@/lib/api-client";
 
 import { MatrixHeaders } from "@/types/Matrix";
-
-import { DynamicTableRow } from "@/types";
 
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 //import { canAdminBroker } from "@/lib/auth-actions";
@@ -154,58 +146,25 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "promotions") {
-    // let promotions = await getDynamicTable('promotions',brokerId,null,'en');
-    let promotionFetchUrl = `/promotions/${brokerId}?language_code=en`;
-    let promotionsResponse = await apiClient<DynamicTableRow[]>(
-      promotionFetchUrl,
-      true,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!promotionsResponse.success) {
-      log.error("Error fetching promotions", {
-        context: { promotions: promotionsResponse.message },
-      });
-      notFound();
-    }
-    let promotions = promotionsResponse.data ?? [];
     return (
-      <Promotions
-        broker_id={brokerId}
-        promotions={promotions}
-        options={matchedCategory.options as Option[]}
+      <MyPromotions
+        brokerId={brokerId}
+        promotionOptions={matchedCategory.options as Option[]}
         is_admin={is_admin}
+        can_edit={can_edit}
+        can_manage={can_manage}
       />
     );
   }
 
   if (categorySlug == "contests") {
-    //let contests = await getDynamicTable('contests',brokerId,null,'en');
-    let contestsFetchUrl = `/contests/${brokerId}?language_code=en`;
-    let contestsResponse = await apiClient<DynamicTableRow[]>(
-      contestsFetchUrl,
-      true,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!contestsResponse.success) {
-      log.error("Error fetching contests", {
-        context: { contests: contestsResponse.message },
-      });
-      notFound();
-    }
-    let contests = contestsResponse.data ?? [];
-
     return (
-      <Contests
-        broker_id={brokerId}
-        contests={contests}
-        options={matchedCategory.options as Option[]}
+      <MyContests
+        brokerId={brokerId}
+        contestOptions={matchedCategory.options as Option[]}
         is_admin={is_admin}
+        can_edit={can_edit}
+        can_manage={can_manage}
       />
     );
   }
@@ -284,47 +243,11 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "evaluation-rules") {
-    const evaluationRulesFormConfigUrl = "/evaluation-rules/form-config";
-    const evaluationRulesListUrl = `/evaluation-rules/${brokerId}`;
-
-    const [evaluationRulesFormConfigResponse, evaluationRulesListResponse] =
-      await Promise.all([
-        apiClient<EvaluationFormConfig>(
-          evaluationRulesFormConfigUrl,
-          UseTokenAuth.Yes,
-          { method: "GET", cache: "no-store" },
-          ErrorMode.Return,
-        ),
-        apiClient<EvaluationRule[]>(
-          evaluationRulesListUrl,
-          UseTokenAuth.Yes,
-          { method: "GET", cache: "no-store" },
-          ErrorMode.Return,
-        ),
-      ]);
-
-    if (
-      !evaluationRulesFormConfigResponse.success ||
-      !evaluationRulesFormConfigResponse.data
-    ) {
-      log.error("Error fetching evaluation rules form config", {
-        context: { evaluationRules: evaluationRulesFormConfigResponse.message },
-      });
-      notFound();
-    }
-
-    const evaluationRulesFormConfig = evaluationRulesFormConfigResponse.data;
-    const evaluationRules = evaluationRulesListResponse.success
-      ? (evaluationRulesListResponse.data ?? [])
-      : [];
-
     return (
-      <EvaluationRulesForm
-        key={brokerId}
-        is_admin={is_admin}
-        formConfig={evaluationRulesFormConfig}
+      <MyEvaluationRules
         brokerId={brokerId}
-        evaluationRules={evaluationRules}
+        is_admin={is_admin}
+        can_edit={can_edit}
       />
     );
   }
@@ -414,34 +337,14 @@ export default async function BrokerProfilePage({
       </>
     );
   } else {
-    //===============Return the options values for the broker table by category id===============
-
-    let optionsValuesFetchUrl = `/option-values/${brokerId}?entity_type=Broker&language_code=en&category_id=${categoryId}`;
-    let optionsValuesResponse = await apiClient<OptionValue[]>(
-      optionsValuesFetchUrl,
-      true,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-    if (!optionsValuesResponse.success) {
-      log.error("Error fetching options values", {
-        context: { optionsValues: optionsValuesResponse.message },
-      });
-      notFound();
-    }
-    let optionsValues = optionsValuesResponse.data ?? [];
-
     return (
-      <BrokerOptions
-        broker_id={brokerId}
+      <MyBrokerOptions
+        brokerId={brokerId}
+        categoryId={categoryId}
+        categorySlug={categorySlug}
         options={matchedCategory.options as Option[]}
-        optionsValues={optionsValues}
         is_admin={is_admin}
-        entity_id={brokerId}
-        entity_type="broker"
-        category={categorySlug.replace("-", " ").toUpperCase()}
+        can_edit={can_edit}
       />
     );
   }

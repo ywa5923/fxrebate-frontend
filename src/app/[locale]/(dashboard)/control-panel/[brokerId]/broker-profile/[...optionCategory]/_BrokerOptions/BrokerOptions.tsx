@@ -10,10 +10,10 @@ interface BrokerOptionsProps {
   options: Option[];
   optionsValues: OptionValue[];
   is_admin?: boolean;
+  can_edit?: boolean;
   entity_id: number;
   entity_type: string;
   category: string;
-  
 }
 
 export default function BrokerOptions({
@@ -21,10 +21,10 @@ export default function BrokerOptions({
   options,
   optionsValues,
   is_admin = false,
+  can_edit = true,
   entity_id,
   entity_type,
- 
-  category
+  category,
 }: BrokerOptionsProps) {
   return (
     <div className="container mx-auto p-3 sm:p-6 pb-32 sm:pb-40">
@@ -51,6 +51,7 @@ export default function BrokerOptions({
               options={options}
               optionsValues={optionsValues}
               is_admin={is_admin}
+              can_edit={can_edit}
               entity_id={entity_id}
               entity_type={entity_type}
               action={submitBrokerProfile}
