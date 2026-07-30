@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import LogoLayoutSkeleton from '@/components/LogoLayoutSkeleton';
 import SiteLayoutShell from './SiteLayoutShell';
 
 export default async function LocaleLayout({
@@ -9,7 +10,7 @@ export default async function LocaleLayout({
   params: Promise<Record<string, string>>;
 }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LogoLayoutSkeleton />}>
       <SiteLayoutShell params={params}>{children}</SiteLayoutShell>
     </Suspense>
   );

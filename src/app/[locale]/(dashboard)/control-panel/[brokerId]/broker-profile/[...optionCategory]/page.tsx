@@ -53,6 +53,8 @@ export default async function BrokerProfilePage({
  log.debug("User authenticated successfully", {
     user: user,
     is_admin: is_admin,
+    can_edit: can_edit,
+    can_manage: can_manage,
   });
   //========================End of security checks==============================================
 

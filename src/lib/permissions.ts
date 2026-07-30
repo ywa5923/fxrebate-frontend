@@ -40,7 +40,7 @@ export function canEditBroker(user: AuthUser, brokerInfo: BrokerInfo): boolean {
   if (user.user_type === 'team_user') {
     return user?.permissions?.some(p =>
       p.type === 'broker' &&
-      p.action === 'edit' &&
+      (p.action === 'edit' || p.action === 'manage') &&
       p.resource_id === brokerInfo.broker_id
     ) || false;
   }
