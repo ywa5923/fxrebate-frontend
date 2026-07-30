@@ -59,7 +59,7 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
   
     const teamManagementLink = userCanManageBroker
       ? {
-          name: 'Manage YourTeam',
+          name: 'Manage Your Team',
           url: `/en/control-panel/${brokerId}/broker-profile/team-management`,
           icon: 'TrendingUp',
         }
