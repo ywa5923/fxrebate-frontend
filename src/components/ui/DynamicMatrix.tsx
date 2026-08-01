@@ -193,13 +193,23 @@ export function DynamicMatrix({
     onChange?.(newMatrix);
   };
 
+  const isPublicValueNull = (
+    publicValue: MatrixCell["public_value"]
+  ): boolean => {
+    if (publicValue == null) return true;
+    const keys = Object.keys(publicValue);
+    if (keys.length === 0) return true;
+    return keys.every((key) => publicValue[key] == null);
+  };
+
   const loadDefaultPublicValues = (initialMatrix: MatrixCell[][]) => {
-    const newMatrix = initialMatrix.map((row) =>
-      row.map((cell) => {
-        if (
-          is_admin &&
-          (!cell.public_value || Object.keys(cell.public_value).length === 0)
-        ) {
+    const autoCopied = new Set<string>();
+    const newMatrix = initialMatrix.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        if (is_admin && isPublicValueNull(cell.public_value)) {
+          if (Object.keys(cell.value || {}).length > 0) {
+            autoCopied.add(`${rowIndex}-${colIndex}`);
+          }
           return {
             ...cell,
             public_value: cell.value,
@@ -209,6 +219,7 @@ export function DynamicMatrix({
       })
     );
     setMatrix(newMatrix);
+    setCopiedCells(autoCopied);
   };
 
   const updateCell = (
@@ -355,6 +366,12 @@ export function DynamicMatrix({
         })}, ErrorMode.Throw);
         
       setStatus("success");
+      setCopiedCells(new Set());
+      saveMatrix((prev) =>
+        prev.map((row) =>
+          row.map((cell) => ({ ...cell, is_updated_entry: false }))
+        )
+      );
       toast.success("Matrix data saved successfully");
      
       
@@ -717,18 +734,20 @@ export function DynamicMatrix({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={(e) => {
+                                    onClick={() => {
                                       copyBrokerToPublic(rowIndex, colIndex);
                                       setCopiedCells((prev) => {
                                         const next = new Set(prev);
                                         next.add(cellKey);
                                         return next;
                                       });
-                                      e.currentTarget.classList.add("bg-green-100", "border-green-500", "text-green-700");
                                     }}
                                     className={cn(
                                       "p-1 h-6 w-6 flex-shrink-0",
-                                      isAlreadyGreen && "bg-green-100 border-green-500 text-green-700"
+                                      isAlreadyGreen
+                                        ? "bg-green-100 border-green-500 text-green-700"
+                                        : isUpdatedCell &&
+                                            "bg-red-100 border-red-500 text-red-700"
                                     )}
                                     title="Copy broker values to public values"
                                   >
