@@ -46,15 +46,16 @@ export interface MatrixCellValue {
 }
 
 export interface MatrixCell {
+  id?: number | null;
   is_updated_entry?: boolean;
-  previous_value?: MatrixCellValue;
+  previous_values?: string|null;
   value: MatrixCellValue;
   public_value?: MatrixCellValue;
   rowHeader: string;
   colHeader: string;
   type: string|undefined;
   selectedRowHeaderSubOptions?: RowHeaderOption[];
-  old_public_value?: MatrixCellValue;
+  previous_public_values?: string|null;
   placeholder?: string | null;
 }
 

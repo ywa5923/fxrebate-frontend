@@ -21,6 +21,7 @@ import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
 import { useRouter } from "next/navigation";
+import { PreviousValues } from "@/components/ChallengeMatrix/PreviousValues";
 
 interface DynamicMatrixProps {
   // rowHeaders: {
@@ -345,14 +346,6 @@ export function DynamicMatrix({
 
     try {
       
-
-      // const data = await response.json();
-      // const data = await saveMatrixData(
-      //   is_admin,
-      //   brokerId,
-      //   "Matrix-1",
-      //   matrix as MatrixCell[][]
-      // );
       const response = await apiClient<MatrixCell[][]>(`/matrix/store/${brokerId}`, UseTokenAuth.Yes, {
         method: "POST",
         body: JSON.stringify({
@@ -542,6 +535,8 @@ export function DynamicMatrix({
                     const cellErrors = validationErrors[cellKey] || [];
                     const hasError = cellErrors.length > 0;
                     const isUpdatedCell = cell.is_updated_entry;
+                    const previous_values = cell.previous_values;
+                    const previous_public_values = cell.previous_public_values;
 
                     return (
                       <td key={colIndex} className="border p-1 w-[250px]">
@@ -555,7 +550,7 @@ export function DynamicMatrix({
                                     cell.public_value?.[item.name] || "";
                                   let broker_value =
                                     cell.value?.[item.name] || "";
-                                  let previous_value = cell.previous_value?.[item.name] || "";
+                                 
                                   let value = is_admin
                                     ? public_value
                                     : broker_value;
@@ -677,20 +672,30 @@ export function DynamicMatrix({
                                           className={cn(
                                             "text-xs min-h-[1rem] flex-shrink-0 w-full",
                                             {
-                                              "text-red-500 dark:text-red-400": isUpdatedCell && broker_value != previous_value,
+                                              "text-red-500 dark:text-red-400": isUpdatedCell,
                                               "text-gray-500 dark:text-gray-400": !isUpdatedCell,
                                             }
                                           )}
                                         >
                                           <div>Broker Value: {broker_value}</div>
-                                          {broker_value != previous_value && <div>Previous Value: {previous_value}</div>}
-
                                         </div>
                                       )}
                                     </React.Fragment>
                                   );
                                 })}
                             </div>
+                            {is_admin && (
+                              <div className="flex flex-col gap-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                <PreviousValues
+                                  label="Previous Values"
+                                  previousValue={previous_values ?? null}
+                                />
+                                <PreviousValues
+                                  label="Previous Public Values"
+                                  previousValue={previous_public_values ?? null}
+                                />
+                              </div>
+                            )}
                             {(() => {
                               const cellKey = `${rowIndex}-${colIndex}`;
                               const shouldShowCopy = is_admin && (!!isUpdatedCell || copiedCells.has(cellKey));
