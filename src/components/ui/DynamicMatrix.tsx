@@ -447,15 +447,25 @@ export function DynamicMatrix({
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent className="z-[100]">
-                            {columnHeaders.map((header) => (
-                              <SelectItem
-                                key={header.slug}
-                                value={header.slug}
-                                className="text-sm"
-                              >
-                                {header.name}
-                              </SelectItem>
-                            ))}
+                            {columnHeaders
+                              .filter((header) => {
+                                const current = matrix[0][colIndex]?.colHeader;
+                                const alreadyUsed = matrix[0].some(
+                                  (cell, i) =>
+                                    i !== colIndex &&
+                                    cell.colHeader === header.slug
+                                );
+                                return header.slug === current || !alreadyUsed;
+                              })
+                              .map((header) => (
+                                <SelectItem
+                                  key={header.slug}
+                                  value={header.slug}
+                                  className="text-sm"
+                                >
+                                  {header.name}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
