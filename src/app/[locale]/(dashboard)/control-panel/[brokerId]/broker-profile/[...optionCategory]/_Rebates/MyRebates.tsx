@@ -9,6 +9,7 @@ import Rebates from "./Rebates";
 
 type Props = {
   brokerId: number;
+  brokerType: string;
   is_admin: boolean;
   can_edit: boolean;
   categoriesWithOptions: OptionCategory[];
@@ -16,12 +17,13 @@ type Props = {
 
 export default async function MyRebates({
   brokerId,
+  brokerType,
   is_admin,
   can_edit,
   categoriesWithOptions,
 }: Props) {
   const log = logger.child("MyRebates");
-  const headersFetchUrl = `/matrix/headers/${brokerId}?language=en&matrix_id=Matrix-1&broker_id_strict=0&with_account_type_columns=1`;
+  const headersFetchUrl = `/matrix/headers/${brokerId}?broker_type=${brokerType}&language=en&matrix_id=Matrix-1&broker_id_strict=0`;
   const matrixDataFetchUrl = `/matrix/${brokerId}?matrix_name=Matrix-1`;
 
   const [headersResponse, matrixDataResponse] = await Promise.all([

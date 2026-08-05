@@ -12,7 +12,11 @@ import { getBrokerInfo, isAuthenticated } from "@/lib/auth-actions";
 import MyEvaluationSteps from "./_EvaluationSteps/MyEvaluationSteps";
 import { MyAccountLinks } from "./_AccountLinks";
 import { MyReferalsAndNotes } from "./_ReferalsAndNotes";
-import { canEditBroker, canManageBroker, isAdminOfBroker } from "@/lib/permissions";
+import {
+  canEditBroker,
+  canManageBroker,
+  isAdminOfBroker,
+} from "@/lib/permissions";
 import { MyCompanies } from "./_Companies";
 
 //http://localhost:3000/en/control-panel/broker-profile/1/general-information
@@ -41,16 +45,16 @@ export default async function BrokerProfilePage({
   //========Check if user can administer broker=============
   // // Get user permissions and broker context
   // const is_admin= await canAdminBroker(brokerId);
- // let is_admin = isAdminOfBroker(user, brokerInfo);
+  // let is_admin = isAdminOfBroker(user, brokerInfo);
 
- // const is_admin = false;
+  // const is_admin = false;
   let brokerInfo = await getBrokerInfo(brokerId);
   let broker_type = brokerInfo.broker_type;
-  
+
   let is_admin = isAdminOfBroker(user, brokerInfo);
   let can_edit = canEditBroker(user, brokerInfo);
   let can_manage = canManageBroker(user, brokerInfo);
- log.debug("User authenticated successfully", {
+  log.debug("User authenticated successfully", {
     user: user,
     is_admin: is_admin,
     can_edit: can_edit,
@@ -73,7 +77,7 @@ export default async function BrokerProfilePage({
   const categoriesWithOptions = await getCategoriesWithOptions(
     "en",
     broker_type,
-    brokerId
+    brokerId,
   );
   //TO DO: MAKE API CALL TO GET OPTIONS ONLY BY aPPLICABLEfOR FIELD
   //http://localhost:8080/api/v1/option-categories?broker_type=broker
@@ -103,24 +107,26 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "company-profiles") {
-    
-    return (<MyCompanies
-      brokerId={brokerId}
-      companyOptions={matchedCategory.options as Option[]}
-      is_admin={is_admin}
-      can_edit={can_edit}
-      can_manage={can_manage}
-    />)
+    return (
+      <MyCompanies
+        brokerId={brokerId}
+        companyOptions={matchedCategory.options as Option[]}
+        is_admin={is_admin}
+        can_edit={can_edit}
+        can_manage={can_manage}
+      />
+    );
   }
   if (categorySlug == "my-trading-accounts") {
-    
-    return (<MyAccountLinks
-      brokerId={brokerId}
-      accountOptions={matchedCategory.options as Option[]}
-      is_admin={is_admin}
-      can_edit={can_edit}
-      can_manage={can_manage}
-    />)
+    return (
+      <MyAccountLinks
+        brokerId={brokerId}
+        accountOptions={matchedCategory.options as Option[]}
+        is_admin={is_admin}
+        can_edit={can_edit}
+        can_manage={can_manage}
+      />
+    );
   }
 
   if (categorySlug == "promotions") {
@@ -148,11 +154,13 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug === "evaluation-steps") {
-    return (<MyEvaluationSteps
-      brokerId={brokerId}
-      evaluationOptions={matchedCategory.options as Option[]}
-      is_admin={is_admin}
-    />)
+    return (
+      <MyEvaluationSteps
+        brokerId={brokerId}
+        evaluationOptions={matchedCategory.options as Option[]}
+        is_admin={is_admin}
+      />
+    );
   }
 
   if (categorySlug == "challenge-matrix") {
@@ -177,19 +185,21 @@ export default async function BrokerProfilePage({
   }
 
   if (categorySlug == "referral-links-and-notes") {
-  
-    return (<MyReferalsAndNotes
-      brokerId={brokerId}
-      notesOptions={matchedCategory.options as Option[]}
-      optionCategoryId={categoryId}
-      is_admin={is_admin}
-    />)
+    return (
+      <MyReferalsAndNotes
+        brokerId={brokerId}
+        notesOptions={matchedCategory.options as Option[]}
+        optionCategoryId={categoryId}
+        is_admin={is_admin}
+      />
+    );
   }
 
   if (categorySlug == "rebates") {
     return (
       <MyRebates
         brokerId={brokerId}
+        brokerType={broker_type}
         is_admin={is_admin}
         can_edit={can_edit}
         categoriesWithOptions={categoriesWithOptions}
