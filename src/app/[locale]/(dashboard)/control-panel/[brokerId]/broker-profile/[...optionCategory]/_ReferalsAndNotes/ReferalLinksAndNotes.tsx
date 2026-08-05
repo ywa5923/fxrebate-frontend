@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid,  CircleHelp, Copy } from "lucide-react";
+import { LayoutGrid, CircleHelp, Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -198,10 +198,12 @@ export default function ReferalLinksAndNotes({
     }
 
     const currency = is_admin
-      ? row.public_currency ?? row.currency ?? ""
-      : row.currency ?? "";
-    const name = is_admin ? row.public_name ?? row.name ?? "" : row.name ?? "";
-    const url = is_admin ? row.public_url ?? row.url ?? "" : row.url ?? "";
+      ? (row.public_currency ?? row.currency ?? "")
+      : (row.currency ?? "");
+    const name = is_admin
+      ? (row.public_name ?? row.name ?? "")
+      : (row.name ?? "");
+    const url = is_admin ? (row.public_url ?? row.url ?? "") : (row.url ?? "");
 
     form.reset({
       accountTypeId: String(
@@ -231,11 +233,9 @@ export default function ReferalLinksAndNotes({
     if (!is_admin || dialogMode !== "edit" || !selectedRow) return null;
 
     const publicKey = `public_${field}` as keyof AffiliateLink;
-   
 
-    const showRedCopyHint = selectedRow.metadata?.updated_fields?.includes(
-      field,
-    );
+    const showRedCopyHint =
+      selectedRow.metadata?.updated_fields?.includes(field);
     const clicked = clickedCopyBtns.has(field);
 
     return (
@@ -253,8 +253,8 @@ export default function ReferalLinksAndNotes({
           clicked
             ? "bg-green-100 border-green-500 text-green-700"
             : showRedCopyHint
-            ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
-            : "text-muted-foreground border-border hover:bg-muted/50",
+              ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-200"
+              : "text-muted-foreground border-border hover:bg-muted/50",
         )}
         title="Copy broker value to public value"
       >
@@ -362,7 +362,7 @@ export default function ReferalLinksAndNotes({
             Referral links & notes
           </h1>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-            Referral links 
+            Referral links
           </p>
         </div>
       </div>
@@ -391,10 +391,7 @@ export default function ReferalLinksAndNotes({
                 <div className="text-2xl font-semibold text-gray-600 dark:text-gray-300">
                   Notes
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  New!!! now you can add various notes related to your
-                  accounts.
-                </div>
+
                 <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-900 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
                   <span>Click the</span>
                   <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-dashed border-green-300 bg-white text-green-700 shadow-sm dark:border-green-800 dark:bg-gray-950 dark:text-green-300">
@@ -434,7 +431,7 @@ export default function ReferalLinksAndNotes({
             <DialogTitle>
               {dialogMode === "edit"
                 ? "Edit referral link"
-                : "New referral link1"}
+                : "New referral link"}
             </DialogTitle>
           </DialogHeader>
 
