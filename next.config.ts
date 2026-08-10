@@ -1,29 +1,28 @@
 import type { NextConfig } from "next";
 
-
 const nextConfig: NextConfig = {
   // Required for `"use cache"` / `cacheLife` (Next.js 16 Cache Components)
   cacheComponents: true,
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96],
-    formats: ['image/webp'],
+    formats: ["image/webp"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**.cloudflare.com',
+        protocol: "https",
+        hostname: "**.cloudflare.com",
       },
       {
-        protocol: 'https',
-        hostname: 'imagedelivery.net',
+        protocol: "https",
+        hostname: "imagedelivery.net",
       },
       {
-        protocol: 'https',
-        hostname: '**.imagedelivery.net',
+        protocol: "https",
+        hostname: "**.imagedelivery.net",
       },
       {
-        protocol: 'https',
-        hostname: '**.r2.dev',
+        protocol: "https",
+        hostname: "**.r2.dev",
       },
     ],
   },
@@ -40,25 +39,26 @@ const nextConfig: NextConfig = {
   // },
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['framer-motion']
+    optimizePackageImports: ["framer-motion"],
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
-  output: 'standalone',
+  output: "standalone",
   async rewrites() {
     return [
-        // {
-        //     source: '/en/etst',
-        //     destination: '/en/forex-broker/forex-brokers-reviews',
-        //     locale: false // Use `locale: false` so that the prefix matches the desired locale correctly
-        // },
-        // {
-        //     source: '/ro/brokeri/:id/:broker_name',
-        //     destination: '/ro/brokers/:id/:broker_name',
-        //     locale: false
-        // }
-    ]
-}
+      // {
+      //     source: '/en/etst',
+      //     destination: '/en/forex-broker/forex-brokers-reviews',
+      //     locale: false // Use `locale: false` so that the prefix matches the desired locale correctly
+      // },
+      // {
+      //     source: '/ro/brokeri/:id/:broker_name',
+      //     destination: '/ro/brokers/:id/:broker_name',
+      //     locale: false
+      // }
+    ];
+  },
 };
 
-
-export default nextConfig
-
+export default nextConfig;
