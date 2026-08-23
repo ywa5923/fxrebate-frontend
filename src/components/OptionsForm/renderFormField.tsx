@@ -285,6 +285,7 @@ export function renderFormField(
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
               hideSelectedOptions={false}
+              closeMenuOnSelect={false}
               onChange={(selected) => {
                 // Store the actual array of selected values
                 const values = selected
@@ -325,6 +326,7 @@ export function renderFormField(
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
               hideSelectedOptions={false}
+              closeMenuOnSelect={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -359,6 +361,7 @@ export function renderFormField(
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
               hideSelectedOptions={false}
+              closeMenuOnSelect={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -393,6 +396,7 @@ export function renderFormField(
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
               hideSelectedOptions={false}
+              closeMenuOnSelect={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -427,6 +431,7 @@ export function renderFormField(
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
               hideSelectedOptions={false}
+              closeMenuOnSelect={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
