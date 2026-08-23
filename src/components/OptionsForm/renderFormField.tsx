@@ -23,6 +23,7 @@ import { formatFiatCurrencyOptionLabel } from "@/lib/formatFiatCurrencyOptionLab
 import { formatCryptoCurrencyOptionLabel } from "@/lib/formatCryptoCurrencyOptionLabel";
 import { formatFundingMethodOptionLabel } from "@/lib/formatFundingMethodOptionLabel";
 import { getReactSelectStyles } from "@/lib/reactSelectStyles";
+import { reactSelectMultiComponents } from "@/components/OptionsForm/reactSelectMultiComponents";
 
 export function renderFormField(
     option: Option,
@@ -282,10 +283,13 @@ export function renderFormField(
               classNamePrefix="react-select"
               instanceId={option.slug} // Add stable instanceId to prevent hydration errors
               styles={multiSelectStyles}
+              components={reactSelectMultiComponents}
               onChange={(selected) => {
                 // Store the actual array of selected values
                 const values = selected
-                  ? selected.map((option: { value: string }) => option.value)
+                  ? (selected as readonly { value: string }[]).map(
+                      (item) => item.value,
+                    )
                   : [];
                 formField.onChange(values);
 
@@ -318,6 +322,7 @@ export function renderFormField(
               instanceId={option.slug}
               formatOptionLabel={formatCountryOptionLabel}
               styles={multiSelectStyles}
+              components={reactSelectMultiComponents}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -350,6 +355,7 @@ export function renderFormField(
               instanceId={option.slug}
               formatOptionLabel={formatFiatCurrencyOptionLabel}
               styles={multiSelectStyles}
+              components={reactSelectMultiComponents}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -382,6 +388,7 @@ export function renderFormField(
               instanceId={option.slug}
               formatOptionLabel={formatCryptoCurrencyOptionLabel}
               styles={multiSelectStyles}
+              components={reactSelectMultiComponents}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -414,6 +421,7 @@ export function renderFormField(
               instanceId={option.slug}
               formatOptionLabel={formatFundingMethodOptionLabel}
               styles={multiSelectStyles}
+              components={reactSelectMultiComponents}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
