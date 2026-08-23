@@ -195,6 +195,16 @@ export function CreateMultiSelect({
     onChange?.(initialSelected.filter((item) => item.value !== value));
   };
 
+  const selectAllVisible = () => {
+    const byValue = new Map(
+      initialSelected.map((item) => [item.value, item]),
+    );
+    filteredOptions.forEach((option) => {
+      byValue.set(option.value, option);
+    });
+    onChange?.(Array.from(byValue.values()));
+  };
+
   const isSelected = (option: Option) => selectedValues.has(option.value);
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -267,6 +277,19 @@ export function CreateMultiSelect({
               />
             )}
             <CommandList className="max-h-none overflow-visible">
+              {!isCreating && filteredOptions.length > 0 && (
+                <div className="px-2 py-1 border-b">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={selectAllVisible}
+                  >
+                    Check all
+                  </Button>
+                </div>
+              )}
               {isLargeList && !isCreating && (
                 <div className="px-3 py-2 text-xs text-muted-foreground border-b">
                   Scroll or search to browse {options.length} instruments.
