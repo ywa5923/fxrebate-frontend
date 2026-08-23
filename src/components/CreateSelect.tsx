@@ -54,7 +54,7 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
     if (newOptionInput.trim()) {
       const newOption = {
         label: newOptionInput.trim(),
-        value: newOptionInput.trim().toLowerCase().replace(/\s+/g, "-"),
+        value: newOptionInput.trim().replace(/\s+/g, "-"),
       };
       onValueChange?.(newOption.value);
       setSelected(newOption);
@@ -108,7 +108,7 @@ export function CreateSelect({ options, value, onValueChange, placeholder = "Sel
                   onClick={() => {
                     const newOption: Option = {
                       label: inputValue,
-                      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
+                      value: inputValue.replace(/\s+/g, "-"),
                     };
                    
                     onValueChange?.(newOption.value);

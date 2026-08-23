@@ -177,7 +177,7 @@ export function CreateMultiSelect({
     if (newOptionInput.trim()) {
       const newOption: Option = {
         label: newOptionInput.trim(),
-        value: newOptionInput.trim().toLowerCase().replace(/\s+/g, "-"),
+        value: newOptionInput.trim().replace(/\s+/g, "-"),
       };
       onChange?.([...initialSelected, newOption]);
       setIsCreating(false);
@@ -283,7 +283,6 @@ export function CreateMultiSelect({
                       const newOption: Option = {
                         label: inputValue,
                         value: inputValue
-                          .toLowerCase()
                           .replace(/\s+/g, "-"),
                       };
                       onChange?.([...initialSelected, newOption]);
