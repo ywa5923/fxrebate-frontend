@@ -35,6 +35,7 @@ const VIRTUALIZATION_THRESHOLD = 80;
 const OPTION_ROW_HEIGHT = 32;
 const LIST_MAX_HEIGHT = 300;
 const LIST_OVERSCAN = 8;
+const MAX_VISIBLE_CHIPS = 3;
 
 function OptionRow({
   option,
@@ -144,20 +145,31 @@ export function CreateMultiSelect({
     [initialSelected],
   );
 
+  // Include locally created selections that are not yet in server options
+  const allOptions = useMemo(() => {
+    const byValue = new Map(options.map((option) => [option.value, option]));
+    initialSelected.forEach((item) => {
+      if (!byValue.has(item.value)) {
+        byValue.set(item.value, item);
+      }
+    });
+    return Array.from(byValue.values());
+  }, [options, initialSelected]);
+
   const filteredOptions = useMemo(() => {
     const query = deferredSearch.trim().toLowerCase();
     if (!query) {
-      return options;
+      return allOptions;
     }
 
-    return options.filter(
+    return allOptions.filter(
       (option) =>
         option.label.toLowerCase().includes(query) ||
         option.value.toLowerCase().includes(query),
     );
-  }, [options, deferredSearch]);
+  }, [allOptions, deferredSearch]);
 
-  const isLargeList = options.length > LARGE_LIST_THRESHOLD;
+  const isLargeList = allOptions.length > LARGE_LIST_THRESHOLD;
   const useVirtualization = filteredOptions.length > VIRTUALIZATION_THRESHOLD;
 
   const toggleOption = (option: Option) => {
@@ -231,7 +243,7 @@ export function CreateMultiSelect({
               <span className="text-muted-foreground">{placeholder}</span>
             )}
             <div className="flex items-start gap-1 flex-wrap w-full">
-              {initialSelected.map((item) => (
+              {initialSelected.slice(0, MAX_VISIBLE_CHIPS).map((item) => (
                 <span
                   key={item.value}
                   className="flex items-center gap-1 px-2 py-0.5 text-sm rounded bg-muted"
@@ -256,6 +268,11 @@ export function CreateMultiSelect({
                   </span>
                 </span>
               ))}
+              {initialSelected.length > MAX_VISIBLE_CHIPS && (
+                <span className="px-2 py-0.5 text-sm rounded bg-muted text-muted-foreground">
+                  +{initialSelected.length - MAX_VISIBLE_CHIPS} more
+                </span>
+              )}
             </div>
           </Button>
         </PopoverTrigger>
@@ -269,7 +286,7 @@ export function CreateMultiSelect({
               <CommandInput
                 placeholder={
                   isLargeList
-                    ? `Search ${options.length} instruments...`
+                    ? `Search ${allOptions.length} instruments...`
                     : "Search or create..."
                 }
                 value={inputValue}
@@ -292,7 +309,7 @@ export function CreateMultiSelect({
               )}
               {isLargeList && !isCreating && (
                 <div className="px-3 py-2 text-xs text-muted-foreground border-b">
-                  Scroll or search to browse {options.length} instruments.
+                  Scroll or search to browse {allOptions.length} instruments.
                 </div>
               )}
 
