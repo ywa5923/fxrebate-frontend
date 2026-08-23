@@ -71,14 +71,21 @@ export function getReactSelectStyles(
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
-        ? "#22c55e"
+        ? isDark
+          ? "#14532d"
+          : "#ecfdf5"
         : state.isFocused
           ? optionFocus
           : menuBg,
-      color: state.isSelected ? "white" : text,
+      color: state.isSelected
+        ? isDark
+          ? "#bbf7d0"
+          : "#166534"
+        : text,
+      fontWeight: state.isSelected ? 500 : 400,
       cursor: "pointer",
       ":active": {
-        backgroundColor: "#16a34a",
+        backgroundColor: isDark ? "#166534" : "#dcfce7",
       },
     }),
     menu: (base) => ({

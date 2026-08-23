@@ -7,7 +7,10 @@ import {
   type MenuListProps,
   type OnChangeValue,
   type OptionsOrGroups,
+  type ValueContainerProps,
 } from "react-select";
+
+const MAX_VISIBLE_VALUES = 3;
 
 type OptionLike = { value?: string; options?: OptionLike[] };
 
@@ -71,6 +74,30 @@ function MenuList<Option, Group extends GroupBase<Option>>(
   );
 }
 
+function ValueContainer<Option, Group extends GroupBase<Option>>(
+  props: ValueContainerProps<Option, true, Group>,
+) {
+  const values = props.getValue();
+  const excess = Math.max(0, values.length - MAX_VISIBLE_VALUES);
+  const childrenArray = React.Children.toArray(props.children);
+  const inputChild = childrenArray[childrenArray.length - 1];
+  const valueChildren = childrenArray.slice(0, -1);
+  const visibleValues = valueChildren.slice(0, MAX_VISIBLE_VALUES);
+
+  return (
+    <components.ValueContainer {...props}>
+      {visibleValues}
+      {excess > 0 && (
+        <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          +{excess} more
+        </span>
+      )}
+      {inputChild}
+    </components.ValueContainer>
+  );
+}
+
 export const reactSelectMultiComponents = {
   MenuList,
+  ValueContainer,
 };

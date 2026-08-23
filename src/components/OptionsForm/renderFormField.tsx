@@ -284,6 +284,7 @@ export function renderFormField(
               instanceId={option.slug} // Add stable instanceId to prevent hydration errors
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
+              hideSelectedOptions={false}
               onChange={(selected) => {
                 // Store the actual array of selected values
                 const values = selected
@@ -323,6 +324,7 @@ export function renderFormField(
               formatOptionLabel={formatCountryOptionLabel}
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
+              hideSelectedOptions={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -356,6 +358,7 @@ export function renderFormField(
               formatOptionLabel={formatFiatCurrencyOptionLabel}
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
+              hideSelectedOptions={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -389,6 +392,7 @@ export function renderFormField(
               formatOptionLabel={formatCryptoCurrencyOptionLabel}
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
+              hideSelectedOptions={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
@@ -422,6 +426,7 @@ export function renderFormField(
               formatOptionLabel={formatFundingMethodOptionLabel}
               styles={multiSelectStyles}
               components={reactSelectMultiComponents}
+              hideSelectedOptions={false}
               onChange={(selected) => {
                 const values = selected
                   ? selected.map((item) => item.value)
