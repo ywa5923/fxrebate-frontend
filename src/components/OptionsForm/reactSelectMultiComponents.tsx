@@ -12,7 +12,7 @@ import {
 
 const MAX_VISIBLE_VALUES = 3;
 
-type OptionLike = { value?: string; options?: OptionLike[] };
+type OptionLike = { value?: string; label?: string; options?: OptionLike[] };
 
 function flattenOptions(
   options: OptionsOrGroups<OptionLike, GroupBase<OptionLike>> = [],
@@ -20,7 +20,7 @@ function flattenOptions(
   return options.flatMap((option) =>
     "options" in option && Array.isArray(option.options)
       ? flattenOptions(option.options)
-      : [option as OptionLike],
+      : option as OptionLike,
   );
 }
 
@@ -28,6 +28,8 @@ function MenuList<Option, Group extends GroupBase<Option>>(
   props: MenuListProps<Option, true, Group>,
 ) {
   const { options, getValue, setValue, selectProps } = props;
+
+  //get the options that is in the multiselect dropdown 
   const flatOptions = flattenOptions(
     options as OptionsOrGroups<OptionLike, GroupBase<OptionLike>>,
   );
@@ -36,8 +38,13 @@ function MenuList<Option, Group extends GroupBase<Option>>(
     selectProps.getOptionValue ??
     ((option: Option) => String((option as OptionLike).value ?? ""));
 
-  const current = getValue() ?? [];
-  const selectedValues = new Set(current.map((option) => getOptionValue(option)));
+  //get the current selected options i.e =>
+  // current = [
+  //   { value: "ro", label: "România" },
+  //   { value: "de", label: "Germania" },
+  // ];
+  const selectedOptions = getValue() ?? [];
+  const selectedValues = new Set(selectedOptions.map((option) => getOptionValue(option)));
   const allVisibleSelected =
     flatOptions.length > 0 &&
     flatOptions.every((option) =>
@@ -50,28 +57,32 @@ function MenuList<Option, Group extends GroupBase<Option>>(
     if (flatOptions.length === 0) return;
 
     if (allVisibleSelected) {
-      const visibleValues = new Set(
-        flatOptions.map((option) => getOptionValue(option as Option)),
-      );
-      const remaining = current.filter(
-        (option) => !visibleValues.has(getOptionValue(option)),
-      );
-      setValue(remaining as OnChangeValue<Option, true>, "deselect-option");
+      // Uncheck all = clear entire selection
+      setValue([] as OnChangeValue<Option, true>, "deselect-option");
+      // Previous behavior: uncheck only visible/filtered options, keep the rest selected
+      // const visibleValues = new Set(
+      //   flatOptions.map((option) => getOptionValue(option as Option)),
+      // );
+      // const remaining = selectedOptions.filter(
+      //   (option) => !visibleValues.has(getOptionValue(option)),
+      // );
+      // setValue(remaining as OnChangeValue<Option, true>, "deselect-option");
       return;
     }
 
-    const byValue = new Map(
-      current.map((option) => [getOptionValue(option), option]),
-    );
-    flatOptions.forEach((option) => {
-      const data = option as Option;
-      byValue.set(getOptionValue(data), data);
-    });
+    // const byValue = new Map(
+    //   selectedOptions.map((option) => [getOptionValue(option), option]),
+    // );
+    // flatOptions.forEach((option) => {
+    //   const data = option as Option;
+    //   byValue.set(getOptionValue(data), data);
+    // });
 
-    setValue(
-      Array.from(byValue.values()) as OnChangeValue<Option, true>,
-      "select-option",
-    );
+    // setValue(
+    //   Array.from(byValue.values()) as OnChangeValue<Option, true>,
+    //   "select-option",
+    // );
+    setValue(flatOptions as unknown as OnChangeValue<Option, true>, "select-option");
   };
 
   return (

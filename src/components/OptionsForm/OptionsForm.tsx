@@ -364,8 +364,10 @@ export function OptionsForm({
                               <TooltipTrigger asChild>
                                 <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
                               </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{option.tooltip}</p>
+                              <TooltipContent className="max-w-[min(20rem,calc(100vw-2rem))]">
+                                <p className="whitespace-normal break-words text-left">
+                                  {option.tooltip}
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>

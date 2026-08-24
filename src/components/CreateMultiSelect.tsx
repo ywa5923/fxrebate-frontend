@@ -207,7 +207,24 @@ export function CreateMultiSelect({
     onChange?.(initialSelected.filter((item) => item.value !== value));
   };
 
-  const selectAllVisible = () => {
+  const allVisibleSelected =
+    filteredOptions.length > 0 &&
+    filteredOptions.every((option) => selectedValues.has(option.value));
+
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      // Uncheck all = clear entire selection
+      onChange?.([]);
+      // Previous behavior: uncheck only visible/filtered options, keep the rest selected
+      // const visibleValues = new Set(
+      //   filteredOptions.map((option) => option.value),
+      // );
+      // onChange?.(
+      //   initialSelected.filter((item) => !visibleValues.has(item.value)),
+      // );
+      return;
+    }
+
     const byValue = new Map(
       initialSelected.map((item) => [item.value, item]),
     );
@@ -301,9 +318,9 @@ export function CreateMultiSelect({
                     variant="ghost"
                     size="sm"
                     className="w-full justify-start"
-                    onClick={selectAllVisible}
+                    onClick={toggleAllVisible}
                   >
-                    Check all
+                    {allVisibleSelected ? "Uncheck all" : "Check all"}
                   </Button>
                 </div>
               )}
