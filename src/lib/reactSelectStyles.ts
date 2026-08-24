@@ -9,7 +9,6 @@ export function getReactSelectStyles(
   const controlBg = isDark ? "#111827" : "#ffffff";
   const menuBg = isDark ? "#111827" : "#ffffff";
   const text = isDark ? "#f3f4f6" : "#111827";
-  const optionFocus = isDark ? "#14532d" : "#f0fdf4";
   const multiValueBg = isDark ? "#14532d" : "#f0fdf4";
   const multiValueBorder = isDark ? "#166534" : "#bbf7d0";
   const multiValueText = isDark ? "#bbf7d0" : "#166534";
@@ -74,9 +73,7 @@ export function getReactSelectStyles(
         ? isDark
           ? "#14532d"
           : "#ecfdf5"
-        : state.isFocused
-          ? optionFocus
-          : menuBg,
+        : menuBg,
       color: state.isSelected
         ? isDark
           ? "#bbf7d0"
@@ -85,7 +82,18 @@ export function getReactSelectStyles(
       fontWeight: state.isSelected ? 500 : 400,
       cursor: "pointer",
       ":active": {
-        backgroundColor: isDark ? "#166534" : "#dcfce7",
+        backgroundColor: state.isSelected
+          ? isDark
+            ? "#14532d"
+            : "#ecfdf5"
+          : menuBg,
+      },
+      ":hover": {
+        backgroundColor: state.isSelected
+          ? isDark
+            ? "#14532d"
+            : "#ecfdf5"
+          : menuBg,
       },
     }),
     menu: (base) => ({

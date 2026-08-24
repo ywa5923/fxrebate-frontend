@@ -32,16 +32,34 @@ function MenuList<Option, Group extends GroupBase<Option>>(
     options as OptionsOrGroups<OptionLike, GroupBase<OptionLike>>,
   );
 
-  const handleSelectAll = (event: React.MouseEvent) => {
+  const getOptionValue =
+    selectProps.getOptionValue ??
+    ((option: Option) => String((option as OptionLike).value ?? ""));
+
+  const current = getValue() ?? [];
+  const selectedValues = new Set(current.map((option) => getOptionValue(option)));
+  const allVisibleSelected =
+    flatOptions.length > 0 &&
+    flatOptions.every((option) =>
+      selectedValues.has(getOptionValue(option as Option)),
+    );
+
+  const handleToggleAll = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     if (flatOptions.length === 0) return;
 
-    const getOptionValue =
-      selectProps.getOptionValue ??
-      ((option: Option) => String((option as OptionLike).value ?? ""));
+    if (allVisibleSelected) {
+      const visibleValues = new Set(
+        flatOptions.map((option) => getOptionValue(option as Option)),
+      );
+      const remaining = current.filter(
+        (option) => !visibleValues.has(getOptionValue(option)),
+      );
+      setValue(remaining as OnChangeValue<Option, true>, "deselect-option");
+      return;
+    }
 
-    const current = getValue() ?? [];
     const byValue = new Map(
       current.map((option) => [getOptionValue(option), option]),
     );
@@ -63,9 +81,9 @@ function MenuList<Option, Group extends GroupBase<Option>>(
           <button
             type="button"
             className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-            onMouseDown={handleSelectAll}
+            onMouseDown={handleToggleAll}
           >
-            Check all
+            {allVisibleSelected ? "Uncheck all" : "Check all"}
           </button>
         </div>
       )}
