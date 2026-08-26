@@ -135,6 +135,7 @@ export function CreateMultiSelect({
   initialSelected?: Option[];
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedOpen, setSelectedOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [newOptionInput, setNewOptionInput] = useState("");
@@ -204,7 +205,11 @@ export function CreateMultiSelect({
   };
 
   const removeOption = (value: string) => {
-    onChange?.(initialSelected.filter((item) => item.value !== value));
+    const next = initialSelected.filter((item) => item.value !== value);
+    onChange?.(next);
+    if (next.length <= MAX_VISIBLE_CHIPS) {
+      setSelectedOpen(false);
+    }
   };
 
   const allVisibleSelected =
@@ -286,9 +291,82 @@ export function CreateMultiSelect({
                 </span>
               ))}
               {initialSelected.length > MAX_VISIBLE_CHIPS && (
-                <span className="px-2 py-0.5 text-sm rounded bg-muted text-muted-foreground">
-                  +{initialSelected.length - MAX_VISIBLE_CHIPS} more
-                </span>
+                <Popover open={selectedOpen} onOpenChange={setSelectedOpen}>
+                  <PopoverTrigger asChild>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="px-2 py-0.5 text-sm rounded bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedOpen((prev) => !prev);
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedOpen((prev) => !prev);
+                        }
+                      }}
+                    >
+                      +{initialSelected.length - MAX_VISIBLE_CHIPS} more
+                    </span>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    side="bottom"
+                    className="z-[100] w-[min(20rem,calc(100vw-2rem))] p-2"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="mb-2 px-1 text-xs font-medium text-muted-foreground">
+                      Selected ({initialSelected.length})
+                    </div>
+                    <div className="max-h-64 space-y-1 overflow-y-auto">
+                      {initialSelected.map((item) => (
+                        <div
+                          key={item.value}
+                          className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                        >
+                          <span className="min-w-0 flex-1 break-words">
+                            {item.label}
+                          </span>
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive cursor-pointer"
+                            aria-label={`Remove ${item.label}`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeOption(item.value);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                removeOption(item.value);
+                              }
+                            }}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           </Button>
