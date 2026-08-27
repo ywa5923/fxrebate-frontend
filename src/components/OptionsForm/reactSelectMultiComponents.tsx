@@ -180,14 +180,20 @@ function ValueContainer<Option, Group extends GroupBase<Option>>(
             <div className="max-h-64 space-y-1 overflow-y-auto">
               {values.map((option) => {
                 const value = getOptionValue(option);
+                const label = selectProps.formatOptionLabel
+                  ? selectProps.formatOptionLabel(option, {
+                      context: "value",
+                      inputValue: "",
+                      selectValue: values,
+                    })
+                  : getOptionLabel(option);
+
                 return (
                   <div
                     key={value}
                     className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                   >
-                    <span className="min-w-0 flex-1 break-words">
-                      {getOptionLabel(option)}
-                    </span>
+                    <span className="min-w-0 flex-1 break-words">{label}</span>
                     <button
                       type="button"
                       className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
