@@ -57,6 +57,7 @@ export interface MatrixCell {
   selectedRowHeaderSubOptions?: RowHeaderOption[];
   previous_public_values?: string|null;
   placeholder?: string | null;
+  use_for_promo?: boolean;
 }
 
 // interface MatrixCell {

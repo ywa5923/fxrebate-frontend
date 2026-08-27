@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, Save, Copy } from "lucide-react";
 import { CreateSelect } from "@/components/CreateSelect";
 import { cn } from "@/lib/utils";
@@ -133,6 +134,7 @@ export function DynamicMatrix({
         rowHeader: rowHeaders[0]?.slug,
         colHeader: columnHeaders[0]?.slug,
         type: columnHeaders[0]?.form_type.name,
+        use_for_promo: false,
       };
       setMatrix([[initialCell]]);
       return;
@@ -146,6 +148,7 @@ export function DynamicMatrix({
         rowHeader: rowHeaders[0]?.slug || "",
         colHeader: cell.colHeader,
         type: columnHeader?.form_type.name,
+        use_for_promo: false,
       };
       return newCell;
     });
@@ -166,6 +169,7 @@ export function DynamicMatrix({
         rowHeader: rowHeaders[0]?.slug,
         colHeader: "",
         type: undefined,
+        use_for_promo: false,
       };
       setMatrix([[initialCell]]);
       return;
@@ -179,6 +183,7 @@ export function DynamicMatrix({
         rowHeader: currentRowHeader,
         colHeader: "",
         type: undefined,
+        use_for_promo: false,
       };
       return [...row, newCell];
     });
@@ -277,6 +282,21 @@ export function DynamicMatrix({
               : cell
           )
         : row
+    );
+    setMatrix(newMatrix);
+    onChange?.(newMatrix);
+  };
+
+  const setUseForPromo = (rowIndex: number, colIndex: number, checked: boolean) => {
+    const newMatrix = matrix.map((row, rIndex) =>
+      row.map((cell, cIndex) => {
+        if (cIndex !== colIndex) return cell;
+        if (rIndex === rowIndex) {
+          return { ...cell, use_for_promo: checked };
+        }
+        // Only one promo cell allowed per column
+        return checked ? { ...cell, use_for_promo: false } : cell;
+      })
     );
     setMatrix(newMatrix);
     onChange?.(newMatrix);
@@ -724,35 +744,70 @@ export function DynamicMatrix({
                               </div>
                             )}
                             {(() => {
+                              if (!is_admin) return null;
+
                               const cellKey = `${rowIndex}-${colIndex}`;
-                              const shouldShowCopy = is_admin && (!!isUpdatedCell || copiedCells.has(cellKey));
-                              if (!shouldShowCopy) return null;
+                              const shouldShowCopy =
+                                !!isUpdatedCell || copiedCells.has(cellKey);
                               const isAlreadyGreen = copiedCells.has(cellKey);
+                              const promoId = `use-for-promo-${cellKey}`;
+                              const isPromo = !!cell.use_for_promo;
+
                               return (
-                                <div className="flex justify-end">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      copyBrokerToPublic(rowIndex, colIndex);
-                                      setCopiedCells((prev) => {
-                                        const next = new Set(prev);
-                                        next.add(cellKey);
-                                        return next;
-                                      });
-                                    }}
+                                <div className="flex items-center justify-between gap-2">
+                                  <label
+                                    htmlFor={promoId}
                                     className={cn(
-                                      "p-1 h-6 w-6 flex-shrink-0",
-                                      isAlreadyGreen
-                                        ? "bg-green-100 border-green-500 text-green-700"
-                                        : isUpdatedCell &&
-                                            "bg-red-100 border-red-500 text-red-700"
+                                      "inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs select-none cursor-pointer transition-colors",
+                                      isPromo
+                                        ? "border-amber-500 bg-amber-50 text-amber-800 dark:border-amber-400 dark:bg-amber-950/40 dark:text-amber-200"
+                                        : "border-transparent text-muted-foreground hover:border-border",
+                                      !can_edit && "cursor-not-allowed opacity-50",
                                     )}
-                                    title="Copy broker values to public values"
                                   >
-                                    <Copy className="h-3 w-3" />
-                                  </Button>
+                                    <Checkbox
+                                      id={promoId}
+                                      checked={isPromo}
+                                      disabled={!can_edit}
+                                      onCheckedChange={(checked) => {
+                                        setUseForPromo(
+                                          rowIndex,
+                                          colIndex,
+                                          checked === true,
+                                        );
+                                      }}
+                                      className={cn(
+                                        isPromo &&
+                                          "border-amber-500 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 data-[state=checked]:text-white dark:border-amber-400 dark:data-[state=checked]:bg-amber-500 dark:data-[state=checked]:border-amber-400",
+                                      )}
+                                    />
+                                    <span>Use For Promo</span>
+                                  </label>
+                                  {shouldShowCopy && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        copyBrokerToPublic(rowIndex, colIndex);
+                                        setCopiedCells((prev) => {
+                                          const next = new Set(prev);
+                                          next.add(cellKey);
+                                          return next;
+                                        });
+                                      }}
+                                      className={cn(
+                                        "p-1 h-6 w-6 flex-shrink-0",
+                                        isAlreadyGreen
+                                          ? "bg-green-100 border-green-500 text-green-700"
+                                          : isUpdatedCell &&
+                                              "bg-red-100 border-red-500 text-red-700",
+                                      )}
+                                      title="Copy broker values to public values"
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                    </Button>
+                                  )}
                                 </div>
                               );
                             })()}
