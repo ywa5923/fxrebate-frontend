@@ -76,6 +76,10 @@ import wise from "@/assets/funding_methods/Wise.png";
 import worldpay from "@/assets/funding_methods/worldpay.png";
 import xPay from "@/assets/funding_methods/x-pay.png";
 import zotapay from "@/assets/funding_methods/ZotaPay.jpg";
+import frillpay from "@/assets/funding_methods/frillpay.jpeg";
+import hwgc from "@/assets/funding_methods/hwgc.png";
+
+
 
 function assetSrc(asset: string | { src: string }): string {
   return typeof asset === "string" ? asset : asset.src;
@@ -158,6 +162,8 @@ const icons: Record<string, string> = {
   "X-PAY": assetSrc(xPay),
   "ZOTAPAY": assetSrc(zotapay),
   "CRYPTOCURRENCY-PAYMENTS": assetSrc(cyptocurrencyPayments),
+  "FRILLPAY": assetSrc(frillpay),
+  "HWGC": assetSrc(hwgc),
 };
 
 type Props = {
