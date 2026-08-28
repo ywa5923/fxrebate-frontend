@@ -105,7 +105,11 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
               userName={user?.name}
               userEmail={user?.email}
               brokerType={brokerType}
-              brokerLogo={brokerInfo.broker_logo}
+              brokerLogo={
+                (userIsAdminOfBroker || userIsSuperAdmin)
+                  ? (brokerInfo.public_logo ?? brokerInfo.broker_logo)
+                  : brokerInfo.broker_logo
+              }
               brokerTradingName={brokerInfo.broker_trading_name}
             />
             <SidebarInset>
