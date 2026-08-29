@@ -2,61 +2,43 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Check, Star } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BrokerRebate } from "./data";
+import type { HighestRebateBroker, HighestRebateEntry } from "@/types";
 
 type Props = {
-  broker: BrokerRebate;
+  broker: HighestRebateBroker;
   view: "list" | "card";
 };
 
-function Stars({ rating }: { rating: number }) {
-  return (
-    <div
-      className="flex items-center gap-[1.5px]"
-      aria-label={`${rating} out of 5 stars`}
-    >
-      {Array.from({ length: 5 }, (_, i) => (
-        <Star
-          key={i}
-          className={cn(
-            "size-[14px]",
-            i < rating
-              ? "fill-amber-400 text-amber-400"
-              : "fill-transparent text-gray-300 dark:text-gray-600",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
+function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
+  const initials = broker.trading_name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 
-function BrokerIdentity({ broker }: { broker: BrokerRebate }) {
   return (
     <div className="flex items-center gap-4 min-w-0">
-      <div className="relative size-10 shrink-0 overflow-hidden rounded-full">
-        <Image
-          src={broker.logoSrc}
-          alt={`${broker.name} logo`}
-          fill
-          className="object-cover"
-          sizes="40px"
-        />
+      <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-[#0c110f]/10 dark:bg-white/10">
+        {broker.logo ? (
+          <Image
+            src={broker.logo}
+            alt={`${broker.trading_name} logo`}
+            fill
+            className="object-contain p-0.5"
+            sizes="40px"
+          />
+        ) : (
+          <span className="flex size-full items-center justify-center text-xs font-bold text-[#0c110f] dark:text-white">
+            {initials || "?"}
+          </span>
+        )}
       </div>
       <div className="min-w-0">
         <h2 className="text-base font-bold capitalize text-[#0c110f] dark:text-white">
-          {broker.name}
+          {broker.trading_name}
         </h2>
-        <div className="mt-0.5 flex flex-wrap items-center gap-1">
-          <Stars rating={broker.rating} />
-          <Link
-            href="#"
-            className="text-sm capitalize text-[#0c110f]/60 underline underline-offset-2 hover:text-[#0c110f] dark:text-white/60 dark:hover:text-white"
-          >
-            {broker.reviewLabel}
-          </Link>
-        </div>
       </div>
     </div>
   );
@@ -77,10 +59,10 @@ function PaymentMethods({ text }: { text: string }) {
 }
 
 function RatesGrid({
-  rates,
+  rebates,
   columns,
 }: {
-  rates: BrokerRebate["rates"];
+  rebates: HighestRebateEntry[];
   columns: "list" | "card";
 }) {
   return (
@@ -100,9 +82,9 @@ function RatesGrid({
             : "grid-cols-2",
         )}
       >
-        {rates.map((rate, index) => (
+        {rebates.map((rebate, index) => (
           <div
-            key={rate.label}
+            key={rebate.id}
             className={cn(
               "flex flex-col gap-0.5",
               columns === "list" &&
@@ -111,10 +93,10 @@ function RatesGrid({
             )}
           >
             <span className="text-sm font-bold capitalize text-[#0c110f]/80 dark:text-white/80">
-              {rate.label}
+              {rebate.account_type_name}
             </span>
             <span className="text-sm font-bold text-[#0c110f] dark:text-white">
-              {rate.value}
+              {rebate.public_value ?? "—"}
             </span>
           </div>
         ))}
@@ -124,12 +106,12 @@ function RatesGrid({
 }
 
 /** Desktop/mobile grid card from Figma nodes 958:46384 / 958:50959 */
-function CardViewLayout({ broker }: { broker: BrokerRebate }) {
+function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
   return (
     <article className="flex h-full flex-col gap-8 rounded-lg bg-[#f6f6f6] p-6 dark:bg-[#171f1c]">
       <BrokerIdentity broker={broker} />
-      <PaymentMethods text={broker.paymentMethod} />
-      <RatesGrid rates={broker.rates} columns="card" />
+      <PaymentMethods text={broker.payment_options ?? "—"} />
+      <RatesGrid rebates={broker.rebates} columns="card" />
       <div className="mt-auto flex items-center gap-2">
         <Link
           href="#"
@@ -148,13 +130,13 @@ function CardViewLayout({ broker }: { broker: BrokerRebate }) {
   );
 }
 
-function ListViewLayout({ broker }: { broker: BrokerRebate }) {
+function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
   return (
     <article className="rounded-lg border border-[#f0f0f0] bg-[#f6f6f6] p-4 md:p-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <BrokerIdentity broker={broker} />
         <div className="lg:min-w-[247px]">
-          <PaymentMethods text={broker.paymentMethod} />
+          <PaymentMethods text={broker.payment_options ?? "—"} />
         </div>
         <div className="flex items-center gap-3 lg:justify-end">
           <Link
@@ -172,7 +154,7 @@ function ListViewLayout({ broker }: { broker: BrokerRebate }) {
         </div>
       </div>
       <div className="mt-4 md:mt-5">
-        <RatesGrid rates={broker.rates} columns="list" />
+        <RatesGrid rebates={broker.rebates} columns="list" />
       </div>
     </article>
   );

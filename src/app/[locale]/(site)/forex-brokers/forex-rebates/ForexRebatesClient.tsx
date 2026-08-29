@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 import { ChevronDown, Search, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -13,22 +14,113 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import Pagination from "@/components/Pagination";
 import BrokerRebateCard from "./BrokerRebateCard";
-import {
-  CATEGORY_TABS,
-  MOCK_BROKERS,
-  PAGE_COPY,
-} from "./data";
+import { CATEGORY_TABS, PAGE_COPY, type SiteBrokerType } from "./data";
+import type { HighestRebateBroker } from "@/types";
 
 type ViewMode = "list" | "card";
+type OrderDirection = "asc" | "desc";
+type SortMode = OrderDirection | "default";
 
-export default function ForexRebatesClient() {
+const SORT_OPTIONS: { label: string; sort: SortMode }[] = [
+  { label: "Default", sort: "default" },
+  { label: "Name A–Z", sort: "asc" },
+  { label: "Name Z–A", sort: "desc" },
+];
+
+type Props = {
+  brokers: HighestRebateBroker[];
+  orderDirection: OrderDirection | null;
+  tradingName?: string;
+  perPage?: string;
+  activeBrokerType: SiteBrokerType;
+  totalPages: number;
+};
+
+export default function ForexRebatesClient({
+  brokers,
+  orderDirection,
+  tradingName,
+  perPage = "15",
+  activeBrokerType,
+  totalPages,
+}: Props) {
   const params = useParams();
+  const { replace, push } = useRouter();
+  const pathname = usePathname();
   const locale = (params?.locale as string) || "en";
-  const [query, setQuery] = useState("");
   const [view, setView] = useState<ViewMode>("list");
   const [sortOpen, setSortOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
+
+  const activeSort: SortMode = orderDirection ?? "default";
+  const activeSortLabel =
+    SORT_OPTIONS.find((option) => option.sort === activeSort)?.label ??
+    "Default";
+
+  function buildListParams(overrides: {
+    brokerType?: SiteBrokerType;
+    sort?: SortMode;
+    tradingName?: string | null;
+    page?: string;
+  } = {}) {
+    const nextParams = new URLSearchParams({
+      broker_type: overrides.brokerType ?? activeBrokerType,
+    });
+
+    const sort = overrides.sort ?? activeSort;
+    if (sort === "asc" || sort === "desc") {
+      nextParams.set("order_by", "trading_name");
+      nextParams.set("order_direction", sort);
+    }
+
+    if (overrides.page && overrides.page !== "1") {
+      nextParams.set("page", overrides.page);
+    }
+    if (perPage !== "15") {
+      nextParams.set("per_page", perPage);
+    }
+
+    const nextTradingName =
+      overrides.tradingName === undefined
+        ? tradingName
+        : overrides.tradingName;
+    if (nextTradingName) {
+      nextParams.set("trading_name", nextTradingName);
+    }
+
+    return nextParams;
+  }
+
+  function buildListHref(
+    overrides: Parameters<typeof buildListParams>[0] = {},
+  ) {
+    const qs = buildListParams(overrides).toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
+
+  // Next.js Learn pattern: debounce URL updates (~300ms) via use-debounce
+  const handleSearch = useDebouncedCallback((term: string) => {
+    const trimmed = term.trim();
+    const nextParams = buildListParams({
+      tradingName: trimmed || null,
+      page: "1",
+    });
+    replace(`${pathname}?${nextParams.toString()}`);
+  }, 300);
+
+  function handleSortChange(nextSort: SortMode) {
+    setSortOpen(false);
+    if (nextSort === activeSort) return;
+    push(buildListHref({ sort: nextSort }));
+  }
+
+  function handleTabHref(brokerType: SiteBrokerType) {
+    // Tab switch: only broker_type — leave sort/search to reset with defaults
+    const nextParams = new URLSearchParams({ broker_type: brokerType });
+    return `${pathname}?${nextParams.toString()}`;
+  }
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -37,12 +129,6 @@ export default function ForexRebatesClient() {
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
-
-  const brokers = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return MOCK_BROKERS;
-    return MOCK_BROKERS.filter((b) => b.name.toLowerCase().includes(q));
-  }, [query]);
 
   async function handleShare() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -113,11 +199,11 @@ export default function ForexRebatesClient() {
           aria-label="Rebate categories"
         >
           {CATEGORY_TABS.map((tab) => {
-            const active = tab.id === "forex";
+            const active = tab.brokerType === activeBrokerType;
             return (
               <Link
-                key={tab.id}
-                href={`/${locale}${tab.href}`}
+                key={tab.brokerType}
+                href={handleTabHref(tab.brokerType)}
                 role="tab"
                 aria-selected={active}
                 className={cn(
@@ -147,9 +233,10 @@ export default function ForexRebatesClient() {
             <label className="relative flex h-11 w-full items-center gap-2 rounded-md border border-[#0c110f]/20 px-4 dark:border-white/20 sm:max-w-[429px]">
               <Search className="size-5 shrink-0 text-[#0c110f]/60 dark:text-gray-400" />
               <input
+                key={tradingName ?? ""}
                 type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                defaultValue={tradingName ?? ""}
+                onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search"
                 className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#0c110f]/50 dark:placeholder:text-gray-500"
               />
@@ -172,19 +259,22 @@ export default function ForexRebatesClient() {
                 }}
                 className="flex h-12 min-w-[140px] items-center justify-between gap-2 rounded-md border border-[#0c110f]/20 px-4 text-xs font-medium dark:border-white/20"
               >
-                <span>Sort By:</span>
+                <span>Sort By: {activeSortLabel}</span>
                 <ChevronDown className="size-4 opacity-70" />
               </button>
               {sortOpen && (
-                <div className="absolute right-0 z-20 mt-1 w-full rounded-md border border-black/10 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-gray-900">
-                  {["Default", "Name A–Z", "Highest rebate"].map((option) => (
+                <div className="absolute right-0 z-20 mt-1 w-full min-w-[140px] rounded-md border border-black/10 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-gray-900">
+                  {SORT_OPTIONS.map((option) => (
                     <button
-                      key={option}
+                      key={option.sort}
                       type="button"
-                      className="block w-full px-3 py-2 text-left text-xs hover:bg-black/5 dark:hover:bg-white/5"
-                      onClick={() => setSortOpen(false)}
+                      className={cn(
+                        "block w-full px-3 py-2 text-left text-xs hover:bg-black/5 dark:hover:bg-white/5",
+                        option.sort === activeSort && "font-semibold",
+                      )}
+                      onClick={() => handleSortChange(option.sort)}
                     >
-                      {option}
+                      {option.label}
                     </button>
                   ))}
                 </div>
@@ -241,10 +331,28 @@ export default function ForexRebatesClient() {
               : "flex flex-col gap-4",
           )}
         >
-          {brokers.map((broker) => (
-            <BrokerRebateCard key={broker.id} broker={broker} view={view} />
-          ))}
+          {brokers.length === 0 ? (
+            <p className="py-10 text-sm text-[#0c110f]/70 dark:text-gray-400">
+              No brokers found.
+            </p>
+          ) : (
+            brokers.map((broker) => (
+              <BrokerRebateCard
+                key={broker.broker_id}
+                broker={broker}
+                view={view}
+              />
+            ))
+          )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <Suspense fallback={null}>
+              <Pagination totalPages={totalPages} />
+            </Suspense>
+          </div>
+        )}
       </div>
     </div>
   );

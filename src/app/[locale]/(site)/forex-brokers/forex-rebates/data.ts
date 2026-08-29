@@ -1,31 +1,33 @@
-export type RebateRate = {
-  label: string;
-  value: string;
-};
-
-export type BrokerRebate = {
-  id: string;
-  name: string;
-  rating: number;
-  reviewLabel: string;
-  paymentMethod: string;
-  rates: RebateRate[];
-  logoSrc: string;
-};
+/** Order matches CATEGORY_TABS index — do not key off translated labels. */
+export const SITE_BROKER_TYPES = ["broker", "crypto", "prop_firm"] as const;
+export type SiteBrokerType = (typeof SITE_BROKER_TYPES)[number];
 
 export const CATEGORY_TABS = [
-  { id: "forex", label: "Forex Rebates", href: "/forex-brokers/forex-rebates" },
   {
-    id: "crypto",
-    label: "Cryptocurrency Rebates",
-    href: "/forex-brokers/cryptocurrency-rebates",
+    brokerType: SITE_BROKER_TYPES[0],
+    label: "Forex Rebates",
   },
   {
-    id: "prop",
+    brokerType: SITE_BROKER_TYPES[1],
+    label: "Cryptocurrency Rebates",
+  },
+  {
+    brokerType: SITE_BROKER_TYPES[2],
     label: "Prop Firms Rebates",
-    href: "/forex-brokers/prop-firm-rebates",
   },
 ] as const;
+
+export function parseSiteBrokerType(
+  value: string | undefined | null,
+): SiteBrokerType {
+  if (
+    value &&
+    (SITE_BROKER_TYPES as readonly string[]).includes(value)
+  ) {
+    return value as SiteBrokerType;
+  }
+  return SITE_BROKER_TYPES[0];
+}
 
 export const PAGE_COPY = {
   title: "Forex broker rebates",
@@ -34,22 +36,3 @@ export const PAGE_COPY = {
   disclaimer:
     "* Rebates are paid per closed position unless otherwise specified. 1 Lot = 100,000 base currency units traded.",
 };
-
-const defaultRates: RebateRate[] = [
-  { label: "Nano", value: "1.5 USD/ lot" },
-  { label: "Standard", value: "3.5 USD/ lot" },
-  { label: "Max", value: "7 USD/ lot" },
-  { label: "Tera", value: "1.5 USD/ lot" },
-  { label: "Zero", value: "1 USD/ lot" },
-];
-
-/** Mock list matching Figma placeholders until API is wired. */
-export const MOCK_BROKERS: BrokerRebate[] = Array.from({ length: 16 }, (_, i) => ({
-  id: `axiory-${i + 1}`,
-  name: "Axiory",
-  rating: 5,
-  reviewLabel: "5.0 Review",
-  paymentMethod: "Monthly Rebates in FxRebate Wallet",
-  rates: defaultRates,
-  logoSrc: "/forex-rebates/axiory-logo.png",
-}));

@@ -5,7 +5,7 @@ import { buildBrokerUrl } from "@/lib/buildBrokerUrl";
 import { BrokersSearchParams } from "@/types";
 import { BrokerOptions } from "@/types";
 import { AutoTable } from "./AutoTable";
-import Pagination from "./Paginations";
+import Pagination from "@/components/Pagination";
 export const dynamic = "force-dynamic";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 
