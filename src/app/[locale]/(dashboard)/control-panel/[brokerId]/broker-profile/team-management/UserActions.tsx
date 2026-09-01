@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Edit, Trash2 } from "lucide-react"
+import { Settings, Edit } from "lucide-react"
 import { EditMemberDialog } from "./EditMemberDialog"
 
 interface UserActionsProps {
@@ -25,11 +25,16 @@ export function UserActions({ brokerId, user }: UserActionsProps) {
 
   return (
     <>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+      <div className="flex-shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 dark:hover:bg-gray-800">
-              <MoreVertical className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              aria-label="Member settings"
+            >
+              <Settings className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
