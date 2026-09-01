@@ -4,6 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Translations,
+  useTranslation,
+} from "@/providers/translations";
 import type { HighestRebateBroker, HighestRebateEntry } from "@/types";
 
 type Props = {
@@ -45,10 +49,11 @@ function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
 }
 
 function PaymentMethods({ text }: { text: string }) {
+  const _t = useTranslation() as Translations;
   return (
     <div className="flex flex-col gap-1">
       <p className="text-sm font-bold capitalize text-[#0c110f] dark:text-white">
-        Payment Methods
+        {_t["payment_methods"] as string}
       </p>
       <div className="flex items-center gap-1 text-sm text-[#0c110f]/80 dark:text-white/80">
         <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
@@ -107,6 +112,7 @@ function RatesGrid({
 
 /** Desktop/mobile grid card from Figma nodes 958:46384 / 958:50959 */
 function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
+  const _t = useTranslation() as Translations;
   return (
     <article className="flex h-full flex-col gap-8 rounded-lg bg-[#f6f6f6] p-6 dark:bg-[#171f1c]">
       <BrokerIdentity broker={broker} />
@@ -117,13 +123,13 @@ function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
           href="#"
           className="inline-flex h-10 flex-1 items-center justify-center rounded border border-[#0c110f] bg-[#0c110f] px-4 text-sm font-medium text-white hover:bg-[#0c110f]/90 dark:border-white dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
         >
-          Get Rebate
+          {_t["get_rebate"] as string}
         </Link>
         <Link
           href="#"
           className="inline-flex h-10 shrink-0 items-center justify-center px-2 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-white"
         >
-          View details
+          {_t["view_details"] as string}
         </Link>
       </div>
     </article>
@@ -131,6 +137,7 @@ function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
 }
 
 function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
+  const _t = useTranslation() as Translations;
   return (
     <article className="rounded-lg border border-[#f0f0f0] bg-[#f6f6f6] p-4 md:p-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -143,13 +150,13 @@ function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
             href="#"
             className="inline-flex h-8 items-center justify-center rounded px-3 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-gray-100"
           >
-            View details
+            {_t["view_details"] as string}
           </Link>
           <Link
             href="#"
             className="inline-flex h-8 items-center justify-center rounded bg-[#0c110f] px-3 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
           >
-            Get Rebate
+            {_t["get_rebate"] as string}
           </Link>
         </div>
       </div>

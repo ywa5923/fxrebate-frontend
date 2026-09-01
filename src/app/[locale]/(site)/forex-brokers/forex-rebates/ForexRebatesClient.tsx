@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useDebouncedCallback } from "use-debounce";
 import { ChevronDown, Search, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -15,19 +14,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Pagination from "@/components/Pagination";
+import {
+  Translations,
+  useTranslation,
+} from "@/providers/translations";
 import BrokerRebateCard from "./BrokerRebateCard";
-import { CATEGORY_TABS, PAGE_COPY, type SiteBrokerType } from "./data";
+import {
+  CATEGORY_TABS,
+  type SiteBrokerType,
+} from "./data";
 import type { HighestRebateBroker } from "@/types";
 
 type ViewMode = "list" | "card";
 type OrderDirection = "asc" | "desc";
 type SortMode = OrderDirection | "default";
-
-const SORT_OPTIONS: { label: string; sort: SortMode }[] = [
-  { label: "Default", sort: "default" },
-  { label: "Name A–Z", sort: "asc" },
-  { label: "Name Z–A", sort: "desc" },
-];
 
 type Props = {
   brokers: HighestRebateBroker[];
@@ -47,17 +47,29 @@ export default function ForexRebatesClient({
   totalPages,
 }: Props) {
   const params = useParams();
-  const { replace, push } = useRouter();
+  const { push } = useRouter();
   const pathname = usePathname();
   const locale = (params?.locale as string) || "en";
+  const _t = useTranslation() as Translations;
   const [view, setView] = useState<ViewMode>("list");
   const [sortOpen, setSortOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(tradingName ?? "");
+
+  useEffect(() => {
+    setSearchQuery(tradingName ?? "");
+  }, [tradingName]);
+
+  const sortOptions: { label: string; sort: SortMode }[] = [
+    { label: _t["sort_default"] as string, sort: "default" },
+    { label: _t["sort_name_asc"] as string, sort: "asc" },
+    { label: _t["sort_name_desc"] as string, sort: "desc" },
+  ];
 
   const activeSort: SortMode = orderDirection ?? "default";
   const activeSortLabel =
-    SORT_OPTIONS.find((option) => option.sort === activeSort)?.label ??
-    "Default";
+    sortOptions.find((option) => option.sort === activeSort)?.label ??
+    _t["sort_default"] as string;
 
   function buildListParams(overrides: {
     brokerType?: SiteBrokerType;
@@ -100,15 +112,15 @@ export default function ForexRebatesClient({
     return qs ? `${pathname}?${qs}` : pathname;
   }
 
-  // Next.js Learn pattern: debounce URL updates (~300ms) via use-debounce
-  const handleSearch = useDebouncedCallback((term: string) => {
-    const trimmed = term.trim();
+  function handleSearchSubmit(event?: React.FormEvent) {
+    event?.preventDefault();
+    const trimmed = searchQuery.trim();
     const nextParams = buildListParams({
       tradingName: trimmed || null,
       page: "1",
     });
-    replace(`${pathname}?${nextParams.toString()}`);
-  }, 300);
+    push(`${pathname}?${nextParams.toString()}`);
+  }
 
   function handleSortChange(nextSort: SortMode) {
     setSortOpen(false);
@@ -131,10 +143,11 @@ export default function ForexRebatesClient({
   }, []);
 
   async function handleShare() {
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const url = window.location.href;
+    const title = _t["page_title"] as string;
     try {
       if (navigator.share) {
-        await navigator.share({ title: PAGE_COPY.title, url });
+        await navigator.share({ title, url });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
       }
@@ -156,7 +169,7 @@ export default function ForexRebatesClient({
                     href={`/${locale}`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
-                    Home
+                    {_t["breadcrumb_home"] as string}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -167,14 +180,14 @@ export default function ForexRebatesClient({
                     href={`/${locale}/forex-brokers`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
-                    Forex Brokers
+                    {_t["breadcrumb_forex_brokers"] as string}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="[&>svg]:size-3" />
               <BreadcrumbItem>
                 <BreadcrumbPage className="font-medium text-[#0c110f] dark:text-gray-100">
-                  Forex Rebates
+                  {_t["breadcrumb_forex_rebates"] as string}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -185,7 +198,7 @@ export default function ForexRebatesClient({
             onClick={handleShare}
             className="hidden h-9 shrink-0 items-center gap-2 rounded-md border border-[#0c110f]/15 px-3 text-sm font-medium text-[#0c110f] hover:bg-black/5 dark:border-white/15 dark:text-gray-100 dark:hover:bg-white/5 md:inline-flex"
           >
-            Share
+            {_t["share"] as string}
             <Share2 className="size-4" />
           </button>
         </div>
@@ -196,7 +209,7 @@ export default function ForexRebatesClient({
             "md:mb-6 md:inline-flex md:h-9 md:max-w-full md:flex-row md:items-center md:gap-0 md:overflow-x-auto",
           )}
           role="tablist"
-          aria-label="Rebate categories"
+          aria-label={_t["rebate_categories_aria"] as string}
         >
           {CATEGORY_TABS.map((tab) => {
             const active = tab.brokerType === activeBrokerType;
@@ -213,7 +226,7 @@ export default function ForexRebatesClient({
                     : "bg-transparent text-[#0c110f]/70 hover:text-[#0c110f] dark:text-white/80 dark:hover:text-white",
                 )}
               >
-                {tab.label}
+                {_t[tab.labelKey] as string}
               </Link>
             );
           })}
@@ -221,33 +234,35 @@ export default function ForexRebatesClient({
 
         <header className="mb-8 max-w-4xl">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-[40px] lg:leading-[1.15]">
-            {PAGE_COPY.title}
+            {_t["page_title"] as string}
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-[#0c110f]/80 dark:text-gray-300 sm:text-base">
-            {PAGE_COPY.description}
+            {_t["page_description"] as string}
           </p>
         </header>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <form
+            className="flex flex-col gap-2 sm:flex-row sm:items-center"
+            onSubmit={handleSearchSubmit}
+          >
             <label className="relative flex h-11 w-full items-center gap-2 rounded-md border border-[#0c110f]/20 px-4 dark:border-white/20 sm:max-w-[429px]">
               <Search className="size-5 shrink-0 text-[#0c110f]/60 dark:text-gray-400" />
               <input
-                key={tradingName ?? ""}
                 type="search"
-                defaultValue={tradingName ?? ""}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={_t["search_placeholder"] as string}
                 className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#0c110f]/50 dark:placeholder:text-gray-500"
               />
             </label>
             <button
-              type="button"
+              type="submit"
               className="h-11 shrink-0 rounded bg-[#0c110f] px-4 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
             >
-              Show Filter
+              {_t["show_filter"] as string}
             </button>
-          </div>
+          </form>
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
@@ -259,12 +274,14 @@ export default function ForexRebatesClient({
                 }}
                 className="flex h-12 min-w-[140px] items-center justify-between gap-2 rounded-md border border-[#0c110f]/20 px-4 text-xs font-medium dark:border-white/20"
               >
-                <span>Sort By: {activeSortLabel}</span>
+                <span>
+                  {_t["sort_by"] as string}: {activeSortLabel}
+                </span>
                 <ChevronDown className="size-4 opacity-70" />
               </button>
               {sortOpen && (
                 <div className="absolute right-0 z-20 mt-1 w-full min-w-[140px] rounded-md border border-black/10 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-gray-900">
-                  {SORT_OPTIONS.map((option) => (
+                  {sortOptions.map((option) => (
                     <button
                       key={option.sort}
                       type="button"
@@ -290,15 +307,19 @@ export default function ForexRebatesClient({
                 }}
                 className="flex h-12 min-w-[125px] items-center justify-between gap-2 rounded-md border border-[#0c110f]/20 bg-[#0c110f]/5 px-4 text-xs font-medium dark:border-white/20 dark:bg-white/5"
               >
-                <span>{view === "list" ? "List View" : "Grid View"}</span>
+                <span>
+                  {view === "list"
+                    ? _t["view_list"] as string
+                    : _t["view_grid"] as string}
+                </span>
                 <ChevronDown className="size-4 opacity-70" />
               </button>
               {viewOpen && (
                 <div className="absolute right-0 z-20 mt-1 w-full rounded-md border border-black/10 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-gray-900">
                   {(
                     [
-                      { id: "list", label: "List View" },
-                      { id: "card", label: "Grid View" },
+                      { id: "list", labelKey: "view_list" as const },
+                      { id: "card", labelKey: "view_grid" as const },
                     ] as const
                   ).map((option) => (
                     <button
@@ -310,7 +331,7 @@ export default function ForexRebatesClient({
                         setViewOpen(false);
                       }}
                     >
-                      {option.label}
+                      {_t[option.labelKey] as string}
                     </button>
                   ))}
                 </div>
@@ -320,7 +341,7 @@ export default function ForexRebatesClient({
         </div>
 
         <p className="mt-4 text-sm text-[#0c110f]/80 dark:text-gray-400">
-          {PAGE_COPY.disclaimer}
+          {_t["page_disclaimer"] as string}
         </p>
 
         <div
@@ -333,7 +354,7 @@ export default function ForexRebatesClient({
         >
           {brokers.length === 0 ? (
             <p className="py-10 text-sm text-[#0c110f]/70 dark:text-gray-400">
-              No brokers found.
+              {_t["no_brokers"] as string}
             </p>
           ) : (
             brokers.map((broker) => (
