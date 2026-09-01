@@ -417,50 +417,54 @@ export function DynamicMatrix({
     }
   }, [initialMatrix]);
 
+  const toolbar = (
+    <div className="flex flex-wrap gap-2">
+      <Button
+        onClick={addRow}
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+      >
+        <Plus className="h-3 w-3 mr-1" />
+        Add Row
+      </Button>
+      <Button
+        onClick={addColumn}
+        variant="outline"
+        size="sm"
+        className="h-7 text-xs"
+      >
+        <Plus className="h-3 w-3 mr-1" />
+        Add Column
+      </Button>
+      <Button
+        onClick={handleSave}
+        variant="outline"
+        size="default"
+        disabled={!can_edit || status === "loading"}
+        className={`h-9 ml-auto ${
+          status === "error"
+            ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200"
+            : "bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
+        }`}
+      >
+        <Save className="h-4 w-4 mr-2" />
+        {!can_edit
+          ? "View Only"
+          : status === "loading"
+          ? "Saving..."
+          : status === "success"
+          ? "Saved"
+          : status === "error"
+          ? "Validation Errors"
+          : "Save Table"}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
-        <Button
-          onClick={addRow}
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add Row
-        </Button>
-        <Button
-          onClick={addColumn}
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add Column
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="outline"
-          size="default"
-          disabled={!can_edit || status === "loading"}
-          className={`h-9 ml-auto ${
-            status === "error"
-              ? "bg-red-100 hover:bg-red-200 text-red-800 border-red-200"
-              : "bg-green-100 hover:bg-green-200 text-green-800 border-green-200"
-          }`}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {!can_edit
-            ? "View Only"
-            : status === "loading"
-            ? "Saving..."
-            : status === "success"
-            ? "Saved"
-            : status === "error"
-            ? "Validation Errors"
-            : "Save Table"}
-        </Button>
-      </div>
+      {toolbar}
 
       <div className="border rounded-lg overflow-x-auto">
         <div className="min-w-[300px] inline-block w-full">
@@ -831,6 +835,8 @@ export function DynamicMatrix({
           </table>
         </div>
       </div>
+
+      {toolbar}
     </div>
   );
 }
