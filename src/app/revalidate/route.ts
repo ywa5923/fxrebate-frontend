@@ -106,10 +106,10 @@ async function handleRevalidate(request: NextRequest) {
 }
 
 /**
- * Browser / webhook revalidation.
+ * Browser / webhook revalidation (outside /api — nginx sends /api to Laravel).
  *
- * GET  /api/revalidate?secret=...&revalidate_tags=translations,highest-rebates
- * GET  /api/revalidate?secret=...&revalidate_tag=route_maps&locale=ro&zone=eu
+ * GET  /revalidate?secret=...&revalidate_tags=translations,highest-rebates
+ * GET  /revalidate?secret=...&revalidate_tag=route_maps&locale=ro&zone=eu
  * POST same params in query or JSON body.
  *
  * Special tag `route_maps` (also `route-maps`) clears the dedicated proxy route-maps cache.
