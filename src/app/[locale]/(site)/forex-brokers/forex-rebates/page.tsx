@@ -5,12 +5,21 @@ import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import { TranslationProvider } from "@/providers/translations";
 import type { HighestRebateBroker } from "@/types";
 import ForexRebatesClient from "./ForexRebatesClient";
+import { SITE_BROKER_TYPES, type SiteBrokerType } from "./data";
 
-import {
-  FOREX_REBATES_DEFAULTS,
-  FOREX_REBATES_TRANSLATION_KEY,
-  parseSiteBrokerType,
-} from "./data";
+const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
+
+function parseSiteBrokerType(
+  value: string | undefined | null,
+): SiteBrokerType {
+  if (
+    value &&
+    (SITE_BROKER_TYPES as readonly string[]).includes(value)
+  ) {
+    return value as SiteBrokerType;
+  }
+  return SITE_BROKER_TYPES[0];
+}
 
 type LocaleResourcesPayload = {
   client?: Record<string, string>;
@@ -34,7 +43,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   );
   const { locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const zone = (await getZoneFromCookie()) ?? "eu";
+  const zone = await getZoneFromCookie();
 
   const page = resolvedSearchParams.page ?? "1";
   const perPage = resolvedSearchParams.per_page ?? "15";
@@ -61,9 +70,15 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   }
 
   const url = `/site/highest-rebates?${query.toString()}`;
-  const translationsUrl =
-    `/locale_resources?key[eq]=${FOREX_REBATES_TRANSLATION_KEY}` +
-    `&lang[eq]=${locale}&zone[eq]=${zone}&section[eq]=client`;
+
+  const translationsQuery = new URLSearchParams({
+    "key[eq]": FOREX_REBATES_TRANSLATION_KEY,
+    "lang[eq]": locale,
+    "section[eq]": "client",
+  });
+  if (zone) translationsQuery.set("zone[eq]", zone);
+
+  const translationsUrl = `/locale_resources?${translationsQuery.toString()}`;
 
   log.debug("Fetching highest rebates", { url });
 
@@ -112,15 +127,15 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
       message: translationsResponse.message,
       status: translationsResponse.status,
     });
+    throw new Error(
+      translationsResponse.message || "Error fetching forex rebates translations",
+    );
   }
 
-  const pageTranslations = translationsResponse.success
-    ? (translationsResponse.data?.client ?? {})
-    : FOREX_REBATES_DEFAULTS;
-
-
   return (
-    <TranslationProvider translations={pageTranslations}>
+    <TranslationProvider
+      translations={translationsResponse.data?.client ?? {}}
+    >
       <ForexRebatesClient
         brokers={response.data}
         orderDirection={orderDirection}

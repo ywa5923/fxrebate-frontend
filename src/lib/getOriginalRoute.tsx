@@ -1,63 +1,51 @@
-
-import { getTranslations } from "./getTranslations";
-
-type RouteMap = Record<string, string>;
+import { getCachedRouteMaps, type RouteMap } from "./routeMapsCache";
 
 export async function getOriginalRoute(
   path: string,
   locale: string,
-  zone: string
+  zone: string,
 ) {
   const pathWithoutLocale = path.replace(`/${locale}`, "");
-  if(pathWithoutLocale === "") {
+  if (pathWithoutLocale === "") {
     return `/${locale}`;
   }
-  //get the translated links  from database as an obejct with the keys as the original paths
-  const data = await getTranslations(locale, zone, "layout", "route-maps");
 
+  const data = await getCachedRouteMaps(locale, zone);
   const routeMap = data["route-maps"] as RouteMap;
 
-  //Example of data object bellow:
-  //{
-  //  "route-maps": {
-  //    "brokers": "courtiers",
-  //    "/brokers/:brokerId/:brokerName": "/courtiers/:brokerId/:brokerName",
-  //  }
-  //}
+  // Example:
+  // {
+  //   "route-maps": {
+  //     "/forex-brokers/forex-rebates": "/brokeri-forex/rebate-uri-forex",
+  //     "/brokers/:brokerId/:brokerName": "/courtiers/:brokerId/:brokerName",
+  //   }
+  // }
 
-  // Find the original key for a translated path
-
-  for (const [destination, source] of Object.entries(routeMap)) {
-    // Create a regex pattern to match the dynamic parameters in the source path
+  for (const [destination, source] of Object.entries(routeMap ?? {})) {
     const regex = new RegExp(
-      "^" + source.replace(/:([a-zA-Z0-9_]+)/g, "([^/]+)") + "$"
+      "^" + source.replace(/:([a-zA-Z0-9_]+)/g, "([^/]+)") + "$",
     );
 
     const match = pathWithoutLocale.match(regex);
 
     if (match) {
-      // Extract dynamic parameters from the match
-      const dynamicParams = match.slice(1); // First capture group will hold the dynamic params
-
-      // Rewrite the destination path with the dynamic parameters
+      const dynamicParams = match.slice(1);
       let rewrittenPath = destination;
 
-      // Replace dynamic segments in the destination path with matched dynamic parameters
-      const paramNames = (
-        source.match(/:([a-zA-Z0-9_]+)/g) || []
-      ).map((param) => param.slice(1)); // Get the dynamic param names
+      const paramNames = (source.match(/:([a-zA-Z0-9_]+)/g) || []).map(
+        (param) => param.slice(1),
+      );
 
       paramNames.forEach((paramName, index) => {
-        // Replace the placeholder in the destination with the matched dynamic value
         rewrittenPath = rewrittenPath.replace(
           `:${paramName}`,
-          dynamicParams[index]
+          dynamicParams[index],
         );
       });
 
-      return `/${locale}${rewrittenPath}`; // Return the rewritten path
+      return `/${locale}${rewrittenPath}`;
     }
   }
 
- return null;  
+  return null;
 }
