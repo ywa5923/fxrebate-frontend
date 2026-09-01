@@ -33,52 +33,54 @@ export async function proxy(req: NextRequest) {
 
   //Check if 'zone' cookie is already set
   let zone = req.cookies.get('zone')?.value;
-  if (!zone) {
-    //Get country from IP
-    //const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.ip;
-  //   const ip = "78.96.85.163";
-  //   const country = await getCountryByIP(ip);
+  // if (!zone) {
+  //   //Get country from IP
+  //   //const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.ip;
+  // //   const ip = "78.96.85.163";
+  // //   const country = await getCountryByIP(ip);
 
-  //   if (!country) {
-  //     console.log("Country not found", country)
-  //     return new NextResponse("Access Denied", { status: 403 });
+  // //   if (!country) {
+  // //     console.log("Country not found", country)
+  // //     return new NextResponse("Access Denied", { status: 403 });
+  // //   }
+
+  // //  // Get zone code
+  // //   zone = (await getZoneByCountry(country)) ?? undefined;
+  //   zone = "zone1";
+  //   if (!zone) {
+  //     return new NextResponse("Zone not found", { status: 404 });
+      
   //   }
 
-  //  // Get zone code
-  //   zone = (await getZoneByCountry(country)) ?? undefined;
-    zone = "zone1";
-    if (!zone) {
-      return new NextResponse("Zone not found", { status: 404 });
-      
-    }
-
-    // Set the zone cookie
-    response.cookies.set('zone', zone, {
-      path: '/',
-      httpOnly: true,
-     // secure: process.env.NODE_ENV === 'production', // Secure only in production
-     secure:false,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
-  }
+  //   // Set the zone cookie
+  //   response.cookies.set('zone', zone, {
+  //     path: '/',
+  //     httpOnly: true,
+  //    // secure: process.env.NODE_ENV === 'production', // Secure only in production
+  //    secure:false,
+  //     sameSite: 'lax',
+  //     maxAge: 60 * 60 * 24 * 30, // 30 days
+  //   });
+  // }
 
 
 
-  const rewrittenPath = await getOriginalRoute(pathname, locale, zone);
+  const rewrittenPath = zone
+    ? await getOriginalRoute(pathname, locale, zone)
+    : null;
   //console.log("Rewritten path", rewrittenPath)
   if (rewrittenPath) {
     url.pathname = rewrittenPath;
     const rewriteResponse = NextResponse.rewrite(url);
     // Copy the cookie to the rewrite response
-    rewriteResponse.cookies.set('zone', zone, {
-      path: '/',
-      httpOnly: true,
-      //secure: process.env.NODE_ENV === 'production', // Secure only in production
-      secure:false,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
-    });
+    // rewriteResponse.cookies.set('zone', zone, {
+    //   path: '/',
+    //   httpOnly: true,
+    //   //secure: process.env.NODE_ENV === 'production', // Secure only in production
+    //   secure:false,
+    //   sameSite: 'lax',
+    //   maxAge: 60 * 60 * 24 * 30,
+    // });
     return rewriteResponse;
   }
 

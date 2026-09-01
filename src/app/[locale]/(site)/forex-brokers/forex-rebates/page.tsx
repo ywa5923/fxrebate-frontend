@@ -61,6 +61,9 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
     per_page: perPage,
     broker_type: brokerType,
   });
+  if (zone) {
+    query.set("zone_code", zone);
+  }
   if (orderDirection) {
     query.set("order_by", "trading_name");
     query.set("order_direction", orderDirection);
