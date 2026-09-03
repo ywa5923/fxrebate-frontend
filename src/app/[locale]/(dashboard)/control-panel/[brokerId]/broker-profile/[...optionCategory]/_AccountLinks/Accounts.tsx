@@ -1,6 +1,7 @@
 "use client";
 
-import { DynamicTableRow, Option } from "@/types";
+import { AccountTypeRow, CompanyList, DynamicTableRow, Option } from "@/types";
+import AccountCompanies from "./AccountCompanies";
 
 import { NotFoundEntity } from "@/components/NotFoundEntity";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
@@ -32,11 +33,12 @@ import logger from "@/lib/logger";
 import { OptionsForm } from "@/components/OptionsForm/OptionsForm";
 interface AccountsProps {
   broker_id: number;
-  accounts?: DynamicTableRow[];
+  accounts?: AccountTypeRow[];
   options: Option[];
   is_admin?: boolean;
   can_edit?: boolean;
   can_manage?: boolean;
+  companiesList: CompanyList;
   linksGroupedByEntityId: LinksGroupedByEntityId;
   masterLinksGroupedByType: LinksGroupedByType;
   linksGroups: LinkGroup[];
@@ -69,6 +71,7 @@ export default function Accounts({
   is_admin = false,
   can_edit = true,
   can_manage = true,
+  companiesList,
   linksGroupedByEntityId,
   masterLinksGroupedByType,
   linksGroups,
@@ -298,6 +301,16 @@ export default function Accounts({
                 </div>
               )}
 
+              <div className="w-full min-w-0 mt-10 mb-10 pt-8">
+                <AccountCompanies
+                  broker_id={broker_id}
+                  account_type_id={account.id}
+                  attachedCompany={account.company ?? null}
+                  companiesList={companiesList}
+                  can_manage={can_manage}
+                />
+              </div>
+
               <AccountLinks
                 broker_id={broker_id}
                 account_type_id={account?.id}
@@ -340,8 +353,8 @@ export default function Accounts({
                   <div className="space-y-1 pt-0.5">
                     <DialogTitle>Account type saved successfully</DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                      You can now complete the links associated with this
-                      account in the sections below.
+                      You can now attach a company to this account type and
+                      complete the associated links in the sections below.
                     </p>
                   </div>
                 </div>
