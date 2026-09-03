@@ -528,12 +528,16 @@ export function DynamicMatrix({
                 <tr
                   key={rowIndex}
                   className={
-                    rowIndex % 2 === 0 ? "bg-background" : "bg-green-50"
+                    rowIndex % 2 === 0
+                      ? "bg-background"
+                      : "bg-green-50 dark:bg-green-950/40"
                   }
                 >
                   <td
                     className={`border p-1 md:sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] w-[200px] overflow-x-auto md:overflow-visible ${
-                      rowIndex % 2 === 0 ? "bg-background" : "bg-green-50"
+                      rowIndex % 2 === 0
+                        ? "bg-background"
+                        : "bg-green-50 dark:bg-green-950/40"
                     }`}
                   >
                     <div className="flex flex-col gap-2 min-w-[200px]">
