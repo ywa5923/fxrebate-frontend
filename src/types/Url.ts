@@ -28,6 +28,8 @@ export type Url = {
 export type AffiliateLink = Url & {
   account_type_id?: number | null;
   account_type_name?: string;
+  company_id?: number | null;
+  company_name?: string;
   currency?: string | null;
   public_currency?: string | null;
   previous_currency?: string | null;
@@ -64,7 +66,14 @@ export type AccountWithPlatformLinks = {
   platform_urls?: PlatformUrl[];
 };
 
+export type CompanyWithPlatformLinks = {
+  id: number;
+  company_name: string;
+  platform_urls?: PlatformUrl[];
+};
+
 export type AffiliateLinksData={
+  companies?: CompanyWithPlatformLinks[];
   account_types: AccountWithPlatformLinks[];
   ib_affiliate_urls?: AffiliateLink[];
   sub_ib_affiliate_urls?: AffiliateLink[];

@@ -33,6 +33,7 @@ import type {
   AccountWithPlatformLinks,
   AffiliateLink,
   AffiliateLinkTabType,
+  CompanyWithPlatformLinks,
 } from "@/types";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,26 +55,46 @@ import { OptionsForm } from "@/components/OptionsForm";
 import { Plus } from "lucide-react";
 type CopyField = "name" | "url" | "currency";
 
-const referralLinkFormSchema = z.object({
-  accountTypeId: z.string().min(1, "Please select an account type"),
-  platformUrls: z.array(
-    z.object({
-      value: z.number(),
-      label: z.string(),
-    }),
-  ),
-  currency: z.string().min(1, "Please select a currency"),
-  urlType: z.string().min(1, "Please select a URL type"),
-  isMasterLink: z.boolean(),
-  name: z.string().trim().min(1, "Name is required"),
-  url: z.string().trim().url("Please enter a valid URL"),
-});
+const NONE_SELECT = "__none__";
+
+const referralLinkFormSchema = z
+  .object({
+    accountTypeId: z.string(),
+    companyId: z.string(),
+    platformUrls: z.array(
+      z.object({
+        value: z.number(),
+        label: z.string(),
+      }),
+    ),
+    currency: z.string().min(1, "Please select a currency"),
+    urlType: z.string().min(1, "Please select a URL type"),
+    isMasterLink: z.boolean(),
+    name: z.string().trim().min(1, "Name is required"),
+    url: z.string().trim().url("Please enter a valid URL"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isMasterLink) return;
+    if (!data.accountTypeId && !data.companyId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select a company or an account type",
+        path: ["companyId"],
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select a company or an account type",
+        path: ["accountTypeId"],
+      });
+    }
+  });
 
 type ReferralLinkFormValues = z.infer<typeof referralLinkFormSchema>;
 
 type Props = {
   is_admin: boolean;
   brokerId: number;
+  companies: CompanyWithPlatformLinks[];
   accountTypes: AccountWithPlatformLinks[];
   currencyList: { label: string; value: string }[];
   IBLinks: AffiliateLink[];
@@ -84,6 +105,7 @@ type Props = {
 export default function ReferalLinksAndNotes({
   is_admin,
   brokerId,
+  companies,
   accountTypes,
   currencyList,
   IBLinks,
@@ -116,7 +138,8 @@ export default function ReferalLinksAndNotes({
   const form = useForm<ReferralLinkFormValues>({
     resolver: zodResolver(referralLinkFormSchema),
     defaultValues: {
-      accountTypeId: String(accountTypes[0]?.account_type_id ?? 0),
+      accountTypeId: "",
+      companyId: "",
       platformUrls: [],
       currency: "",
       urlType: "",
@@ -134,7 +157,10 @@ export default function ReferalLinksAndNotes({
   );
 
   const watchedAccountTypeId = form.watch("accountTypeId");
+  const watchedCompanyId = form.watch("companyId");
   const watchedIsMasterLink = form.watch("isMasterLink");
+  const isCompanySelected = Boolean(watchedCompanyId);
+  const isAccountTypeSelected = Boolean(watchedAccountTypeId);
 
   //this function is used in the edit form to show the updated fields in red
   const getLabelClassName = (updatedFieldKey: string) =>
@@ -147,6 +173,15 @@ export default function ReferalLinksAndNotes({
     );
 
   const platformUrlMultiselectOptions = useMemo(() => {
+    if (watchedCompanyId) {
+      const company = companies.find(
+        (item) => String(item.id) === String(watchedCompanyId),
+      );
+      return (company?.platform_urls ?? []).map((p) => ({
+        value: Number(p.id),
+        label: String(p.name ?? ""),
+      }));
+    }
     const acc = accountTypes.find(
       (a) => String(a.account_type_id) === String(watchedAccountTypeId),
     );
@@ -154,12 +189,12 @@ export default function ReferalLinksAndNotes({
       value: Number(p.id),
       label: String(p.name ?? ""),
     }));
-  }, [accountTypes, watchedAccountTypeId]);
+  }, [accountTypes, companies, watchedAccountTypeId, watchedCompanyId]);
 
   function openCreate() {
-    if (accountTypes.length === 0) {
+    if (accountTypes.length === 0 && companies.length === 0) {
       toast.error(
-        "No account types found. Create an account type in My Trading Accounts before adding referral links.",
+        "No account types or companies found. Create one before adding referral links.",
       );
       return;
     }
@@ -167,9 +202,9 @@ export default function ReferalLinksAndNotes({
     setDialogMode("create");
     setEditingId(null);
     setSelectedRow(null);
-    const defaultAccountTypeId = String(accountTypes[0]?.account_type_id ?? 0);
     form.reset({
-      accountTypeId: defaultAccountTypeId,
+      accountTypeId: "",
+      companyId: "",
       platformUrls: [],
       currency: "",
       urlType: activeTab,
@@ -206,9 +241,10 @@ export default function ReferalLinksAndNotes({
     const url = is_admin ? (row.public_url ?? row.url ?? "") : (row.url ?? "");
 
     form.reset({
-      accountTypeId: String(
-        row.account_type_id ?? accountTypes[0]?.account_type_id ?? 0,
-      ),
+      accountTypeId: row.company_id
+        ? ""
+        : String(row.account_type_id ?? ""),
+      companyId: row.company_id ? String(row.company_id) : "",
       platformUrls: (row.platform_urls ?? []).map((p) => ({
         value: Number(p.id),
         label: String(p.name ?? ""),
@@ -266,9 +302,14 @@ export default function ReferalLinksAndNotes({
   async function handleDialogSubmit(values: ReferralLinkFormValues) {
     const bodyPayload = {
       broker_id: brokerId,
-      account_type_id: values.isMasterLink
-        ? null
-        : Number(values.accountTypeId),
+      account_type_id:
+        values.isMasterLink || !values.accountTypeId
+          ? null
+          : Number(values.accountTypeId),
+      company_id:
+        values.isMasterLink || !values.companyId
+          ? null
+          : Number(values.companyId),
       currency: values.currency?.trim() || null,
       url_type: values.urlType,
       is_master_link: values.isMasterLink,
@@ -441,6 +482,68 @@ export default function ReferalLinksAndNotes({
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-1 min-w-0">
+                <div className={getLabelClassName("company_id")}>Company</div>
+                <Controller
+                  name="companyId"
+                  control={form.control}
+                  render={({ field }) =>
+                    watchedIsMasterLink ? (
+                      <div className="flex min-h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        All companies
+                      </div>
+                    ) : (
+                      <Select
+                        value={field.value || NONE_SELECT}
+                        disabled={isAccountTypeSelected}
+                        onValueChange={(v) => {
+                          const next = v === NONE_SELECT ? "" : v;
+                          field.onChange(next);
+                          if (next) {
+                            form.setValue("accountTypeId", "", {
+                              shouldValidate: true,
+                            });
+                          }
+                          form.setValue("platformUrls", [], {
+                            shouldValidate: true,
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="w-full min-w-0 max-w-full">
+                          <SelectValue
+                            className="truncate"
+                            placeholder="Select company"
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE_SELECT}>
+                            No company
+                          </SelectItem>
+                          {companies.map((item) => (
+                            <SelectItem key={item.id} value={String(item.id)}>
+                              {item.company_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )
+                  }
+                />
+                {is_admin && (
+                  <BrokerPreviousValue
+                    show="previous"
+                    previousValue={
+                      selectedRow?.metadata?.previous_relations_values
+                        ?.previous_company_name
+                    }
+                  />
+                )}
+                {form.formState.errors.companyId ? (
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    {form.formState.errors.companyId.message}
+                  </p>
+                ) : null}
+              </div>
+              <div className="space-y-1 min-w-0">
                 <div className={getLabelClassName("account_type_id")}>
                   Account name
                 </div>
@@ -454,9 +557,16 @@ export default function ReferalLinksAndNotes({
                       </div>
                     ) : (
                       <Select
-                        value={field.value ?? "0"}
+                        value={field.value || NONE_SELECT}
+                        disabled={isCompanySelected}
                         onValueChange={(v) => {
-                          field.onChange(v);
+                          const next = v === NONE_SELECT ? "" : v;
+                          field.onChange(next);
+                          if (next) {
+                            form.setValue("companyId", "", {
+                              shouldValidate: true,
+                            });
+                          }
                           form.setValue("platformUrls", [], {
                             shouldValidate: true,
                           });
@@ -469,6 +579,9 @@ export default function ReferalLinksAndNotes({
                           />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value={NONE_SELECT}>
+                            No account type
+                          </SelectItem>
                           {accountTypes.map((item) => (
                             <SelectItem
                               key={item.account_type_id}
@@ -482,7 +595,6 @@ export default function ReferalLinksAndNotes({
                     )
                   }
                 />
-                {/* if admin show row.metadata.previous_relations_values.previous_account_type_name */}
                 {is_admin && (
                   <BrokerPreviousValue
                     show="previous"
@@ -635,7 +747,8 @@ export default function ReferalLinksAndNotes({
                     sideOffset={6}
                     className="text-sm px-3.5 py-2"
                   >
-                    Master links apply to all account types and web platforms
+                    Master links apply to all companies, account types and web
+                    platforms
                   </TooltipContent>
                 </Tooltip>
               </div>

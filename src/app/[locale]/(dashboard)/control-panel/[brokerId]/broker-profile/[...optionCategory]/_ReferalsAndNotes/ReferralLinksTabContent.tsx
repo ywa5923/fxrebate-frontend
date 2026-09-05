@@ -79,7 +79,7 @@ export function ReferralLinksTabContent({
                       <div className="min-w-0 flex-1 space-y-2.5">
                         <p className="text-sm text-gray-700 dark:text-gray-300">
                           <span className="font-medium text-gray-500 dark:text-gray-400">
-                            AccountType:
+                            {row.company_id ? "Company:" : "AccountType:"}
                           </span>{" "}
                           {row.is_master_link ? (
                             <span className="font-semibold text-amber-700 dark:text-amber-300">
@@ -87,7 +87,9 @@ export function ReferralLinksTabContent({
                             </span>
                           ) : (
                             <span className="font-semibold text-gray-900 dark:text-gray-100">
-                              {row.account_type_name}
+                              {row.company_id
+                                ? row.company_name
+                                : row.account_type_name}
                             </span>
                           )}
                         </p>

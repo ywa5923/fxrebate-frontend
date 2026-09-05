@@ -46,19 +46,24 @@ export default async function MyReferalsAndNotes({ brokerId, notesOptions, optio
       });
       notFound();
     }
-    if (!referralLinksResponse.data?.account_types) {
-      thisLogger.error("No account types found", {
+    const hasAccountTypes =
+      (referralLinksResponse.data?.account_types?.length ?? 0) > 0;
+    const hasCompanies =
+      (referralLinksResponse.data?.companies?.length ?? 0) > 0;
+    if (!hasAccountTypes && !hasCompanies) {
+      thisLogger.error("No account types or companies found", {
         context: { referralLinks: referralLinksResponse.message },
       });
-      throw new Error("No account types found");
+      throw new Error("No account types or companies found");
     }
 
     return (
       <ReferalLinksAndNotes
         is_admin={is_admin}
         brokerId={brokerId}
+        companies={referralLinksResponse.data?.companies ?? []}
         accountTypes={referralLinksResponse.data?.account_types ?? []}
-        currencyList={referralLinksResponse.data.currency_list}
+        currencyList={referralLinksResponse.data?.currency_list ?? []}
         IBLinks={referralLinksResponse.data?.ib_affiliate_urls ?? []}
         SubIBLinks={referralLinksResponse.data?.sub_ib_affiliate_urls ?? []}
         notesOptions={notesOptions}
