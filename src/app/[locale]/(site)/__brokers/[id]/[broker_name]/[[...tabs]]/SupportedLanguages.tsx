@@ -22,6 +22,7 @@ export const SupportedLanguages = ({ languages }: SupportedLanguagesProps) => {
                     src={`${cloudflareR2Link}/${language.toLowerCase()}.svg`}
                     alt={`${language} flag`}
                     fill
+                    sizes="28px"
                     className="object-contain"
                   />
                 </div>

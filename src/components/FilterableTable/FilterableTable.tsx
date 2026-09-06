@@ -264,6 +264,7 @@ export default function FilterableTable<T extends { id: number | string }>({
                     src={srcStr}
                     alt="Broker logo"
                     fill
+                    sizes="48px"
                     className="object-contain"
                   />
                 </div>

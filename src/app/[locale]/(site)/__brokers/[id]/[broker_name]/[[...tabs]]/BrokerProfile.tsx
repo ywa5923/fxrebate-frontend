@@ -23,6 +23,7 @@ export const BrokerProfile = ({
             src={logoUrl}
             alt="Admiral Markets Logo"
             fill
+            sizes="(max-width: 768px) 80px, 112px"
             className="object-contain"
             priority
             unoptimized

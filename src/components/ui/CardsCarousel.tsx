@@ -118,7 +118,7 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
             variants={fadeIn({ direction: "up", delay: 0.25, duration: 1, value: 25, ease: "easeInOut" })}
             className="max-w-3xl section-title md:!text-left leading-[115%]"
           >
-            {_t["more_about_trading"]}
+            {_t["more_about_trading"] as string}
           </motion.h2>
           <motion.div
             variants={opacityAnimation({ delay: 0.25, duration: 1.25 })}
@@ -261,13 +261,13 @@ export const Card = ({
                 layoutId={layout ? `category-${card.title}` : undefined}
                 className="text-base font-medium text-black dark:text-white"
               >
-                {_t[card.category]||card.category} 
+                {_t[card.category] as string ||card.category} 
               </motion.p>
               <motion.p
                 layoutId={layout ? `title-${card.title}` : undefined}
                 className="text-2xl md:text-5xl font-semibold text-neutral-700 mt-4 dark:text-white"
               >
-                {_t[card.title]||card.title}
+                {_t[card.title] as string ||card.title}
               </motion.p>
               <div className="py-10">{card.content}</div>
             </motion.div>
@@ -294,13 +294,14 @@ export const Card = ({
           layoutId={layout ? `title-${card.title}` : undefined}
           className="relative z-50 p-8 text-white text-xl md:text-[40px] font-semibold text-left [text-wrap:balance]"
         >
-          {_t[card.title]||card.title}
+          {_t[card.title] as string ||card.title}
         </motion.span>
         <BlurImage
           id={card.id}
           src={card.src}
           alt={card.title}
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="group-hover:scale-110 transition-all duration-300 object-cover absolute z-10 inset-0"
         />
       </motion.button>
