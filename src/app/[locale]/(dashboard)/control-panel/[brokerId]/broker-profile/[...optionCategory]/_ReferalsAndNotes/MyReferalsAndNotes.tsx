@@ -34,7 +34,7 @@ export default async function MyReferalsAndNotes({ brokerId, notesOptions, optio
     let referralLinksFetchUrl = `/urls/broker/${brokerId}/affiliate-links`;
     let referralLinksResponse = await apiClient<AffiliateLinksData>(
       referralLinksFetchUrl,
-      UseTokenAuth.No,
+      UseTokenAuth.Yes,
       {
         method: "GET",
         cache: "no-store",
@@ -45,16 +45,6 @@ export default async function MyReferalsAndNotes({ brokerId, notesOptions, optio
         context: { referralLinks: referralLinksResponse.message },
       });
       notFound();
-    }
-    const hasAccountTypes =
-      (referralLinksResponse.data?.account_types?.length ?? 0) > 0;
-    const hasCompanies =
-      (referralLinksResponse.data?.companies?.length ?? 0) > 0;
-    if (!hasAccountTypes && !hasCompanies) {
-      thisLogger.error("No account types or companies found", {
-        context: { referralLinks: referralLinksResponse.message },
-      });
-      throw new Error("No account types or companies found");
     }
 
     return (
