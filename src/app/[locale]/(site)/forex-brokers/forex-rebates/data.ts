@@ -6,13 +6,19 @@ export const CATEGORY_TABS = [
   {
     brokerType: SITE_BROKER_TYPES[0],
     labelKey: "tab_forex_rebates" as const,
+    titleKey: "page_title_forex_rebates" as const,
+    descriptionKey: "page_description_forex_rebates" as const,
   },
   {
     brokerType: SITE_BROKER_TYPES[1],
     labelKey: "tab_crypto_rebates" as const,
+    titleKey: "page_title_crypto_rebates" as const,
+    descriptionKey: "page_description_crypto_rebates" as const,
   },
   {
     brokerType: SITE_BROKER_TYPES[2],
     labelKey: "tab_prop_rebates" as const,
+    titleKey: "page_title_propfirm_rebates" as const,
+    descriptionKey: "page_description_propfirm_rebates" as const,
   },
 ] as const;

@@ -79,6 +79,7 @@ import zotapay from "@/assets/funding_methods/ZotaPay.jpg";
 import frillpay from "@/assets/funding_methods/frillpay.jpeg";
 import hwgc from "@/assets/funding_methods/hwgc.png";
 import alipay from "@/assets/funding_methods/alipay.jpeg";
+import bpay from "@/assets/funding_methods/bpay.png";
 
 
 
@@ -166,6 +167,7 @@ const icons: Record<string, string> = {
   "FRILLPAY": assetSrc(frillpay),
   "HWGC": assetSrc(hwgc),
   "ALIPAY": assetSrc(alipay),
+  "BPAY": assetSrc(bpay),
 };
 
 type Props = {

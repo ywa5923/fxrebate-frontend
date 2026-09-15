@@ -70,6 +70,11 @@ export default function ForexRebatesClient({
   const activeSortLabel =
     sortOptions.find((option) => option.sort === activeSort)?.label ??
     _t["sort_default"] as string;
+  const activeTab =
+    CATEGORY_TABS.find((tab) => tab.brokerType === activeBrokerType) ??
+    CATEGORY_TABS[0];
+  const pageTitle = _t[activeTab.titleKey] as string;
+  const pageDescription = _t[activeTab.descriptionKey] as string;
 
   function buildListParams(overrides: {
     brokerType?: SiteBrokerType;
@@ -144,7 +149,7 @@ export default function ForexRebatesClient({
 
   async function handleShare() {
     const url = window.location.href;
-    const title = _t["page_title"] as string;
+    const title = pageTitle;
     try {
       if (navigator.share) {
         await navigator.share({ title, url });
@@ -234,10 +239,10 @@ export default function ForexRebatesClient({
 
         <header className="mb-8 max-w-4xl">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-[40px] lg:leading-[1.15]">
-            {_t["page_title"] as string}
+            {pageTitle}
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-[#0c110f]/80 dark:text-gray-300 sm:text-base">
-            {_t["page_description"] as string}
+            {pageDescription}
           </p>
         </header>
 

@@ -73,39 +73,27 @@ function RatesGrid({
   return (
     <div
       className={cn(
-        "rounded px-4 py-[17px]",
-        columns === "card"
-          ? "bg-white dark:bg-[#0c110f]"
-          : "border border-[#f0f0f0] bg-white dark:border-gray-700 dark:bg-gray-950/60",
+        columns === "list"
+          ? "flex flex-wrap gap-2"
+          : "grid grid-cols-2 gap-2",
       )}
     >
-      <div
-        className={cn(
-          "grid gap-x-6 gap-y-2",
-          columns === "list"
-            ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-0"
-            : "grid-cols-2",
-        )}
-      >
-        {rebates.map((rebate, index) => (
-          <div
-            key={rebate.id}
-            className={cn(
-              "flex flex-col gap-0.5",
-              columns === "list" &&
-                index > 0 &&
-                "lg:border-l lg:border-black/10 lg:pl-6 dark:lg:border-white/10",
-            )}
-          >
-            <span className="text-sm font-bold capitalize text-[#0c110f]/80 dark:text-white/80">
-              {rebate.account_type_name}
-            </span>
-            <span className="text-sm font-bold text-[#0c110f] dark:text-white">
-              {rebate.public_value ?? "—"}
-            </span>
-          </div>
-        ))}
-      </div>
+      {rebates.map((rebate) => (
+        <div
+          key={rebate.id}
+          className={cn(
+            "flex flex-col gap-0.5 rounded-md border border-[#0c110f]/8 bg-white px-3 py-2.5 dark:border-white/10 dark:bg-[#0c110f]",
+            columns === "list" && "min-w-[140px] flex-1 basis-[140px] sm:max-w-[220px]",
+          )}
+        >
+          <span className="text-sm font-bold capitalize text-[#0c110f]/80 dark:text-white/80">
+            {rebate.account_type_name}
+          </span>
+          <span className="text-sm font-bold text-[#0c110f] dark:text-white">
+            {rebate.public_value ?? "—"}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
