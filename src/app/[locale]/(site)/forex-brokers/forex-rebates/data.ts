@@ -1,6 +1,45 @@
-/** Order matches CATEGORY_TABS index — do not key off translated labels. */
+import type { HighestRebateBroker } from "@/types";
+
 export const SITE_BROKER_TYPES = ["broker", "crypto", "prop_firm"] as const;
 export type SiteBrokerType = (typeof SITE_BROKER_TYPES)[number];
+
+export const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
+
+export function brokerRebateSlug(tradingName: string): string {
+  return tradingName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function brokerMatchesSlug(
+  broker: HighestRebateBroker,
+  slug: string,
+): boolean {
+  return brokerRebateSlug(broker.trading_name) === slug;
+}
+
+export function brokerRebateDetailHref(
+  locale: string,
+  broker: HighestRebateBroker,
+  brokerType: SiteBrokerType,
+): string {
+  const qs = new URLSearchParams({
+    broker_type: brokerType,
+    broker_id: String(broker.broker_id),
+  });
+  return "/" + locale + "/forex-brokers/forex-rebates/" +
+    brokerRebateSlug(broker.trading_name) + "?" + qs;
+}
+
+export function forexRebatesListHref(
+  locale: string,
+  brokerType: SiteBrokerType,
+): string {
+  const qs = new URLSearchParams({ broker_type: brokerType });
+  return "/" + locale + "/forex-brokers/forex-rebates?" + qs;
+}
 
 export const CATEGORY_TABS = [
   {

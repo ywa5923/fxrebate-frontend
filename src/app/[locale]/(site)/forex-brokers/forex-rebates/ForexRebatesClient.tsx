@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Search, Share2 } from "lucide-react";
@@ -38,7 +38,11 @@ type Props = {
   totalPages: number;
 };
 
-export default function ForexRebatesClient({
+export default function ForexRebatesClient(props: Props) {
+  return <ForexRebatesClientContent key={props.tradingName ?? ""} {...props} />;
+}
+
+function ForexRebatesClientContent({
   brokers,
   orderDirection,
   tradingName,
@@ -55,10 +59,6 @@ export default function ForexRebatesClient({
   const [sortOpen, setSortOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(tradingName ?? "");
-
-  useEffect(() => {
-    setSearchQuery(tradingName ?? "");
-  }, [tradingName]);
 
   const sortOptions: { label: string; sort: SortMode }[] = [
     { label: _t["sort_default"] as string, sort: "default" },
@@ -117,8 +117,8 @@ export default function ForexRebatesClient({
     return qs ? `${pathname}?${qs}` : pathname;
   }
 
-  function handleSearchSubmit(event?: React.FormEvent) {
-    event?.preventDefault();
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const trimmed = searchQuery.trim();
     const nextParams = buildListParams({
       tradingName: trimmed || null,
@@ -162,7 +162,7 @@ export default function ForexRebatesClient({
   }
 
   return (
-    <div className="bg-white text-[#0c110f] dark:bg-gray-950 dark:text-gray-100">
+    <div className="min-h-screen bg-white text-[#0c110f] dark:bg-[#0c110f] dark:text-gray-100">
       {/* pt clears sticky floating site header */}
       <div className="mx-auto max-w-[1360px] px-4 pb-12 pt-28 sm:px-6 lg:px-10 lg:pb-16 lg:pt-32">
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -210,7 +210,7 @@ export default function ForexRebatesClient({
 
         <div
           className={cn(
-            "mb-8 flex flex-col gap-2 rounded-lg bg-[#f0f0f0] p-1 dark:bg-[#202221]",
+            "mb-8 flex flex-col gap-2 rounded-lg bg-[#f6f6f6] p-1 dark:bg-[#202221]",
             "md:mb-6 md:inline-flex md:h-9 md:max-w-full md:flex-row md:items-center md:gap-0 md:overflow-x-auto",
           )}
           role="tablist"
@@ -367,6 +367,8 @@ export default function ForexRebatesClient({
                 key={broker.broker_id}
                 broker={broker}
                 view={view}
+                locale={locale}
+                brokerType={activeBrokerType}
               />
             ))
           )}

@@ -9,13 +9,19 @@ import {
   useTranslation,
 } from "@/providers/translations";
 import type { HighestRebateBroker, HighestRebateEntry } from "@/types";
+import {
+  brokerRebateDetailHref,
+  type SiteBrokerType,
+} from "./data";
 
 type Props = {
   broker: HighestRebateBroker;
   view: "list" | "card";
+  locale: string;
+  brokerType: SiteBrokerType;
 };
 
-function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
+export function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
   const initials = broker.trading_name
     .split(/\s+/)
     .slice(0, 2)
@@ -48,7 +54,7 @@ function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
   );
 }
 
-function PaymentMethods({ text }: { text: string }) {
+export function PaymentMethods({ text }: { text: string }) {
   const _t = useTranslation() as Translations;
   return (
     <div className="flex flex-col gap-1">
@@ -63,7 +69,7 @@ function PaymentMethods({ text }: { text: string }) {
   );
 }
 
-function RatesGrid({
+export function RatesGrid({
   rebates,
   columns,
 }: {
@@ -99,8 +105,17 @@ function RatesGrid({
 }
 
 /** Desktop/mobile grid card from Figma nodes 958:46384 / 958:50959 */
-function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
+function CardViewLayout({
+  broker,
+  locale,
+  brokerType,
+}: {
+  broker: HighestRebateBroker;
+  locale: string;
+  brokerType: SiteBrokerType;
+}) {
   const _t = useTranslation() as Translations;
+  const detailHref = brokerRebateDetailHref(locale, broker, brokerType);
   return (
     <article className="flex h-full flex-col gap-8 rounded-lg bg-[#f6f6f6] p-6 dark:bg-[#171f1c]">
       <BrokerIdentity broker={broker} />
@@ -108,13 +123,13 @@ function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
       <RatesGrid rebates={broker.rebates} columns="card" />
       <div className="mt-auto flex items-center gap-2">
         <Link
-          href="#"
+          href={detailHref}
           className="inline-flex h-10 flex-1 items-center justify-center rounded border border-[#0c110f] bg-[#0c110f] px-4 text-sm font-medium text-white hover:bg-[#0c110f]/90 dark:border-white dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
         >
           {_t["get_rebate"] as string}
         </Link>
         <Link
-          href="#"
+          href={detailHref}
           className="inline-flex h-10 shrink-0 items-center justify-center px-2 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-white"
         >
           {_t["view_details"] as string}
@@ -124,10 +139,19 @@ function CardViewLayout({ broker }: { broker: HighestRebateBroker }) {
   );
 }
 
-function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
+function ListViewLayout({
+  broker,
+  locale,
+  brokerType,
+}: {
+  broker: HighestRebateBroker;
+  locale: string;
+  brokerType: SiteBrokerType;
+}) {
   const _t = useTranslation() as Translations;
+  const detailHref = brokerRebateDetailHref(locale, broker, brokerType);
   return (
-    <article className="rounded-lg border border-[#f0f0f0] bg-[#f6f6f6] p-4 md:p-5 dark:border-gray-800 dark:bg-gray-900">
+    <article className="rounded-lg border border-[#eaeaea] bg-[#f6f6f6] p-4 md:p-5 dark:border-gray-800 dark:bg-[#171f1c]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <BrokerIdentity broker={broker} />
         <div className="lg:min-w-[247px]">
@@ -135,13 +159,13 @@ function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
         </div>
         <div className="flex items-center gap-3 lg:justify-end">
           <Link
-            href="#"
+            href={detailHref}
             className="inline-flex h-8 items-center justify-center rounded px-3 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-gray-100"
           >
             {_t["view_details"] as string}
           </Link>
           <Link
-            href="#"
+            href={detailHref}
             className="inline-flex h-8 items-center justify-center rounded bg-[#0c110f] px-3 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
           >
             {_t["get_rebate"] as string}
@@ -155,9 +179,26 @@ function ListViewLayout({ broker }: { broker: HighestRebateBroker }) {
   );
 }
 
-export default function BrokerRebateCard({ broker, view }: Props) {
+export default function BrokerRebateCard({
+  broker,
+  view,
+  locale,
+  brokerType,
+}: Props) {
   if (view === "card") {
-    return <CardViewLayout broker={broker} />;
+    return (
+      <CardViewLayout
+        broker={broker}
+        locale={locale}
+        brokerType={brokerType}
+      />
+    );
   }
-  return <ListViewLayout broker={broker} />;
+  return (
+    <ListViewLayout
+      broker={broker}
+      locale={locale}
+      brokerType={brokerType}
+    />
+  );
 }
