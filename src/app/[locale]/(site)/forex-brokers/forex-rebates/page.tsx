@@ -2,31 +2,25 @@ import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
-import { TranslationProvider } from "@/providers/translations";
+import { fetchTranslations } from "@/lib/fetchTranslations";
+import PageTranslationProvider from "@/providers/PageTranslationProvider";
 import type { HighestRebateBroker } from "@/types";
 import ForexRebatesClient from "./ForexRebatesClient";
-import {
-  SITE_BROKER_TYPES,
-  type SiteBrokerType,
-} from "./data";
+import { SITE_BROKER_TYPES } from "@/constants";
 
 const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
 
 function parseSiteBrokerType(
   value: string | undefined | null,
-): SiteBrokerType {
+): string {
   if (
     value &&
     (SITE_BROKER_TYPES as readonly string[]).includes(value)
   ) {
-    return value as SiteBrokerType;
+    return value;
   }
   return SITE_BROKER_TYPES[0];
 }
-
-type LocaleResourcesPayload = {
-  client?: Record<string, string>;
-};
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -77,18 +71,9 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
 
   const url = `/site/highest-rebates?${query.toString()}`;
 
-  const translationsQuery = new URLSearchParams({
-    "key[eq]": FOREX_REBATES_TRANSLATION_KEY,
-    "lang[eq]": locale,
-    "section[eq]": "client",
-  });
-  if (zone) translationsQuery.set("zone[eq]", zone);
-
-  const translationsUrl = `/locale_resources?${translationsQuery.toString()}`;
-
   log.debug("Fetching highest rebates", { url });
 
-  const [response, translationsResponse] = await Promise.all([
+  const [response, clientTranslations] = await Promise.all([
     apiClient<HighestRebateBroker[]>(
       url,
       UseTokenAuth.No,
@@ -101,21 +86,12 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
       },
       ErrorMode.Return,
     ),
-    apiClient<LocaleResourcesPayload>(
-      translationsUrl,
-      UseTokenAuth.No,
-      {
-        method: "GET",
-        next: {
-          revalidate: 3600,
-          tags: [
-            "translations",
-            `translations:${FOREX_REBATES_TRANSLATION_KEY}`,
-          ],
-        },
-      },
-      ErrorMode.Return,
-    ),
+    fetchTranslations({
+      key: FOREX_REBATES_TRANSLATION_KEY,
+      locale,
+      zone,
+      revalidate: 3600,
+    }),
   ]);
 
   if (!response.success || !response.data) {
@@ -127,21 +103,8 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
     throw new Error(response.message || "Error fetching highest rebates");
   }
 
-  if (!translationsResponse.success) {
-    log.error("Error fetching forex rebates translations", {
-      url: translationsUrl,
-      message: translationsResponse.message,
-      status: translationsResponse.status,
-    });
-    throw new Error(
-      translationsResponse.message || "Error fetching forex rebates translations",
-    );
-  }
-
   return (
-    <TranslationProvider
-      translations={translationsResponse.data?.client ?? {}}
-    >
+    <PageTranslationProvider translations={clientTranslations}>
       <ForexRebatesClient
         brokers={response.data}
         orderDirection={orderDirection}
@@ -150,6 +113,6 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
         activeBrokerType={brokerType}
         totalPages={response.pagination?.last_page ?? 1}
       />
-    </TranslationProvider>
+    </PageTranslationProvider>
   );
 }

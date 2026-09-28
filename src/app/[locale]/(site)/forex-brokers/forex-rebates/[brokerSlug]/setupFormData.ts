@@ -1,47 +1,49 @@
-import type { HighestRebateBroker } from "@/types";
+import { z } from "zod";
 
-const PLATFORM_OPTIONS = [
-  "MT4 for Windows",
-  "MT4 for MAC",
-  "MT4 WebTrader",
-  "MT4 Mobile",
-  "MT5 for Windows",
-  "MT5 for MAC",
-  "MT5 WebTrader",
-  "MT5 Mobile",
-  "cTrader for Windows",
-  "cTrader Web Platform",
-  "cTrader Mobile",
-] as const;
+const selectOptionSchema = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+});
 
-const JURISDICTION_OPTIONS = [
-  "Cyprus",
-  "United Kingdom",
-  "Bahamas",
-  "Seychelles",
-  "Mauritius",
-  "Saint Lucia",
-  "Costa Rica",
-] as const;
+const registrationLinkSchema = z.object({
+  name: z.string().min(1),
+  url: z.string().url().refine((value) => {
+    try {
+      const protocol = new URL(value).protocol;
+      return protocol === "https:" || protocol === "http:";
+    } catch {
+      return false;
+    }
+  }),
+});
 
-export type SetupFormOptions = {
-  accountTypes: string[];
-  platforms: string[];
-  jurisdictions: string[];
-};
+const notesSchema = z.union([z.string(), z.array(z.string()), z.null()])
+  .transform((value) => {
+    const notes = Array.isArray(value) ? value : value ? [value] : [];
+    return notes.flatMap((note) => note.split("#-#"))
+      .map((note) => note.trim())
+      .filter(Boolean);
+  });
 
-export function getSetupFormOptions(broker: HighestRebateBroker): SetupFormOptions {
-  const accountTypes = [...new Set(
-    broker.rebates
-      .map((rebate) => rebate.account_type_name?.trim())
-      .filter((name): name is string => Boolean(name)),
-  )];
+export const setupFormDataSchema = z.object({
+  logo: z.string().url().nullable(),
+  trading_name: z.string().trim().min(1),
+  account_types: z.array(z.object({
+    account_type_id: z.number().int().positive(),
+    account_type_name: z.string().min(1),
+    platform_urls: z.array(selectOptionSchema.extend({ id: z.number().int() })),
+    jurisdictions: z.array(selectOptionSchema.extend({
+      company_ids: z.array(z.number().int()),
+      option_value_ids: z.array(z.number().int()),
+    })),
+  })),
+  ib_links: z.array(registrationLinkSchema),
+  sub_ib_links: z.array(registrationLinkSchema),
+  general_account_setup_notes: notesSchema,
+  transfer_account_notes: notesSchema,
+  sub_ib_notes: notesSchema,
+});
 
-  return {
-    accountTypes: accountTypes.length > 0
-      ? accountTypes
-      : ["Standard", "Raw Spread", "Pro", "Islamic"],
-    platforms: [...PLATFORM_OPTIONS],
-    jurisdictions: [...JURISDICTION_OPTIONS],
-  };
-}
+export type SetupFormData = z.infer<typeof setupFormDataSchema>;
+export type SetupAccountType = SetupFormData["account_types"][number];
+export type SetupRegistrationLink = SetupFormData["ib_links"][number];

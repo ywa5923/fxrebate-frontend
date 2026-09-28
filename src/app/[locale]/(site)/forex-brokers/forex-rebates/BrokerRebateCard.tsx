@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import LocalizedLink from "@/components/LocalizedLink";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -9,16 +9,13 @@ import {
   useTranslation,
 } from "@/providers/translations";
 import type { HighestRebateBroker, HighestRebateEntry } from "@/types";
-import {
-  brokerRebateDetailHref,
-  type SiteBrokerType,
-} from "./data";
+import { brokerRebateDetailHref } from "./data";
 
 type Props = {
   broker: HighestRebateBroker;
   view: "list" | "card";
   locale: string;
-  brokerType: SiteBrokerType;
+  brokerType: string;
 };
 
 export function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
@@ -112,7 +109,7 @@ function CardViewLayout({
 }: {
   broker: HighestRebateBroker;
   locale: string;
-  brokerType: SiteBrokerType;
+  brokerType: string;
 }) {
   const _t = useTranslation() as Translations;
   const detailHref = brokerRebateDetailHref(locale, broker, brokerType);
@@ -122,18 +119,18 @@ function CardViewLayout({
       <PaymentMethods text={broker.payment_options ?? "—"} />
       <RatesGrid rebates={broker.rebates} columns="card" />
       <div className="mt-auto flex items-center gap-2">
-        <Link
-          href={detailHref}
+        <LocalizedLink
+          routeKey={detailHref}
           className="inline-flex h-10 flex-1 items-center justify-center rounded border border-[#0c110f] bg-[#0c110f] px-4 text-sm font-medium text-white hover:bg-[#0c110f]/90 dark:border-white dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
         >
           {_t["get_rebate"] as string}
-        </Link>
-        <Link
-          href={detailHref}
+        </LocalizedLink>
+        <LocalizedLink
+          routeKey={detailHref}
           className="inline-flex h-10 shrink-0 items-center justify-center px-2 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-white"
         >
           {_t["view_details"] as string}
-        </Link>
+        </LocalizedLink>
       </div>
     </article>
   );
@@ -146,7 +143,7 @@ function ListViewLayout({
 }: {
   broker: HighestRebateBroker;
   locale: string;
-  brokerType: SiteBrokerType;
+  brokerType: string;
 }) {
   const _t = useTranslation() as Translations;
   const detailHref = brokerRebateDetailHref(locale, broker, brokerType);
@@ -158,18 +155,18 @@ function ListViewLayout({
           <PaymentMethods text={broker.payment_options ?? "—"} />
         </div>
         <div className="flex items-center gap-3 lg:justify-end">
-          <Link
-            href={detailHref}
+          <LocalizedLink
+            routeKey={detailHref}
             className="inline-flex h-8 items-center justify-center rounded px-3 text-sm font-medium text-[#0c110f] underline-offset-2 hover:underline dark:text-gray-100"
           >
             {_t["view_details"] as string}
-          </Link>
-          <Link
-            href={detailHref}
+          </LocalizedLink>
+          <LocalizedLink
+            routeKey={detailHref}
             className="inline-flex h-8 items-center justify-center rounded bg-[#0c110f] px-3 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
           >
             {_t["get_rebate"] as string}
-          </Link>
+          </LocalizedLink>
         </div>
       </div>
       <div className="mt-4 md:mt-5">

@@ -1,22 +1,21 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import LocalizedLink from "@/components/LocalizedLink";
 import { ChevronRight, Share2 } from "lucide-react";
-import { useTranslation, type Translations } from "@/providers/translations";
-import type { HighestRebateBroker } from "@/types";
+import { useTranslation } from "@/providers/translations";
+import type { RebateBroker } from "./BrokerRebateDetail";
 import {
   brokerRebateDetailHref,
   type RebateSetupType,
-  type SiteBrokerType,
 } from "../data";
 import { t } from "./translations";
 
 type Props = {
-  broker: HighestRebateBroker;
+  broker: RebateBroker;
   locale: string;
-  brokerType: SiteBrokerType;
+  brokerType: string;
   setupType: RebateSetupType;
   children: ReactNode;
 };
@@ -34,13 +33,47 @@ export default function BrokerRebateSetupLayout({
   setupType,
   children,
 }: Props) {
-  const translations = useTranslation() as Translations;
+  const translations = useTranslation();
   const listHref = `/${locale}/forex-brokers/forex-rebates?${new URLSearchParams({ broker_type: brokerType })}`;
   const initials = broker.trading_name
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
+
+  function selectTab(type: RebateSetupType) {
+    if (type === setupType) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("type", type);
+    // All three forms share server data; changing tabs needs no new RSC request.
+    window.history.pushState(null, "", url.pathname + url.search + url.hash);
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLAnchorElement>, index: number) {
+    let nextIndex: number;
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        nextIndex = (index + 1) % SETUP_TABS.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        nextIndex = (index + SETUP_TABS.length - 1) % SETUP_TABS.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = SETUP_TABS.length - 1;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    const nextTab = SETUP_TABS[nextIndex].id;
+    selectTab(nextTab);
+    document.getElementById(`rebate-tab-${nextTab}`)?.focus();
+  }
 
   async function handleShare() {
     try {
@@ -79,12 +112,12 @@ export default function BrokerRebateSetupLayout({
                 {breadcrumbs.map((item, index) => (
                   <li key={item.label + index} className="flex items-center gap-[11px]">
                     {item.href ? (
-                      <Link
-                        href={item.href}
+                      <LocalizedLink
+                        routeKey={item.href}
                         className="whitespace-nowrap underline-offset-2 no-underline hover:text-black/65 dark:hover:text-white/75 sm:underline"
                       >
                         {item.label}
-                      </Link>
+                      </LocalizedLink>
                     ) : (
                       <span className="whitespace-nowrap">{item.label}</span>
                     )}
@@ -96,12 +129,12 @@ export default function BrokerRebateSetupLayout({
               </ol>
               <ol className="flex min-w-max items-center gap-[11px] text-[14px] font-medium leading-[1.11] sm:hidden">
                 <li className="flex items-center gap-[11px]">
-                  <Link
-                    href={breadcrumbs[0].href ?? `/${locale}`}
+                  <LocalizedLink
+                    routeKey={breadcrumbs[0].href ?? `/${locale}`}
                     className="whitespace-nowrap underline-offset-2 no-underline hover:text-black/65 dark:hover:text-white/75 sm:underline"
                   >
                     {breadcrumbs[0].label}
-                  </Link>
+                  </LocalizedLink>
                   <ChevronRight className="size-3 shrink-0 text-black/45 dark:text-white/80" />
                 </li>
                 <li className="flex items-center gap-[11px]">
@@ -145,10 +178,10 @@ export default function BrokerRebateSetupLayout({
             className="flex h-[178px] w-full flex-col items-stretch rounded-lg bg-[#f3f3f3] p-1 dark:bg-[#202221] sm:h-9 sm:w-fit sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
             role="tablist"
           >
-            {SETUP_TABS.map((tab) => {
+            {SETUP_TABS.map((tab, index) => {
               const active = tab.id === setupType;
               const className =
-                "flex min-h-0 w-full flex-1 items-center justify-center rounded px-[19px] py-2 text-sm font-medium sm:h-7 sm:w-auto sm:flex-none " +
+                "flex min-h-0 w-full flex-1 items-center justify-center rounded px-[19px] py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 sm:h-7 sm:w-auto sm:flex-none " +
                 (active
                   ? "bg-[#0c110f] text-white dark:bg-white dark:text-[#0c110f]"
                   : "text-[#0c110f]/90 dark:text-white/90");
@@ -164,21 +197,36 @@ export default function BrokerRebateSetupLayout({
               ) : t(translations, tab.key);
 
               return (
-                <Link
+                <LocalizedLink
                   key={tab.id}
-                  href={brokerRebateDetailHref(locale, broker, brokerType, tab.id)}
+                  routeKey={brokerRebateDetailHref(locale, broker, brokerType, tab.id)}
+                  prefetch={false}
+                  onNavigate={(event) => {
+                    event.preventDefault();
+                    selectTab(tab.id);
+                  }}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                  id={`rebate-tab-${tab.id}`}
                   role="tab"
                   aria-selected={active}
+                  aria-controls={`rebate-panel-${tab.id}`}
+                  tabIndex={active ? 0 : -1}
                   className={className + (active ? "" : " hover:bg-black/5 dark:hover:bg-white/5")}
                 >
                   {label}
-                </Link>
+                </LocalizedLink>
               );
             })}
           </nav>
         </section>
 
-        <section className="flex flex-col gap-4">
+        <section
+          role="tabpanel"
+          id={`rebate-panel-${setupType}`}
+          aria-labelledby={`rebate-tab-${setupType}`}
+          tabIndex={0}
+          className="flex flex-col gap-4"
+        >
           {children}
         </section>
       </div>

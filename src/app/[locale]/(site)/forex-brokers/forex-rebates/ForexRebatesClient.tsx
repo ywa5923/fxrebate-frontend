@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import LocalizedLink from "@/components/LocalizedLink";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Search, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ import {
   useTranslation,
 } from "@/providers/translations";
 import BrokerRebateCard from "./BrokerRebateCard";
-import { SITE_BROKER_TYPES, type SiteBrokerType } from "./data";
+import { SITE_BROKER_TYPES } from "@/constants";
 import type { HighestRebateBroker } from "@/types";
 
 type ViewMode = "list" | "card";
@@ -31,7 +32,7 @@ type Props = {
   orderDirection: OrderDirection | null;
   tradingName?: string;
   perPage?: string;
-  activeBrokerType: SiteBrokerType;
+  activeBrokerType: string;
   totalPages: number;
 };
 
@@ -95,7 +96,7 @@ function ForexRebatesClientContent({
   const pageDescription = _t[activeTab.descriptionKey] as string;
 
   function buildListParams(overrides: {
-    brokerType?: SiteBrokerType;
+    brokerType?: string;
     sort?: SortMode;
     tradingName?: string | null;
     page?: string;
@@ -151,7 +152,7 @@ function ForexRebatesClientContent({
     push(buildListHref({ sort: nextSort }));
   }
 
-  function handleTabHref(brokerType: SiteBrokerType) {
+  function handleTabHref(brokerType: string) {
     // Tab switch: only broker_type — leave sort/search to reset with defaults
     const nextParams = new URLSearchParams({ broker_type: brokerType });
     return `${pathname}?${nextParams.toString()}`;
@@ -188,23 +189,23 @@ function ForexRebatesClientContent({
             <BreadcrumbList className="text-xs text-[#0c110f]/70 dark:text-gray-400 sm:text-sm">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link
-                    href={`/${locale}`}
+                  <LocalizedLink
+                    routeKey={`/${locale}`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
                     {_t["breadcrumb_home"] as string}
-                  </Link>
+                  </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="[&>svg]:size-3" />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link
-                    href={`/${locale}/forex-brokers`}
+                  <LocalizedLink
+                    routeKey={`/${locale}/forex-brokers`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
                     {_t["breadcrumb_forex_brokers"] as string}
-                  </Link>
+                  </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="[&>svg]:size-3" />

@@ -1,28 +1,34 @@
 "use client";
 
-import type { HighestRebateBroker } from "@/types";
-import type { RebateSetupType, SiteBrokerType } from "../data";
+import { useSearchParams } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
 import BrokerRebateSetupForm from "./BrokerRebateSetupForm";
 import BrokerRebateSetupLayout from "./BrokerRebateSetupLayout";
 import BrokerRebateTransferForm from "./BrokerRebateTransferForm";
 import BrokerRebatePartner from "./BrokerRebatePartner";
-import type { SetupFormOptions } from "./setupFormData";
+import type { SetupFormData } from "./setupFormData";
+
+export type RebateBroker = Pick<SetupFormData, "trading_name" | "logo"> & { broker_id: number };
 
 type Props = {
-  broker: HighestRebateBroker;
+  broker: RebateBroker;
+  brokerSlug: string;
   locale: string;
-  brokerType: SiteBrokerType;
-  setupType: RebateSetupType;
-  formOptions: SetupFormOptions;
+  brokerType: string;
+  formData: SetupFormData;
 };
 
 export default function BrokerRebateDetail({
   broker,
+  brokerSlug,
   locale,
   brokerType,
-  setupType,
-  formOptions,
+  formData,
 }: Props) {
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type");
+  const setupType = type === "transfer" || type === "partner" ? type : "new";
+
   return (
     <BrokerRebateSetupLayout
       broker={broker}
@@ -31,12 +37,13 @@ export default function BrokerRebateDetail({
       setupType={setupType}
     >
       {setupType === "partner" ? (
-        <BrokerRebatePartner />
+        <BrokerRebatePartner links={formData.sub_ib_links} notes={formData.sub_ib_notes} />
       ) : setupType === "transfer" ? (
-        <BrokerRebateTransferForm broker={broker} options={formOptions} />
+        <BrokerRebateTransferForm key={`${broker.broker_id}:${locale}`} brokerId={broker.broker_id} brokerName={broker.trading_name} brokerSlug={brokerSlug} locale={locale} data={formData} />
       ) : (
-        <BrokerRebateSetupForm broker={broker} options={formOptions} />
+        <BrokerRebateSetupForm key={`${broker.broker_id}:${locale}`} brokerId={broker.broker_id} brokerName={broker.trading_name} brokerSlug={brokerSlug} locale={locale} data={formData} />
       )}
+      <Toaster />
     </BrokerRebateSetupLayout>
   );
 }

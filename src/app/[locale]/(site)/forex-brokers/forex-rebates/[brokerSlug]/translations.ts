@@ -8,14 +8,6 @@ export function t(translations: Translations, key: string): string {
   return value;
 }
 
-export function tBroker(
-  translations: Translations,
-  key: "setup_open_account_title" | "setup_authorize_label",
-  brokerName: string,
-): string {
-  return t(translations, key).replaceAll("{broker}", brokerName);
-}
-
 export function tSubmitError(
   translations: Translations,
   result: { message?: string; errorCode?: "invalid_request" | "service_unavailable" },

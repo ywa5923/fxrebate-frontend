@@ -2,21 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "@/providers/translations";
 
-interface LocalizedLinkProps {
+type LocalizedLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
   routeKey: string;
   children: ReactNode;
-  className?: string;
-  [key: string]: any;
-}
-
-interface Translations {
-  locales: Record<string, string>;
-  navbar: Record<string, string>;
-  'route-maps': Record<string, string>;
-}
+};
 
 function getLocalizedPath(routeKey: string, urls: Record<string, string>): string {
   // Direct match for static routes
@@ -52,6 +44,7 @@ export default function LocalizedLink({
   ...props
 }: LocalizedLinkProps) {
   const { locale } = useParams();
+  const _t = useTranslation();
   const lang = locale as string;
   
   // Skip translation for English
@@ -63,13 +56,17 @@ export default function LocalizedLink({
     );
   }
 
-  const _t = useTranslation();
-  const localizedPath = getLocalizedPath(routeKey, _t['route-maps'] as Record<string, string>);
+  const { pathname, search, hash } = new URL(routeKey, "https://localized-link.invalid");
+  const localePrefix = `/${lang}`;
+  const sourcePath = pathname === localePrefix
+    ? "/"
+    : pathname.startsWith(`${localePrefix}/`) ? pathname.slice(localePrefix.length) : pathname;
+  const localizedPath = getLocalizedPath(sourcePath, _t['route-maps'] as Record<string, string>);
 
-  console.log("routeKey~~~~~~~~~~~~~~~~",routeKey);
-  console.log("localizedPath~~~~~~~~~~~~~~~~",localizedPath);
-  console.log("routes~~~~~~~~~~~~~~~~",_t['route-maps']);
-  const href = `/${lang}${localizedPath.startsWith('/') ? localizedPath : `/${localizedPath}`}`;
+  const localizedSuffix = localizedPath === "/"
+    ? ""
+    : localizedPath.startsWith("/") ? localizedPath : `/${localizedPath}`;
+  const href = `${localePrefix}${localizedSuffix}${search}${hash}`;
 
   return (
     <Link href={href} className={className} {...props}>
