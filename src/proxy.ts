@@ -10,7 +10,7 @@ export async function proxy(req: NextRequest) {
 
   const url = req.nextUrl;
   let { pathname } = url;
-  const localeMatch = pathname.match(/^\/([a-zA-Z]{2,3})\/(.*)$/);
+  const localeMatch = pathname.match(/^\/([a-zA-Z]{2,3})(?:\/(.*))?$/);
 
   if (!localeMatch) {
     pathname = pathname === "/" ? "/en" : `/en${pathname}`;
@@ -23,7 +23,9 @@ export async function proxy(req: NextRequest) {
   const response = NextResponse.next();
   response.headers.set("x-pathname", req.nextUrl.pathname);
   //Skip static assets and favicon
-  if (req.nextUrl.pathname.startsWith('/_next/static') ||
+  if (req.nextUrl.pathname.startsWith('/_next/') ||
+    req.nextUrl.pathname === '/api' ||
+    req.nextUrl.pathname.startsWith('/api/') ||
     req.nextUrl.pathname.startsWith('/assets') ||
     req.nextUrl.pathname === '/favicon.ico') {
     return response;
@@ -32,7 +34,7 @@ export async function proxy(req: NextRequest) {
   console.log("Path name in middleware", pathname)
 
   //Check if 'zone' cookie is already set
-  let zone = req.cookies.get('zone')?.value;
+  const zone = req.cookies.get('zone')?.value || null;
   // if (!zone) {
   //   //Get country from IP
   //   //const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.ip;
@@ -65,7 +67,7 @@ export async function proxy(req: NextRequest) {
 
 
 
-  const rewrittenPath = zone
+  const rewrittenPath = locale !== 'en' || zone !== null
     ? await getOriginalRoute(pathname, locale, zone)
     : null;
   //console.log("Rewritten path", rewrittenPath)

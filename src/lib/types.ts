@@ -54,8 +54,7 @@ export interface StatProps {
 
 export interface LanguageItem {
   id: string;
-  name?: string;
-  flagIcon: string;
+  name: string;
+  countryCode: string;
   code: string;
 }
-

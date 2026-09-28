@@ -1,13 +1,13 @@
 'use client'
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { Actions } from './Actions';
-import { FaCheck } from 'react-icons/fa6';
+import { Check } from 'lucide-react';
+import { Flag } from '@/components/Flag';
 
 import { cn } from '@/lib/utils';
-import { LanguageItem } from '@/lib/types';
-import { languageItems } from '@/lib/content';
+import type { LanguageItem } from '@/lib/types';
+import { SITE_LANGUAGES } from '@/constants';
 
 import { MobileMenuBar } from './MobileMenuBar';
 import { BurgerButton } from './BurgerButton';
@@ -36,7 +36,7 @@ export const MobileNav = ({ isOpen, selectedLanguage, setSelectedLanguage, toggl
             </div>
           </div>
 
-          <MobileMenuBar />
+          <MobileMenuBar onNavigate={toggleMenu} />
 
           <Actions />
 
@@ -44,36 +44,39 @@ export const MobileNav = ({ isOpen, selectedLanguage, setSelectedLanguage, toggl
             <ThemeToggle />
 
             <div className='flex items-center gap-2'>
-              <button onClick={() => setIsLanguageSelectorOpen(!isLanguageSelectorOpen)} className='cursor-pointer flex items-center gap-2'>
-                <Image
-                  src={selectedLanguage.flagIcon!}
-                  alt={selectedLanguage.name!}
-                  width={25}
-                  height={25}
-                  className='object-cover'
-                />
-                <span className='text-black dark:text-white text-sm'>{selectedLanguage.code}</span>
+              <button
+                type="button"
+                aria-label={`Language: ${selectedLanguage.name}`}
+                aria-expanded={isLanguageSelectorOpen}
+                onClick={() => setIsLanguageSelectorOpen(!isLanguageSelectorOpen)}
+                className='cursor-pointer flex items-center gap-2'
+              >
+                <span aria-hidden="true"><Flag country={selectedLanguage.countryCode} className="rounded-sm text-lg" /></span>
+                <span className='w-6 text-center text-sm text-black dark:text-white'>{selectedLanguage.code.toUpperCase()}</span>
               </button>
             </div>
           </div>
 
           {isLanguageSelectorOpen && (
             <div className="px-6 mt-4">
-              <div className="w-full flex items-center justify-center dark:bg-dark-brown-100 bg-white-600 p-3 border border-white-400 dark:border-dark-green-200 rounded-xl">
-                <ul className="w-full max-h-[300px] overflow-y-auto grid xxs:grid-cols-2 sm:grid-cols-3 items-center xxs:justify-center gap-3">
-                  {languageItems.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between gap-3 transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/5 rounded-md p-2">
-                      <button className="cursor-pointer flex items-center gap-2" onClick={() => setSelectedLanguage(item)}>
-                        <Image
-                          src={item.flagIcon!}
-                          alt={item.name!}
-                          width={25}
-                          height={25}
-                          className='object-cover'
-                        />
-                        <span className='text-black dark:text-white text-base text-left font-medium'>{item.name}</span>
+              <div className="w-full rounded-lg border border-white-400 bg-white-600 p-2 dark:border-dark-green-200 dark:bg-dark-brown-100">
+                <ul className="grid w-full max-h-[300px] gap-1 overflow-y-auto sm:grid-cols-2">
+                  {SITE_LANGUAGES.map((item) => (
+                    <li key={item.id} className="min-w-0">
+                      <button
+                        type="button"
+                        aria-pressed={selectedLanguage.code === item.code}
+                        className="flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                        onClick={() => {
+                          setSelectedLanguage(item);
+                          setIsLanguageSelectorOpen(false);
+                        }}
+                      >
+                        <span aria-hidden="true"><Flag country={item.countryCode} className="rounded-sm text-lg" /></span>
+                        <span className='min-w-0 flex-1 break-words text-sm font-medium text-black dark:text-white'>{item.name}</span>
+                        <span className="text-xs text-muted-foreground">{item.code.toUpperCase()}</span>
+                        <Check className={`h-4 w-4 shrink-0 text-accent ${selectedLanguage.code === item.code ? '' : 'invisible'}`} aria-hidden="true" />
                       </button>
-                      {selectedLanguage.id === item.id && <FaCheck className='text-accent' />}
                     </li>
                   ))}
                 </ul>

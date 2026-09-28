@@ -30,8 +30,8 @@ function getDriver(): "auto" | "memory" | "cache-api" {
   return "auto";
 }
 
-function cacheKey(locale: string, zone: string): string {
-  return `route-maps:${locale}:${zone}`;
+function cacheKey(locale: string, zone: string | null): string {
+  return `route-maps:${locale}:${zone ?? ""}`;
 }
 
 /** Synthetic URL for Cache API (Workers / Cloudflare). */
@@ -134,7 +134,7 @@ async function deleteCacheApi(key: string): Promise<void> {
  */
 export async function getCachedRouteMaps(
   locale: string,
-  zone: string,
+  zone: string | null,
 ): Promise<RouteMapsPayload> {
   const ttl = getTtlSeconds();
   const key = cacheKey(locale, zone);
@@ -178,9 +178,9 @@ export async function getCachedRouteMaps(
 /** Call from a protected purge endpoint / admin webhook after editing route-maps. */
 export async function invalidateRouteMapsCache(
   locale?: string,
-  zone?: string,
+  zone?: string | null,
 ): Promise<void> {
-  if (locale && zone) {
+  if (locale && zone !== undefined) {
     const key = cacheKey(locale, zone);
     memoryCache.delete(key);
     await deleteCacheApi(key);

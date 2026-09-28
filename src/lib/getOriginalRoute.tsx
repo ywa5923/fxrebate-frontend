@@ -3,7 +3,7 @@ import { getCachedRouteMaps, type RouteMap } from "./routeMapsCache";
 export async function getOriginalRoute(
   path: string,
   locale: string,
-  zone: string,
+  zone: string | null,
 ) {
   const pathWithoutLocale = path.replace(`/${locale}`, "");
   if (pathWithoutLocale === "") {

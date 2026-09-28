@@ -1,11 +1,11 @@
 import { BASE_URL } from "@/constants";
 
-export const getTranslations = async (locale: string, zone: string,key:string,section:string) => {
+export const getTranslations = async (locale: string, zone: string | null,key:string,section:string) => {
     const url = new URL(`${BASE_URL}/locale_resources`);
   
     url.searchParams.append("key[eq]", key);
     url.searchParams.append("lang[eq]", locale);
-    url.searchParams.append("zone[eq]", zone);
+    if (zone) url.searchParams.append("zone[eq]", zone);
     section.includes(",") ? url.searchParams.append("section[in]", section) : url.searchParams.append("section[eq]", section);
 
    
@@ -29,4 +29,3 @@ export const getTranslations = async (locale: string, zone: string,key:string,se
   
     return value;  // Return the value if it's valid
   };
-  

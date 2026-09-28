@@ -36,6 +36,7 @@
     "setup_submit": "Get Rebate",
     "setup_submit_error": "Could not submit the rebate request.",
     "setup_submit_success": "Rebate request sent.",
+    "setup_submit_confirmation": "Your rebate request has been sent successfully.",
     "setup_invalid_request": "Invalid rebate request.",
     "setup_service_unavailable": "Rebate request service is not available yet.",
     "setup_transfer_steps": "Transfer steps",

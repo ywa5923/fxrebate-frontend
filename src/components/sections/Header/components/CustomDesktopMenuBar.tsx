@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useParams } from 'next/navigation'
+import LocalizedLink from '@/components/LocalizedLink'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
 import { IoIosArrowForward } from 'react-icons/io'
@@ -18,6 +20,7 @@ interface ICustomDesktopMenuBar {
 }
 
 export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
+  const { locale } = useParams<{ locale: string }>();
   const _t:Translations = useTranslation();
   const navbar = _t.navbar as NavbarTranslations;
   const { resolvedTheme } = useTheme();
@@ -240,6 +243,14 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                             </motion.div>
                           )}
                         </div>
+                      ) : subItem.localized && subItem.href ? (
+                        <LocalizedLink
+                          routeKey={`/${locale}${subItem.href}`}
+                          onNavigate={handleCloseMenu}
+                          className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
+                        >
+                          {navbar[subItem.translationKey ?? subItem.name] || subItem.name}
+                        </LocalizedLink>
                       ) : (
                         <Link
                           href={subItem.href || '#'}

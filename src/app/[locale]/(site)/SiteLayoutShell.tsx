@@ -4,7 +4,7 @@ import Header from '@/components/sections/Header';
 import { TranslationProvider } from '@/providers/translations';
 import { getZoneFromCookie } from '@/lib/getZoneFromCookie';
 import { getTranslations } from '@/lib/getTranslations';
-import { getLocaleFlags } from '@/lib/getLocales';
+import 'flag-icons/css/flag-icons.min.css';
 
 export default async function SiteLayoutShell({
   children,
@@ -17,13 +17,8 @@ export default async function SiteLayoutShell({
   const locale = resolvedParams.locale;
 
   const zone = await getZoneFromCookie();
-  if (zone === null) {
-    throw new Error('Zone not found');
-  }
 
   const _t = await getTranslations(locale, zone, 'layout', 'navbar,route-maps');
-  const _localeFlags = await getLocaleFlags();
-  _t.locales = _localeFlags;
 
   return (
     <Providers>

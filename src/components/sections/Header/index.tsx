@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion'
 
 import { Logo } from '@/components/ui/Logo'
@@ -13,11 +14,13 @@ import { CustomDesktopMenuBar } from './components/CustomDesktopMenuBar'
 
 import { cn } from '@/lib/utils'
 import { useMounted } from '@/lib/hooks'
-import { LanguageItem } from '@/lib/types'
-import { languageItems } from '@/lib/content'
+import type { LanguageItem } from '@/lib/types'
+import { SITE_LANGUAGES } from '@/constants'
 
 const Header = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageItem>(languageItems[0]);
+  const { locale } = useParams<{ locale: string }>();
+  const router = useRouter();
+  const selectedLanguage = SITE_LANGUAGES.find((language) => language.code === locale) ?? SITE_LANGUAGES[0];
 
   const [isOpen, setIsOpen] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -28,6 +31,13 @@ const Header = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
     document.body.style.overflow = isOpen ? "" : "hidden";
+  };
+
+  const selectLanguage = (language: LanguageItem) => {
+    setIsOpen(false);
+    setVisible(true);
+    document.body.style.overflow = "";
+    router.push(`/${language.code}`);
   };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -70,7 +80,7 @@ const Header = () => {
 
             <ThemeToggle />
 
-            <LanguageSelector selectedLanguage={selectedLanguage} setSelectedLanguage={setSelectedLanguage} />
+            <LanguageSelector selectedLanguage={selectedLanguage} setSelectedLanguage={selectLanguage} />
           </div>
 
           <BurgerButton isOpen={isOpen} toggleMenu={toggleMenu} />
@@ -78,7 +88,7 @@ const Header = () => {
 
         <CustomDesktopMenuBar visible={visible} />
 
-        <MobileNav isOpen={isOpen} selectedLanguage={selectedLanguage} setSelectedLanguage={setSelectedLanguage} toggleMenu={toggleMenu} />
+        <MobileNav isOpen={isOpen} selectedLanguage={selectedLanguage} setSelectedLanguage={selectLanguage} toggleMenu={toggleMenu} />
       </motion.div>
     </AnimatePresence>
   )

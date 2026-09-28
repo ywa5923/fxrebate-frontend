@@ -8,6 +8,7 @@ import BrokerRebateRegistrationLinks from "./BrokerRebateRegistrationLinks";
 import { BrokerRebateAccountFields, BrokerRebateAccountDetails } from "./BrokerRebateFormFields";
 import BrokerRebateFormActions from "./BrokerRebateFormActions";
 import BrokerRebateSteps from "./BrokerRebateSteps";
+import BrokerRebateSuccess from "./BrokerRebateSuccess";
 import { useBrokerRebateForm, type BrokerRebateFormProps } from "./useBrokerRebateForm";
 import { t } from "./translations";
 
@@ -29,6 +30,10 @@ export default function BrokerRebateSetupForm(props: BrokerRebateFormProps) {
     } else {
       await submit();
     }
+  }
+
+  if (submitted) {
+    return <BrokerRebateSuccess />;
   }
 
   return (

@@ -2,13 +2,19 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
+import { useParams } from 'next/navigation'
+import LocalizedLink from '@/components/LocalizedLink'
+import { useTranslation, type NavbarTranslations } from '@/providers/translations'
 import { IoIosArrowDown } from 'react-icons/io'
 
 import { navItems } from '@/lib/content'
 import { useMounted } from '@/lib/hooks'
 import { cn } from '@/lib/utils'
 
-export const MobileMenuBar = () => {
+export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
+  const { locale } = useParams<{ locale: string }>();
+  const translations = useTranslation();
+  const navbar = (translations.navbar ?? {}) as NavbarTranslations;
   const [selectedSubMenu, setSelectedSubMenu] = useState<number | string | null>(null);
   const [selectedSubItem, setSelectedSubItem] = useState<number | string | null>(null);
 
@@ -109,6 +115,18 @@ export const MobileMenuBar = () => {
                         </div>
                       )}
                     </div>
+                  ) : subItem.localized && subItem.href ? (
+                    <LocalizedLink
+                      routeKey={`/${locale}${subItem.href}`}
+                      onNavigate={() => {
+                        setSelectedSubMenu(null);
+                        setSelectedSubItem(null);
+                        onNavigate?.();
+                      }}
+                      className='text-black/80 dark:text-white/80 text-base font-medium'
+                    >
+                      {navbar[subItem.translationKey ?? subItem.name] || subItem.name}
+                    </LocalizedLink>
                   ) : (
                     <Link
                       href={subItem.href || '#'}

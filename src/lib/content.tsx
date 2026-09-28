@@ -13,7 +13,9 @@ type NavItem = {
     subItems?: {
         id: number | string;
         name: string;
+        translationKey?: string;
         href?: string;
+        localized?: boolean;
         external?: boolean;
         itemsList?: { id: string; brokerName: string; brokerLogo: string; href?: string; external?: boolean }[];
         linksList?: { id: string; name: string; href: string; external?: boolean }[];
@@ -221,6 +223,13 @@ export const navItems: NavItem[] = [
                 href: 'https://fxrebate.eu/brokers',
                 external: true,
             },
+            {
+                id: 'brokers-rebates',
+                name: 'Rebates',
+                translationKey: 'rebates',
+                href: '/forex-brokers/forex-rebates?broker_type=broker',
+                localized: true,
+            },
             { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
             { id: generateRandomId(), name: 'guides', href: '#' },
             { id: generateRandomId(), name: 'best_brokers_2025', href: '#' },
@@ -234,6 +243,13 @@ export const navItems: NavItem[] = [
         subItems: [
             { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
             { id: generateRandomId(), name: 'crypto_exchanges_list', href: '#' },
+            {
+                id: 'crypto-rebates',
+                name: 'Rebates',
+                translationKey: 'rebates',
+                href: '/forex-brokers/forex-rebates?broker_type=crypto',
+                localized: true,
+            },
             { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
             { id: generateRandomId(), name: 'guides', href: '#' },
             { id: generateRandomId(), name: 'best_exchanges_2025', href: '#' },
@@ -247,6 +263,13 @@ export const navItems: NavItem[] = [
         subItems: [
             { id: generateRandomId(), name: 'prop_firms', href: '#' },
             { id: generateRandomId(), name: 'prop_firms_list', href: '#' },
+            {
+                id: 'props-rebates',
+                name: 'Rebates',
+                translationKey: 'rebates',
+                href: '/forex-brokers/forex-rebates?broker_type=prop_firm',
+                localized: true,
+            },
             { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
             { id: generateRandomId(), name: 'guides', href: '#' },
             { id: generateRandomId(), name: 'best_prop_firms_2025', href: '#' },
@@ -382,44 +405,6 @@ export const navItems: NavItem[] = [
         ],
     },
 ];
-
-const languages = [
-    'English',
-    'Greek',
-    'French',
-    'Polish',
-    'Portuguese',
-    'Dutch',
-    'Turkish',
-    'Malay',
-    'Hungarian',
-    'Italian',
-    'Arabic',
-    'Vietnamese',
-    'Czech',
-    'Hindi',
-    'Simplified Chinese',
-    'Russian',
-    'Thai',
-    'Bengali',
-    'Sinhala',
-    'Traditional Chinese',
-    'Indonesian',
-    'German',
-    'Korean',
-    'Spanish',
-    'Filipino',
-    'Urdu',
-    'Uzbek',
-];
-
-export const languageItems = Array.from({ length: languages.length }, () => {
-    const id = generateRandomId();
-    const name = languages.shift();
-    const icon = '/assets/icons/us.svg';
-    const code = name ? name.slice(0, 2).toUpperCase() : '';
-    return { id, name, flagIcon: icon, code };
-});
 
 export const socialItems = [
     {
