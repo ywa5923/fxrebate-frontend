@@ -1,17 +1,19 @@
 import logger from "@/lib/logger";
+import { notFound } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import { TranslationProvider } from "@/providers/translations";
-import BrokerRebateDetail from "../BrokerRebateDetail";
+import BrokerRebateDetail from "./BrokerRebateDetail";
 import {
-  FOREX_REBATES_TRANSLATION_KEY,
   SITE_BROKER_TYPES,
+  type RebateSetupType,
   type SiteBrokerType,
 } from "../data";
-import { fetchBrokerBySlug } from "../fetchBrokerBySlug";
-import { getMockBrokerRebate } from "../mockBrokerRebate";
-import { getSetupFormOptions } from "../setupFormData";
+import { fetchBrokerBySlug } from "./fetchBrokerBySlug";
+import { getSetupFormOptions } from "./setupFormData";
+
+const SET_REBATES_ACCOUNT_TRANSLATION_KEY = "set_rebates_account_page";
 
 const log = logger.child(
   "site/forex-brokers/forex-rebates/[brokerSlug]/page.tsx",
@@ -41,7 +43,7 @@ function parseBrokerId(value: string | undefined | null): number | null {
 
 type Props = {
   params: Promise<{ locale: string; brokerSlug: string }>;
-  searchParams?: Promise<{ broker_type?: string; broker_id?: string }>;
+  searchParams?: Promise<{ broker_type?: string; broker_id?: string; type?: string }>;
 };
 
 export default async function BrokerRebateDetailPage({
@@ -53,9 +55,14 @@ export default async function BrokerRebateDetailPage({
   const zone = await getZoneFromCookie();
   const brokerType = parseSiteBrokerType(resolvedSearchParams.broker_type);
   const brokerId = parseBrokerId(resolvedSearchParams.broker_id);
+  const setupType: RebateSetupType =
+    resolvedSearchParams.type === "transfer" ||
+    resolvedSearchParams.type === "partner"
+      ? resolvedSearchParams.type
+      : "new";
 
   const translationsQuery = new URLSearchParams({
-    "key[eq]": FOREX_REBATES_TRANSLATION_KEY,
+    "key[eq]": SET_REBATES_ACCOUNT_TRANSLATION_KEY,
     "lang[eq]": locale,
     "section[eq]": "client",
   });
@@ -76,29 +83,14 @@ export default async function BrokerRebateDetailPage({
       UseTokenAuth.No,
       {
         method: "GET",
-        next: {
-          revalidate: 3600,
-          tags: [
-            "translations",
-            "translations:" + FOREX_REBATES_TRANSLATION_KEY,
-          ],
-        },
+        cache: "no-store",
       },
       ErrorMode.Return,
     ),
   ]);
 
-  const resolvedBroker =
-    broker ??
-    getMockBrokerRebate({ brokerSlug, brokerId });
-
   if (!broker) {
-    log.debug("Using mock broker rebate detail", {
-      brokerSlug,
-      brokerType,
-      brokerId,
-      tradingName: resolvedBroker.trading_name,
-    });
+    notFound();
   }
 
   if (!translationsResponse.success) {
@@ -113,15 +105,32 @@ export default async function BrokerRebateDetailPage({
     );
   }
 
+  const clientTranslations = translationsResponse.data?.client;
+  if (
+    !clientTranslations ||
+    Array.isArray(clientTranslations) ||
+    !Object.values(clientTranslations).some(
+      (value) => typeof value === "string" && value.trim().length > 0,
+    )
+  ) {
+    log.error("No broker rebate account translations returned", {
+      url: translationsUrl,
+      key: SET_REBATES_ACCOUNT_TRANSLATION_KEY,
+      locale,
+    });
+    throw new Error(
+      `No client translations found for ${SET_REBATES_ACCOUNT_TRANSLATION_KEY}`,
+    );
+  }
+
   return (
-    <TranslationProvider
-      translations={translationsResponse.data?.client ?? {}}
-    >
+    <TranslationProvider translations={clientTranslations}>
       <BrokerRebateDetail
-        broker={resolvedBroker}
+        broker={broker}
         locale={locale}
         brokerType={brokerType}
-        formOptions={getSetupFormOptions(resolvedBroker)}
+        setupType={setupType}
+        formOptions={getSetupFormOptions(broker)}
       />
     </TranslationProvider>
   );

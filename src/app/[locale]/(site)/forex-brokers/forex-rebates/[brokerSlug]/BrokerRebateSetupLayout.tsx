@@ -6,42 +6,36 @@ import Link from "next/link";
 import { ChevronRight, Share2 } from "lucide-react";
 import { useTranslation, type Translations } from "@/providers/translations";
 import type { HighestRebateBroker } from "@/types";
-import { forexRebatesListHref, type SiteBrokerType } from "./data";
+import {
+  brokerRebateDetailHref,
+  type RebateSetupType,
+  type SiteBrokerType,
+} from "../data";
+import { t } from "./translations";
 
 type Props = {
   broker: HighestRebateBroker;
   locale: string;
   brokerType: SiteBrokerType;
+  setupType: RebateSetupType;
   children: ReactNode;
 };
 
-function t(translations: Translations, key: string, fallback: string): string {
-  const value = translations[key];
-  return typeof value === "string" && value.length > 0 ? value : fallback;
-}
-
 const SETUP_TABS = [
-  { id: "new", key: "setup_path_new", fallback: "New Trading account" },
-  {
-    id: "transfer",
-    key: "setup_path_transfer",
-    fallback: "Transfer an existing account",
-  },
-  {
-    id: "partner",
-    key: "setup_path_partner",
-    fallback: "Become 4XC Partner",
-  },
+  { id: "new", key: "setup_path_new" },
+  { id: "transfer", key: "setup_path_transfer" },
+  { id: "partner", key: "setup_path_partner" },
 ] as const;
 
 export default function BrokerRebateSetupLayout({
   broker,
   locale,
   brokerType,
+  setupType,
   children,
 }: Props) {
   const translations = useTranslation() as Translations;
-  const listHref = forexRebatesListHref(locale, brokerType);
+  const listHref = `/${locale}/forex-brokers/forex-rebates?${new URLSearchParams({ broker_type: brokerType })}`;
   const initials = broker.trading_name
     .split(/\s+/)
     .slice(0, 2)
@@ -62,17 +56,17 @@ export default function BrokerRebateSetupLayout({
   }
 
   const breadcrumbs = [
-    { label: t(translations, "breadcrumb_home", "Home"), href: "/" + locale },
+    { label: t(translations, "breadcrumb_home"), href: "/" + locale },
     {
-      label: t(translations, "breadcrumb_forex_brokers", "Forex Broker"),
+      label: t(translations, "breadcrumb_forex_brokers"),
       href: "/" + locale + "/forex-brokers",
     },
     {
-      label: t(translations, "breadcrumb_forex_rebates", "Forex Brokers Rebates"),
+      label: t(translations, "breadcrumb_forex_rebates"),
       href: listHref,
     },
     { label: broker.trading_name },
-    { label: t(translations, "setup_cashback", "Setup Cash Back") },
+    { label: t(translations, "setup_cashback") },
   ];
 
   return (
@@ -80,7 +74,7 @@ export default function BrokerRebateSetupLayout({
       <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-0 pb-16 pt-24 sm:px-6 lg:px-0 lg:pt-28">
         <section className="flex flex-col gap-8">
           <div className="flex items-center justify-between gap-4">
-            <nav aria-label="Breadcrumb" className="min-w-0 overflow-x-auto">
+            <nav aria-label={t(translations, "breadcrumb_aria")} className="min-w-0 overflow-x-auto">
               <ol className="hidden min-w-max items-center gap-[11px] text-[14px] font-medium leading-[1.11] sm:flex">
                 {breadcrumbs.map((item, index) => (
                   <li key={item.label + index} className="flex items-center gap-[11px]">
@@ -122,10 +116,10 @@ export default function BrokerRebateSetupLayout({
             <button
               type="button"
               onClick={handleShare}
-              aria-label={t(translations, "share", "Share")}
+              aria-label={t(translations, "share")}
               className="inline-flex h-[35px] w-6 shrink-0 items-center justify-center gap-2 rounded-[4px] px-0 py-1 text-base font-medium hover:bg-black/5 dark:hover:bg-white/5 md:w-[93px] md:px-2"
             >
-              <span className="hidden md:inline">{t(translations, "share", "Share")}</span>
+              <span className="hidden md:inline">{t(translations, "share")}</span>
               <Share2 className="size-5" />
             </button>
           </div>
@@ -141,45 +135,44 @@ export default function BrokerRebateSetupLayout({
             <div className="flex flex-col gap-2 capitalize">
               <h1 className="text-[24px] font-bold leading-[1.1] sm:text-[28px]">{broker.trading_name}</h1>
               <p className="text-[18px] leading-[1.05] text-[#0c110f]/60 dark:text-white/60 sm:text-xl">
-                {t(translations, "setup_broker_subtitle", "Competitive Pricing")}
+                {t(translations, "setup_broker_subtitle")}
               </p>
             </div>
           </div>
 
           <nav
-            aria-label="Cashback setup types"
+            aria-label={t(translations, "setup_tabs_aria")}
             className="flex h-[178px] w-full flex-col items-stretch rounded-lg bg-[#f3f3f3] p-1 dark:bg-[#202221] sm:h-9 sm:w-fit sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
             role="tablist"
           >
             {SETUP_TABS.map((tab) => {
-              const active = tab.id === "new";
+              const active = tab.id === setupType;
+              const className =
+                "flex min-h-0 w-full flex-1 items-center justify-center rounded px-[19px] py-2 text-sm font-medium sm:h-7 sm:w-auto sm:flex-none " +
+                (active
+                  ? "bg-[#0c110f] text-white dark:bg-white dark:text-[#0c110f]"
+                  : "text-[#0c110f]/90 dark:text-white/90");
+              const label = tab.id === "new" ? (
+                <>
+                  <span className="sm:hidden">
+                    {t(translations, "setup_path_new_mobile")}
+                  </span>
+                  <span className="hidden sm:inline">
+                    {t(translations, tab.key)}
+                  </span>
+                </>
+              ) : t(translations, tab.key);
+
               return (
-                <button
+                <Link
                   key={tab.id}
-                  type="button"
+                  href={brokerRebateDetailHref(locale, broker, brokerType, tab.id)}
                   role="tab"
                   aria-selected={active}
-                  disabled={!active}
-                  className={
-                    "flex min-h-0 w-full flex-1 items-center justify-center rounded px-[19px] py-2 text-sm font-medium capitalize sm:h-7 sm:w-auto sm:flex-none " +
-                    (active
-                      ? "bg-[#0c110f] text-white dark:bg-white dark:text-[#0c110f]"
-                      : "cursor-not-allowed text-[#0c110f]/90 dark:text-white/90")
-                  }
+                  className={className + (active ? "" : " hover:bg-black/5 dark:hover:bg-white/5")}
                 >
-                    {tab.id === "new" ? (
-                      <>
-                        <span className="sm:hidden">
-                          {t(translations, "setup_path_new_mobile", "New account")}
-                        </span>
-                        <span className="hidden sm:inline">
-                          {t(translations, tab.key, tab.fallback)}
-                        </span>
-                      </>
-                    ) : (
-                      t(translations, tab.key, tab.fallback)
-                    )}
-                </button>
+                  {label}
+                </Link>
               );
             })}
           </nav>

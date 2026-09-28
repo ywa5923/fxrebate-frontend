@@ -6,10 +6,11 @@ import { TranslationProvider } from "@/providers/translations";
 import type { HighestRebateBroker } from "@/types";
 import ForexRebatesClient from "./ForexRebatesClient";
 import {
-  FOREX_REBATES_TRANSLATION_KEY,
   SITE_BROKER_TYPES,
   type SiteBrokerType,
 } from "./data";
+
+const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
 
 function parseSiteBrokerType(
   value: string | undefined | null,

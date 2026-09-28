@@ -2,7 +2,7 @@ import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import type { HighestRebateBroker } from "@/types";
-import { brokerMatchesSlug, type SiteBrokerType } from "./data";
+import { brokerRebateSlug, type SiteBrokerType } from "../data";
 
 const log = logger.child(
   "site/forex-brokers/forex-rebates/fetchBrokerBySlug",
@@ -13,13 +13,13 @@ function brokerMatchesRequest(
   brokerSlug: string,
   brokerId: number | null,
 ): boolean {
-  if (!broker || typeof broker.trading_name !== "string" || !broker.trading_name.trim()) {
-    return false;
-  }
+  if (!broker) return false;
   if (brokerId !== null && broker.broker_id === brokerId) {
     return true;
   }
-  return brokerMatchesSlug(broker, brokerSlug);
+  return typeof broker.trading_name === "string" &&
+    broker.trading_name.trim().length > 0 &&
+    brokerRebateSlug(broker.trading_name) === brokerSlug;
 }
 
 export async function fetchBrokerBySlug({
@@ -79,13 +79,17 @@ export async function fetchBrokerBySlug({
         message: response.message,
         status: response.status,
       });
-      return null;
+      throw new Error(response.message || "Error fetching highest rebates");
     }
 
     const match = response.data.find((broker) =>
       brokerMatchesRequest(broker, brokerSlug, brokerId),
     );
     if (match) {
+      if (typeof match.trading_name !== "string" || !match.trading_name.trim()) {
+        log.error("Broker data is incomplete", { url, brokerId, brokerSlug });
+        throw new Error("Broker data is incomplete");
+      }
       return match;
     }
 
