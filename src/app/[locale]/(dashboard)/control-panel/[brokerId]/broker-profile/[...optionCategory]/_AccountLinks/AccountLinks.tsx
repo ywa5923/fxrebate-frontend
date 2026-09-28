@@ -86,7 +86,7 @@ export default function AccountLinks({
   links,
   master_links,
   links_groups,
-  linksOptions, 
+  linksOptions,
   is_admin,
   can_edit = true,
   can_manage = true,
@@ -94,8 +94,8 @@ export default function AccountLinks({
   broker_id: number;
   account_type_id: number;
   account_type_name: string;
-  links: LinksGroupedByType | {};
-  master_links: LinksGroupedByType | {};
+  links: LinksGroupedByType;
+  master_links: LinksGroupedByType;
   links_groups: string[];
   linksOptions: LinksOptions;
   is_admin: boolean;
@@ -119,7 +119,7 @@ export default function AccountLinks({
   const thisLogger = logger.child("AccountLinks");
 
   const form = useForm<z.infer<typeof LinkFormSchema>>({
-    resolver: zodResolver(LinkFormSchema as any),
+    resolver: zodResolver(LinkFormSchema),
     defaultValues: {
       url: "",
       name: "",
@@ -178,9 +178,9 @@ export default function AccountLinks({
         : "text-gray-700 dark:text-gray-200",
     );
 
- 
+
   async function onSubmit(data: z.infer<typeof LinkFormSchema>) {
-   
+
     try {
       // If editing, include the id
       const payload = {
@@ -190,13 +190,13 @@ export default function AccountLinks({
         url_type: data.type,
         name: data.name,
         url: data.url,
-       
+
       };
 
      const serverUrl = editingLink
       ? `/account-type/broker/${broker_id}/url/${editingLink.id}`
       : `/account-type/broker/${broker_id}/url`;
-  
+
       const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: editingLink ? "PUT" : "POST",
         body: JSON.stringify(payload),
@@ -210,7 +210,7 @@ export default function AccountLinks({
         toast.error(response.message ?? "Failed to save link");
         thisLogger.error("Failed to save link", { error:response.message, context: { payload,broker_id, account_type_id } });
       }
-      
+
     } catch (error) {
       toast.error("Failed to save link");
       thisLogger.error("Failed to save link", { error:error, context: { broker_id, account_type_id } });
@@ -237,7 +237,7 @@ export default function AccountLinks({
     broker_id: number
   ) {
     try {
-     
+
       const serverUrl = `/account-type/broker/${broker_id}/url/${link_id}`;
       const response = await apiClient<Url>(serverUrl, UseTokenAuth.Yes, {
         method: "DELETE",
@@ -249,7 +249,7 @@ export default function AccountLinks({
         toast.error(response.message ?? "Failed to delete link");
           thisLogger.error("Failed to delete link", { error:response.message, context: { broker_id, account_type_id } });
       }
-     
+
     } catch (error) {
       toast.error("Failed to delete link");
       thisLogger.error("Failed to delete link", { error:error, context: { broker_id, account_type_id } });
@@ -278,18 +278,18 @@ export default function AccountLinks({
     }
 
     return (
-      <div>
+      <div className="min-w-0 max-w-full">
         {allLinks.map((link, index) => {
-         
+
           const displayName = is_admin ? link.public_name ?? link.name : link.name;
           const displayUrl = is_admin ? link.public_url ?? link.url : link.url;
           const isMaster = link.urlable_id === null;
           const isUpdatedEntry = link.is_updated_entry === 1;
-      
+
           return (
-            <div key={link.id} className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
+            <div key={link.id} className="mb-2 flex min-w-0 max-w-full items-start gap-2">
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <div className="w-6 h-6 shrink-0 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
                   <span
                     className={cn("", {
                       "text-red-500 dark:text-red-400 font-bold": is_admin && isUpdatedEntry,
@@ -298,29 +298,29 @@ export default function AccountLinks({
                     {index + 1}
                   </span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <a
                       href={displayUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium underline"
+                      className="min-w-0 max-w-full font-medium underline [overflow-wrap:anywhere]"
                     >
                       {displayName}
                     </a>
-                   
+
                     {isMaster && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">
+                      <span className="shrink-0 text-xs bg-blue-100 text-blue-800 px-1 rounded">
                         Master
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
                       {displayUrl}
                     </span>
                     {is_admin && isUpdatedEntry && (
-                      <span className="text-xs text-red-700 dark:text-gray-200">
+                      <span className="text-xs text-red-700 dark:text-gray-200 [overflow-wrap:anywhere]">
                         Updated fields:{" "}
                         {link.metadata?.updated_fields
                           ?.map((f: string) => UPDATED_FIELD_LABELS[f] ?? f)
@@ -414,7 +414,7 @@ export default function AccountLinks({
 
   function renderActiveForm() {
     return (
-      <Card className="max-w-2xl mx-auto">
+      <Card className="mx-auto w-full min-w-0 max-w-2xl">
         <CardContent>
           <Form {...form}>
             <form
@@ -427,7 +427,7 @@ export default function AccountLinks({
                 <h3 className="text-sm font-semibold text-foreground">
                   {editingLink ? "Edit link" : "Add new link"}
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground [overflow-wrap:anywhere]">
                   {editingLink
                     ? "Update the link details for the "
                     : "Create a new link for the "}
@@ -582,12 +582,12 @@ export default function AccountLinks({
   }
 
   return (
-    <div className="w-full mt-4">
+    <div className="mt-4 w-full min-w-0 max-w-full">
       {/* Header Section */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex min-w-0 items-center gap-3">
           <svg
-            className="w-7 h-7 text-green-600 dark:text-green-400"
+            className="w-7 h-7 shrink-0 text-green-600 dark:text-green-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -605,11 +605,11 @@ export default function AccountLinks({
               d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 [overflow-wrap:anywhere]">
               Account Type Links For {account_type_name}
             </h2>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 Manage account-specific links
               </span>
@@ -629,15 +629,15 @@ export default function AccountLinks({
         type="multiple"
         value={openAccordion}
         onValueChange={handleAccordionChange}
-        className="w-full"
+        className="w-full min-w-0 max-w-full"
       >
         {links_groups.map((type) => (
-          <AccordionItem key={type} value={type}>
-            <div className="flex items-center justify-between">
-              <AccordionTrigger className="flex-1">
-                <div className="flex items-center gap-2">
+          <AccordionItem key={type} value={type} className="min-w-0">
+            <div className="flex min-w-0 items-center justify-between">
+              <AccordionTrigger className="min-w-0 flex-1">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-green-600 dark:text-green-400"
+                    className="w-4 h-4 shrink-0 text-green-600 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -649,7 +649,7 @@ export default function AccountLinks({
                       d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                     />
                   </svg>
-                  <span className="capitalize">{type}</span>
+                  <span className="min-w-0 capitalize [overflow-wrap:anywhere]">{type}</span>
                   <span className="text-gray-500">Links</span>
                   <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium px-2 py-0.5 rounded-full">
                     {((links as LinksGroupedByType)[type]?.length || 0) +
@@ -657,7 +657,7 @@ export default function AccountLinks({
                   </span>
                   {is_admin && countUpdatedLinks(type) > 0 && (
                     <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium px-2 py-0.5 rounded-full">
-                      {countUpdatedLinks(type)} 
+                      {countUpdatedLinks(type)}
                     </span>
                   )}
                 </div>
@@ -680,7 +680,7 @@ export default function AccountLinks({
               )}
             </div>
             <AccordionContent>
-              <div className="space-y-4">
+              <div className="min-w-0 max-w-full space-y-4">
                 {activeFormType === type && renderActiveForm()}
                 {/* All Links (Account + Master) */}
                 {renderLinks(

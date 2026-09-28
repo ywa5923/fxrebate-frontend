@@ -30,9 +30,9 @@ export default async function MyAccountLinks({
   can_manage,
 }: Props) {
   const thisLogger = logger.child("MyAccountLinksComponent");
-  let accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
-  let accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
-  let companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
+  const accountTypesLinksFetchUrl = `/urls/${brokerId}/account-type/all?language_code=en`;
+  const accountTypesFetchUrl = `/account-types/${brokerId}?language_code=en`;
+  const companiesFetchUrl = `/companies/${brokerId}?language_code=en`;
 
   const [accountTypesLinksResponse, accountTypesResponse, companiesResponse] =
     await Promise.all([
@@ -73,18 +73,21 @@ export default async function MyAccountLinks({
   const companiesList: CompanyList = (companiesResponse.data ?? []).map(
     (company) => ({
       id: company.id,
-      name: getCompanyDisplayName(company),
+      name: getCompanyDisplayName(company, is_admin),
     }),
   );
+  const companiesById = new Map(companiesList.map((company) => [company.id, company]));
   const accountTypes: AccountTypeRow[] = (
     accountTypesResponse.data ?? []
   ).map((account) => {
-    const attached = companiesList.find(
-      (company) => company.id === account.company_id,
+    const companyIds = account.company_ids ?? (
+      account.company_id == null ? [] : [account.company_id]
     );
     return {
       ...account,
-      company: attached ?? null,
+      companies: [...new Set(companyIds)].map((id) =>
+        companiesById.get(id) ?? { id, name: `Company #${id}` },
+      ),
     };
   });
 

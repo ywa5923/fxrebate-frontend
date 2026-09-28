@@ -5,7 +5,7 @@ import AccountCompanies from "./AccountCompanies";
 
 import { NotFoundEntity } from "@/components/NotFoundEntity";
 import { submitBrokerProfile } from "@/lib/optionValues-requests";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X, Trash, LayoutGrid, AlertTriangle, CheckCircle2 } from "lucide-react";
@@ -77,32 +77,34 @@ export default function Accounts({
   linksGroups,
   linksOptions,
 }: AccountsProps) {
-  const [activeTab, setActiveTab] = useState<string>(
-    accounts[0]?.id?.toString() || "",
-  );
+  const accountIds = accounts.map((account) => account.id.toString());
+  const [tabSelection, setTabSelection] = useState(() => ({
+    accountIds,
+    activeId: accountIds[0] ?? "",
+  }));
+  const activeTab = tabSelection.activeId;
   const [showNewAccount, setShowNewAccount] = useState(false);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState<
     number | null
   >(null);
   const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const router = useRouter();
-  const prevAccountsLength = useRef(accounts.length);
   const thisLogger = logger.child("Accounts");
-  useEffect(() => {
-    // If a new account is added
-    if (accounts.length > prevAccountsLength.current) {
-      // Set active tab to the latest account (last in the array)
-      setActiveTab(accounts[accounts.length - 1].id.toString());
-      
-    } else if (
-      accounts.length > 0 &&
-      !accounts.some((account) => account.id.toString() === activeTab)
-    ) {
-      // If current activeTab is invalid, set to first account
-      setActiveTab(accounts[0].id.toString());
-    }
-    prevAccountsLength.current = accounts.length;
-  }, [accounts, activeTab]);
+
+  // Reconcile changed IDs before rendering children with a stale selection.
+  if (
+    accountIds.length !== tabSelection.accountIds.length ||
+    accountIds.some((id, index) => id !== tabSelection.accountIds[index])
+  ) {
+    const previousIds = new Set(tabSelection.accountIds);
+    const addedIds = accountIds.filter((id) => !previousIds.has(id));
+    setTabSelection({
+      accountIds,
+      activeId: addedIds[addedIds.length - 1] ?? (
+        accountIds.includes(activeTab) ? activeTab : accountIds[0] ?? ""
+      ),
+    });
+  }
 
   async function handleDeleteAccountType(accountId: number) {
     try {
@@ -220,7 +222,10 @@ export default function Accounts({
                 return (
                   <button
                     key={account.id}
-                    onClick={() => setActiveTab(account.id.toString())}
+                    onClick={() => setTabSelection((current) => ({
+                      ...current,
+                      activeId: account.id.toString(),
+                    }))}
                     className={cn(
                       "relative px-5 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-150",
                       isActive
@@ -242,7 +247,7 @@ export default function Accounts({
           </div>
 
           {/* Tab Content */}
-          {accounts.map((account, index) => (
+          {accounts.map((account) => (
             <div
               key={account.id}
               id={`account-tab-${account.id}`}
@@ -305,7 +310,7 @@ export default function Accounts({
                 <AccountCompanies
                   broker_id={broker_id}
                   account_type_id={account.id}
-                  attachedCompany={account.company ?? null}
+                  attachedCompanies={account.companies}
                   companiesList={companiesList}
                   can_manage={can_manage}
                 />
@@ -353,7 +358,7 @@ export default function Accounts({
                   <div className="space-y-1 pt-0.5">
                     <DialogTitle>Account type saved successfully</DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                      You can now attach a company to this account type and
+                      You can now attach companies to this account type and
                       complete the associated links in the sections below.
                     </p>
                   </div>
