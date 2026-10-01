@@ -13,6 +13,14 @@ export function createSetupSchema(accountTypes: SetupAccountType[], translations
     accountNumber: z.string().trim().min(1, message("setup_validation_account_number")),
     authorized: z.boolean(),
   }).superRefine((values, context) => {
+    if (!values.authorized) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["authorized"],
+        message: message("setup_validation_authorized"),
+      });
+    }
+
     const accountType = accountTypes.find((account) => account.account_type_name === values.accountType);
     if (!accountType) {
       context.addIssue({
