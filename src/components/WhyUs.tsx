@@ -6,11 +6,11 @@ import { whyUs } from '@/lib/content';
 import { fadeIn, opacityAnimation } from '@/lib/motions';
 
 import InViewContainer from './InViewContainer';
-import { Translations, useTranslation } from '@/providers/translations';
+import { useTranslation } from '@/providers/translations';
 
 const WhyUs = () => {
   const { title, description, features } = whyUs;
-  const _t:Translations=useTranslation();
+  const { t } = useTranslation();
 
   return (
     <InViewContainer amount={0.1}>
@@ -20,13 +20,13 @@ const WhyUs = () => {
             variants={fadeIn({ direction: "up", delay: 0.25, duration: 1, value: 25, ease: "easeInOut" })}
             className='section-title mb-8'
           >
-            {_t[title]||title}
+            {t(title)}
           </motion.h2>
           <motion.p
             variants={fadeIn({ direction: "up", delay: 0.5, duration: 1, value: 25, ease: "easeInOut" })}
             className='section-description text-black dark:text-white'
           >
-            {_t[description]||description}
+            {t(description)}
           </motion.p>
         </div>
         <motion.div
@@ -36,8 +36,8 @@ const WhyUs = () => {
             {features.map((feature, idx) => (
               <BentoCard
                 key={idx}
-                title={_t[feature.title]||feature.title}
-                description={_t[feature.description]||feature.description}
+                title={t(feature.title)}
+                description={t(feature.description)}
                 darkBgImage={feature.darkBgImage}
                 lightBgImage={feature.lightBgImage}
                 containerClassName={(idx === 1 || idx === 2) ? 'md:col-span-2' : ''}

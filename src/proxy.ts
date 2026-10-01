@@ -20,7 +20,9 @@ export async function proxy(req: NextRequest) {
 
 
 
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("x-pathname", req.nextUrl.pathname);
   //Skip static assets and favicon
   if (req.nextUrl.pathname.startsWith('/_next/') ||
@@ -73,7 +75,7 @@ export async function proxy(req: NextRequest) {
   //console.log("Rewritten path", rewrittenPath)
   if (rewrittenPath) {
     url.pathname = rewrittenPath;
-    const rewriteResponse = NextResponse.rewrite(url);
+    const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
     // Copy the cookie to the rewrite response
     // rewriteResponse.cookies.set('zone', zone, {
     //   path: '/',

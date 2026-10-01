@@ -15,10 +15,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Pagination from "@/components/Pagination";
-import {
-  Translations,
-  useTranslation,
-} from "@/providers/translations";
+import { useTranslation } from "@/providers/translations";
+
 import BrokerRebateCard from "./BrokerRebateCard";
 import { SITE_BROKER_TYPES } from "@/constants";
 import type { HighestRebateBroker } from "@/types";
@@ -73,27 +71,27 @@ function ForexRebatesClientContent({
   const { push } = useRouter();
   const pathname = usePathname();
   const locale = (params?.locale as string) || "en";
-  const _t = useTranslation() as Translations;
+  const { t } = useTranslation();
   const [view, setView] = useState<ViewMode>("list");
   const [sortOpen, setSortOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(tradingName ?? "");
 
   const sortOptions: { label: string; sort: SortMode }[] = [
-    { label: _t["sort_default"] as string, sort: "default" },
-    { label: _t["sort_name_asc"] as string, sort: "asc" },
-    { label: _t["sort_name_desc"] as string, sort: "desc" },
+    { label: t("sort_default"), sort: "default" },
+    { label: t("sort_name_asc"), sort: "asc" },
+    { label: t("sort_name_desc"), sort: "desc" },
   ];
 
   const activeSort: SortMode = orderDirection ?? "default";
   const activeSortLabel =
     sortOptions.find((option) => option.sort === activeSort)?.label ??
-    _t["sort_default"] as string;
+    t("sort_default");
   const activeTab =
     CATEGORY_TABS.find((tab) => tab.brokerType === activeBrokerType) ??
     CATEGORY_TABS[0];
-  const pageTitle = _t[activeTab.titleKey] as string;
-  const pageDescription = _t[activeTab.descriptionKey] as string;
+  const pageTitle = t(activeTab.titleKey);
+  const pageDescription = t(activeTab.descriptionKey);
 
   function buildListParams(overrides: {
     brokerType?: string;
@@ -193,7 +191,7 @@ function ForexRebatesClientContent({
                     routeKey={`/${locale}`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
-                    {_t["breadcrumb_home"] as string}
+                    {t("breadcrumb_home")}
                   </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -204,14 +202,14 @@ function ForexRebatesClientContent({
                     routeKey={`/${locale}/forex-brokers`}
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
-                    {_t["breadcrumb_forex_brokers"] as string}
+                    {t("breadcrumb_forex_brokers")}
                   </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="[&>svg]:size-3" />
               <BreadcrumbItem>
                 <BreadcrumbPage className="font-medium text-[#0c110f] dark:text-gray-100">
-                  {_t["breadcrumb_forex_rebates"] as string}
+                  {t("breadcrumb_forex_rebates")}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -222,7 +220,7 @@ function ForexRebatesClientContent({
             onClick={handleShare}
             className="hidden h-9 shrink-0 items-center gap-2 rounded-md border border-[#0c110f]/15 px-3 text-sm font-medium text-[#0c110f] hover:bg-black/5 dark:border-white/15 dark:text-gray-100 dark:hover:bg-white/5 md:inline-flex"
           >
-            {_t["share"] as string}
+            {t("share")}
             <Share2 className="size-4" />
           </button>
         </div>
@@ -233,7 +231,7 @@ function ForexRebatesClientContent({
             "md:mb-6 md:inline-flex md:h-9 md:max-w-full md:flex-row md:items-center md:gap-0 md:overflow-x-auto",
           )}
           role="tablist"
-          aria-label={_t["rebate_categories_aria"] as string}
+          aria-label={t("rebate_categories_aria")}
         >
           {CATEGORY_TABS.map((tab) => {
             const active = tab.brokerType === activeBrokerType;
@@ -250,7 +248,7 @@ function ForexRebatesClientContent({
                     : "bg-transparent text-[#0c110f]/70 hover:text-[#0c110f] dark:text-white/80 dark:hover:text-white",
                 )}
               >
-                {_t[tab.labelKey] as string}
+                {t(tab.labelKey)}
               </Link>
             );
           })}
@@ -276,7 +274,7 @@ function ForexRebatesClientContent({
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={_t["search_placeholder"] as string}
+                placeholder={t("search_placeholder")}
                 className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#0c110f]/50 dark:placeholder:text-gray-500"
               />
             </label>
@@ -284,7 +282,7 @@ function ForexRebatesClientContent({
               type="submit"
               className="h-11 shrink-0 rounded bg-[#0c110f] px-4 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
             >
-              {_t["show_filter"] as string}
+              {t("show_filter")}
             </button>
           </form>
 
@@ -299,7 +297,7 @@ function ForexRebatesClientContent({
                 className="flex h-12 min-w-[140px] items-center justify-between gap-2 rounded-md border border-[#0c110f]/20 px-4 text-xs font-medium dark:border-white/20"
               >
                 <span>
-                  {_t["sort_by"] as string}: {activeSortLabel}
+                  {t("sort_by")}: {activeSortLabel}
                 </span>
                 <ChevronDown className="size-4 opacity-70" />
               </button>
@@ -333,8 +331,8 @@ function ForexRebatesClientContent({
               >
                 <span>
                   {view === "list"
-                    ? _t["view_list"] as string
-                    : _t["view_grid"] as string}
+                    ? t("view_list")
+                    : t("view_grid")}
                 </span>
                 <ChevronDown className="size-4 opacity-70" />
               </button>
@@ -355,7 +353,7 @@ function ForexRebatesClientContent({
                         setViewOpen(false);
                       }}
                     >
-                      {_t[option.labelKey] as string}
+                      {t(option.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -365,7 +363,7 @@ function ForexRebatesClientContent({
         </div>
 
         <p className="mt-4 text-sm text-[#0c110f]/80 dark:text-gray-400">
-          {_t["page_disclaimer"] as string}
+          {t("page_disclaimer")}
         </p>
 
         <div
@@ -378,7 +376,7 @@ function ForexRebatesClientContent({
         >
           {brokers.length === 0 ? (
             <p className="py-10 text-sm text-[#0c110f]/70 dark:text-gray-400">
-              {_t["no_brokers"] as string}
+              {t("no_brokers")}
             </p>
           ) : (
             brokers.map((broker) => (

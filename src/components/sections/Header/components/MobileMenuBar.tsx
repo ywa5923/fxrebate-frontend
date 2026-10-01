@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useTheme } from 'next-themes'
 import { useParams } from 'next/navigation'
 import LocalizedLink from '@/components/LocalizedLink'
-import { useTranslation, type NavbarTranslations } from '@/providers/translations'
+import { useTranslation } from "@/providers/translations";
+
 import { IoIosArrowDown } from 'react-icons/io'
 
 import { navItems } from '@/lib/content'
@@ -13,8 +14,7 @@ import { cn } from '@/lib/utils'
 
 export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { locale } = useParams<{ locale: string }>();
-  const translations = useTranslation();
-  const navbar = (translations.navbar ?? {}) as NavbarTranslations;
+  const { t } = useTranslation("navbar");
   const [selectedSubMenu, setSelectedSubMenu] = useState<number | string | null>(null);
   const [selectedSubItem, setSelectedSubItem] = useState<number | string | null>(null);
 
@@ -40,7 +40,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
             <Link href={item.href || '#'}>
               <Image
                 src={resolvedTheme === "light" ? item.lightIcon! : item.darkIcon!}
-                alt={item.name!}
+                alt={t(item.name)}
                 className='object-cover'
                 width={25}
                 height={25}
@@ -53,11 +53,11 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
               rel={item.external ? 'noopener noreferrer' : ''}
               className='text-black dark:text-white text-base font-medium'
             >
-              {item.name}
+              {t(item.name)}
             </Link>
           ) : (
             <button onClick={() => handleSubMenuClick(item.id)} className='flex items-center gap-2 text-black dark:text-white text-base font-medium'>
-              {item.name}
+              {t(item.name)}
               <IoIosArrowDown className={cn('text-lg transition-all duration-300', selectedSubMenu === item.id && 'rotate-180')} />
             </button>
           )}
@@ -69,7 +69,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
                   {subItem.linksList ? (
                     <div className='w-full flex flex-col items-center justify-center'>
                       <button onClick={() => handleSubItemClick(subItem.id)} className='outline-none flex items-center gap-2 text-black/80 dark:text-white/80 text-base font-medium'>
-                        {subItem.name}
+                        {t(subItem.name)}
                         <IoIosArrowDown className={cn('text-lg transition-all duration-300', selectedSubItem === subItem.id && 'rotate-180')} />
                       </button>
 
@@ -83,7 +83,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
                               rel={link.external ? 'noopener noreferrer' : ''}
                               className='text-black/80 dark:text-white/80 text-base font-medium'
                             >
-                              {link.name}
+                              {t(link.name)}
                             </Link>
                           ))}
                         </div>
@@ -92,7 +92,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
                   ) : subItem.itemsList ? (
                     <div className='relative w-full flex flex-col items-center justify-center'>
                       <button onClick={() => handleSubItemClick(subItem.id)} className='outline-none flex items-center gap-2 text-black/80 dark:text-white/80 text-base font-medium'>
-                        {subItem.name}
+                        {t(subItem.name)}
                         <IoIosArrowDown className={cn('text-lg transition-all duration-300', selectedSubItem === subItem.id && 'rotate-180')} />
                       </button>
 
@@ -125,7 +125,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
                       }}
                       className='text-black/80 dark:text-white/80 text-base font-medium'
                     >
-                      {navbar[subItem.translationKey ?? subItem.name] || subItem.name}
+                      {t(subItem.translationKey ?? subItem.name)}
                     </LocalizedLink>
                   ) : (
                     <Link
@@ -134,7 +134,7 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
                       rel={subItem.external ? 'noopener noreferrer' : ''}
                       className='text-black/80 dark:text-white/80 text-base font-medium'
                     >
-                      {subItem.name}
+                      {t(subItem.name)}
                     </Link>
                   )}
                 </div>

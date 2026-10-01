@@ -12,8 +12,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navItems } from '@/lib/content'
 import { useMounted, useWindowSize } from '@/lib/hooks'
-import {Translations, useTranslation,NavbarTranslations} from "@/providers/translations";
-
+import { useTranslation } from "@/providers/translations";
 
 interface ICustomDesktopMenuBar {
   visible: boolean;
@@ -21,8 +20,7 @@ interface ICustomDesktopMenuBar {
 
 export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
   const { locale } = useParams<{ locale: string }>();
-  const _t:Translations = useTranslation();
-  const navbar = _t.navbar as NavbarTranslations;
+  const { t } = useTranslation("navbar");
   const { resolvedTheme } = useTheme();
   const { width } = useWindowSize();
   const mounted = useMounted();
@@ -33,7 +31,6 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
   const submenuRefs = useRef<Record<number | string, HTMLDivElement | null>>({});
   const [submenuPositions, setSubMenuPositions] = useState<Record<number | string, string>>({});
   const [isSubMenuRepositioned, setIsSubMenuRepositioned] = useState<Record<string | number, boolean>>({});
-
 
   const handleOpenMenu = (menuId: string | number) => {
     setOpenedMenu(menuId);
@@ -71,7 +68,6 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [visible]);
-
 
   const adjustSubMenuPosition = (subMenuId: string | number) => {
     const submenu = submenuRefs.current[subMenuId];
@@ -118,7 +114,6 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
     };
   }, [openedSubMenu, width]);
 
-
   if (!mounted) return null;
 
   return (
@@ -129,7 +124,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
             <Link href={item.href || '#'} onMouseEnter={() => handleCloseMenu()}>
               <Image
                 src={resolvedTheme === "light" ? item.lightIcon! : item.darkIcon!}
-                alt={item.name}
+                alt={t(item.name)}
                 className='object-cover hover:scale-110 hover:-rotate-4 transition-all duration-300'
                 width={25}
                 height={25}
@@ -137,7 +132,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
             </Link>
           ) : item.href ? (
             <Link href={item.href || '#'} onMouseEnter={() => handleCloseMenu()}>
-              <span className='block hover:text-white hover:bg-green-700 px-2.5 py-1 rounded-sm transition-colors duration-200'>{navbar[item.name] || item.name}</span>
+              <span className='block hover:text-white hover:bg-green-700 px-2.5 py-1 rounded-sm transition-colors duration-200'>{t(item.name)}</span>
             </Link>
           ) : (
             <div className='relative'>
@@ -150,7 +145,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                 )}
                 data-menu-button
               >
-                {navbar[item.name] || item.name}
+                {t(item.name)}
               </button>
               {openedMenu === item.id && item.subItems && (
                 <motion.div
@@ -174,7 +169,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                             onMouseEnter={() => handleOpenSubMenu(subItem.id)}
                             onClick={() => handleOpenSubMenu(subItem.id)}
                           >
-                            {navbar[subItem.name] || subItem.name}
+                            {t(subItem.name)}
                             <IoIosArrowForward className='ml-auto h-4 w-4' />
                           </button>
                           {openedSubMenu === subItem.id && (
@@ -187,7 +182,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                               ref={el => { submenuRefs.current[subItem.id] = el }}
                               className='absolute top-0 left-full z-50 w-full min-w-[13rem] rounded-md bg-white-500 dark:bg-dark-gray-100 p-4'
                             >
-                                <p className="font-bold text-base text-black dark:text-white pb-2 whitespace-nowrap">{navbar[subItem.name] || subItem.name}</p>
+                                <p className="font-bold text-base text-black dark:text-white pb-2 whitespace-nowrap">{t(subItem.name)}</p>
                               <div className="flex flex-col">
                                 {subItem.linksList.map((link) => (
                                   <Link
@@ -197,7 +192,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                                     rel={link.external ? 'noopener noreferrer' : ''}
                                     className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-green-700 rounded-sm px-2.5 py-1.5'
                                   >
-                                    {navbar[link.name] || link.name}
+                                    {t(link.name)}
                                   </Link>
                                 ))}
                               </div>
@@ -213,7 +208,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                             )}
                             onMouseEnter={() => handleOpenSubMenu(subItem.id)}
                           >
-                            {navbar[subItem.name] || subItem.name}
+                            {t(subItem.name)}
                             <IoIosArrowForward className='ml-auto h-4 w-4' />
                           </button>
                           {openedSubMenu === subItem.id && (
@@ -235,7 +230,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                                         width={32}
                                         height={32}
                                       />
-                                      <span className='text-black dark:text-white text-sm font-medium capitalize'>{navbar[item.brokerName] || item.brokerName}</span>
+                                      <span className='text-black dark:text-white text-sm font-medium capitalize'>{item.brokerName}</span>
                                     </Link>
                                   </li>
                                 </ul>
@@ -249,7 +244,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                           onNavigate={handleCloseMenu}
                           className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
                         >
-                          {navbar[subItem.translationKey ?? subItem.name] || subItem.name}
+                          {t(subItem.translationKey ?? subItem.name)}
                         </LocalizedLink>
                       ) : (
                         <Link
@@ -258,7 +253,7 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                           rel={subItem.external ? 'noopener noreferrer' : ''}
                           className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
                         >
-                          {navbar[subItem.name] || subItem.name}
+                          {t(subItem.name)}
                         </Link>
                       )}
                     </div>

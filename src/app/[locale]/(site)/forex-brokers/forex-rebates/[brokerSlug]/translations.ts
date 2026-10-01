@@ -1,22 +1,14 @@
-import type { Translations } from "@/providers/translations";
-
-export function t(translations: Translations, key: string): string {
-  const value = translations[key];
-  if (typeof value !== "string" || value.trim().length === 0) {
-    throw new Error(`Missing translation "${key}" for set_rebates_account_page`);
-  }
-  return value;
-}
+import type { Translator } from "@/lib/createTranslator";
 
 export function tSubmitError(
-  translations: Translations,
+  t: Translator,
   result: { message?: string; errorCode?: "invalid_request" | "service_unavailable" },
 ): string {
   if (result.errorCode === "invalid_request") {
-    return t(translations, "setup_invalid_request");
+    return t("setup_invalid_request");
   }
   if (result.errorCode === "service_unavailable") {
-    return t(translations, "setup_service_unavailable");
+    return t("setup_service_unavailable");
   }
-  return result.message || t(translations, "setup_submit_error");
+  return result.message || t("setup_submit_error");
 }

@@ -10,7 +10,6 @@ import BrokerRebateFormActions from "./BrokerRebateFormActions";
 import BrokerRebateSteps from "./BrokerRebateSteps";
 import BrokerRebateSuccess from "./BrokerRebateSuccess";
 import { useBrokerRebateForm, type BrokerRebateFormProps } from "./useBrokerRebateForm";
-import { t } from "./translations";
 
 type SetupStep = 1 | 2 | 3;
 const STEP_LABELS = ["setup_step_new_account", "setup_step_account_type", "setup_step_details"] as const;
@@ -18,7 +17,7 @@ const STEP_LABELS = ["setup_step_new_account", "setup_step_account_type", "setup
 export default function BrokerRebateSetupForm(props: BrokerRebateFormProps) {
   const { data, brokerName } = props;
   const [step, setStep] = useState<SetupStep>(1);
-  const { form, translations, validateAccount, submit, isSubmitting, submitted } =
+  const { form, t, validateAccount, submit, isSubmitting, submitted } =
     useBrokerRebateForm(props, "new_account");
 
   async function handleContinue() {
@@ -48,9 +47,9 @@ export default function BrokerRebateSetupForm(props: BrokerRebateFormProps) {
       <div className="flex flex-col gap-8 overflow-hidden rounded-[11px] bg-[#f3f3f3] px-6 py-8 text-[#0c110f] transition-colors dark:bg-[#171f1c] dark:text-white sm:p-8">
         <div className="-mx-6 border-b-4 border-white px-6 pb-8 sm:-mx-8 sm:px-8">
           <BrokerRebateSteps
-            labels={STEP_LABELS.map((key) => t(translations, key))}
+            labels={STEP_LABELS.map((key) => t(key))}
             currentStep={step}
-            ariaLabel={t(translations, "setup_new_steps")}
+            ariaLabel={t("setup_new_steps")}
             verticalOnMobile
           />
         </div>
@@ -65,15 +64,13 @@ export default function BrokerRebateSetupForm(props: BrokerRebateFormProps) {
           {step === 1 && (
             <BrokerRebateRegistrationLinks
               links={data.ib_links}
-              buttonLabel={t(translations, "setup_open_account")}
-              emptyLabel={t(translations, "setup_registration_unavailable")}
             />
           )}
           {step === 2 && (
             <fieldset disabled={isSubmitting || submitted} className="flex min-w-0 flex-col gap-6 sm:gap-[50px]">
               <h2 className="text-[28px] font-bold leading-[1.1] sm:text-[32px]">
-                <span className="sm:hidden">{t(translations, "setup_step_account_type_mobile")}</span>
-                <span className="hidden sm:inline">{t(translations, "setup_step_account_type")}</span>
+                <span className="sm:hidden">{t("setup_step_account_type_mobile")}</span>
+                <span className="hidden sm:inline">{t("setup_step_account_type")}</span>
               </h2>
               <BrokerRebateAccountFields accountTypes={data.account_types} />
             </fieldset>
@@ -81,7 +78,7 @@ export default function BrokerRebateSetupForm(props: BrokerRebateFormProps) {
           {step === 3 && (
             <fieldset disabled={isSubmitting || submitted} className="flex min-w-0 flex-col gap-6 sm:gap-[50px]">
               <h2 className="text-[28px] font-bold leading-[1.1] sm:text-[32px]">
-                {t(translations, "setup_step_details")}
+                {t("setup_step_details")}
               </h2>
               <BrokerRebateAccountDetails brokerName={brokerName} />
             </fieldset>

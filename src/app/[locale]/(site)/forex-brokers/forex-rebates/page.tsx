@@ -90,7 +90,6 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
       key: FOREX_REBATES_TRANSLATION_KEY,
       locale,
       zone,
-      revalidate: 3600,
     }),
   ]);
 
@@ -104,7 +103,10 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   }
 
   return (
-    <PageTranslationProvider translations={clientTranslations}>
+    <PageTranslationProvider
+      translations={clientTranslations}
+      context={{ resource: FOREX_REBATES_TRANSLATION_KEY, section: "client", locale, zone }}
+    >
       <ForexRebatesClient
         brokers={response.data}
         orderDirection={orderDirection}

@@ -1,16 +1,15 @@
 import { useTranslation } from "@/providers/translations";
-import { t } from "./translations";
 
 type Props = { notes: string[]; className?: string };
 
 export default function BrokerRebateNotes({ notes, className }: Props) {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   if (notes.length === 0) return null;
 
   return (
     <div className={className}>
       <h2 className="mb-4 text-base font-semibold leading-tight">
-        {t(translations, "setup_notes_title")}
+        {t("setup_notes_title")}
       </h2>
       <ol role="list" className="flex list-none flex-col gap-3">
         {notes.map((note, index) => (

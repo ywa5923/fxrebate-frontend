@@ -44,7 +44,7 @@ export default function LocalizedLink({
   ...props
 }: LocalizedLinkProps) {
   const { locale } = useParams();
-  const _t = useTranslation();
+  const { translations } = useTranslation();
   const lang = locale as string;
   
   // Skip translation for English
@@ -61,7 +61,7 @@ export default function LocalizedLink({
   const sourcePath = pathname === localePrefix
     ? "/"
     : pathname.startsWith(`${localePrefix}/`) ? pathname.slice(localePrefix.length) : pathname;
-  const localizedPath = getLocalizedPath(sourcePath, _t['route-maps'] as Record<string, string>);
+  const localizedPath = getLocalizedPath(sourcePath, (translations['route-maps'] ?? {}) as Record<string, string>);
 
   const localizedSuffix = localizedPath === "/"
     ? ""

@@ -8,11 +8,11 @@ import { companyStats } from '@/lib/content';
 import { StatProps } from "@/lib/types";
 
 import InViewContainer from './InViewContainer';
-import { useTranslation,Translations } from "@/providers/translations";
+import { useTranslation } from "@/providers/translations";
 
 const CompanyStats = () => {
   const { title, stats } = companyStats;
-  const _t:Translations=useTranslation();
+  const { t } = useTranslation();
 
   return (
     <InViewContainer
@@ -24,7 +24,7 @@ const CompanyStats = () => {
           variants={fadeIn({ direction: "up", delay: 0.25, duration: 1, value: 25, ease: "easeInOut" })}
           className='text-center text-black dark:text-white text-xl sm:text-2xl font-bold leading-[115%] capitalize'
         >
-          {_t[title]}
+          {t(title)}
         </motion.h2>
 
         <motion.div
@@ -38,8 +38,8 @@ const CompanyStats = () => {
               idx={idx}
               num={info.num}
               prevSuffix={info.prevSuffix}
-              nextSuffix={_t[info.nextSuffix]||info.nextSuffix}
-              subheading={_t[info.subheading]||info.subheading}
+              nextSuffix={info.nextSuffix === "K+" ? info.nextSuffix : t(info.nextSuffix)}
+              subheading={t(info.subheading)}
             />
           ))}
         </motion.div>

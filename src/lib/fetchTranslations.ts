@@ -1,16 +1,12 @@
 import "server-only";
 
-import { z } from "zod";
+import { headers } from "next/headers";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import logger from "@/lib/logger";
+import { prepareTranslations } from "@/lib/translations";
 
 const log = logger.child("lib/fetchTranslations");
-
-const translationsSchema = z.record(z.string()).refine(
-  (translations) => Object.values(translations).some((value) => value.trim().length > 0),
-  "Translations must contain at least one non-empty text value",
-);
 
 type FetchTranslationsOptions = {
   key: string;
@@ -27,6 +23,13 @@ export async function fetchTranslations({
   section = "client",
   revalidate = 0,
 }: FetchTranslationsOptions): Promise<Record<string, string>> {
+  const context = {
+    resource: key,
+    locale,
+    zone,
+    section,
+    page: (await headers()).get("x-pathname") ?? `/${locale}`,
+  };
   const query = new URLSearchParams({
     "key[eq]": key,
     "lang[eq]": locale,
@@ -51,6 +54,9 @@ export async function fetchTranslations({
 
   if (!response.success) {
     log.error("Error fetching translations", {
+      event: "translations_fetch_failed",
+      description: "The backend could not provide translations required to render the page.",
+      ...context,
       url,
       message: response.message,
       status: response.status,
@@ -58,17 +64,5 @@ export async function fetchTranslations({
     throw new Error(response.message || `Error fetching translations for ${key}`);
   }
 
-  const parsed = translationsSchema.safeParse(response.data?.[section]);
-  if (!parsed.success) {
-    log.error("Invalid or empty translations", {
-      url,
-      key,
-      locale,
-      section,
-      issues: parsed.error.issues,
-    });
-    throw new Error(`No valid ${section} translations found for ${key}`);
-  }
-
-  return parsed.data;
+  return prepareTranslations(response.data?.[section], context);
 }

@@ -55,7 +55,10 @@ export default async function BrokerRebateDetailPage({
   ]);
 
   return (
-    <PageTranslationProvider translations={clientTranslations}>
+    <PageTranslationProvider
+      translations={clientTranslations}
+      context={{ resource: SET_REBATES_ACCOUNT_TRANSLATION_KEY, section: "client", locale, zone }}
+    >
       <BrokerRebateDetail
         broker={{ broker_id: brokerId, trading_name: formData.trading_name, logo: formData.logo }}
         brokerSlug={brokerSlug}

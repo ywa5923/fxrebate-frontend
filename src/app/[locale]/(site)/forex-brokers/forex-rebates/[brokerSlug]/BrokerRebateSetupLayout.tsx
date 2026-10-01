@@ -10,7 +10,6 @@ import {
   brokerRebateDetailHref,
   type RebateSetupType,
 } from "../data";
-import { t } from "./translations";
 
 type Props = {
   broker: RebateBroker;
@@ -33,7 +32,7 @@ export default function BrokerRebateSetupLayout({
   setupType,
   children,
 }: Props) {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   const listHref = `/${locale}/forex-brokers/forex-rebates?${new URLSearchParams({ broker_type: brokerType })}`;
   const initials = broker.trading_name
     .split(/\s+/)
@@ -89,17 +88,19 @@ export default function BrokerRebateSetupLayout({
   }
 
   const breadcrumbs = [
-    { label: t(translations, "breadcrumb_home"), href: "/" + locale },
+    { id: "home", label: t("breadcrumb_home"), href: "/" + locale },
     {
-      label: t(translations, "breadcrumb_forex_brokers"),
+      id: "forex-brokers",
+      label: t("breadcrumb_forex_brokers"),
       href: "/" + locale + "/forex-brokers",
     },
     {
-      label: t(translations, "breadcrumb_forex_rebates"),
+      id: "forex-rebates",
+      label: t("breadcrumb_forex_rebates"),
       href: listHref,
     },
-    { label: broker.trading_name },
-    { label: t(translations, "setup_cashback") },
+    { id: "broker", label: broker.trading_name },
+    { id: "setup", label: t("setup_cashback") },
   ];
 
   return (
@@ -107,10 +108,10 @@ export default function BrokerRebateSetupLayout({
       <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-0 pb-16 pt-24 sm:px-6 lg:px-0 lg:pt-28">
         <section className="flex flex-col gap-8">
           <div className="flex items-center justify-between gap-4">
-            <nav aria-label={t(translations, "breadcrumb_aria")} className="min-w-0 overflow-x-auto">
+            <nav aria-label={t("breadcrumb_aria")} className="min-w-0 overflow-x-auto">
               <ol className="hidden min-w-max items-center gap-[11px] text-[14px] font-medium leading-[1.11] sm:flex">
                 {breadcrumbs.map((item, index) => (
-                  <li key={item.label + index} className="flex items-center gap-[11px]">
+                  <li key={item.id} className="flex items-center gap-[11px]">
                     {item.href ? (
                       <LocalizedLink
                         routeKey={item.href}
@@ -149,10 +150,10 @@ export default function BrokerRebateSetupLayout({
             <button
               type="button"
               onClick={handleShare}
-              aria-label={t(translations, "share")}
+              aria-label={t("share")}
               className="inline-flex h-[35px] w-6 shrink-0 items-center justify-center gap-2 rounded-[4px] px-0 py-1 text-base font-medium hover:bg-black/5 dark:hover:bg-white/5 md:w-[93px] md:px-2"
             >
-              <span className="hidden md:inline">{t(translations, "share")}</span>
+              <span className="hidden md:inline">{t("share")}</span>
               <Share2 className="size-5" />
             </button>
           </div>
@@ -168,13 +169,13 @@ export default function BrokerRebateSetupLayout({
             <div className="flex flex-col gap-2 capitalize">
               <h1 className="text-[24px] font-bold leading-[1.1] sm:text-[28px]">{broker.trading_name}</h1>
               <p className="text-[18px] leading-[1.05] text-[#0c110f]/60 dark:text-white/60 sm:text-xl">
-                {t(translations, "setup_broker_subtitle")}
+                {t("setup_broker_subtitle")}
               </p>
             </div>
           </div>
 
           <nav
-            aria-label={t(translations, "setup_tabs_aria")}
+            aria-label={t("setup_tabs_aria")}
             className="flex h-[178px] w-full flex-col items-stretch rounded-lg bg-[#f3f3f3] p-1 dark:bg-[#202221] sm:h-9 sm:w-fit sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
             role="tablist"
           >
@@ -188,13 +189,13 @@ export default function BrokerRebateSetupLayout({
               const label = tab.id === "new" ? (
                 <>
                   <span className="sm:hidden">
-                    {t(translations, "setup_path_new_mobile")}
+                    {t("setup_path_new_mobile")}
                   </span>
                   <span className="hidden sm:inline">
-                    {t(translations, tab.key)}
+                    {t(tab.key)}
                   </span>
                 </>
-              ) : t(translations, tab.key);
+              ) : t(tab.key);
 
               return (
                 <LocalizedLink

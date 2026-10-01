@@ -1,10 +1,9 @@
 import { z } from "zod";
-import type { Translations } from "@/providers/translations";
+import type { Translator } from "@/lib/createTranslator";
 import type { SetupAccountType } from "./setupFormData";
-import { t } from "./translations";
 
-export function createSetupSchema(accountTypes: SetupAccountType[], translations?: Translations) {
-  const message = (key: string) => translations ? t(translations, key) : undefined;
+export function createSetupSchema(accountTypes: SetupAccountType[], translate?: Translator) {
+  const message = (key: string) => translate?.(key);
   return z.object({
     accountType: z.string(),
     platform: z.string(),

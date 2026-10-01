@@ -8,7 +8,7 @@ import { useTranslation } from "@/providers/translations";
 import type { SetupFormData } from "./setupFormData";
 import { createSetupSchema, type SetupFormValues } from "./setupFormSchema";
 import { submitBrokerRebate, type RebateRequestType } from "./submitBrokerRebate";
-import { t, tSubmitError } from "./translations";
+import { tSubmitError } from "./translations";
 
 export type BrokerRebateFormProps = {
   brokerId: number;
@@ -22,10 +22,10 @@ export function useBrokerRebateForm(
   { brokerId, brokerSlug, locale, data }: BrokerRebateFormProps,
   requestType: RebateRequestType,
 ) {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   const schema = useMemo(
-    () => createSetupSchema(data.account_types, translations),
-    [data.account_types, translations],
+    () => createSetupSchema(data.account_types, t),
+    [data.account_types, t],
   );
   const form = useForm<SetupFormValues>({
     resolver: zodResolver(schema),
@@ -54,17 +54,17 @@ export function useBrokerRebateForm(
           locale,
           values,
           requestType,
-          tabName: t(translations, requestType === "new_account" ? "setup_path_new" : "setup_path_transfer"),
+          tabName: t(requestType === "new_account" ? "setup_path_new" : "setup_path_transfer"),
         });
         if (result.success) {
           setSubmitted(true);
-          toast.success(t(translations, "setup_submit_success"));
+          toast.success(t("setup_submit_success"));
         } else {
-          toast.error(tSubmitError(translations, result));
+          toast.error(tSubmitError(t, result));
         }
       })();
     } catch {
-      toast.error(t(translations, "setup_submit_error"));
+      toast.error(t("setup_submit_error"));
     } finally {
       submitting.current = false;
     }
@@ -72,7 +72,7 @@ export function useBrokerRebateForm(
 
   return {
     form,
-    translations,
+    t,
     submit,
     isSubmitting: form.formState.isSubmitting,
     submitted,

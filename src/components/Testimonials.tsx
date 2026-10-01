@@ -11,13 +11,13 @@ import { fadeIn, opacityAnimation } from '@/lib/motions';
 import { Marquee } from './ui/Marquee';
 
 import InViewContainer from './InViewContainer';
-import { Translations, useTranslation } from '@/providers/translations';
+import { useTranslation } from '@/providers/translations';
 
 const Testimonials = () => {
   const { resolvedTheme } = useTheme();
   const { title, items } = testimonials;
   const [clonedTestimonials, setClonedTestimonials] = useState<typeof items>([]);
-  const _t:Translations=useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const clonedTestimonialsContent = Array.from(items);
@@ -36,7 +36,7 @@ const Testimonials = () => {
         variants={fadeIn({ direction: "up", delay: 0.25, duration: 1, value: 25, ease: "easeInOut" })}
         className="max-w-[920px] mx-auto section-title leading-[115%]"
       >
-        {_t[title]||title}
+        {t(title)}
       </motion.h3>
       <motion.div
         variants={opacityAnimation({ delay: 0.5, duration: 1.25 })}

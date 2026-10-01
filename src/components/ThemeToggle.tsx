@@ -5,23 +5,12 @@ import { useTheme } from "next-themes";
 import { FiMoon, FiSun } from "react-icons/fi";
 import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
-import { useTranslation } from '@/providers/translations';
-
-interface NavbarTranslations {
-  [key: string]: string;
-  dark: string;
-  light: string;
-}
-
-interface Translations {
-  navbar: NavbarTranslations;
-}
+import { useTranslation } from "@/providers/translations";
 
 const ThemeToggle = () => {
   const { setTheme, resolvedTheme } = useTheme()
   const mounted = useMounted()
-  const _t = useTranslation() as Translations;
-  const navbar = _t.navbar;
+  const { t } = useTranslation("navbar");
 
   const handleToggle = (): void => {
     setTheme(resolvedTheme === "light" ? "dark" : "light");
@@ -50,7 +39,7 @@ const ThemeToggle = () => {
           ) : (
             <FiSun className="relative z-10 text-lg md:text-sm" />
           )}
-          <span className="relative z-10 text-base font-bold capitalize">{navbar[mode]}</span>
+          <span className="relative z-10 text-base font-bold capitalize">{t(mode)}</span>
         </button>
       ))}
       <div className={cn("absolute inset-0 z-0 flex", justifyContent)}>

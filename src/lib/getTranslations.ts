@@ -1,31 +1,40 @@
 import { BASE_URL } from "@/constants";
+import logger from "@/lib/logger";
+import { withTranslationContext, type TranslationContextInfo } from "@/lib/translations";
 
-export const getTranslations = async (locale: string, zone: string | null,key:string,section:string) => {
+const log = logger.child("lib/getTranslations");
+
+export const getTranslations = async (locale: string, zone: string | null,key:string,section:string, context: TranslationContextInfo = {}) => {
     const url = new URL(`${BASE_URL}/locale_resources`);
   
     url.searchParams.append("key[eq]", key);
     url.searchParams.append("lang[eq]", locale);
     if (zone) url.searchParams.append("zone[eq]", zone);
-    section.includes(",") ? url.searchParams.append("section[in]", section) : url.searchParams.append("section[eq]", section);
+    url.searchParams.append(section.includes(",") ? "section[in]" : "section[eq]", section);
 
-   
-    console.log("lib/getTransdlations(0->url~~~~~~~~~~~~~~~~",url.toString());
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const diagnosticContext = { resource: key, locale, zone, ...context };
+    try {
+      const res = await fetch(url.toString(), { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch translations: ${res.status} ${res.statusText}`);
+      }
 
-    //{ next: { revalidate: 7200 } }
-  
-    if (!res.ok) {
-      throw new Error(`Failed to fetch translations: ${res.statusText}`);
+      const data = await res.json();
+      const value = data?.data;
+      if (data?.success === false || !value || typeof value !== "object" || Array.isArray(value)) {
+        throw new Error("Translation response is missing or malformed.");
+      }
+
+      return withTranslationContext(value, diagnosticContext);
+    } catch (error) {
+      log.error("Error fetching translations", {
+        event: "translations_fetch_failed",
+        description: "The backend could not provide the requested translation resource.",
+        ...diagnosticContext,
+        section,
+        url: url.toString(),
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
-  
-    const data = await res.json();
-
-  
-    // Check if data.value is null and throw an error if so
-    const value = data?.data;
-    if (value === null) {
-      throw new Error("Translation value is null.");
-    }
-  
-    return value;  // Return the value if it's valid
   };

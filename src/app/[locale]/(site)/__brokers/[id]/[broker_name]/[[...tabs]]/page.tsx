@@ -3,6 +3,8 @@ import { BrokerCard } from "./BrokerCard";
 import { BrokerProfile } from "./BrokerProfile";
 import LocalizedLink from "@/components/LocalizedLink";
 import { getTranslations } from "@/lib/getTranslations";
+import { headers } from "next/headers";
+import { createTranslator } from "@/lib/createTranslator";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { GeneralInformation } from "./GeneralInformation";
@@ -17,10 +19,12 @@ export default async function TabPage({params}:{params:Promise<{id:string,broker
     const brokerTab = resolvedParams.tabs?.[0] || 'overview';
     const locale = resolvedParams.locale;
 
-    const translations = (await getTranslations(locale,'zone','broker_page','server')).server;
+    const page = (await headers()).get("x-pathname") ?? `/${locale}/brokers/${brokerId}/${broker_name}`;
+    const translations = (await getTranslations(locale,'zone','broker_page','server', { page })).server;
     
  
   const tabLabels = translations['tabs'] as Record<string,string> ;
+  const t = createTranslator(tabLabels);
   const tabKeys = translations['tabs-keys'] as Record<string,string>;
   
   console.log(translations);
@@ -66,7 +70,7 @@ export default async function TabPage({params}:{params:Promise<{id:string,broker
                                     : "border-transparent text-black hover:text-gray-600"
                             )}
                         >
-                            {tabLabels[tab_key]}
+                            {t(tab_key)}
                             {tab_key === 'users-reviews' && (
                                 <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">
                                     42

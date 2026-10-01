@@ -3,10 +3,9 @@
 import { useEffect, useRef } from "react";
 import { CircleCheck } from "lucide-react";
 import { useTranslation } from "@/providers/translations";
-import { t } from "./translations";
 
 export default function BrokerRebateSuccess() {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +25,7 @@ export default function BrokerRebateSuccess() {
         aria-hidden="true"
       />
       <p className="max-w-xl text-lg font-semibold leading-relaxed [overflow-wrap:anywhere] sm:text-xl">
-        {t(translations, "setup_submit_confirmation")}
+        {t("setup_submit_confirmation")}
       </p>
     </div>
   );

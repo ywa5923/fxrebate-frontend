@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/providers/translations";
 import type { SetupAccountType } from "./setupFormData";
 import type { SetupFormValues } from "./setupFormSchema";
-import { t } from "./translations";
 
 const selectFields = [
   { name: "accountType", label: "setup_field_account_type", placeholder: "setup_select_account_type" },
@@ -18,7 +17,7 @@ const selectFields = [
 ] as const;
 
 export function BrokerRebateAccountFields({ accountTypes }: { accountTypes: SetupAccountType[] }) {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   const form = useFormContext<SetupFormValues>();
   const accountName = useWatch({ control: form.control, name: "accountType" });
   const selectedAccount = accountTypes.find((account) => account.account_type_name === accountName);
@@ -31,7 +30,7 @@ export function BrokerRebateAccountFields({ accountTypes }: { accountTypes: Setu
   return (
     <div className="flex flex-col gap-6">
       {accountTypes.length === 0 && (
-        <p role="status" className="text-sm">{t(translations, "setup_service_unavailable")}</p>
+        <p role="status" className="text-sm">{t("setup_service_unavailable")}</p>
       )}
       {selectFields.map((config) => (
         <FormField
@@ -41,7 +40,7 @@ export function BrokerRebateAccountFields({ accountTypes }: { accountTypes: Setu
           render={({ field }) => (
             <FormItem className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,656px)] md:items-start md:gap-4">
               <FormLabel className="text-base font-medium text-[#0c110f]/80 dark:text-white/80 md:pt-4">
-                {t(translations, config.label)}
+                {t(config.label)}
               </FormLabel>
               <div className="flex min-w-0 flex-col gap-3">
                 <Select
@@ -62,7 +61,7 @@ export function BrokerRebateAccountFields({ accountTypes }: { accountTypes: Setu
                       onBlur={field.onBlur}
                       className="w-full min-w-0 border-[#0c110f]/25 bg-transparent px-4 text-base text-[#0c110f] shadow-none data-[size=default]:h-12 data-[placeholder]:text-[#0c110f]/60 dark:border-white/25 dark:bg-transparent dark:text-white dark:data-[placeholder]:text-white/60 dark:hover:bg-transparent [&_[data-slot=select-value]]:min-w-0"
                     >
-                      <SelectValue placeholder={t(translations, config.placeholder)} />
+                      <SelectValue placeholder={t(config.placeholder)} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="w-[var(--radix-select-trigger-width)] border-[#0c110f]/15 bg-white text-[#0c110f] dark:border-white/25 dark:bg-[#202221] dark:text-white">
@@ -87,7 +86,7 @@ const detailFields = [
 ] as const;
 
 export function BrokerRebateAccountDetails({ brokerName, transfer = false }: { brokerName: string; transfer?: boolean }) {
-  const translations = useTranslation();
+  const { t } = useTranslation();
   const { control } = useFormContext<SetupFormValues>();
 
   return (
@@ -100,14 +99,14 @@ export function BrokerRebateAccountDetails({ brokerName, transfer = false }: { b
           render={({ field }) => (
             <FormItem className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,656px)] md:items-start md:gap-4">
               <FormLabel className="text-base font-medium text-[#0c110f]/80 dark:text-white/80 md:pt-4">
-                {t(translations, config.label)}
+                {t(config.label)}
               </FormLabel>
               <div className={cn("flex min-w-0 flex-col gap-6", transfer ? "md:gap-3" : "md:gap-8")}>
                 <div>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder={t(translations, config.placeholder)}
+                      placeholder={t(config.placeholder)}
                       className="h-12 border-[#0c110f]/25 bg-transparent px-4 text-base text-[#0c110f] placeholder:text-[#0c110f]/60 dark:border-white/25 dark:bg-transparent dark:text-white dark:placeholder:text-white/60"
                     />
                   </FormControl>
@@ -131,7 +130,7 @@ export function BrokerRebateAccountDetails({ brokerName, transfer = false }: { b
                             />
                           </FormControl>
                           <FormLabel className="text-sm leading-normal font-medium text-[#0c110f]/80 dark:text-white/80">
-                            {t(translations, "setup_authorize_label").replaceAll("{broker}", brokerName)}
+                            {t("setup_authorize_label", { params: { broker: brokerName } })}
                           </FormLabel>
                         </div>
                         <FormMessage />
