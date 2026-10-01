@@ -1,4 +1,4 @@
-import type { Translator } from "@/lib/createTranslator";
+import type { Translator } from "@/lib/translations";
 
 export function tSubmitError(
   t: Translator,

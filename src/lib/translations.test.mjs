@@ -22,8 +22,7 @@ function loadModule(filename, dependencies) {
 const logs = [];
 const logger = { default: { child: (scope) => ({ error: (message, meta) => logs.push({ scope, message, meta }) }) } };
 const helpers = loadModule("./translations.ts", { "./logger": logger });
-const { t, prepareTranslations, withTranslationContext } = helpers;
-const { createTranslator } = loadModule("./createTranslator.ts", { "./translations": helpers });
+const { t, prepareTranslations, withTranslationContext, createTranslator } = helpers;
 beforeEach(() => { logs.length = 0; });
 
 test("reads plain translations without changing their spacing", () => {

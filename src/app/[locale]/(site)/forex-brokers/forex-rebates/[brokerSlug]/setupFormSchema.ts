@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Translator } from "@/lib/createTranslator";
+import type { Translator } from "@/lib/translations";
 import type { SetupAccountType } from "./setupFormData";
 
 export function createSetupSchema(accountTypes: SetupAccountType[], translate?: Translator) {

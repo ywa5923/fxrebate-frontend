@@ -1,7 +1,7 @@
 import { ourPartners, ourPaymentMethods, testimonials } from "@/lib/content";
 import { fetchTranslations } from "@/lib/fetchTranslations";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
-import { createTranslator } from "@/lib/createTranslator";
+import { createTranslator } from "@/lib/translations";
 
 import Hero from "@/components/Hero";
 import InfiniteImageScroll from "@/components/InfiniteImageScroll";

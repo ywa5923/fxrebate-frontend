@@ -2,6 +2,13 @@ import logger from "./logger";
 
 export type TranslationParams = Readonly<Record<string, string | number>>;
 
+export type TranslateOptions = {
+  params?: TranslationParams;
+  fallback?: string;
+};
+
+export type Translator = (key: string, options?: TranslateOptions) => string;
+
 export type TranslationContextInfo = {
   page?: string;
   locale?: string;
@@ -122,4 +129,10 @@ export function t(
   return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (placeholder, name: string) => {
     return Object.hasOwn(params, name) ? String(params[name]) : placeholder;
   });
+}
+
+/** Bind the dictionary once so callers only provide a key and optional options. */
+export function createTranslator(translations: Readonly<Record<string, unknown>>): Translator {
+  return (key: string, options: TranslateOptions = {}) =>
+    t(translations, key, options.params, options);
 }

@@ -4,7 +4,7 @@ import { BrokerProfile } from "./BrokerProfile";
 import LocalizedLink from "@/components/LocalizedLink";
 import { getTranslations } from "@/lib/getTranslations";
 import { headers } from "next/headers";
-import { createTranslator } from "@/lib/createTranslator";
+import { createTranslator } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { GeneralInformation } from "./GeneralInformation";
