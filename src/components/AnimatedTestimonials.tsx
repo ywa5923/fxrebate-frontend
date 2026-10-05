@@ -22,6 +22,14 @@ type Testimonial = {
   videoSrc: string;
 };
 
+function getStableRotation(id: string): number {
+  let hash = 0;
+  for (let index = 0; index < id.length; index += 1) {
+    hash = (hash * 31 + id.charCodeAt(index)) | 0;
+  }
+  return (Math.abs(hash) % 21) - 10;
+}
+
 const AnimatedTestimonials = ({
   testimonials,
   autoplay = false,
@@ -47,15 +55,13 @@ const AnimatedTestimonials = ({
   };
 
   useEffect(() => {
-    if (autoplay) {
-      const interval = setInterval(handleNext, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [autoplay]);
+    if (!autoplay || testimonials.length === 0) return;
 
-  const randomRotateY = () => {
-    return Math.floor(Math.random() * 21) - 10;
-  };
+    const interval = setInterval(() => {
+      setActive((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [autoplay, testimonials.length]);
 
   if (!mounted) return null;
 
@@ -67,52 +73,56 @@ const AnimatedTestimonials = ({
           className="relative h-80 sm:h-[470px] w-full"
         >
           <AnimatePresence>
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{
-                  opacity: 0,
-                  scale: 0.9,
-                  z: -100,
-                  rotate: randomRotateY(),
-                }}
-                animate={{
-                  opacity: isActive(index) ? 1 : 0.7,
-                  scale: isActive(index)
-                    ? 1
-                    : width && width < 768
-                      ? 0.88
-                      : 0.95,
-                  z: isActive(index) ? 0 : -100,
-                  rotate: isActive(index) ? 0 : randomRotateY(),
-                  zIndex: isActive(index)
-                    ? 999
-                    : testimonials.length + 2 - index,
-                  y: isActive(index) ? [0, -80, 0] : 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.9,
-                  z: 100,
-                  rotate: randomRotateY(),
-                }}
-                transition={{
-                  duration: 0.4,
-                  ease: "easeInOut",
-                }}
-                className="absolute inset-0 origin-bottom"
-              >
-                <VideoDialog
-                  thumbnailSrc={testimonials[active].userImage}
-                  videoSrc={testimonials[active].videoSrc}
-                  thumbnailAlt={testimonials[active].name}
-                  animationStyle="top-in-bottom-out"
-                  containerClassName="h-80 sm:h-[470px]"
-                  wrapperClassName="h-full"
-                  imageClassName="h-full w-full rounded-3xl object-cover object-center"
-                />
-              </motion.div>
-            ))}
+            {testimonials.map((testimonial, index) => {
+              const rotation = getStableRotation(testimonial.id);
+
+              return (
+                <motion.div
+                  key={testimonial.id}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.9,
+                    z: -100,
+                    rotate: rotation,
+                  }}
+                  animate={{
+                    opacity: isActive(index) ? 1 : 0.7,
+                    scale: isActive(index)
+                      ? 1
+                      : width && width < 768
+                        ? 0.88
+                        : 0.95,
+                    z: isActive(index) ? 0 : -100,
+                    rotate: isActive(index) ? 0 : rotation,
+                    zIndex: isActive(index)
+                      ? 999
+                      : testimonials.length + 2 - index,
+                    y: isActive(index) ? [0, -80, 0] : 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.9,
+                    z: 100,
+                    rotate: rotation,
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    ease: "easeInOut",
+                  }}
+                  className="absolute inset-0 origin-bottom"
+                >
+                  <VideoDialog
+                    thumbnailSrc={testimonials[active].userImage}
+                    videoSrc={testimonials[active].videoSrc}
+                    thumbnailAlt={testimonials[active].name}
+                    animationStyle="top-in-bottom-out"
+                    containerClassName="h-80 sm:h-[470px]"
+                    wrapperClassName="h-full"
+                    imageClassName="h-full w-full rounded-3xl object-cover object-center"
+                  />
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </motion.div>
         <motion.div
