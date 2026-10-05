@@ -78,11 +78,5 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "typescript": "^5"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.2.10",
-      "@types/react-dom": "19.2.3"
-    }
   }
 }
