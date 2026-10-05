@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import LocalizedLink from "@/components/LocalizedLink";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Search, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Pagination from "@/components/Pagination";
 import { useTranslation } from "@/providers/translations";
+import FilterPanel from "@/components/FilterPanel";
 
 import BrokerRebateCard from "./BrokerRebateCard";
 import { SITE_BROKER_TYPES } from "@/constants";
@@ -56,7 +57,11 @@ const CATEGORY_TABS = [
 ] as const;
 
 export default function ForexRebatesClient(props: Props) {
-  return <ForexRebatesClientContent key={props.tradingName ?? ""} {...props} />;
+  return (
+    <Suspense fallback={null}>
+      <ForexRebatesClientContent key={props.tradingName ?? ""} {...props} />
+    </Suspense>
+  );
 }
 
 function ForexRebatesClientContent({
@@ -70,6 +75,7 @@ function ForexRebatesClientContent({
   const params = useParams();
   const { push } = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as string) || "en";
   const { t } = useTranslation();
   const [view, setView] = useState<ViewMode>("list");
@@ -99,9 +105,13 @@ function ForexRebatesClientContent({
     tradingName?: string | null;
     page?: string;
   } = {}) {
-    const nextParams = new URLSearchParams({
-      broker_type: overrides.brokerType ?? activeBrokerType,
-    });
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("broker_type", overrides.brokerType ?? activeBrokerType);
+    nextParams.delete("order_by");
+    nextParams.delete("order_direction");
+    nextParams.delete("page");
+    nextParams.delete("per_page");
+    nextParams.delete("trading_name");
 
     const sort = overrides.sort ?? activeSort;
     if (sort === "asc" || sort === "desc") {
@@ -278,12 +288,7 @@ function ForexRebatesClientContent({
                 className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#0c110f]/50 dark:placeholder:text-gray-500"
               />
             </label>
-            <button
-              type="submit"
-              className="h-11 shrink-0 rounded bg-[#0c110f] px-4 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
-            >
-              {t("show_filter")}
-            </button>
+            <FilterPanel triggerLabel={t("show_filter")} />
           </form>
 
           <div className="flex flex-wrap items-center gap-2">

@@ -1,5 +1,5 @@
 import { AnimationProps } from "framer-motion";
-import { ReactNode } from "react";
+
 
 export interface ImageSlider {
   id: string;

@@ -1,0 +1,282 @@
+{
+  "title": "Filters",
+  "clearLabel": "Clear all",
+  "emptyOptionLabel": "Any",
+  "advancedTitle": "Advanced Filters",
+  "primarySectionId": "main",
+  "advancedSectionId": "advanced",
+  "sections": [
+    {
+      "id": "main",
+      "fields": [
+        {
+          "id": "country",
+          "label": "Country",
+          "queryParam": "filter_country",
+          "type": "select",
+          "placeholder": "Select country",
+          "options": [
+            { "label": "United States", "value": "us" },
+            { "label": "United Kingdom", "value": "gb" },
+            { "label": "Cyprus", "value": "cy" },
+            { "label": "Germany", "value": "de" },
+            { "label": "Australia", "value": "au" },
+            { "label": "Singapore", "value": "sg" }
+          ]
+        },
+        {
+          "id": "client-popularity",
+          "label": "Client Popularity",
+          "queryParam": "filter_client_popularity",
+          "type": "rating-group",
+          "options": [
+            { "label": "5.0", "value": "5", "stars": 5 },
+            { "label": "Between 4.0 - 5.0", "value": "4-5", "stars": 4 },
+            { "label": "Between 3.0 - 4.0", "value": "3-4", "stars": 3 },
+            { "label": "Between 2.0 - 3.0", "value": "2-3", "stars": 2 },
+            { "label": "Between 1.0 - 2.0", "value": "1-2", "stars": 1 }
+          ]
+        },
+        {
+          "id": "regulator-rating",
+          "label": "Regulator Rating",
+          "queryParam": "filter_regulator_rating",
+          "type": "rating-group",
+          "options": [
+            { "label": "5.0", "value": "5", "stars": 5 },
+            { "label": "Between 4.0 - 5.0", "value": "4-5", "stars": 4 },
+            { "label": "Between 3.0 - 4.0", "value": "3-4", "stars": 3 },
+            { "label": "Between 2.0 - 3.0", "value": "2-3", "stars": 2 },
+            { "label": "Between 1.0 - 2.0", "value": "1-2", "stars": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "fields": [
+        {
+          "id": "headquarters",
+          "label": "Headquarters",
+          "queryParam": "filter_headquarters",
+          "type": "multi-select",
+          "placeholder": "Select headquarters",
+          "options": [
+            { "label": "United Kingdom", "value": "gb" },
+            { "label": "Cyprus", "value": "cy" },
+            { "label": "Australia", "value": "au" },
+            { "label": "United States", "value": "us" },
+            { "label": "Switzerland", "value": "ch" }
+          ]
+        },
+        {
+          "id": "offices",
+          "label": "Offices",
+          "queryParam": "filter_offices",
+          "type": "multi-select",
+          "placeholder": "Select offices",
+          "options": [
+            { "label": "London", "value": "london" },
+            { "label": "Limassol", "value": "limassol" },
+            { "label": "Sydney", "value": "sydney" },
+            { "label": "New York", "value": "new-york" },
+            { "label": "Singapore", "value": "singapore" }
+          ]
+        },
+        {
+          "id": "regulatory-authorities",
+          "label": "Regulatory Authorities",
+          "queryParam": "filter_regulatory_authority",
+          "type": "select",
+          "placeholder": "Select authority",
+          "options": [
+            { "label": "FCA", "value": "fca" },
+            { "label": "CySEC", "value": "cysec" },
+            { "label": "ASIC", "value": "asic" },
+            { "label": "NFA", "value": "nfa" },
+            { "label": "FINMA", "value": "finma" }
+          ]
+        },
+        {
+          "id": "client-types",
+          "label": "Clients",
+          "queryParam": "filter_clients",
+          "type": "checkbox-group",
+          "options": [
+            { "label": "USA Client", "value": "usa" },
+            { "label": "European Clients", "value": "europe" },
+            { "label": "Japanese Clients", "value": "japan" },
+            { "label": "Canadian Clients", "value": "canada" }
+          ]
+        },
+        {
+          "id": "restricted-countries",
+          "label": "Restricted Countries",
+          "queryParam": "filter_restricted_countries",
+          "type": "multi-select",
+          "placeholder": "Select countries",
+          "options": [
+            { "label": "United States", "value": "us" },
+            { "label": "Canada", "value": "ca" },
+            { "label": "Japan", "value": "jp" },
+            { "label": "Australia", "value": "au" }
+          ]
+        },
+        {
+          "id": "available-countries",
+          "label": "Available Countries",
+          "queryParam": "filter_available_countries",
+          "type": "multi-select",
+          "placeholder": "Select countries",
+          "options": [
+            { "label": "United States", "value": "us" },
+            { "label": "Canada", "value": "ca" },
+            { "label": "Japan", "value": "jp" },
+            { "label": "Australia", "value": "au" }
+          ]
+        },
+        {
+          "id": "execution-options",
+          "label": "Execution Options",
+          "queryParam": "filter_execution_options",
+          "type": "select",
+          "placeholder": "Select execution",
+          "options": [
+            { "label": "Market Execution", "value": "market" },
+            { "label": "Instant Execution", "value": "instant" },
+            { "label": "Both", "value": "both" }
+          ]
+        },
+        {
+          "id": "trading-platforms",
+          "label": "Trading Platforms",
+          "queryParam": "filter_trading_platforms",
+          "type": "multi-select",
+          "placeholder": "Select platforms",
+          "options": [
+            { "label": "MetaTrader 4", "value": "mt4" },
+            { "label": "MetaTrader 5", "value": "mt5" },
+            { "label": "cTrader", "value": "ctrader" },
+            { "label": "TradingView", "value": "tradingview" }
+          ]
+        },
+        {
+          "id": "mobile-support",
+          "label": "Mobile Support",
+          "queryParam": "filter_mobile_support",
+          "type": "select",
+          "placeholder": "Select support",
+          "options": [
+            { "label": "iOS and Android", "value": "ios-android" },
+            { "label": "iOS", "value": "ios" },
+            { "label": "Android", "value": "android" },
+            { "label": "No", "value": "no" }
+          ]
+        },
+        {
+          "id": "instruments",
+          "label": "Instruments",
+          "queryParam": "filter_instruments",
+          "type": "multi-select",
+          "placeholder": "Select instruments",
+          "options": [
+            { "label": "Forex", "value": "forex" },
+            { "label": "Indices", "value": "indices" },
+            { "label": "Commodities", "value": "commodities" },
+            { "label": "Shares", "value": "shares" },
+            { "label": "Cryptocurrency", "value": "cryptocurrency" }
+          ]
+        },
+        {
+          "id": "spread-types",
+          "label": "Spread Types",
+          "queryParam": "filter_spread_types",
+          "type": "checkbox-group",
+          "options": [
+            { "label": "Fixed Spread", "value": "fixed" },
+            { "label": "Variable Spread", "value": "variable" }
+          ]
+        },
+        {
+          "id": "trading-account",
+          "label": "Trading Account",
+          "queryParam": "filter_trading_account",
+          "type": "select",
+          "placeholder": "Select account type",
+          "options": [
+            { "label": "Standard", "value": "standard" },
+            { "label": "Raw Spread", "value": "raw" },
+            { "label": "ECN", "value": "ecn" },
+            { "label": "Islamic", "value": "islamic" }
+          ]
+        },
+        {
+          "id": "account-currency",
+          "label": "Account Currency",
+          "queryParam": "filter_account_currency",
+          "type": "select",
+          "placeholder": "Select currency",
+          "options": [
+            { "label": "USD", "value": "usd" },
+            { "label": "EUR", "value": "eur" },
+            { "label": "GBP", "value": "gbp" },
+            { "label": "AUD", "value": "aud" }
+          ]
+        },
+        {
+          "id": "withdrawal-methods",
+          "label": "Withdrawal Methods",
+          "queryParam": "filter_withdrawal_methods",
+          "type": "multi-select",
+          "placeholder": "Select methods",
+          "options": [
+            { "label": "Bank Transfer", "value": "bank-transfer" },
+            { "label": "Visa / Mastercard", "value": "card" },
+            { "label": "Skrill", "value": "skrill" },
+            { "label": "Neteller", "value": "neteller" },
+            { "label": "Crypto Wallet", "value": "crypto" }
+          ]
+        },
+        {
+          "id": "fund-manager-features",
+          "label": "Fund Managers Features",
+          "queryParam": "filter_fund_manager_features",
+          "type": "checkbox-group",
+          "options": [
+            { "label": "Managed Accounts Featured", "value": "managed-accounts" },
+            { "label": "MAMM/PAMM Platform Option", "value": "mamm-pamm" },
+            { "label": "MAMM/PAMM Leaderboard", "value": "leaderboard" }
+          ]
+        },
+        {
+          "id": "support-options",
+          "label": "Support Options",
+          "queryParam": "filter_support_options",
+          "type": "select",
+          "placeholder": "Select support option",
+          "options": [
+            { "label": "24/7 Support", "value": "24-7" },
+            { "label": "Live Chat", "value": "live-chat" },
+            { "label": "Email Support", "value": "email" },
+            { "label": "Phone Support", "value": "phone" }
+          ]
+        },
+        {
+          "id": "support-languages",
+          "label": "Support Languages",
+          "queryParam": "filter_support_languages",
+          "type": "multi-select",
+          "placeholder": "Select languages",
+          "options": [
+            { "label": "English", "value": "en" },
+            { "label": "French", "value": "fr" },
+            { "label": "German", "value": "de" },
+            { "label": "Greek", "value": "el" },
+            { "label": "Romanian", "value": "ro" },
+            { "label": "Spanish", "value": "es" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -31,6 +31,7 @@ type Props = {
     order_by?: string;
     order_direction?: string;
     broker_type?: string;
+    [key: string]: string | string[] | undefined;
   }>;
 };
 
@@ -67,6 +68,15 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   }
   if (tradingName) {
     query.set("trading_name", tradingName);
+  }
+  for (const [key, value] of Object.entries(resolvedSearchParams)) {
+    if (!key.startsWith("filter_")) continue;
+    const values = Array.isArray(value) ? value : [value];
+    for (const filterValue of values) {
+      if (typeof filterValue === "string" && filterValue.trim()) {
+        query.append(key, filterValue);
+      }
+    }
   }
 
   const url = `/site/highest-rebates?${query.toString()}`;

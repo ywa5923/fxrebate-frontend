@@ -13,12 +13,14 @@ import { cn } from '@/lib/utils'
 import { navItems } from '@/lib/content'
 import { useMounted, useWindowSize } from '@/lib/hooks'
 import { useTranslation } from "@/providers/translations";
+import { ForexBrokersMenu } from './ForexBrokersMenu';
+import type { BrokerShortList } from './useBrokerShortList';
 
 interface ICustomDesktopMenuBar {
-  visible: boolean;
+  brokerList: BrokerShortList;
 }
 
-export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
+export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
   const { locale } = useParams<{ locale: string }>();
   const { t } = useTranslation("navbar");
   const { resolvedTheme } = useTheme();
@@ -33,41 +35,46 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
   const [isSubMenuRepositioned, setIsSubMenuRepositioned] = useState<Record<string | number, boolean>>({});
 
   const handleOpenMenu = (menuId: string | number) => {
+    if (openedMenu !== menuId) setOpenedSubMenu(null);
     setOpenedMenu(menuId);
-    document.addEventListener('mousedown', handleClickOutside);
   }
 
   const handleCloseMenu = () => {
     setOpenedMenu(null);
-    document.removeEventListener('mousedown', handleClickOutside);
+    setOpenedSubMenu(null);
   }
 
   const handleOpenSubMenu = (subMenuId: string | number) => {
     setOpenedSubMenu(subMenuId);
-    document.addEventListener('mousedown', handleClickOutside);
   }
 
   const handleCloseSubMenu = () => {
     setOpenedSubMenu(null);
-    document.removeEventListener('mousedown', handleClickOutside);
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (!target.closest(`[data-menu-id="${openedMenu}"]`) && !target.closest(`[data-menu-item]`) && !target.closest(`[data-menu-button]`)) {
-      setOpenedMenu(null);
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-  };
-
   useEffect(() => {
-    setOpenedMenu(null);
-    setOpenedSubMenu(null);
+    if (openedMenu === null) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target;
+      if (target instanceof Element && !target.closest('[data-menu-item], [data-menu-button]')) {
+        setOpenedMenu(null);
+        setOpenedSubMenu(null);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenedMenu(null);
+        setOpenedSubMenu(null);
+      }
+    };
 
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
-  }, [visible]);
+  }, [openedMenu]);
 
   const adjustSubMenuPosition = (subMenuId: string | number) => {
     const submenu = submenuRefs.current[subMenuId];
@@ -137,8 +144,10 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
           ) : (
             <div className='relative'>
               <button
+                type="button"
                 onMouseEnter={() => handleOpenMenu(item.id)}
-                onClick={(e) => e.stopPropagation()}
+                onClick={() => handleOpenMenu(item.id)}
+                aria-expanded={openedMenu === item.id}
                 className={cn(
                   'hover:text-white hover:bg-green-700 px-2.5 py-1 rounded-sm transition-colors duration-200',
                   openedMenu === item.id ? "bg-green-700 text-white" : ""
@@ -153,13 +162,28 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0.5 }}
                   transition={{ duration: 0.25, type: "tween", ease: "easeInOut" }}
-                  className='hidden lg:block absolute top-14 z-50 w-max min-w-[12rem] rounded-md bg-white-500 dark:bg-dark-gray-100 p-2.5'
+                  className={cn(
+                    'hidden lg:block absolute top-14 z-50 w-max min-w-[12rem] rounded-md bg-white-500 dark:bg-dark-gray-100 p-2.5',
+                    item.name === 'brokers' && 'min-w-[214px] bg-[#fff] p-6 text-[#0c110f] shadow-[0_4px_28px_rgba(196,196,196,0.35)] dark:bg-[#222] dark:text-white dark:shadow-[0_4px_28px_rgba(0,0,0,0.44)]',
+                  )}
                   onClick={(e) => e.stopPropagation()}
                   data-menu-item
                 >
+                  {item.name === 'brokers' && (
+                    <>
+                      <Image src="/assets/icons/brokers-menu-pointer.svg" alt="" width={16.4615} height={13.4685} className="absolute -top-[13.4685px] left-1/2 -translate-x-1/2" />
+                      <p className="mb-4 text-base font-bold">{t('brokers')}</p>
+                    </>
+                  )}
                   {item.subItems.map((subItem) => (
                     <div key={subItem.id}>
-                      {subItem.linksList ? (
+                      {subItem.brokerList ? (
+                        <ForexBrokersMenu
+                          list={brokerList}
+                          open={openedSubMenu === subItem.id}
+                          onOpenChange={(open) => setOpenedSubMenu(open ? subItem.id : null)}
+                        />
+                      ) : subItem.linksList ? (
                         <div className='relative' onMouseLeave={handleCloseSubMenu}>
                           <button
                             className={cn(
@@ -242,7 +266,10 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                         <LocalizedLink
                           routeKey={`/${locale}${subItem.href}`}
                           onNavigate={handleCloseMenu}
-                          className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
+                          className={cn(
+                            'w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white',
+                            item.name === 'brokers' && 'px-0 py-1 font-medium leading-[19px] dark:text-white/80',
+                          )}
                         >
                           {t(subItem.translationKey ?? subItem.name)}
                         </LocalizedLink>
@@ -251,7 +278,10 @@ export const CustomDesktopMenuBar = ({ visible }: ICustomDesktopMenuBar) => {
                           href={subItem.href || '#'}
                           target={subItem.external ? '_blank' : '_self'}
                           rel={subItem.external ? 'noopener noreferrer' : ''}
-                          className='w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white'
+                          className={cn(
+                            'w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white',
+                            item.name === 'brokers' && 'px-0 py-1 font-medium leading-[19px] dark:text-white/80',
+                          )}
                         >
                           {t(subItem.name)}
                         </Link>

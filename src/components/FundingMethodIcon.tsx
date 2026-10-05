@@ -80,6 +80,9 @@ import frillpay from "@/assets/funding_methods/frillpay.jpeg";
 import hwgc from "@/assets/funding_methods/hwgc.png";
 import alipay from "@/assets/funding_methods/alipay.jpeg";
 import bpay from "@/assets/funding_methods/bpay.png";
+import maya from "@/assets/funding_methods/maya.png";
+import qris from "@/assets/funding_methods/qris.png";
+import qrph from "@/assets/funding_methods/qrph.png";
 
 
 
@@ -168,6 +171,10 @@ const icons: Record<string, string> = {
   "HWGC": assetSrc(hwgc),
   "ALIPAY": assetSrc(alipay),
   "BPAY": assetSrc(bpay),
+  "MAYA": assetSrc(maya),
+  "QRIS": assetSrc(qris),
+  "QRPH":assetSrc(qrph)
+
 };
 
 type Props = {

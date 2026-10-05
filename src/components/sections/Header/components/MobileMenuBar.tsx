@@ -11,8 +11,10 @@ import { IoIosArrowDown } from 'react-icons/io'
 import { navItems } from '@/lib/content'
 import { useMounted } from '@/lib/hooks'
 import { cn } from '@/lib/utils'
+import { ForexBrokersMenu } from './ForexBrokersMenu'
+import type { BrokerShortList } from './useBrokerShortList'
 
-export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
+export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => void; brokerList: BrokerShortList }) => {
   const { locale } = useParams<{ locale: string }>();
   const { t } = useTranslation("navbar");
   const [selectedSubMenu, setSelectedSubMenu] = useState<number | string | null>(null);
@@ -66,7 +68,14 @@ export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
             <div className='w-full flex flex-col items-center justify-center gap-4 dark:bg-dark-brown-100 bg-white py-8 mt-6'>
               {item.subItems.map((subItem) => (
                 <div key={subItem.id} className="w-full flex flex-col items-center justify-center">
-                  {subItem.linksList ? (
+                  {subItem.brokerList ? (
+                    <ForexBrokersMenu
+                      mobile
+                      list={brokerList}
+                      open={selectedSubItem === subItem.id}
+                      onOpenChange={(open) => setSelectedSubItem(open ? subItem.id : null)}
+                    />
+                  ) : subItem.linksList ? (
                     <div className='w-full flex flex-col items-center justify-center'>
                       <button onClick={() => handleSubItemClick(subItem.id)} className='outline-none flex items-center gap-2 text-black/80 dark:text-white/80 text-base font-medium'>
                         {t(subItem.name)}
