@@ -1,4 +1,5 @@
 import { CircleDollarSign } from "lucide-react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import americanExpress from "@/assets/funding_methods/american-express.jpg";
@@ -174,7 +175,6 @@ const icons: Record<string, string> = {
   "MAYA": assetSrc(maya),
   "QRIS": assetSrc(qris),
   "QRPH":assetSrc(qrph)
-
 };
 
 type Props = {
@@ -205,9 +205,12 @@ export function FundingMethodIcon({
 
   return (
     <span className={cn(iconSlotClassName, className)}>
-      <img
+      <Image
         src={src}
         alt={code ?? ""}
+        width={72}
+        height={28}
+        sizes="72px"
         className="h-full w-full object-contain object-center"
         loading="lazy"
         decoding="async"
