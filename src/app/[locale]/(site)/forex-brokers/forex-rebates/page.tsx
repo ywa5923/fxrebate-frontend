@@ -7,6 +7,7 @@ import PageTranslationProvider from "@/providers/PageTranslationProvider";
 import type { HighestRebateBroker } from "@/types";
 import ForexRebatesClient from "./ForexRebatesClient";
 import { SITE_BROKER_TYPES } from "@/constants";
+import type { FilterConfig } from "@/components/FilterPanel";
 
 const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
 
@@ -84,7 +85,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   log.debug("Fetching highest rebates", { url });
 
   const [response, clientTranslations] = await Promise.all([
-    apiClient<HighestRebateBroker[]>(
+    apiClient<HighestRebateBroker[], FilterConfig>(
       url,
       UseTokenAuth.No,
       {
@@ -119,6 +120,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
     >
       <ForexRebatesClient
         brokers={response.data}
+        filtersConfig={response.filters_config}
         orderDirection={orderDirection}
         tradingName={tradingName}
         perPage={perPage}

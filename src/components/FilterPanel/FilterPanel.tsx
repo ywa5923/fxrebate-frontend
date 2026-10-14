@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, ListFilter, Star } from "lucide-react";
+import { ChevronDown, ListFilter, Star, X } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,7 +20,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import filterConfigJson from "./filter-config.json";
+import { useFilterParams, valuesFromParams } from "./useFilterParams";
 
 export type FilterOption = {
   label: string;
@@ -48,29 +47,13 @@ export type FilterConfig = {
   sections: { id: string; fields: FilterField[] }[];
 };
 
-const filterConfig = filterConfigJson as FilterConfig;
 const selectTriggerClass =
   "h-12 w-full min-w-0 rounded-md border-[#0c110f]/15 bg-white px-3 text-sm font-normal dark:border-white/15 dark:bg-[#191c1b]";
 
 type FilterPanelProps = {
   triggerLabel: string;
-  config?: FilterConfig;
+  config: FilterConfig;
 };
-
-function selectedValues(value: string | null): string[] {
-  return value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
-}
-
-function valuesFromParams(
-  params: Pick<URLSearchParams, "getAll">,
-  queryParam: string,
-): string[] {
-  return params.getAll(queryParam).flatMap(selectedValues);
-}
-
-function serializeParams(params: URLSearchParams): string {
-  return params.toString().replace(/%2C/gi, ",");
-}
 
 function MultiSelectControl({
   field,
@@ -83,9 +66,7 @@ function MultiSelectControl({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const selectedLabels = field.options
-    .filter((option) => values.includes(option.value))
-    .map((option) => option.label);
+  const selectedOptions = field.options.filter((option) => values.includes(option.value));
 
   useEffect(() => {
     if (!open) return;
@@ -123,8 +104,8 @@ function MultiSelectControl({
         )}
       >
         <span className="min-w-0 truncate">
-          {selectedLabels.length > 0
-            ? selectedLabels.join(", ")
+          {selectedOptions.length > 0
+            ? selectedOptions.map((option) => option.label).join(", ")
             : field.placeholder ?? "Select options"}
         </span>
         <ChevronDown
@@ -152,24 +133,39 @@ function MultiSelectControl({
           ))}
         </div>
       )}
+      {selectedOptions.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-2" aria-label={field.label}>
+          {selectedOptions.map((option) => (
+            <li
+              key={option.value}
+              className="flex min-w-0 max-w-full items-center gap-1 rounded-md border border-[#1d885b] bg-[#1d885b]/10 py-0.5 pr-0.5 pl-2.5 text-xs text-[#171f1c] dark:border-[#4ade80] dark:bg-[#1d885b]/15 dark:text-green-200"
+            >
+              <span className="min-w-0 [overflow-wrap:anywhere]">{option.label}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0 rounded-sm text-[#166344] opacity-100 hover:bg-[#1d885b]/15 hover:text-[#171f1c] dark:text-green-200 dark:hover:bg-[#1d885b]/25 dark:hover:text-green-100"
+                aria-label={`Remove ${option.label}`}
+                title={`Remove ${option.label}`}
+                onClick={() => onToggle(option.value, false)}
+              >
+                <X className="size-3.5 stroke-[2.5]" aria-hidden="true" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
 export default function FilterPanel({
   triggerLabel,
-  config = filterConfig,
+  config,
 }: FilterPanelProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchString = searchParams.toString();
-  const latestSearchString = useRef(searchString);
+  const { searchParams, updateValue, toggleValue, clearValues } = useFilterParams();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    latestSearchString.current = searchString;
-  }, [searchString]);
 
   const fields = useMemo(
     () => config.sections.flatMap((section) => section.fields),
@@ -181,40 +177,8 @@ export default function FilterPanel({
     0,
   );
 
-  function updateUrl(queryParam: string, values: string[]) {
-    const nextParams = new URLSearchParams(latestSearchString.current);
-    const uniqueValues = [...new Set(values)];
-    if (uniqueValues.length > 0) {
-      nextParams.set(queryParam, uniqueValues.join(","));
-    } else {
-      nextParams.delete(queryParam);
-    }
-    nextParams.delete("page");
-
-    const query = serializeParams(nextParams);
-    latestSearchString.current = query;
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }
-
-  function toggleUrlValue(queryParam: string, value: string, checked: boolean) {
-    const latestParams = new URLSearchParams(latestSearchString.current);
-    const currentValues = valuesFromParams(latestParams, queryParam);
-    const nextValues = checked
-      ? currentValues.includes(value)
-        ? currentValues
-        : [...currentValues, value]
-      : currentValues.filter((item) => item !== value);
-    updateUrl(queryParam, nextValues);
-  }
-
   function clearFilters() {
-    const nextParams = new URLSearchParams(latestSearchString.current);
-    for (const field of fields) nextParams.delete(field.queryParam);
-    nextParams.delete("page");
-
-    const query = serializeParams(nextParams);
-    latestSearchString.current = query;
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    clearValues(fields.map((field) => field.queryParam));
   }
 
   function renderField(field: FilterField) {
@@ -225,7 +189,7 @@ export default function FilterPanel({
         <Select
           value={values[0] ?? ""}
           onValueChange={(value) =>
-            updateUrl(field.queryParam, value === "__clear__" ? [] : [value])
+            updateValue(field.queryParam, value === "__clear__" ? [] : [value])
           }
         >
           <SelectTrigger className={selectTriggerClass} aria-label={field.label}>
@@ -249,7 +213,7 @@ export default function FilterPanel({
           field={field}
           values={values}
           onToggle={(value, checked) =>
-            toggleUrlValue(field.queryParam, value, checked)
+            toggleValue(field.queryParam, value, checked)
           }
         />
       );
@@ -267,7 +231,7 @@ export default function FilterPanel({
               <Checkbox
                 checked={checked}
                 onCheckedChange={(nextChecked) => {
-                  toggleUrlValue(field.queryParam, option.value, nextChecked === true);
+                  toggleValue(field.queryParam, option.value, nextChecked === true);
                 }}
               />
               {field.type === "rating-group" && (

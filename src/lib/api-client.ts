@@ -7,11 +7,11 @@ import { XFormDefinition } from "@/types";
 import { ErrorMode, UseTokenAuth } from "./enums";
 
 
-export interface ApiClientResponse<T> extends ServerJsonResponse<T>{
+export interface ApiClientResponse<T, TFilters = FTFilters<T>> extends ServerJsonResponse<T, TFilters>{
   status?: number;
 }
 
-export interface ServerJsonResponse<T> {
+export interface ServerJsonResponse<T, TFilters = FTFilters<T>> {
   success: boolean;
   data?: T;
   message?: string;
@@ -19,16 +19,16 @@ export interface ServerJsonResponse<T> {
   errors?: Record<string, string[]>;
   pagination?: FTPagination;
   table_columns_config?: FTColumnsConfig<T>;
-  filters_config?: FTFilters<T>;
+  filters_config?: TFilters;
   form_config?: XFormDefinition;
 }
 
-export async function apiClient<T>(
+export async function apiClient<T, TFilters = FTFilters<T>>(
   url: string,
   useCookieToken: UseTokenAuth | boolean = UseTokenAuth.No,
   options: RequestInit = {},
   errorMode: ErrorMode = ErrorMode.Return
-): Promise<ApiClientResponse<T>> {
+): Promise<ApiClientResponse<T, TFilters>> {
   
   const log = logger.child("lib/api-client/apiClient");
   const requestUrl = `${BASE_URL}${url}`;
@@ -52,7 +52,7 @@ export async function apiClient<T>(
     const status = response.status;
 
     // Try parse JSON safely
-    const serverJsonResponse: ServerJsonResponse<T>|null = await response.json().catch((err) => {
+    const serverJsonResponse: ServerJsonResponse<T, TFilters>|null = await response.json().catch((err) => {
       log.error("Invalid JSON response", { url: requestUrl, status, error: err });
       return null;
     });
@@ -80,7 +80,7 @@ export async function apiClient<T>(
     const method = (options.method || 'GET').toUpperCase();
    
 
-    const baseResponse: ApiClientResponse<T> = {
+    const baseResponse: ApiClientResponse<T, TFilters> = {
       success: true,
       data: (serverJsonResponse?.data as T),
       status,
@@ -104,7 +104,6 @@ export async function apiClient<T>(
     return { success: false, message, status: 500 };
   }
 }
-
 
 
 

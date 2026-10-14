@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Pagination from "@/components/Pagination";
 import { useTranslation } from "@/providers/translations";
-import FilterPanel from "@/components/FilterPanel";
+import FilterPanel, { type FilterConfig } from "@/components/FilterPanel";
 
 import BrokerRebateCard from "./BrokerRebateCard";
 import { SITE_BROKER_TYPES } from "@/constants";
@@ -28,6 +28,7 @@ type SortMode = OrderDirection | "default";
 
 type Props = {
   brokers: HighestRebateBroker[];
+  filtersConfig?: FilterConfig | null;
   orderDirection: OrderDirection | null;
   tradingName?: string;
   perPage?: string;
@@ -66,6 +67,7 @@ export default function ForexRebatesClient(props: Props) {
 
 function ForexRebatesClientContent({
   brokers,
+  filtersConfig,
   orderDirection,
   tradingName,
   perPage = "15",
@@ -288,7 +290,9 @@ function ForexRebatesClientContent({
                 className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-[#0c110f]/50 dark:placeholder:text-gray-500"
               />
             </label>
-            <FilterPanel triggerLabel={t("show_filter")} />
+            {filtersConfig && (
+              <FilterPanel triggerLabel={t("show_filter")} config={filtersConfig} />
+            )}
           </form>
 
           <div className="flex flex-wrap items-center gap-2">
