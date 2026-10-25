@@ -28,23 +28,48 @@ import logger from "@/lib/logger";
 
 
 //==============Make default values for the form==============//
+/** Select options use "1"/"0"; API may send true/false/1/0/"1"/"0". */
+function toSelectValue(value: unknown): string {
+  if (value === true || value === 1 || value === "1") return "1";
+  if (value === false || value === 0 || value === "0") return "0";
+  if (value == null) return "";
+  return String(value);
+}
+
 //Generate default values for empty form or form with data
 function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefinition, rowData: T): Record<string, any> {
   const defaultData: Record<string, any> = {};
   Object.entries(formConfig.sections ?? {}).forEach(([sectionKey, section]: [string, XFormSection]) => {
-    
+
     const sectionDefaultValue: Record<string, any> = {};
     Object.entries(section.fields ?? {}).forEach(([fieldKey, f]: [string, XFormField]) => {
-      
+
       let fieldValue = null;
-      if(Object.keys(rowData).length > 0){
-        fieldValue = (f.type =='select' && rowData[fieldKey] !== undefined && rowData[fieldKey] !== null)? (rowData[fieldKey]).toString(): rowData[fieldKey];
-      }else{
+      if (Object.keys(rowData).length > 0) {
+        if (f.type === "select") {
+          fieldValue = toSelectValue(rowData[fieldKey]);
+        } else if (f.type === "array_field" || f.type === "array_fields") {
+          //for array_field and array_fields, the rowData[fieldKey] is an array of objects
+
+          const rows = Array.isArray(rowData[fieldKey]) ? rowData[fieldKey] : [];
+          fieldValue = rows.map((row: Record<string, any>) => {
+            const item = { ...row };
+            Object.entries(f.fields ?? {}).forEach(([subKey, subField]) => {
+              if (subField.type === "select") {
+                item[subKey] = toSelectValue(item[subKey]);
+              }
+            });
+            return item;
+          });
+        } else {
+          fieldValue = rowData[fieldKey];
+        }
+      } else {
         if (f.type === 'checkbox' || f.type === 'boolean') fieldValue = false;
-      else if (f.type === 'number') fieldValue = '';
-      else if (f.type === 'multiselect') fieldValue = [];
-      else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = Array.isArray(fieldValue) ? fieldValue : [];
-      else fieldValue = '';
+        else if (f.type === 'number') fieldValue = '';
+        else if (f.type === 'multiselect') fieldValue = [];
+        else if (f.type === 'array_field' || f.type === 'array_fields') fieldValue = [];
+        else fieldValue = '';
       }
       sectionDefaultValue[fieldKey] = fieldValue ;
     });
@@ -64,7 +89,7 @@ type XFormProps = {
   mode?: 'edit' | 'create';
 }
 
-export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps) 
+export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps)
 {
 
   const router = useRouter();
@@ -74,24 +99,24 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
   let [isLoading, setIsLoading] = useState(false);
   let [formConfigState, setFormConfigState] = useState<XFormDefinition | null>(null);
 
- 
+
   useEffect(() => {
- 
+
     setIsLoading(true);
     const fetchItem = async () => {
       try {
         if(mode === 'create' ){
-         
+
           let formDefUrl = formConfigApiUrl ?? resourceApiUrl + "/form-config";
           thisLogger.debug("fetching form configuration", {formDefUrl: formDefUrl});
           const response = await apiClient<XFormDefinition>(formDefUrl, true);
-          
+
           if(response.success && response.data){
             setFormConfigState(response.data);
           } else {
             thisLogger.error("Failed to fetch form configuration", {formDefUrl: formDefUrl, message: response.message});
             toast.error("Failed to fetch form configuration");
-            
+
           }
         }
 
@@ -111,7 +136,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
             toast.error("Failed to fetch item");
           }
         }
-       
+
       } catch (err) {
         thisLogger.error("Failed to fetch item", {error: err});
         toast.error("Failed to load form data");
@@ -119,7 +144,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
         setIsLoading(false);
       }
     };
-  
+
     fetchItem();
   }, []);
   //resourceId, mode,getItemUrl,formConfig,resourceApiUrl
@@ -134,7 +159,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
   }else{
     formSchema = z.object({}) as z.ZodSchema<any>;
   }
-  
+
   //==============Inspect the form schema==============
   //console.log(JSON.stringify(inspectZodObject(formSchema), null, 2));
 
@@ -142,14 +167,14 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
   if(formConfig){
     defaultValues = makeDefaultValues(formConfig, {});
   }
- 
- 
+
+
  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-   
+
     defaultValues:  defaultValues??{},
   });
- 
+
   const { isDirty, isValid, isSubmitting } = form.formState;
 
 
@@ -165,10 +190,10 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
     apiUrl = resourceApiUrl + "/" + resourceId;
     method = 'PUT';
    }
-   
-  
+
+
    let jsonBody= JSON.stringify(formFlatData,(_k, v) => (v === undefined ? null : v));
-  
+
    thisLogger.debug("Xform json submitted data", {apiUrl,jsonBody});
 
    const response = await apiClient<DynamicOption>(apiUrl, true, {
@@ -176,8 +201,8 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
     body: jsonBody,
    });
    if (response.success && response.data) {
-   
-   
+
+
     toast.success(method === 'POST' ? "Item created successfully" : "Item updated successfully");
 
     router.refresh();
@@ -187,7 +212,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
       onSubmitted();
     }
    } else {
-   
+
     toast.error(response.message);
    }
    thisLogger.debug("XFormData", data);
@@ -197,17 +222,17 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
     return (
          <div className="m-2">
                   {isLoading && (
-                    <div className="flex items-center justify-center gap-3 rounded-lg border border-blue-100 bg-gradient-to-r from-white to-blue-50/50 p-4 shadow-sm ring-1 ring-blue-100">
-                      <Loader2 className="h-20 w-20 animate-spin text-blue-200" />
-                      <span className="text-grey-100 text-lg font-medium tracking-wide">Loading...</span>
+                    <div className="flex items-center justify-center gap-3 rounded-lg border border-blue-100 dark:border-blue-900 bg-gradient-to-r from-white to-blue-50/50 dark:from-gray-950 dark:to-blue-950/30 p-4 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900">
+                      <Loader2 className="h-20 w-20 animate-spin text-blue-200 dark:text-blue-700" />
+                      <span className="text-gray-600 dark:text-gray-300 text-lg font-medium tracking-wide">Loading...</span>
                     </div>
                   )}
                  { !isLoading && formConfig && <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit,(errors) => console.log('form errors:', errors))}>
                         {Object.entries(formConfig.sections ?? {}).map(([sectionKey, section]: [string, XFormSection]) => {
                           return (
-                            <FieldSet key={sectionKey} className="mb-4 pb-4 p-5 border-2 border-dashed border-grey-300 rounded-md">
-                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5  hover:bg-blue-100 text-blue-700 border border-dashed border-blue-300 rounded-md">{(section.label ?? sectionKey).toUpperCase()}</FieldLegend>
+                            <FieldSet key={sectionKey} className="mb-4 pb-4 p-5 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md">
+                            <FieldLegend className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-blue-100 dark:hover:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-dashed border-blue-300 dark:border-blue-800 rounded-md">{(section.label ?? sectionKey).toUpperCase()}</FieldLegend>
                             <FieldDescription>
                               {section?.description ?? ""}
                             </FieldDescription>
@@ -255,9 +280,9 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
                             </FieldSet>
                           );
                         })}
-                        <div className="flex justify-center items-center mt-3 py-2 bg-gray-50">
+                        <div className="flex justify-center items-center mt-3 py-2 bg-gray-50 dark:bg-gray-900/60">
 
-                        <Button disabled={!isDirty ||  isSubmitting} variant="outline" className="text-green-700 hover:text-green-800 border-green-700 hover:border-green-800 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
+                        <Button disabled={!isDirty ||  isSubmitting} variant="outline" className="text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 border-green-700 dark:border-green-600 hover:border-green-800 dark:hover:border-green-500 w-full sm:w-auto h-11 text-base font-medium mt-2" type="submit">{resourceId ? "Update" : "Create"} {resourceName}</Button>
                         </div>
                       </form>
                  </Form>

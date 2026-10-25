@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { NavProjects } from "@/components/nav-projects"
+import { NavBrokerSettings } from "@/components/NavBrokerSettings"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 
@@ -194,6 +195,7 @@ export function AppSidebar({
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
         <NavProjects projects={brokerOptionsLinks} teamManagementLink={teamManagementLink} />
+        {isSuperAdmin && <NavBrokerSettings />}
 
         <div className="mt-auto px-3 sm:px-4 pb-3 sm:pb-4 group-data-[collapsible=icon]:hidden">
           {isSuperAdmin && (

@@ -12,7 +12,7 @@ import { notFound, redirect } from 'next/navigation';
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink, 
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -44,19 +44,19 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
     const brokerId = parseInt(resolvedParams.brokerId);
     const brokerInfo = await getBrokerInfo(brokerId);
     const brokerType = brokerInfo.broker_type;
-    let layoutLogger = logger.child('control-panel/[brokerId]/broker-profile/layout.tsx');
+    const layoutLogger = logger.child('control-panel/[brokerId]/broker-profile/layout.tsx');
     const user: AuthUser | null = await isAuthenticated();
     if (!user) {
     layoutLogger.info('User not authenticated, redirecting to login');
     redirect('/en');
     }
-  
-  
-    let userCanManageBroker = canManageBroker(user, brokerInfo);
-    let userIsAdminOfBroker = isAdminOfBroker(user, brokerInfo);
-    let userIsSuperAdmin = isSuperAdmin(user);
-    let userCanEditBroker = canEditBroker(user, brokerInfo);
-  
+
+
+   const userCanManageBroker = canManageBroker(user, brokerInfo);
+   const userIsAdminOfBroker = isAdminOfBroker(user, brokerInfo);
+    const userIsSuperAdmin = isSuperAdmin(user);
+    const userCanEditBroker = canEditBroker(user, brokerInfo);
+
     const teamManagementLink = userCanManageBroker
       ? {
           name: 'Manage Your Team',
@@ -64,11 +64,11 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
           icon: 'TrendingUp',
         }
       : null
-  
-     
-  
-    let optionCategoriesUrl = `/option-categories/get-list?broker_type=${brokerType}`;
-    let optionCategoriesResponse = await apiClient<OptionCategory[]>(optionCategoriesUrl, UseTokenAuth.Yes, {
+
+
+
+    const optionCategoriesUrl = `/option-categories/get-list?broker_type=${brokerType}`;
+    const optionCategoriesResponse = await apiClient<OptionCategory[]>(optionCategoriesUrl, UseTokenAuth.Yes, {
       method: "GET",
       cache: "no-store",
     }, ErrorMode.Return);
@@ -76,20 +76,20 @@ export default async function BrokerProfileLayoutShell({params, children}: Props
       layoutLogger.error("Error fetching option categories", {context: {optionCategoriesResponse: optionCategoriesResponse.message}});
       notFound();
     }
-    let optionCategories = optionCategoriesResponse.data ?? [];
-    let sidebarOptionsLinks = optionCategories.map((optionCategory: OptionCategory) => {
-      let categoryName = optionCategory.name.toLowerCase().replace(/ /g, '-')
+    const optionCategories = optionCategoriesResponse.data ?? [];
+    const sidebarOptionsLinks = optionCategories.map((optionCategory: OptionCategory) => {
+      const categoryName = optionCategory.name.toLowerCase().replace(/ /g, '-')
       return {
         name: optionCategory.name,
-        url: `/en/control-panel/${brokerId}/broker-profile/${optionCategory.id}/${categoryName}`,  
+        url: `/en/control-panel/${brokerId}/broker-profile/${optionCategory.id}/${categoryName}`,
         icon: "TrendingUp"
       }
     }) || []
-   
-   
+
+
     return (
       <div className={cn(satoshi.variable, 'min-h-screen bg-[#FFF] dark:bg-black')}>
-       
+
         <Providers>
           <Suspense fallback={null}>
             <NProgressBar />
