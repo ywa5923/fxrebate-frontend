@@ -5,6 +5,7 @@ import { ChevronDown, ListFilter, Star, X } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -32,9 +33,18 @@ export type FilterField = {
   id: string;
   label: string;
   queryParam: string;
-  type: "select" | "multi-select" | "checkbox-group" | "rating-group";
+  type:
+    | "select"
+    | "multi-select"
+    | "checkbox-group"
+    | "rating-group"
+    | "number"
+    | "range"
+    | "range-with-unit";
   placeholder?: string;
-  options: FilterOption[];
+  fromPlaceholder?: string;
+  toPlaceholder?: string;
+  options?: FilterOption[];
 };
 
 export type FilterConfig = {
@@ -49,6 +59,214 @@ export type FilterConfig = {
 
 const selectTriggerClass =
   "h-12 w-full min-w-0 rounded-md border-[#0c110f]/15 bg-white px-3 text-sm font-normal dark:border-white/15 dark:bg-[#191c1b]";
+const rangeInputClass =
+  "h-12 w-full min-w-0 rounded-md border border-[#0c110f]/15 bg-white px-3 text-sm font-normal outline-none focus-visible:ring-2 focus-visible:ring-[#1d885b] dark:border-white/15 dark:bg-[#191c1b]";
+const decimalPattern = /^-?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
+const yearPattern = /^\d{4}$/;
+
+function parseRangeWithUnitEndpoint(value: string | undefined) {
+  if (!value) return null;
+
+  const match = value.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))-(.+)$/);
+  if (!match) return null;
+
+  return { amount: match[1], unit: match[2] };
+}
+
+function RangeControl({
+  field,
+  values,
+  onApply,
+}: {
+  field: FilterField;
+  values: string[];
+  onApply: (value: string[]) => void;
+}) {
+  const minimumFromUrl = values[0] ?? "";
+  const maximumFromUrl = values[1] ?? "";
+  const [minimum, setMinimum] = useState(minimumFromUrl);
+  const [maximum, setMaximum] = useState(maximumFromUrl);
+
+  const minimumIsValid = yearPattern.test(minimum.trim());
+  const maximumIsValid = yearPattern.test(maximum.trim());
+  const hasInput = minimum.trim() !== "" || maximum.trim() !== "";
+
+  function applyRange(nextMinimum: string, nextMaximum: string) {
+    const normalizedMinimum = nextMinimum.trim();
+    const normalizedMaximum = nextMaximum.trim();
+
+    if (!normalizedMinimum && !normalizedMaximum) {
+      onApply([]);
+      return;
+    }
+
+    if (yearPattern.test(normalizedMinimum) && yearPattern.test(normalizedMaximum)) {
+      onApply([`${normalizedMinimum},${normalizedMaximum}`]);
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={4}
+          value={minimum}
+          onChange={(event) => {
+            setMinimum(event.target.value);
+            applyRange(event.target.value, maximum);
+          }}
+          placeholder={field.fromPlaceholder ?? "From"}
+          aria-label={`${field.label} from`}
+          aria-invalid={minimum.trim() !== "" && !minimumIsValid}
+          className={cn(
+            rangeInputClass,
+            minimum.trim() !== "" && !minimumIsValid && "border-red-500",
+          )}
+        />
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={4}
+          value={maximum}
+          onChange={(event) => {
+            setMaximum(event.target.value);
+            applyRange(minimum, event.target.value);
+          }}
+          placeholder={field.toPlaceholder ?? "To"}
+          aria-label={`${field.label} to`}
+          aria-invalid={maximum.trim() !== "" && !maximumIsValid}
+          className={cn(
+            rangeInputClass,
+            maximum.trim() !== "" && !maximumIsValid && "border-red-500",
+          )}
+        />
+      </div>
+      {hasInput && (!minimumIsValid || !maximumIsValid) && (
+        <p className="text-xs text-red-600 dark:text-red-400" role="status">
+          Enter both years using four digits to apply this range.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RangeWithUnitControl({
+  field,
+  values,
+  onApply,
+  emptyOptionLabel,
+}: {
+  field: FilterField;
+  values: string[];
+  onApply: (value: string[]) => void;
+  emptyOptionLabel: string;
+}) {
+  const minimumFromUrl = parseRangeWithUnitEndpoint(values[0]);
+  const maximumFromUrl = parseRangeWithUnitEndpoint(values[1]);
+  const [minimum, setMinimum] = useState(minimumFromUrl?.amount ?? "");
+  const [maximum, setMaximum] = useState(maximumFromUrl?.amount ?? "");
+  const [unit, setUnit] = useState(
+    minimumFromUrl?.unit === maximumFromUrl?.unit
+      ? minimumFromUrl?.unit ?? ""
+      : "",
+  );
+  const options = field.options ?? [];
+
+  const minimumIsValid = decimalPattern.test(minimum.trim());
+  const maximumIsValid = decimalPattern.test(maximum.trim());
+  const hasInput = minimum.trim() !== "" || maximum.trim() !== "" || unit !== "";
+
+  function applyRange(nextMinimum: string, nextMaximum: string, nextUnit: string) {
+    const trimmedMinimum = nextMinimum.trim();
+    const trimmedMaximum = nextMaximum.trim();
+
+    if (!trimmedMinimum && !trimmedMaximum) {
+      onApply([]);
+      return;
+    }
+
+    if (
+      !nextUnit ||
+      !options.some((option) => option.value === nextUnit) ||
+      !decimalPattern.test(trimmedMinimum) ||
+      !decimalPattern.test(trimmedMaximum)
+    ) {
+      return;
+    }
+
+    const normalizedMinimum = trimmedMinimum.replace(",", ".");
+    const normalizedMaximum = trimmedMaximum.replace(",", ".");
+    onApply([`${normalizedMinimum}-${nextUnit},${normalizedMaximum}-${nextUnit}`]);
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={minimum}
+          onChange={(event) => {
+            setMinimum(event.target.value);
+            applyRange(event.target.value, maximum, unit);
+          }}
+          placeholder={field.fromPlaceholder ?? "From"}
+          aria-label={`${field.label} from`}
+          aria-invalid={minimum.trim() !== "" && !minimumIsValid}
+          className={cn(
+            rangeInputClass,
+            minimum.trim() !== "" && !minimumIsValid && "border-red-500",
+          )}
+        />
+        <input
+          type="text"
+          inputMode="decimal"
+          value={maximum}
+          onChange={(event) => {
+            setMaximum(event.target.value);
+            applyRange(minimum, event.target.value, unit);
+          }}
+          placeholder={field.toPlaceholder ?? "To"}
+          aria-label={`${field.label} to`}
+          aria-invalid={maximum.trim() !== "" && !maximumIsValid}
+          className={cn(
+            rangeInputClass,
+            maximum.trim() !== "" && !maximumIsValid && "border-red-500",
+          )}
+        />
+      </div>
+      <Select
+        value={unit}
+        onValueChange={(value) => {
+          const nextUnit = value === "__clear__" ? "" : value;
+          setUnit(nextUnit);
+          if (!nextUnit) onApply([]);
+          else applyRange(minimum, maximum, nextUnit);
+        }}
+      >
+        <SelectTrigger className={selectTriggerClass} aria-label={`${field.label} unit`}>
+          <SelectValue placeholder="Unit" />
+        </SelectTrigger>
+        <SelectContent className="z-[10003]">
+          <SelectItem value="__clear__">{emptyOptionLabel}</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {hasInput &&
+        (!minimumIsValid || !maximumIsValid || !unit || !options.some((option) => option.value === unit)) && (
+          <p className="text-xs text-red-600 dark:text-red-400" role="status">
+            Enter both valid limits and select a unit to apply this range.
+          </p>
+        )}
+    </div>
+  );
+}
 
 type FilterPanelProps = {
   triggerLabel: string;
@@ -66,7 +284,9 @@ function MultiSelectControl({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const selectedOptions = field.options.filter((option) => values.includes(option.value));
+  const selectedOptions = (field.options ?? []).filter((option) =>
+    values.includes(option.value),
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -119,7 +339,7 @@ function MultiSelectControl({
           aria-label={field.label}
           className="mt-1 max-h-56 overflow-y-auto rounded-md border border-[#0c110f]/15 bg-white p-1 shadow-md dark:border-white/15 dark:bg-[#191c1b]"
         >
-          {field.options.map((option) => (
+          {(field.options ?? []).map((option) => (
             <label
               key={option.value}
               className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
@@ -164,13 +384,17 @@ export default function FilterPanel({
   triggerLabel,
   config,
 }: FilterPanelProps) {
-  const { searchParams, updateValue, toggleValue, clearValues } = useFilterParams();
   const [open, setOpen] = useState(false);
 
   const fields = useMemo(
     () => config.sections.flatMap((section) => section.fields),
     [config],
   );
+  const ratingQueryParams = useMemo(
+    () => fields.filter((field) => field.type === "rating-group").map((field) => field.queryParam),
+    [fields],
+  );
+  const { searchParams, updateValue, toggleValue, clearValues } = useFilterParams(ratingQueryParams);
   const activeFilterCount = fields.reduce(
     (count, field) =>
       count + (valuesFromParams(searchParams, field.queryParam).length > 0 ? 1 : 0),
@@ -183,6 +407,58 @@ export default function FilterPanel({
 
   function renderField(field: FilterField) {
     const values = valuesFromParams(searchParams, field.queryParam);
+
+    if (field.type === "rating-group") {
+      const selected = values[0] ?? "";
+      return (
+        <div className="space-y-2">
+          <RadioGroup
+            value={selected}
+            onValueChange={(value) => updateValue(field.queryParam, [value])}
+            aria-label={field.label}
+            className="gap-2"
+          >
+            {(field.options ?? []).map((option, optionIndex) => (
+              <div key={option.value} className="flex min-h-8 items-center gap-2.5">
+                <RadioGroupItem id={`${field.id}-rating-${optionIndex}`} value={option.value} />
+                <label
+                  htmlFor={`${field.id}-rating-${optionIndex}`}
+                  className="flex cursor-pointer items-center gap-2.5 text-sm text-[#0c110f] dark:text-gray-200"
+                >
+                  <span className="flex shrink-0 items-center gap-0.5" aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <Star
+                        key={index}
+                        className={cn(
+                          "size-[15px] stroke-[1.5]",
+                          index < (option.stars ?? 0)
+                            ? "fill-[#f3b73f] text-[#f3b73f]"
+                            : "fill-transparent text-[#a3a7a5] dark:text-gray-600",
+                        )}
+                      />
+                    ))}
+                  </span>
+                  <span className="min-w-0">{option.label}</span>
+                </label>
+              </div>
+            ))}
+          </RadioGroup>
+          {selected && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 px-2 text-xs"
+              aria-label={`Remove ${field.label}`}
+              onClick={() => updateValue(field.queryParam, [])}
+            >
+              <X className="size-3.5" aria-hidden="true" />
+              {config.emptyOptionLabel}
+            </Button>
+          )}
+        </div>
+      );
+    }
 
     if (field.type === "select") {
       return (
@@ -197,7 +473,7 @@ export default function FilterPanel({
           </SelectTrigger>
           <SelectContent className="z-[10003]">
             <SelectItem value="__clear__">{config.emptyOptionLabel}</SelectItem>
-            {field.options.map((option) => (
+            {(field.options ?? []).map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -219,9 +495,52 @@ export default function FilterPanel({
       );
     }
 
+    if (field.type === "range") {
+      return (
+        <RangeControl
+          key={`${field.id}:${JSON.stringify(values)}`}
+          field={field}
+          values={values}
+          onApply={(nextValue) => updateValue(field.queryParam, nextValue)}
+        />
+      );
+    }
+
+    if (field.type === "range-with-unit") {
+      return (
+        <RangeWithUnitControl
+          key={`${field.id}:${JSON.stringify(values)}`}
+          field={field}
+          values={values}
+          emptyOptionLabel={config.emptyOptionLabel}
+          onApply={(nextValue) => updateValue(field.queryParam, nextValue)}
+        />
+      );
+    }
+
+    if (field.type === "number") {
+      return (
+        <input
+          type="number"
+          inputMode="decimal"
+          step="any"
+          value={values[0] ?? ""}
+          onChange={(event) =>
+            updateValue(
+              field.queryParam,
+              event.target.value === "" ? [] : [event.target.value],
+            )
+          }
+          placeholder={field.placeholder}
+          aria-label={field.label}
+          className={selectTriggerClass}
+        />
+      );
+    }
+
     return (
       <div className="space-y-2" role="group" aria-label={field.label}>
-        {field.options.map((option) => {
+        {(field.options ?? []).map((option) => {
           const checked = values.includes(option.value);
           return (
             <label
@@ -234,21 +553,6 @@ export default function FilterPanel({
                   toggleValue(field.queryParam, option.value, nextChecked === true);
                 }}
               />
-              {field.type === "rating-group" && (
-                <span className="flex shrink-0 items-center gap-0.5" aria-hidden="true">
-                  {Array.from({ length: 5 }, (_, index) => (
-                    <Star
-                      key={index}
-                      className={cn(
-                        "size-[15px] stroke-[1.5]",
-                        index < (option.stars ?? 0)
-                          ? "fill-[#f3b73f] text-[#f3b73f]"
-                          : "fill-transparent text-[#a3a7a5] dark:text-gray-600",
-                      )}
-                    />
-                  ))}
-                </span>
-              )}
               <span className="min-w-0">{option.label}</span>
             </label>
           );

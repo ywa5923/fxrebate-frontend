@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { normalizeRatingFilterParams } from "@/lib/rating-filter-params";
 
 const NAVIGATION_DELAY_MS = 300;
+const NO_RATING_PARAMS: readonly string[] = [];
 
 export function valuesFromParams(
   params: Pick<URLSearchParams, "getAll">,
@@ -23,7 +25,7 @@ function setValues(params: URLSearchParams, queryParam: string, values: string[]
   }
 }
 
-export function useFilterParams() {
+export function useFilterParams(ratingQueryParams: readonly string[] = NO_RATING_PARAMS) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,10 +43,11 @@ export function useFilterParams() {
     };
   }, []);
 
-  function updateParams(update: (params: URLSearchParams) => void) {
+  const updateParams = useCallback((update: (params: URLSearchParams) => void) => {
     // Read the live URL so rapid clicks never build on an older render's selection.
     const url = new URL(window.location.href);
     update(url.searchParams);
+    normalizeRatingFilterParams(url.searchParams, ratingQueryParams);
     url.searchParams.delete("page");
     const query = url.searchParams.toString().replace(/%2C/gi, ",");
     const href = url.pathname + (query ? `?${query}` : "") + url.hash;
@@ -59,7 +62,16 @@ export function useFilterParams() {
       // Navigation lets newer selections supersede in-flight requests; a full refresh can reload stale URLs.
       if (window.location.href === updatedHref) router.replace(href, { scroll: false });
     }, NAVIGATION_DELAY_MS);
-  }
+  }, [router, ratingQueryParams]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (normalizeRatingFilterParams(params, ratingQueryParams)) {
+      // Repair old URLs on load and Back/Forward, using the usual navigation
+      // path so the controls, pagination and fetched results stay in sync.
+      updateParams((current) => normalizeRatingFilterParams(current, ratingQueryParams));
+    }
+  }, [searchParams, ratingQueryParams, updateParams]);
 
   function updateValue(queryParam: string, values: string[]) {
     updateParams((params) => setValues(params, queryParam, values));

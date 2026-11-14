@@ -8,6 +8,7 @@ import type { HighestRebateBroker } from "@/types";
 import ForexRebatesClient from "./ForexRebatesClient";
 import { SITE_BROKER_TYPES } from "@/constants";
 import type { FilterConfig } from "@/components/FilterPanel";
+import { normalizeRatingFilterParams } from "@/lib/rating-filter-params";
 
 const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
 
@@ -80,6 +81,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
     }
   }
 
+  normalizeRatingFilterParams(query);
   const url = `/site/highest-rebates?${query.toString()}`;
 
   log.debug("Fetching highest rebates", { url });

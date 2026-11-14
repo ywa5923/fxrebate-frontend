@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { generateRandomId } from './utils';
 import { SlSocialTwitter, SlSocialInstagram, SlSocialFacebook, SlSocialLinkedin } from 'react-icons/sl';
 import { FaTelegramPlane } from 'react-icons/fa';
@@ -341,7 +340,7 @@ export const ourPaymentMethods = {
 export const whyUs = {
     title: 'why_us',
     description:'why_us_header',
-        
+
     features: [
         {
             id: generateRandomId(),
@@ -355,7 +354,7 @@ export const whyUs = {
             darkBgImage: '/assets/whyUs/dark-stairs.webp',
             lightBgImage: '/assets/whyUs/light-stairs.webp',
             title: 'why_us_t1',
-            description:'why_us_d1', 
+            description:'why_us_d1',
         },
         {
             id: generateRandomId(),
@@ -363,7 +362,7 @@ export const whyUs = {
             lightBgImage: '/assets/whyUs/light-hand.webp',
             title: 'why_us_t2',
             description: 'why_us_d2',
-               
+
         },
         {
             id: generateRandomId(),
@@ -379,7 +378,7 @@ export const whyJoinUs = [
     {
         id: generateRandomId(),
         title: 'why_join_us_t1',
-        description:'why_join_us_d1',   
+        description:'why_join_us_d1',
         className: 'dark:text-white dark:bg-black text-black bg-white',
         tagContent:'why_join_us'
     },
