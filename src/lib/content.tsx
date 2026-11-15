@@ -12,13 +12,21 @@ type NavItem = {
     subItems?: {
         id: number | string;
         name: string;
+        sectionHeading?: boolean;
         translationKey?: string;
         href?: string;
         localized?: boolean;
-        brokerList?: boolean;
+        brokerList?: "broker" | "crypto" | "prop_firm";
         external?: boolean;
         itemsList?: { id: string; brokerName: string; brokerLogo: string; href?: string; external?: boolean }[];
-        linksList?: { id: string; name: string; href: string; external?: boolean }[];
+        linksList?: {
+            id: string;
+            name: string;
+            href?: string;
+            external?: boolean;
+            brokerList?: "broker" | "crypto" | "prop_firm";
+            linksList?: { id: string; name: string; href: string; external?: boolean }[];
+        }[];
     }[];
 };
 
@@ -35,91 +43,144 @@ export const navItems: NavItem[] = [
         name: 'brokers',
         subItems: [
             {
-                id: 'forex-brokers-menu',
-                name: 'forex_brokers',
-                brokerList: true,
+                id: 'find-compare',
+                name: 'find_compare',
+                linksList: [
+                    { id: 'all-forex-brokers', name: 'all_forex_brokers', brokerList: 'broker' },
+                    { id: 'compare-forex-brokers', name: 'compare_forex_brokers', href: '/forex-brokers/compare' },
+                ],
             },
             {
-                id: generateRandomId(),
-                name: 'forex_brokers_list',
-                href: '/brokers',
-                external: true,
+                id: 'rebates-offers',
+                name: 'rebates_offers',
+                linksList: [
+                    {
+                        id: 'forex-broker-rebates',
+                        name: 'forex_broker_rebates',
+                        href: '/forex-brokers/forex-rebates?broker_type=broker',
+                    },
+                    { id: 'broker-promotions', name: 'broker_promotions', href: '#' },
+                    { id: 'broker-contests', name: 'broker_contests', href: '#' },
+                ],
             },
             {
-                id: generateRandomId(),
-                name: 'forex_brokers_list2',
-                href: 'https://fxrebate.eu/brokers',
-                external: true,
+                id: 'research-guides',
+                name: 'research_guides',
+                linksList: [
+                    { id: 'forex-broker-guides', name: 'forex_broker_guides', href: '#' },
+                    { id: 'best-forex-brokers-2026', name: 'best_forex_brokers_2026', href: '#' },
+                ],
             },
-            {
-                id: 'brokers-rebates',
-                name: 'Rebates',
-                translationKey: 'rebates',
-                href: '/forex-brokers/forex-rebates?broker_type=broker',
-                localized: true,
-            },
-            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
-            { id: generateRandomId(), name: 'guides', href: '#' },
-            { id: generateRandomId(), name: 'best_brokers_2025', href: '#' },
-            { id: generateRandomId(), name: 'brokers_promotions', href: '#' },
-            { id: generateRandomId(), name: 'brokers_contests', href: '#' },
         ],
     },
     {
         id: generateRandomId(),
         name: 'crypto',
         subItems: [
-            { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
-            { id: generateRandomId(), name: 'crypto_exchanges_list', href: '#' },
             {
-                id: 'crypto-rebates',
-                name: 'Rebates',
-                translationKey: 'rebates',
-                href: '/forex-brokers/forex-rebates?broker_type=crypto',
-                localized: true,
+                id: 'crypto-find-compare',
+                name: 'find_compare',
+                linksList: [
+                    { id: 'all-crypto-exchanges', name: 'all_crypto_exchanges', brokerList: 'crypto' },
+                    { id: 'compare-crypto-exchanges', name: 'compare_crypto_exchanges', href: '/forex-brokers/compare?broker_type=crypto' },
+                ],
             },
-            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
-            { id: generateRandomId(), name: 'guides', href: '#' },
-            { id: generateRandomId(), name: 'best_exchanges_2025', href: '#' },
-            { id: generateRandomId(), name: 'exchanges_promotions', href: '#' },
-            { id: generateRandomId(), name: 'exchanges_contests', href: '#' },
+            {
+                id: 'crypto-rebates-offers',
+                name: 'rebates_offers',
+                linksList: [
+                    { id: 'crypto-exchange-rebates', name: 'crypto_exchange_rebates', href: '/forex-brokers/forex-rebates?broker_type=crypto' },
+                    { id: 'crypto-promotions', name: 'promotions', href: '#' },
+                    { id: 'crypto-contests', name: 'contests', href: '#' },
+                ],
+            },
+            {
+                id: 'crypto-research-guides',
+                name: 'research_guides',
+                linksList: [
+                    { id: 'crypto-exchange-guides', name: 'crypto_exchange_guides', href: '#' },
+                    { id: 'best-crypto-exchanges-2026', name: 'best_crypto_exchanges_2026', href: '#' },
+                ],
+            },
         ],
     },
     {
         id: generateRandomId(),
         name: 'props',
         subItems: [
-            { id: generateRandomId(), name: 'prop_firms', href: '#' },
-            { id: generateRandomId(), name: 'prop_firms_list', href: '#' },
             {
-                id: 'props-rebates',
-                name: 'Rebates',
-                translationKey: 'rebates',
-                href: '/forex-brokers/forex-rebates?broker_type=prop_firm',
-                localized: true,
+                id: 'prop-firms-find-compare',
+                name: 'find_compare',
+                linksList: [
+                    { id: 'all-prop-firms', name: 'all_prop_firms', brokerList: 'prop_firm' },
+                    { id: 'compare-prop-firms', name: 'compare_prop_firms', href: '/forex-brokers/compare?broker_type=prop_firm' },
+                ],
             },
-            { id: generateRandomId(), name: 'ratings_reviews', href: '#' },
-            { id: generateRandomId(), name: 'guides', href: '#' },
-            { id: generateRandomId(), name: 'best_prop_firms_2025', href: '#' },
-            { id: generateRandomId(), name: 'prop_firms_promotions', href: '#' },
-            { id: generateRandomId(), name: 'prop_irms_contests', href: '#' },
+            {
+                id: 'prop-firms-rebates-offers',
+                name: 'rebates_offers',
+                linksList: [
+                    { id: 'prop-firm-rebates', name: 'prop_firm_rebates', href: '/forex-brokers/forex-rebates?broker_type=prop_firm' },
+                    { id: 'prop-firm-promotions', name: 'promotions', href: '#' },
+                    { id: 'prop-firm-contests', name: 'contests', href: '#' },
+                ],
+            },
+            {
+                id: 'prop-firms-research-guides',
+                name: 'research_guides',
+                linksList: [
+                    { id: 'prop-firm-guides', name: 'prop_firm_guides', href: '#' },
+                    { id: 'best-prop-firms-2026', name: 'best_prop_firms_2026', href: '#' },
+                ],
+            },
         ],
     },
     {
         id: generateRandomId(),
         name: 'tools',
         subItems: [
-            { id: generateRandomId(), name: 'currency_converter', href: '#' },
-            { id: generateRandomId(), name: 'fibonacci_calculator', href: '#' },
-            { id: generateRandomId(), name: 'margin_calculator', href: '#' },
-            { id: generateRandomId(), name: 'pip_calculator', href: '#' },
-            { id: generateRandomId(), name: 'pivot_point_calculator', href: '#' },
-            { id: generateRandomId(), name: 'risk_position_calculator', href: '#' },
-            { id: generateRandomId(), name: 'economic_calendar', href: '#' },
-            { id: generateRandomId(), name: 'brokers_spread_comparison', href: '#' },
-            { id: generateRandomId(), name: 'market_volatility', href: '#' },
-            { id: generateRandomId(), name: 'market_correlation', href: '#' },
-            { id: generateRandomId(), name: 'interest_rates', href: '#' },
+            {
+                id: 'trading-calculators',
+                name: 'trading_calculators',
+                linksList: [
+                    { id: 'currency-converter', name: 'currency_converter', href: '#' },
+                    { id: 'pip-calculator', name: 'pip_calculator', href: '#' },
+                    { id: 'margin-calculator', name: 'margin_calculator', href: '#' },
+                    { id: 'risk-position-calculator', name: 'risk_position_calculator', href: '#' },
+                    { id: 'pivot-point-calculator', name: 'pivot_point_calculator', href: '#' },
+                    { id: 'fibonacci-calculator', name: 'fibonacci_calculator', href: '#' },
+                    { id: 'profit-loss-calculator', name: 'profit_loss_calculator', href: '#' },
+                    { id: 'swap-calculator', name: 'swap_calculator', href: '#' },
+                ],
+            },
+            {
+                id: 'market-tools',
+                name: 'market_tools',
+                linksList: [
+                    { id: 'economic-calendar', name: 'economic_calendar', href: '#' },
+                    { id: 'brokers-spread-comparison', name: 'brokers_spread_comparison', href: '#' },
+                    { id: 'forex-market-hours', name: 'forex_market_hours', href: '#' },
+                    { id: 'market-correlation', name: 'market_correlation', href: '#' },
+                    { id: 'forex-volatility', name: 'forex_volatility', href: '#' },
+                    { id: 'interest-rates', name: 'interest_rates', href: '#' },
+                ],
+            },
+            {
+                id: 'fxrebate-tools',
+                name: 'fxrebate_tools',
+                linksList: [
+                    { id: 'broker-comparison-tool', name: 'broker_comparison_tool', href: '#' },
+                    { id: 'trading-cost-calculator', name: 'trading_cost_calculator', href: '#' },
+                    { id: 'rebate-savings-calculator', name: 'rebate_savings_calculator', href: '#' },
+                ],
+            },
+            {
+                id: 'featured-tools',
+                name: 'featured',
+                linksList: [
+                    { id: 'forex-rebate-calculator', name: 'forex_rebate_calculator', href: '#' },
+                ],
+            },
         ],
     },
     { id: generateRandomId(), name: 'charts', href: '#' },
@@ -127,7 +188,7 @@ export const navItems: NavItem[] = [
     { id: generateRandomId(), name: 'help_center', href: '/help/about' },
     {
         id: generateRandomId(),
-        name: 'academy',
+        name: 'education',
         subItems: [
             {
                 id: generateRandomId(),
@@ -140,96 +201,122 @@ export const navItems: NavItem[] = [
             },
             {
                 id: generateRandomId(),
-                name: 'what_are',
+                name: 'understand_the_basics',
                 linksList: [
-                    { id: generateRandomId(), name: 'forex_broker', href: '#' },
-                    { id: generateRandomId(), name: 'crypto_exchange', href: '#' },
-                    { id: generateRandomId(), name: 'prop_firm', href: '#' },
-                ],
-            },
-            { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
-            { id: generateRandomId(), name: 'prop_firms', href: '#' },
-            {
-                id: generateRandomId(),
-                name: 'how_to_choose_a',
-                linksList: [
-                    { id: generateRandomId(), name: 'forex_broker', href: '#' },
-                    { id: generateRandomId(), name: 'crypto_exchange', href: '#' },
-                    { id: generateRandomId(), name: 'prop_firm', href: '#' },
+                    { id: generateRandomId(), name: 'what_is_a_forex_broker', href: '#' },
+                    { id: generateRandomId(), name: 'what_is_a_crypto_exchange', href: '#' },
+                    { id: generateRandomId(), name: 'what_is_a_prop_firm', href: '#' },
                 ],
             },
             {
                 id: generateRandomId(),
-                name: 'financial_services_authorities',
-                href: 'https://fxrebate.eu/help/financial-services-authorities',
+                name: 'how_to_choose',
+                linksList: [
+                    { id: generateRandomId(), name: 'a_forex_broker', href: '#' },
+                    { id: generateRandomId(), name: 'a_crypto_exchange', href: '#' },
+                    { id: generateRandomId(), name: 'a_prop_firm', href: '#' },
+                ],
+            },
+            {
+                id: generateRandomId(),
+                name: 'reference_resources',
+                linksList: [
+                    {
+                        id: 'financial-regulators',
+                        name: 'financial_regulators',
+                        href: 'https://fxrebate.eu/help/financial-services-authorities',
+                        external: true,
+                    },
+                    { id: 'trading-glossary', name: 'trading_glossary', href: '#' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'community',
+        name: 'community',
+        subItems: [
+            {
+                id: 'latest-insights',
+                name: 'latest_insights',
+                linksList: [
+                    { id: 'latest-posts', name: 'latest_posts', href: '/blog' },
+                    { id: 'market-insights', name: 'market_insights', href: '/blog' },
+                    { id: 'trading-strategies', name: 'trading_strategies', href: '/blog' },
+                ],
+            },
+            {
+                id: 'fxrebate-updates',
+                name: 'fxrebate_updates',
+                linksList: [
+                    { id: 'fxrebate-news', name: 'fxrebate_news', href: '/blog' },
+                    { id: 'newsletter', name: 'newsletter', href: '/#newsletter' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'connect',
+        name: 'connect',
+        subItems: [
+            {
+                id: 'telegram-community',
+                name: 'telegram_community',
+                href: 'https://t.me/fxrebateme',
                 external: true,
             },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'forum',
+        name: 'support',
         subItems: [
-            { id: generateRandomId(), name: 'blogs', href: '#' },
-            { id: generateRandomId(), name: 'latest_posts', href: '#' },
-            { id: generateRandomId(), name: 'chat_room_(telegram)', href: '#', external: true },
+            {
+                id: 'help-center',
+                name: 'help_center',
+                href: '#',
+            },
+            {
+                id: 'support-faqs',
+                name: 'faqs',
+                linksList: [
+                    { id: 'getting-started', name: 'getting_started', href: '#' },
+                    { id: 'linking-account', name: 'linking_your_account', href: '#' },
+                    { id: 'rebates-eligibility', name: 'rebates_eligibility', href: '#' },
+                    { id: 'payments-withdrawals', name: 'payments_withdrawals', href: '#' },
+                    { id: 'account-referrals', name: 'account_referrals', href: '#' },
+                ],
+            },
+            { id: 'contact-us', name: 'contact_us', href: '#' },
+            { id: 'live-chat', name: 'live_chat', href: '#' },
         ],
     },
     {
         id: generateRandomId(),
-        name: 'support',
+        name: 'company',
         subItems: [
-            { id: generateRandomId(), name: 'about_us', href: '#' },
+            { id: 'company-about-us', name: 'about_us', href: '#' },
             {
-                id: generateRandomId(),
+                id: 'company-legal-documents',
                 name: 'legal_documents',
                 linksList: [
-                    { id: generateRandomId(), name: 'terms_of_service', href: '#' },
-                    { id: generateRandomId(), name: 'privacy_policy', href: '#' },
+                    { id: 'terms-of-service', name: 'terms_of_service', href: '#' },
+                    { id: 'affiliate-terms-of-service', name: 'affiliate_terms_of_service', href: '#' },
+                    { id: 'privacy-policy', name: 'privacy_policy', href: '#' },
+                    { id: 'cookie-policy', name: 'cookie_policy', href: '#' },
+                    { id: 'risk-disclosure', name: 'risk_disclosure', href: '#' },
                 ],
             },
             {
-                id: generateRandomId(),
+                id: 'company-business-information',
                 name: 'business_information',
                 linksList: [
-                    { id: generateRandomId(), name: 'mission_statement', href: '#' },
-                    { id: generateRandomId(), name: 'what_are_rebates?', href: '#' },
-                    { id: generateRandomId(), name: 'how_rebates_are_paid?', href: '#' },
-                    { id: generateRandomId(), name: 'rebates_pros_&_cons', href: '#' },
-                    { id: generateRandomId(), name: 'FXRebate_deal_types', href: '#' },
-                    { id: generateRandomId(), name: 'FXRebate_private_deal', href: '#' },
+                    { id: 'how-fxrebate-works', name: 'how_fxrebate_works', href: '#' },
+                    { id: 'rebate-types', name: 'rebate_types', href: '#' },
+                    { id: 'rebate-payments', name: 'rebate_payments', href: '#' },
+                    { id: 'custom-rebate-offers', name: 'custom_rebate_offers', href: '#' },
                 ],
             },
-            {
-                id: generateRandomId(),
-                name: 'promotions',
-                linksList: [
-                    { id: generateRandomId(), name: 'forex_brokers', href: '#' },
-                    { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
-                    { id: generateRandomId(), name: 'prop_firms', href: '#' },
-                ],
-            },
-            {
-                id: generateRandomId(),
-                name: 'contests',
-                linksList: [
-                    { id: generateRandomId(), name: 'forex_brokers', href: '#' },
-                    { id: generateRandomId(), name: 'crypto_exchanges', href: '#' },
-                    { id: generateRandomId(), name: 'prop_firms', href: '#' },
-                ],
-            },
-            {
-                id: generateRandomId(),
-                name: 'faqs',
-                linksList: [
-                    { id: generateRandomId(), name: 'payment_information', href: '#' },
-                    { id: generateRandomId(), name: 'rebate_program', href: '#' },
-                    { id: generateRandomId(), name: 'affiliate_program', href: '#' },
-                ],
-            },
-            { id: generateRandomId(), name: 'help_center', href: '#' },
-            { id: generateRandomId(), name: 'contact_us', href: '#' },
-            { id: generateRandomId(), name: 'live_chat', href: '#' },
         ],
     },
 ];

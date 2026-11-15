@@ -6,6 +6,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "@/providers/translations";
 
 type LocalizedLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
+  /** Original route without a language prefix, e.g. /brokers. */
   routeKey: string;
   children: ReactNode;
 };
@@ -43,21 +44,12 @@ export default function LocalizedLink({
   className,
   ...props
 }: LocalizedLinkProps) {
-  const { locale } = useParams();
+  const { locale } = useParams<{ locale: string }>();
   const { translations } = useTranslation();
-  const lang = locale as string;
-  
-  // Skip translation for English
-  if (lang === 'en') {
-    return (
-      <Link href={routeKey} className={className} {...props}>
-        {children}
-      </Link>
-    );
-  }
 
   const { pathname, search, hash } = new URL(routeKey, "https://localized-link.invalid");
-  const localePrefix = `/${lang}`;
+  const localePrefix = `/${locale}`;
+  // Support existing callers that still supply the current language prefix.
   const sourcePath = pathname === localePrefix
     ? "/"
     : pathname.startsWith(`${localePrefix}/`) ? pathname.slice(localePrefix.length) : pathname;

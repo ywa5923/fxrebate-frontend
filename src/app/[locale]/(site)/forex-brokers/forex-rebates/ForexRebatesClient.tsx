@@ -200,7 +200,7 @@ function ForexRebatesClientContent({
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <LocalizedLink
-                    routeKey={`/${locale}`}
+                    routeKey="/"
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
                     {t("breadcrumb_home")}
@@ -211,7 +211,7 @@ function ForexRebatesClientContent({
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <LocalizedLink
-                    routeKey={`/${locale}/forex-brokers`}
+                    routeKey="/forex-brokers"
                     className="hover:text-[#0c110f] dark:hover:text-gray-100"
                   >
                     {t("breadcrumb_forex_brokers")}

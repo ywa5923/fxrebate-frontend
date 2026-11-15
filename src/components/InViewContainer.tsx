@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 
 interface IMotionContainer {
+  id?: string;
   amount: number;
   once?: boolean;
   className?: string;
@@ -9,6 +10,7 @@ interface IMotionContainer {
 }
 
 const InViewContainer = ({
+  id,
   amount,
   children,
   className,
@@ -20,6 +22,7 @@ const InViewContainer = ({
       exit="hidden"
       whileInView="show"
       viewport={{ amount: amount, once: once }}
+      id={id}
       className={className}
     >
       {children}

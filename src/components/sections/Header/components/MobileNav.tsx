@@ -13,17 +13,15 @@ import { MobileMenuBar } from './MobileMenuBar';
 import { BurgerButton } from './BurgerButton';
 import { Logo } from '@/components/ui/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
-import type { BrokerShortList } from './useBrokerShortList';
 
 interface IMobileNav {
-  brokerList: BrokerShortList;
   isOpen: boolean;
   selectedLanguage: LanguageItem;
   setSelectedLanguage: (language: LanguageItem) => void;
   toggleMenu: () => void;
 }
 
-export const MobileNav = ({ isOpen, selectedLanguage, setSelectedLanguage, toggleMenu, brokerList }: IMobileNav) => {
+export const MobileNav = ({ isOpen, selectedLanguage, setSelectedLanguage, toggleMenu }: IMobileNav) => {
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
 
   return (
@@ -38,7 +36,7 @@ export const MobileNav = ({ isOpen, selectedLanguage, setSelectedLanguage, toggl
             </div>
           </div>
 
-          <MobileMenuBar key={String(isOpen)} onNavigate={toggleMenu} brokerList={brokerList} />
+          <MobileMenuBar key={String(isOpen)} onNavigate={toggleMenu} />
 
           <Actions />
 

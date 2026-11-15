@@ -15,7 +15,7 @@ const brokersSchema = z.array(z.object({
 export type MenuBroker = z.infer<typeof brokersSchema>[number];
 export type BrokerShortList = ReturnType<typeof useBrokerShortList>;
 
-export function useBrokerShortList() {
+export function useBrokerShortList(brokerType: string) {
   const [brokers, setBrokers] = useState<MenuBroker[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const loading = useRef(false);
@@ -28,9 +28,9 @@ export function useBrokerShortList() {
 
     try {
       const response = await apiClient<unknown>(
-        "/site/brokers/broker/short-list",
+        `/site/brokers/${encodeURIComponent(brokerType)}/short-list`,
         UseTokenAuth.No,
-        { method: "GET", next: { revalidate: 60, tags: ["brokers-short-list"] } },
+        { method: "GET", next: { revalidate: 60, tags: [`brokers-short-list:${brokerType}`] } },
       );
       if (!response.success) throw new Error(response.message ?? "Broker list request failed");
       const data = brokersSchema.parse(response.data);
@@ -38,7 +38,7 @@ export function useBrokerShortList() {
       loaded.current = true;
       setStatus("success");
     } catch (error) {
-      logger.child("Header/ForexBrokersMenu").error("Could not load the broker short list", {
+      logger.child("Header/BrokerListMenu").error("Could not load the broker short list", {
         error,
         page: window.location.pathname,
       });

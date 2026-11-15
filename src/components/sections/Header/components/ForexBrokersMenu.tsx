@@ -8,21 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTranslation } from "@/providers/translations";
 import { cn } from "@/lib/utils";
-import type { BrokerShortList } from "./useBrokerShortList";
+import { useBrokerShortList } from "./useBrokerShortList";
 
 type Props = {
-  list: BrokerShortList;
+  brokerType: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mobile?: boolean;
 };
 
-function BrokerList({ list }: Pick<Props, "list">) {
+type BrokerShortList = ReturnType<typeof useBrokerShortList>;
+
+function BrokerList({ list }: { list: BrokerShortList }) {
   const { t } = useTranslation("navbar");
 
   if (list.status === "idle" || list.status === "loading") {
     return (
-      <div role="status" aria-label={t("forex_brokers")} aria-busy="true" className="flex min-h-24 items-center justify-center">
+      <div role="status" aria-label={t("all_forex_brokers")} aria-busy="true" className="flex min-h-24 items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
       </div>
     );
@@ -62,8 +64,14 @@ function BrokerList({ list }: Pick<Props, "list">) {
   );
 }
 
-export function ForexBrokersMenu({ list, open, onOpenChange, mobile = false }: Props) {
+export function ForexBrokersMenu({ brokerType, open, onOpenChange, mobile = false }: Props) {
   const { t } = useTranslation("navbar");
+  const list = useBrokerShortList(brokerType);
+  const listLabel = brokerType === "crypto"
+    ? "all_crypto_exchanges"
+    : brokerType === "prop_firm"
+      ? "all_prop_firms"
+      : "all_forex_brokers";
   const panelId = useId();
   const openedWithPointer = useRef(false);
 
@@ -99,7 +107,7 @@ export function ForexBrokersMenu({ list, open, onOpenChange, mobile = false }: P
         changeOpen(mobile ? !open : true);
       }}
     >
-      {t("forex_brokers")}
+      {t(listLabel)}
       <ChevronRight className={cn("size-4 shrink-0 transition-transform", mobile && open && "rotate-90")} aria-hidden="true" />
     </button>
   );
@@ -112,7 +120,7 @@ export function ForexBrokersMenu({ list, open, onOpenChange, mobile = false }: P
           <div id={panelId} className="mt-3 w-full min-w-0 bg-[#fff] px-6 pt-5 dark:bg-[#222]">
             <div
               role="region"
-              aria-label={t("forex_brokers")}
+              aria-label={t("all_forex_brokers")}
               tabIndex={0}
               className="max-h-[min(420px,55dvh)] overflow-y-auto overscroll-contain rounded-sm outline-offset-2 [scrollbar-color:#a3a3a3_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] focus-visible:outline-2 focus-visible:outline-green-600 dark:[scrollbar-color:#737373_transparent]"
             >
@@ -129,7 +137,7 @@ export function ForexBrokersMenu({ list, open, onOpenChange, mobile = false }: P
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         id={panelId}
-        aria-label={t("forex_brokers")}
+        aria-label={t("all_forex_brokers")}
         side="right"
         align="start"
         alignOffset={-48}
@@ -148,7 +156,7 @@ export function ForexBrokersMenu({ list, open, onOpenChange, mobile = false }: P
         <Image src="/assets/icons/brokers-panel-pointer-dark.svg" alt="" width={12} height={8} className="absolute -top-[7px] left-[100px] hidden dark:block" />
         <div
           role="region"
-          aria-label={t("forex_brokers")}
+          aria-label={t("all_forex_brokers")}
           tabIndex={0}
           className="max-h-[min(500px,calc(var(--radix-popover-content-available-height)-64px))] overflow-y-auto overscroll-contain rounded-sm outline-offset-2 [scrollbar-color:#a3a3a3_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] focus-visible:outline-2 focus-visible:outline-green-600 dark:[scrollbar-color:#737373_transparent]"
         >

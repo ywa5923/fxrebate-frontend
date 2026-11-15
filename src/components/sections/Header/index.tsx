@@ -16,10 +16,8 @@ import { cn } from '@/lib/utils'
 import { useMounted } from '@/lib/hooks'
 import type { LanguageItem } from '@/lib/types'
 import { SITE_LANGUAGES } from '@/constants'
-import { useBrokerShortList } from './components/useBrokerShortList'
 
 const Header = () => {
-  const brokerList = useBrokerShortList();
   const { locale } = useParams<{ locale: string }>();
   const router = useRouter();
   const selectedLanguage = SITE_LANGUAGES.find((language) => language.code === locale) ?? SITE_LANGUAGES[0];
@@ -88,9 +86,9 @@ const Header = () => {
           <BurgerButton isOpen={isOpen} toggleMenu={toggleMenu} />
         </div>
 
-        <CustomDesktopMenuBar key={String(visible)} brokerList={brokerList} />
+        <CustomDesktopMenuBar key={String(visible)} />
 
-        <MobileNav isOpen={isOpen} selectedLanguage={selectedLanguage} setSelectedLanguage={selectLanguage} toggleMenu={toggleMenu} brokerList={brokerList} />
+        <MobileNav isOpen={isOpen} selectedLanguage={selectedLanguage} setSelectedLanguage={selectLanguage} toggleMenu={toggleMenu} />
       </motion.div>
     </AnimatePresence>
   )

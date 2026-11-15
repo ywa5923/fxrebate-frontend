@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
-import { useParams } from 'next/navigation'
 import LocalizedLink from '@/components/LocalizedLink'
 import { useTranslation } from "@/providers/translations";
 
@@ -12,13 +11,12 @@ import { navItems } from '@/lib/content'
 import { useMounted } from '@/lib/hooks'
 import { cn } from '@/lib/utils'
 import { ForexBrokersMenu } from './ForexBrokersMenu'
-import type { BrokerShortList } from './useBrokerShortList'
-
-export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => void; brokerList: BrokerShortList }) => {
-  const { locale } = useParams<{ locale: string }>();
+export const MobileMenuBar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { t } = useTranslation("navbar");
   const [selectedSubMenu, setSelectedSubMenu] = useState<number | string | null>(null);
   const [selectedSubItem, setSelectedSubItem] = useState<number | string | null>(null);
+  const [selectedBrokerList, setSelectedBrokerList] = useState<string | null>(null);
+  const [selectedLinkSubMenu, setSelectedLinkSubMenu] = useState<string | null>(null);
 
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
@@ -68,10 +66,12 @@ export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => v
             <div className='w-full flex flex-col items-center justify-center gap-4 dark:bg-dark-brown-100 bg-white py-8 mt-6'>
               {item.subItems.map((subItem) => (
                 <div key={subItem.id} className="w-full flex flex-col items-center justify-center">
-                  {subItem.brokerList ? (
+                  {subItem.sectionHeading ? (
+                    <p className="w-full px-6 pt-3 text-xs font-semibold uppercase tracking-wide text-black/50 dark:text-white/50">{t(subItem.name)}</p>
+                  ) : subItem.brokerList ? (
                     <ForexBrokersMenu
                       mobile
-                      list={brokerList}
+                      brokerType={subItem.brokerList}
                       open={selectedSubItem === subItem.id}
                       onOpenChange={(open) => setSelectedSubItem(open ? subItem.id : null)}
                     />
@@ -85,15 +85,54 @@ export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => v
                       {selectedSubItem === subItem.id && (
                         <div className="w-full flex flex-col items-center justify-center gap-3 mt-2 bg-white-400 dark:bg-white/5 py-5">
                           {subItem.linksList.map((link) => (
-                            <Link
-                              key={link.id}
-                              href={link.href || '#'}
-                              target={link.external ? '_blank' : '_self'}
-                              rel={link.external ? 'noopener noreferrer' : ''}
-                              className='text-black/80 dark:text-white/80 text-base font-medium'
-                            >
-                              {t(link.name)}
-                            </Link>
+                            link.linksList ? (
+                              <div key={link.id} className="flex w-full flex-col items-center">
+                                <button type="button" onClick={() => setSelectedLinkSubMenu(selectedLinkSubMenu === link.id ? null : link.id)} className="flex min-h-11 items-center gap-2 text-base font-medium text-black/80 dark:text-white/80">
+                                  {t(link.name)}<IoIosArrowDown className={cn("text-lg transition-transform", selectedLinkSubMenu === link.id && "rotate-180")} />
+                                </button>
+                                {selectedLinkSubMenu === link.id && (
+                                  <div className="flex w-full flex-col items-center gap-3 bg-white-400 py-4 dark:bg-white/5">
+                                    {link.linksList.map((nestedLink) => (
+                                      <Link key={nestedLink.id} href={nestedLink.href} target={nestedLink.external ? "_blank" : "_self"} rel={nestedLink.external ? "noopener noreferrer" : ""} className="text-base font-medium text-black/80 dark:text-white/80">
+                                        {t(nestedLink.name)}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ) : link.brokerList ? (
+                              <ForexBrokersMenu
+                                key={link.id}
+                                mobile
+                                brokerType={link.brokerList}
+                                open={selectedBrokerList === link.id}
+                                onOpenChange={(open) => setSelectedBrokerList(open ? link.id : null)}
+                              />
+                            ) : !link.external && link.href?.startsWith('/') && !link.href.startsWith('//') ? (
+                              <LocalizedLink
+                                key={link.id}
+                                routeKey={link.href}
+                                onNavigate={() => {
+                                  setSelectedSubMenu(null);
+                                  setSelectedSubItem(null);
+                                  setSelectedBrokerList(null);
+                                  onNavigate?.();
+                                }}
+                                className='text-black/80 dark:text-white/80 text-base font-medium'
+                              >
+                                {t(link.name)}
+                              </LocalizedLink>
+                            ) : (
+                              <Link
+                                key={link.id}
+                                href={link.href || '#'}
+                                target={link.external ? '_blank' : '_self'}
+                                rel={link.external ? 'noopener noreferrer' : ''}
+                                className='text-black/80 dark:text-white/80 text-base font-medium'
+                              >
+                                {t(link.name)}
+                              </Link>
+                            )
                           ))}
                         </div>
                       )}
@@ -126,7 +165,7 @@ export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => v
                     </div>
                   ) : subItem.localized && subItem.href ? (
                     <LocalizedLink
-                      routeKey={`/${locale}${subItem.href}`}
+                      routeKey={subItem.href}
                       onNavigate={() => {
                         setSelectedSubMenu(null);
                         setSelectedSubItem(null);
@@ -136,7 +175,7 @@ export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => v
                     >
                       {t(subItem.translationKey ?? subItem.name)}
                     </LocalizedLink>
-                  ) : (
+                  ) : subItem.href ? (
                     <Link
                       href={subItem.href || '#'}
                       target={subItem.external ? '_blank' : '_self'}
@@ -145,6 +184,8 @@ export const MobileMenuBar = ({ onNavigate, brokerList }: { onNavigate?: () => v
                     >
                       {t(subItem.name)}
                     </Link>
+                  ) : (
+                    <span className="text-black/50 dark:text-white/50">{t(subItem.name)}</span>
                   )}
                 </div>
               ))}

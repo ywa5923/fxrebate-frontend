@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
 import LocalizedLink from '@/components/LocalizedLink'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
@@ -14,14 +13,7 @@ import { navItems } from '@/lib/content'
 import { useMounted, useWindowSize } from '@/lib/hooks'
 import { useTranslation } from "@/providers/translations";
 import { ForexBrokersMenu } from './ForexBrokersMenu';
-import type { BrokerShortList } from './useBrokerShortList';
-
-interface ICustomDesktopMenuBar {
-  brokerList: BrokerShortList;
-}
-
-export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
-  const { locale } = useParams<{ locale: string }>();
+export const CustomDesktopMenuBar = () => {
   const { t } = useTranslation("navbar");
   const { resolvedTheme } = useTheme();
   const { width } = useWindowSize();
@@ -29,6 +21,8 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
 
   const [openedMenu, setOpenedMenu] = useState<string | number | null>(null);
   const [openedSubMenu, setOpenedSubMenu] = useState<string | number | null>(null);
+  const [openedBrokerList, setOpenedBrokerList] = useState<string | null>(null);
+  const [openedLinkSubMenu, setOpenedLinkSubMenu] = useState<string | null>(null);
 
   const submenuRefs = useRef<Record<number | string, HTMLDivElement | null>>({});
   const [submenuPositions, setSubMenuPositions] = useState<Record<number | string, string>>({});
@@ -170,16 +164,15 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
                   data-menu-item
                 >
                   {item.name === 'brokers' && (
-                    <>
-                      <Image src="/assets/icons/brokers-menu-pointer.svg" alt="" width={16.4615} height={13.4685} className="absolute -top-[13.4685px] left-1/2 -translate-x-1/2" />
-                      <p className="mb-4 text-base font-bold">{t('brokers')}</p>
-                    </>
+                    <Image src="/assets/icons/brokers-menu-pointer.svg" alt="" width={16.4615} height={13.4685} className="absolute -top-[13.4685px] left-1/2 -translate-x-1/2" />
                   )}
                   {item.subItems.map((subItem) => (
                     <div key={subItem.id}>
-                      {subItem.brokerList ? (
+                      {subItem.sectionHeading ? (
+                        <p className="px-2.5 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-black/50 first:pt-0 dark:text-white/50">{t(subItem.name)}</p>
+                      ) : subItem.brokerList ? (
                         <ForexBrokersMenu
-                          list={brokerList}
+                          brokerType={subItem.brokerList}
                           open={openedSubMenu === subItem.id}
                           onOpenChange={(open) => setOpenedSubMenu(open ? subItem.id : null)}
                         />
@@ -209,15 +202,53 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
                                 <p className="font-bold text-base text-black dark:text-white pb-2 whitespace-nowrap">{t(subItem.name)}</p>
                               <div className="flex flex-col">
                                 {subItem.linksList.map((link) => (
-                                  <Link
-                                    key={link.id}
-                                    href={link.href || '#'}
-                                    target={link.external ? '_blank' : '_self'}
-                                    rel={link.external ? 'noopener noreferrer' : ''}
-                                    className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-green-700 rounded-sm px-2.5 py-1.5'
-                                  >
-                                    {t(link.name)}
-                                  </Link>
+                                  link.linksList ? (
+                                    <div key={link.id}>
+                                      <button
+                                        type="button"
+                                        onMouseEnter={() => setOpenedLinkSubMenu(link.id)}
+                                        onClick={() => setOpenedLinkSubMenu(openedLinkSubMenu === link.id ? null : link.id)}
+                                        className="flex w-full items-center justify-between rounded-sm px-2.5 py-1.5 text-left text-sm font-medium hover:bg-green-700 hover:text-white"
+                                      >
+                                        {t(link.name)}<IoIosArrowForward className="size-4" />
+                                      </button>
+                                      {openedLinkSubMenu === link.id && (
+                                        <div className="ml-3 flex flex-col border-l pl-2">
+                                          {link.linksList.map((nestedLink) => (
+                                            <Link key={nestedLink.id} href={nestedLink.href} target={nestedLink.external ? "_blank" : "_self"} rel={nestedLink.external ? "noopener noreferrer" : ""} className="rounded-sm px-2.5 py-1.5 text-sm hover:bg-green-700 hover:text-white">
+                                              {t(nestedLink.name)}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : link.brokerList ? (
+                                    <ForexBrokersMenu
+                                      key={link.id}
+                                      brokerType={link.brokerList}
+                                      open={openedBrokerList === link.id}
+                                      onOpenChange={(open) => setOpenedBrokerList(open ? link.id : null)}
+                                    />
+                                  ) : !link.external && link.href?.startsWith('/') && !link.href.startsWith('//') ? (
+                                    <LocalizedLink
+                                      key={link.id}
+                                      routeKey={link.href}
+                                      onNavigate={handleCloseMenu}
+                                      className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-green-700 rounded-sm px-2.5 py-1.5'
+                                    >
+                                      {t(link.name)}
+                                    </LocalizedLink>
+                                  ) : (
+                                    <Link
+                                      key={link.id}
+                                      href={link.href || '#'}
+                                      target={link.external ? '_blank' : '_self'}
+                                      rel={link.external ? 'noopener noreferrer' : ''}
+                                      className='text-sm font-medium dark:text-white/80 hover:text-white hover:bg-green-700 rounded-sm px-2.5 py-1.5'
+                                    >
+                                      {t(link.name)}
+                                    </Link>
+                                  )
                                 ))}
                               </div>
                             </motion.div>
@@ -264,7 +295,7 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
                         </div>
                       ) : subItem.localized && subItem.href ? (
                         <LocalizedLink
-                          routeKey={`/${locale}${subItem.href}`}
+                          routeKey={subItem.href}
                           onNavigate={handleCloseMenu}
                           className={cn(
                             'w-full flex items-center rounded-sm py-1.5 text-sm outline-none px-2.5 hover:bg-green-700 hover:text-white',
@@ -273,7 +304,9 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
                         >
                           {t(subItem.translationKey ?? subItem.name)}
                         </LocalizedLink>
-                      ) : (
+                      ) : subItem.localized && subItem.href ? (
+                        <LocalizedLink routeKey={subItem.href} className="block rounded-sm px-2.5 py-1.5 text-sm font-medium hover:bg-green-700 hover:text-white">{t(subItem.name)}</LocalizedLink>
+                      ) : subItem.href ? (
                         <Link
                           href={subItem.href || '#'}
                           target={subItem.external ? '_blank' : '_self'}
@@ -285,6 +318,8 @@ export const CustomDesktopMenuBar = ({ brokerList }: ICustomDesktopMenuBar) => {
                         >
                           {t(subItem.name)}
                         </Link>
+                      ) : (
+                        <span className="block cursor-default rounded-sm px-2.5 py-1.5 text-sm font-medium text-black/50 dark:text-white/50">{t(subItem.name)}</span>
                       )}
                     </div>
                   ))}

@@ -9,7 +9,7 @@ import { useTranslation } from '@/providers/translations';
 const Newsletter = () => {
     const { t } = useTranslation();
     return (
-        <InViewContainer amount={0.2} className="md-custom-container">
+        <InViewContainer id="newsletter" amount={0.2} className="md-custom-container">
             <motion.div
                 variants={opacityAnimation({ delay: 0.5, duration: 1.25 })}
                 className="md:rounded-xl bg-custom-blue py-[100px] px-6 sm:px-12 lg:px-20 lg:pt-36 lg:pb-28 flex flex-col md:flex-row items-center justify-center gap-16 lg:gap-24">

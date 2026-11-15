@@ -79,7 +79,7 @@ function ClientdataTableContent({
             <BreadcrumbList className="gap-2 text-sm text-[#0c110f]/70 dark:text-gray-400">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <LocalizedLink routeKey={`/${locale}`} className="hover:text-[#0c110f] dark:hover:text-white">
+                  <LocalizedLink routeKey="/" className="hover:text-[#0c110f] dark:hover:text-white">
                     Home
                   </LocalizedLink>
                 </BreadcrumbLink>
@@ -88,7 +88,7 @@ function ClientdataTableContent({
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <LocalizedLink
-                    routeKey={`/${locale}/forex-brokers`}
+                    routeKey="/forex-brokers"
                     className="hover:text-[#0c110f] dark:hover:text-white"
                   >
                     Forex Brokers
