@@ -221,6 +221,8 @@ export function OptionsForm({
   }, [optionsValues, options, is_admin, form]);
 
   async function handleServerActionSubmit(data: z.infer<typeof formSchema>) {
+    if (isSubmitting) return;//
+    setIsSubmitting(true);//
     if (!can_edit) {
       toast.error("You do not have permission to edit this profile");
       return;
@@ -235,6 +237,7 @@ export function OptionsForm({
       thisLogger.debug("Form validation failed", {
         context: { errors: form.formState.errors },
       });
+       setIsSubmitting(false);//
       return;
     }
     // dynamicFormLogger.debug("Detailed form data", { context: { data, fieldCount: Object.keys(data).length } });
@@ -423,7 +426,7 @@ export function OptionsForm({
         </div>
         <Button
           type="submit"
-          disabled={!can_edit || !isFormDirty}
+          disabled={!can_edit || !isFormDirty || isSubmitting}
           className={cn(
             "transition-all duration-300 font-medium",
             can_edit && isFormDirty
