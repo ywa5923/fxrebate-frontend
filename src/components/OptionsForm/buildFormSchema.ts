@@ -5,7 +5,7 @@ import { z } from "zod";
 const YEAR_ONLY_REGEX = /^\d{4}$/;
 const FULL_DATE_REGEX =
   /^\d{4}[-/.](0[1-9]|1[0-2])[-/.](0[1-9]|[12]\d|3[01])$/;
-
+const YMD_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 function isValidDateValue(value: string): boolean {
   const trimmed = value.trim();
 
@@ -31,11 +31,27 @@ function isValidDateValue(value: string): boolean {
   );
 }
 
+function isValidYmdDateValue(value: string): boolean {
+  if (!YMD_DATE_REGEX.test(value)) return false;
+
+  const [year, month, day] = value.split("-").map(Number);
+  if (year < 1000 || year > 9999) return false;
+
+  const date = new Date(year, month - 1, day);
+
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
 export function buildFormSchema(options: Option[]) {
-  const schemaObject: { [key: string]: any } = {};
+ // const schemaObject: { [key: string]: any } = {};
+ const schemaObject: Record<string, z.ZodTypeAny> = {};
 
   for (const option of options) {
-    
+
     if (option.form_type === "numberWithUnit") {
       schemaObject[option.slug] =
         option.required === 1
@@ -59,7 +75,7 @@ export function buildFormSchema(options: Option[]) {
               })
               .nullable()
               .optional();
-    
+
       continue;
     }
 
@@ -124,7 +140,7 @@ export function buildFormSchema(options: Option[]) {
             );
         break;
 
-      
+
       case "date": {
         const dateMessage = `${option.name} must be a year (e.g. 2024) or a date (YYYY-MM-DD)`;
 
@@ -154,7 +170,35 @@ export function buildFormSchema(options: Option[]) {
               );
         break;
       }
+      case "ymd_date": {
+        const dateMessage = `${option.name} must be a valid date (YYYY-MM-DD)`;
 
+        const normalizeDate = (value: unknown) => {
+          if (value === null || value === undefined) return null;
+          const trimmed = String(value).trim();
+          return trimmed === "" ? null : trimmed;
+        };
+
+        fieldSchema =
+          option.required === 1
+            ? z.preprocess(
+                normalizeDate,
+                z.string().refine(isValidYmdDateValue, { message: dateMessage }),
+              )
+            : z.preprocess(
+                normalizeDate,
+                z
+                  .string()
+                  .nullable()
+                  .optional()
+                  .refine(
+                    (value) => value == null || isValidYmdDateValue(value),
+                    { message: dateMessage },
+                  ),
+              );
+
+        break;
+      }
       case "string":
       case "textarea": {
         let baseString = z.string();

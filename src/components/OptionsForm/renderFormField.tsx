@@ -24,11 +24,20 @@ import { formatCryptoCurrencyOptionLabel } from "@/lib/formatCryptoCurrencyOptio
 import { formatFundingMethodOptionLabel } from "@/lib/formatFundingMethodOptionLabel";
 import { getReactSelectStyles } from "@/lib/reactSelectStyles";
 import { reactSelectMultiComponents } from "@/components/OptionsForm/reactSelectMultiComponents";
+import Image from "next/image";
+import { format, isValid, parseISO } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react"; // adaugă Calendar în importul lucide existent
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function renderFormField(
     option: Option,
     formField: ControllerRenderProps<FieldValues, string>,
-    form: UseFormReturn<any>, 
+    form: UseFormReturn<FieldValues>,
     renderOptionHistory: (option: Option) => React.ReactNode,
     fileInputKey: number,
     type: "cols" | "vertical" = "cols",
@@ -40,7 +49,7 @@ export function renderFormField(
         const fieldError = form.formState.errors?.[option.slug];
         const unitError =
           fieldError && typeof fieldError === "object" && "unit" in fieldError
-            ? (fieldError as any).unit
+            ? fieldError.unit
             : undefined;
         return (
           <div>
@@ -107,6 +116,56 @@ export function renderFormField(
             {renderOptionHistory(option)}
           </div>
         );
+        case "ymd_date": {
+          const parsedDate =
+            typeof formField.value === "string" && formField.value
+              ? parseISO(formField.value)
+              : undefined;
+          const selectedDate =
+            parsedDate && isValid(parsedDate) ? parsedDate : undefined;
+
+          return (
+            <div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) =>
+                      formField.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {renderOptionHistory(option)}
+            </div>
+          );
+        }
+        // case "ymd_date":
+        //   return (
+        //     <div>
+        //       <Input
+        //         type="date"
+        //         {...formField}
+        //         value={typeof formField.value === "string" ? formField.value : ""}
+        //       />
+        //       {renderOptionHistory(option)}
+        //     </div>
+        //   );
       case "single_select":
         return (
           <div>
@@ -124,9 +183,9 @@ export function renderFormField(
               <SelectContent>
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
-                  option.meta_data.map((metaData: any) => (
+                  option.meta_data.map((metaData,idx) => (
                     <SelectItem
-                      key={metaData?.id ?? metaData?.value}
+                      key={`${metaData.value}-${idx}`}
                       value={metaData?.value}
                     >
                       {metaData?.label}
@@ -154,9 +213,9 @@ export function renderFormField(
               <SelectContent>
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
-                  option.meta_data.map((metaData: any) => (
+                  option.meta_data.map((metaData,idx) => (
                     <SelectItem
-                      key={metaData?.id ?? metaData?.value}
+                      key={`${metaData.value}-${idx}`}
                       value={metaData?.value}
                     >
                       <span className="flex items-center gap-2">
@@ -190,9 +249,9 @@ export function renderFormField(
               <SelectContent>
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
-                  option.meta_data.map((metaData: any) => (
+                  option.meta_data.map((metaData,idx) => (
                     <SelectItem
-                      key={metaData?.id ?? metaData?.value}
+                      key={`${metaData.value}-${idx}`}
                       value={metaData?.value}
                     >
                       <span className="flex items-center gap-2">
@@ -223,9 +282,9 @@ export function renderFormField(
               <SelectContent>
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
-                  option.meta_data.map((metaData: any) => (
+                  option.meta_data.map((metaData,idx) => (
                     <SelectItem
-                      key={metaData?.id ?? metaData?.value}
+                      key={`${metaData.value}-${idx}`}
                       value={metaData?.value}
                     >
                       <span className="flex items-center gap-2">
@@ -258,9 +317,9 @@ export function renderFormField(
               <SelectContent>
                 {option.meta_data &&
                   Array.isArray(option.meta_data) &&
-                  option.meta_data.map((metaData: any) => (
+                  option.meta_data.map((metaData,idx) => (
                     <SelectItem
-                      key={metaData?.id ?? metaData?.value}
+                      key={`${metaData.value}-${idx}`}
                       value={metaData?.value}
                     >
                       <span className="flex items-center gap-2">
@@ -480,9 +539,9 @@ export function renderFormField(
               onValueChange={formField.onChange}
               defaultValue={formField.value}
             >
-              {option.meta_data?.map((metaData: any) => (
+              {option.meta_data?.map((metaData,idx) => (
                 <div
-                  key={metaData.value}
+                   key={`${metaData.value}-${idx}`}
                   className="flex items-center space-x-2"
                 >
                   <RadioGroupItem
@@ -573,7 +632,7 @@ export function renderFormField(
               )}
             >
               <Plus className="h-4 w-4" />
-             
+
             </Button>
             {renderOptionHistory(option)}
           </div>
@@ -607,8 +666,10 @@ export function renderFormField(
                         padding: 0,
                       }}
                     >
-                      <img
+                      <Image
                         src={formField.value}
+                        width={200}
+                        height={200}
                         key={Math.random()*1000}
                         alt="Current file"
                         style={{
@@ -634,8 +695,8 @@ export function renderFormField(
                 if (file) {
                   formField.onChange(file);
                 }
-              
-                
+
+
               }}
             />
             {renderOptionHistory(option)}

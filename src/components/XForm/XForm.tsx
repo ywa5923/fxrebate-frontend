@@ -1,5 +1,3 @@
-
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,7 +24,7 @@ import { flattenObject } from "@/lib/flattenObject";
 import { Loader2 } from "lucide-react";
 import logger from "@/lib/logger";
 
-
+const thisLogger = logger.child('components/XForm/XForm.tsx');
 //==============Make default values for the form==============//
 /** Select options use "1"/"0"; API may send true/false/1/0/"1"/"0". */
 function toSelectValue(value: unknown): string {
@@ -37,11 +35,11 @@ function toSelectValue(value: unknown): string {
 }
 
 //Generate default values for empty form or form with data
-function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefinition, rowData: T): Record<string, any> {
-  const defaultData: Record<string, any> = {};
+function makeDefaultValues<T extends Record<string, unknown>>(formConfig: XFormDefinition, rowData: T): Record<string, unknown> {
+  const defaultData: Record<string, unknown> = {};
   Object.entries(formConfig.sections ?? {}).forEach(([sectionKey, section]: [string, XFormSection]) => {
 
-    const sectionDefaultValue: Record<string, any> = {};
+    const sectionDefaultValue: Record<string, unknown> = {};
     Object.entries(section.fields ?? {}).forEach(([fieldKey, f]: [string, XFormField]) => {
 
       let fieldValue = null;
@@ -52,7 +50,7 @@ function makeDefaultValues<T extends Record<string, any>>(formConfig: XFormDefin
           //for array_field and array_fields, the rowData[fieldKey] is an array of objects
 
           const rows = Array.isArray(rowData[fieldKey]) ? rowData[fieldKey] : [];
-          fieldValue = rows.map((row: Record<string, any>) => {
+          fieldValue = rows.map((row: Record<string, unknown>) => {
             const item = { ...row };
             Object.entries(f.fields ?? {}).forEach(([subKey, subField]) => {
               if (subField.type === "select") {
@@ -91,15 +89,30 @@ type XFormProps = {
 
 export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resourceName,getItemUrl, resourceApiUrl, mode='edit', onSubmitted }: XFormProps)
 {
-
   const router = useRouter();
-  const thisLogger = logger.child('components/XForm/XForm.tsx');
-
-  //let [formDefaultValues, setFormDefaultValues] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [formConfigState, setFormConfigState] = useState<XFormDefinition | null>(null);
   const activeFormConfig = mode === 'create' ? formConfigState : formConfig ?? formConfigState;
 
+  let formSchema: z.ZodSchema<Record<string, unknown>> | null = null;
+
+  if (activeFormConfig) {
+    formSchema = getFormSchema(activeFormConfig);
+  } else {
+    formSchema = z.object({}) as z.ZodSchema<Record<string, unknown>>;
+  }
+  let defaultValues;
+  if(activeFormConfig){
+    defaultValues = makeDefaultValues(activeFormConfig, {});
+  }
+
+  const form = useForm<z.infer<typeof formSchema>>({
+     resolver: zodResolver(formSchema),
+
+     defaultValues:  defaultValues??{},
+  });
+
+  const { reset } = form;
 
   useEffect(() => {
     let cancelled = false;
@@ -143,7 +156,7 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
         // Reveal the form only after its configuration and values are ready.
         resetFrame = requestAnimationFrame(() => {
           if (cancelled) return;
-          form.reset(defaultValues);
+         reset(defaultValues);
           setIsLoading(false);
         });
       } catch (err) {
@@ -160,33 +173,11 @@ export default function XForm({ formConfig,formConfigApiUrl,  resourceId, resour
       cancelled = true;
       if (resetFrame !== null) cancelAnimationFrame(resetFrame);
     };
-  }, []);
-  //resourceId, mode,getItemUrl,formConfig,resourceApiUrl
-
-  let formSchema: z.ZodSchema<any> | null = null;
-  if(activeFormConfig){
-    formSchema = getFormSchema(activeFormConfig);
-  }else{
-    formSchema = z.object({}) as z.ZodSchema<any>;
-  }
-
-  //==============Inspect the form schema==============
-  //console.log(JSON.stringify(inspectZodObject(formSchema), null, 2));
-
-  let defaultValues;
-  if(activeFormConfig){
-    defaultValues = makeDefaultValues(activeFormConfig, {});
-  }
+  }, [formConfig, formConfigApiUrl, resourceApiUrl, mode, getItemUrl, resourceId,reset]
+);
 
 
- const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-
-    defaultValues:  defaultValues??{},
-  });
-
-  const { isDirty, isValid, isSubmitting } = form.formState;
-
+  const { isDirty,isSubmitting } = form.formState;
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     //if second param is true, it will skip empty values si empty values are not sent to the server

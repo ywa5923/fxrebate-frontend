@@ -6,11 +6,11 @@ import {
   FieldValues,
   Path,
   useFieldArray,
-  
+
 } from "react-hook-form";
 import { ReactNode } from "react";
 
-import { FormBaseProps, FormControlFunc, FormControlProps } from "@/components/XForm/types";
+import { FormBaseProps, FormControlFunc} from "@/components/XForm/types";
 
 import { Field, FieldLabel, FieldDescription, FieldContent, FieldError } from "@/components/ui/field";
 
@@ -29,7 +29,7 @@ import { XFormField, XFormOption } from "@/types";
 export function FormBase<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-  
+
 >({
   children,
   control,
@@ -268,21 +268,20 @@ function renderArrayFieldItems<TFieldValues extends FieldValues>({
 }
 
 export const ArrayFields = <
-  TFieldValues extends FieldValues,
-  TArrayName extends ArrayPath<TFieldValues>
+  TFieldValues extends FieldValues
 >({
   control,
   name,
-  fieldDef,
-  required,
+  fieldDef
 }: {
   control: Control<TFieldValues>;
-  name: TArrayName;
+  name: string;
   fieldDef: XFormField;
   required?: boolean;
-}) => {
-  const { fields, append, remove } = useFieldArray({control, name});
-    
+  }) => {
+  const arrayName = name as ArrayPath<TFieldValues>;
+  const { fields, append, remove } = useFieldArray({control, name:arrayName});
+
   return (
     <>
       {renderArrayFieldItems({
@@ -304,10 +303,7 @@ export const ArrayFields = <
           Add {fieldDef.label ?? "Item"}
         </Button>
       </div>
-     
+
     </>
   );
 }
-
-
-

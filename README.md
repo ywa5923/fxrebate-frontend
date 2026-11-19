@@ -83,3 +83,7 @@ The warnings you saw are because:
    ```
 
 The Calendar component is actively used in your DynamicForm for date input fields, so you should keep `react-day-picker` but consider updating it to resolve the peer dependency warnings.
+
+React page builders and text editors:
+-github.com/puckeditor/puck
+-github.com/yoopta-editor/Yoopta-Editor

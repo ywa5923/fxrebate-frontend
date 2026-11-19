@@ -126,7 +126,7 @@ export function OptionsForm({
 
     const previousValue = optionValue?.previous_value;
 
-    const showPrev = previousValue !== null;
+    //const showPrev = previousValue !== null;
 
     const metadataUnit = optionValue?.metadata?.value?.unit ?? "";
 
@@ -191,11 +191,10 @@ export function OptionsForm({
     resolver: zodResolver(formSchema),
     defaultValues: buildDefaultValues(options, optionsValues, is_admin),
   });
+  const { watch } = form;
 
-  // Watch form changes to enable/disable submit button
-  // const formValues = form.watch();
   React.useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
+    const subscription = watch((value, { name, type }) => {
       if (type === "change") {
         setIsFormDirty(true);
         if (is_admin && name) {
@@ -210,7 +209,7 @@ export function OptionsForm({
       }
     });
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [watch,is_admin]);
 
   React.useEffect(() => {
     form.reset(buildDefaultValues(options, optionsValues, is_admin));
@@ -333,7 +332,7 @@ export function OptionsForm({
               : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-10 gap-y-8",
           )}
         >
-          {options.map((option, idx) => {
+          {options.map((option) => {
             return (
               <FormField
                 key={option.id}
@@ -408,12 +407,18 @@ export function OptionsForm({
                           ? (
                               form.formState.errors[
                                 option.slug
-                              ] as unknown as any[]
-                            ).map((error: any, index: number) => (
+                              ] as unknown as Array<{
+                                      message?: string;
+                                    }>
+                            ).map((error, index) => (
                               <div key={index}>{error.message}</div>
                             ))
-                          : (form.formState.errors[option.slug] as any)
-                              ?.message}
+                            : (
+                              form.formState.errors[option.slug] as
+                              | { message?: string }
+                              | undefined
+                              )?.message}
+
                       </div>
                     ) : (
                       <FormMessage />
