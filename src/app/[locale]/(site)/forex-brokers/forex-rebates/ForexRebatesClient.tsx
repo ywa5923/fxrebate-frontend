@@ -1,25 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
-import LocalizedLink from "@/components/LocalizedLink";
+import { Suspense, useEffect, useState, type SubmitEvent } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Search, Share2 } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import Pagination from "@/components/Pagination";
 import { useTranslation } from "@/providers/translations";
 import FilterPanel, { type FilterConfig } from "@/components/FilterPanel";
 
 import BrokerRebateCard from "./BrokerRebateCard";
-import { SITE_BROKER_TYPES } from "@/constants";
 import type { HighestRebateBroker } from "@/types";
 
 type ViewMode = "list" | "card";
@@ -36,36 +25,7 @@ type Props = {
   totalPages: number;
 };
 
-const CATEGORY_TABS = [
-  {
-    brokerType: SITE_BROKER_TYPES[0],
-    labelKey: "tab_forex_rebates" as const,
-    titleKey: "page_title_forex_rebates" as const,
-    descriptionKey: "page_description_forex_rebates" as const,
-  },
-  {
-    brokerType: SITE_BROKER_TYPES[1],
-    labelKey: "tab_crypto_rebates" as const,
-    titleKey: "page_title_crypto_rebates" as const,
-    descriptionKey: "page_description_crypto_rebates" as const,
-  },
-  {
-    brokerType: SITE_BROKER_TYPES[2],
-    labelKey: "tab_prop_rebates" as const,
-    titleKey: "page_title_propfirm_rebates" as const,
-    descriptionKey: "page_description_propfirm_rebates" as const,
-  },
-] as const;
-
-export default function ForexRebatesClient(props: Props) {
-  return (
-    <Suspense fallback={null}>
-      <ForexRebatesClientContent key={props.tradingName ?? ""} {...props} />
-    </Suspense>
-  );
-}
-
-function ForexRebatesClientContent({
+export default function ForexRebatesClient({
   brokers,
   filtersConfig,
   orderDirection,
@@ -95,11 +55,6 @@ function ForexRebatesClientContent({
   const activeSortLabel =
     sortOptions.find((option) => option.sort === activeSort)?.label ??
     t("sort_default");
-  const activeTab =
-    CATEGORY_TABS.find((tab) => tab.brokerType === activeBrokerType) ??
-    CATEGORY_TABS[0];
-  const pageTitle = t(activeTab.titleKey);
-  const pageDescription = t(activeTab.descriptionKey);
 
   function buildListParams(overrides: {
     brokerType?: string;
@@ -146,7 +101,7 @@ function ForexRebatesClientContent({
     return qs ? `${pathname}?${qs}` : pathname;
   }
 
-  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSearchSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = searchQuery.trim();
     const nextParams = buildListParams({
@@ -162,12 +117,6 @@ function ForexRebatesClientContent({
     push(buildListHref({ sort: nextSort }));
   }
 
-  function handleTabHref(brokerType: string) {
-    // Tab switch: only broker_type — leave sort/search to reset with defaults
-    const nextParams = new URLSearchParams({ broker_type: brokerType });
-    return `${pathname}?${nextParams.toString()}`;
-  }
-
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
     const apply = () => setView(mq.matches ? "card" : "list");
@@ -176,105 +125,8 @@ function ForexRebatesClientContent({
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  async function handleShare() {
-    const url = window.location.href;
-    const title = pageTitle;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-      }
-    } catch {
-      // user cancelled share
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-white text-[#0c110f] dark:bg-[#0c110f] dark:text-gray-100">
-      {/* pt clears sticky floating site header */}
-      <div className="mx-auto max-w-[1360px] px-4 pb-12 pt-28 sm:px-6 lg:px-10 lg:pb-16 lg:pt-32">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <Breadcrumb>
-            <BreadcrumbList className="text-xs text-[#0c110f]/70 dark:text-gray-400 sm:text-sm">
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <LocalizedLink
-                    routeKey="/"
-                    className="hover:text-[#0c110f] dark:hover:text-gray-100"
-                  >
-                    {t("breadcrumb_home")}
-                  </LocalizedLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="[&>svg]:size-3" />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <LocalizedLink
-                    routeKey="/forex-brokers"
-                    className="hover:text-[#0c110f] dark:hover:text-gray-100"
-                  >
-                    {t("breadcrumb_forex_brokers")}
-                  </LocalizedLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="[&>svg]:size-3" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="font-medium text-[#0c110f] dark:text-gray-100">
-                  {t("breadcrumb_forex_rebates")}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <button
-            type="button"
-            onClick={handleShare}
-            className="hidden h-9 shrink-0 items-center gap-2 rounded-md border border-[#0c110f]/15 px-3 text-sm font-medium text-[#0c110f] hover:bg-black/5 dark:border-white/15 dark:text-gray-100 dark:hover:bg-white/5 md:inline-flex"
-          >
-            {t("share")}
-            <Share2 className="size-4" />
-          </button>
-        </div>
-
-        <div
-          className={cn(
-            "mb-8 flex flex-col gap-2 rounded-lg bg-[#f6f6f6] p-1 dark:bg-[#202221]",
-            "md:mb-6 md:inline-flex md:h-9 md:max-w-full md:flex-row md:items-center md:gap-0 md:overflow-x-auto",
-          )}
-          role="tablist"
-          aria-label={t("rebate_categories_aria")}
-        >
-          {CATEGORY_TABS.map((tab) => {
-            const active = tab.brokerType === activeBrokerType;
-            return (
-              <Link
-                key={tab.brokerType}
-                href={handleTabHref(tab.brokerType)}
-                role="tab"
-                aria-selected={active}
-                className={cn(
-                  "flex h-11 items-center justify-center rounded-md px-4 text-sm font-medium transition-colors md:h-7 md:min-w-[160px] md:px-5",
-                  active
-                    ? "bg-[#0c110f] text-white shadow-sm dark:bg-white dark:text-[#0c110f]"
-                    : "bg-transparent text-[#0c110f]/70 hover:text-[#0c110f] dark:text-white/80 dark:hover:text-white",
-                )}
-              >
-                {t(tab.labelKey)}
-              </Link>
-            );
-          })}
-        </div>
-
-        <header className="mb-8 max-w-4xl">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-[40px] lg:leading-[1.15]">
-            {pageTitle}
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed text-[#0c110f]/80 dark:text-gray-300 sm:text-base">
-            {pageDescription}
-          </p>
-        </header>
-
+    <section>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <form
             className="flex flex-col gap-2 sm:flex-row sm:items-center"
@@ -407,7 +259,6 @@ function ForexRebatesClientContent({
             </Suspense>
           </div>
         )}
-      </div>
-    </div>
+    </section>
   );
 }

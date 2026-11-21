@@ -1,28 +1,13 @@
-import logger from "@/lib/logger";
-import { apiClient } from "@/lib/api-client";
-import { ErrorMode, UseTokenAuth } from "@/lib/enums";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
+import { getSiteBrokerType } from "@/lib/getSiteBrokerType";
 import { fetchTranslations } from "@/lib/fetchTranslations";
 import PageTranslationProvider from "@/providers/PageTranslationProvider";
-import type { HighestRebateBroker } from "@/types";
-import ForexRebatesClient from "./ForexRebatesClient";
-import { SITE_BROKER_TYPES } from "@/constants";
-import type { FilterConfig } from "@/components/FilterPanel";
-import { normalizeRatingFilterParams } from "@/lib/rating-filter-params";
+import { Suspense } from "react";
+import RebatePageContent from "./RebatePageContent";
+import RebatesData from "./RebatesData";
+import RebatesSkeleton from "./RebatesSkeleton";
 
 const TRANSLATION_KEY = "forex_rebates_page";
-
-function parseSiteBrokerType(
-  value: string | undefined | null,
-): string {
-  if (
-    value &&
-    (SITE_BROKER_TYPES as readonly string[]).includes(value)
-  ) {
-    return value;
-  }
-  return SITE_BROKER_TYPES[0];
-}
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -38,97 +23,33 @@ type Props = {
 };
 
 export default async function ForexRebatesPage({ params, searchParams }: Props) {
-  const log = logger.child(
-    "site/forex-brokers/forex-rebates/page.tsx",
-  );
   const { locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const zone = await getZoneFromCookie();
 
-  const page = resolvedSearchParams.page ?? "1";
-  const perPage = resolvedSearchParams.per_page ?? "15";
-  const tradingName = resolvedSearchParams.trading_name?.trim();
-  const brokerType = parseSiteBrokerType(resolvedSearchParams.broker_type);
-  const orderDirection =
-    resolvedSearchParams.order_direction === "asc" ||
-    resolvedSearchParams.order_direction === "desc"
-      ? resolvedSearchParams.order_direction
-      : null;
+  const brokerType = getSiteBrokerType(resolvedSearchParams.broker_type);
 
-  const query = new URLSearchParams({
-    language_code: locale,
-    page,
-    per_page: perPage,
-    broker_type: brokerType,
+  const clientTranslations = await fetchTranslations({
+    key: TRANSLATION_KEY,
+    locale,
+    zone,
   });
-  if (zone) {
-    query.set("zone_code", zone);
-  }
-  if (orderDirection) {
-    query.set("order_by", "trading_name");
-    query.set("order_direction", orderDirection);
-  }
-  if (tradingName) {
-    query.set("trading_name", tradingName);
-  }
-  for (const [key, value] of Object.entries(resolvedSearchParams)) {
-    if (!key.startsWith("filter_")) continue;
-    const values = Array.isArray(value) ? value : [value];
-    for (const filterValue of values) {
-      if (typeof filterValue === "string" && filterValue.trim()) {
-        query.append(key, filterValue);
-      }
-    }
-  }
-
-  normalizeRatingFilterParams(query);
-  const url = `/site/highest-rebates?${query.toString()}`;
-
-  log.debug("Fetching highest rebates", { url });
-
-  const [response, clientTranslations] = await Promise.all([
-    apiClient<HighestRebateBroker[], FilterConfig>(
-      url,
-      UseTokenAuth.No,
-      {
-        method: "GET",
-        next: {
-          revalidate: 60,
-          tags: ["highest-rebates", `highest-rebates:${brokerType}`],
-        },
-      },
-      ErrorMode.Return,
-    ),
-    fetchTranslations({
-      key: TRANSLATION_KEY,
-      locale,
-      zone,
-    }),
-  ]);
-
-  if (!response.success || !response.data) {
-    log.error("Error fetching highest rebates", {
-      url,
-      message: response.message,
-      status: response.status,
-    });
-    throw new Error(response.message || "Error fetching highest rebates");
-  }
 
   return (
     <PageTranslationProvider
       translations={clientTranslations}
       context={{ resource: TRANSLATION_KEY, section: "client", locale, zone }}
     >
-      <ForexRebatesClient
-        brokers={response.data}
-        filtersConfig={response.filters_config}
-        orderDirection={orderDirection}
-        tradingName={tradingName}
-        perPage={perPage}
-        activeBrokerType={brokerType}
-        totalPages={response.pagination?.last_page ?? 1}
-      />
+      <RebatePageContent activeBrokerType={brokerType}>
+        <Suspense fallback={<RebatesSkeleton />}>
+          <RebatesData
+            locale={locale}
+            zone={zone}
+            brokerType={brokerType}
+            searchParams={resolvedSearchParams}
+          />
+        </Suspense>
+      </RebatePageContent>
     </PageTranslationProvider>
   );
 }

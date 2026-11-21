@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, type FormEvent } from "react";
+import { useEffect, useMemo, type SubmitEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, ChevronsLeft, ChevronsRight,
@@ -25,7 +25,7 @@ import {
   type BrokerTableColumnsConfig, type BrokerTableDefaultColumn, type BrokerTableRow,
 } from "./reviews-table";
 
-type ReviewsDataTableProps = {
+export type ClientdataTableProps = {
   brokers: BrokerTableRow[];
   tableColumnsConfig: BrokerTableColumnsConfig;
   defaultColumns: BrokerTableDefaultColumn[];
@@ -36,18 +36,18 @@ type ReviewsDataTableProps = {
   };
 };
 
-export default function ReviewsDataTable({
+export default function ClientdataTable({
   brokers, tableColumnsConfig, defaultColumns, filtersConfig, activeTabLabel, labels,
-}: ReviewsDataTableProps) {
+}: ClientdataTableProps) {
   const searchParams = useSearchParams();
   const columnsConfig = tableColumnsConfig.columns;
   const paginationLabels = {
-    show: tableColumnsConfig.btn_labels.show ?? "Show",
-    itemsPerPage: tableColumnsConfig.btn_labels.items_per_page ?? "items/page",
-    first: tableColumnsConfig.btn_labels.first ?? "First",
-    previous: tableColumnsConfig.btn_labels.previous ?? "Previous",
-    next: tableColumnsConfig.btn_labels.next ?? "Next",
-    last: tableColumnsConfig.btn_labels.last ?? "Last",
+    show: tableColumnsConfig.btn_labels?.show ?? "Show",
+    itemsPerPage: tableColumnsConfig.btn_labels?.items_per_page ?? "items/page",
+    first: tableColumnsConfig.btn_labels?.first ?? "First",
+    previous: tableColumnsConfig.btn_labels?.previous ?? "Previous",
+    next: tableColumnsConfig.btn_labels?.next ?? "Next",
+    last: tableColumnsConfig.btn_labels?.last ?? "Last",
   };
   const globalFilter = searchParams.get("search") ?? "";
   const filteredBrokers = useMemo(() => filterBrokers(brokers, globalFilter), [brokers, globalFilter]);
@@ -135,7 +135,7 @@ export default function ReviewsDataTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  function submitSearch(event: FormEvent<HTMLFormElement>) {
+  function submitSearch(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const search = String(new FormData(event.currentTarget).get("search") ?? "").trim();
     updateTableUrl((params) => {
@@ -178,7 +178,7 @@ export default function ReviewsDataTable({
                   variant="outline"
                   className="h-10 w-[115px] justify-center gap-2 rounded-md border-[#0c110f]/20 bg-transparent px-4 text-xs font-medium text-[#0c110f] dark:border-white/30 dark:text-white"
                 >
-                  {tableColumnsConfig.btn_labels.columns}
+                  {tableColumnsConfig.btn_labels?.columns ?? "Columns"}
                   <ChevronDown className="size-4" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
@@ -209,7 +209,7 @@ export default function ReviewsDataTable({
               onClick={() => updateTableUrl((params) => params.delete("columns"))}
               className="h-10 justify-center rounded-md border-[#0c110f]/20 bg-transparent px-3 text-xs font-medium text-[#0c110f] dark:border-white/30 dark:text-white"
             >
-              {tableColumnsConfig.btn_labels.reset_columns}
+              {tableColumnsConfig.btn_labels?.reset_columns ?? "Reset Columns"}
             </Button>
           </div>
         </div>

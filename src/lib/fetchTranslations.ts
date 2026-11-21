@@ -13,7 +13,6 @@ type FetchTranslationsOptions = {
   locale: string;
   zone?: string | null;
   section?: string;
-  revalidate?: number;
 };
 
 export async function fetchTranslations({
@@ -21,7 +20,6 @@ export async function fetchTranslations({
   locale,
   zone,
   section = "client",
-  revalidate = 0,
 }: FetchTranslationsOptions): Promise<Record<string, string>> {
   const context = {
     resource: key,
@@ -38,17 +36,10 @@ export async function fetchTranslations({
   if (zone) query.set("zone[eq]", zone);
 
   const url = `/locale_resources?${query.toString()}`;
-  const options: RequestInit = revalidate > 0
-    ? {
-        method: "GET",
-        next: { revalidate, tags: ["translations", `translations:${key}`] },
-      }
-    : { method: "GET", cache: "no-store" };
-
   const response = await apiClient<Record<string, unknown>>(
     url,
     UseTokenAuth.No,
-    options,
+    { method: "GET" },
     ErrorMode.Return,
   );
 

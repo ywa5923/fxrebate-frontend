@@ -47,62 +47,61 @@ export async function apiClient<T, TFilters = FTFilters<T>>(
     ...options.headers,
   };
 
+  let response: Response;
   try {
-    const response: Response = await fetch(requestUrl, { ...options, headers });
-    const status = response.status;
-
-    // Try parse JSON safely
-    const serverJsonResponse: ServerJsonResponse<T, TFilters>|null = await response.json().catch((err) => {
-      log.error("Invalid JSON response", { url: requestUrl, status, error: err });
-      return null;
-    });
-
-    
-    if (!response.ok || serverJsonResponse?.success === false ) {
-     
-      let message = serverJsonResponse?.message ?? `Request failed with status ${status}`;
-    
-
-      if (serverJsonResponse?.errors && typeof serverJsonResponse.errors === "object") {
-        const validationErrors = Object.entries(serverJsonResponse.errors)
-          .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(", ") : String(errs)}`)
-          .join(" |** ");
-        message += ` → ${validationErrors}`;
-        
-      }
-      message +='***' + (serverJsonResponse?.error ?? '');
-
-      log.error("API request failed", { url: requestUrl, status, message, serverJsonResponse });
-      if (errorMode === ErrorMode.Throw) throw new Error(message);
-      return { success: false, message, status };
-    }
-
-    const method = (options.method || 'GET').toUpperCase();
-   
-
-    const baseResponse: ApiClientResponse<T, TFilters> = {
-      success: true,
-      data: (serverJsonResponse?.data as T),
-      status,
-    };
-
-    return method!=='GET'
-      ? baseResponse
-      : {
-          ...baseResponse,
-          pagination: serverJsonResponse?.pagination,
-          table_columns_config: serverJsonResponse?.table_columns_config,
-          filters_config: serverJsonResponse?.filters_config,
-          form_config: serverJsonResponse?.form_config,
-        };
-
+    response = await fetch(requestUrl, { ...options, headers });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     log.error("ApiClient Network exception", { url: requestUrl, message });
-   
+
     if (errorMode === ErrorMode.Throw) throw new Error(message);
-    return { success: false, message, status: 500 };
+    return { success: false, message };
   }
+
+  const status = response.status;
+  const serverJsonResponse: ServerJsonResponse<T, TFilters> | null =
+    await response.json().catch((error) => {
+      log.error("Invalid JSON response", { url: requestUrl, status, error });
+      return null;
+    });
+
+  if (!response.ok || serverJsonResponse?.success === false) {
+    let message = serverJsonResponse?.message ?? `Request failed with status ${status}`;
+
+    if (serverJsonResponse?.errors && typeof serverJsonResponse.errors === "object") {
+      const validationErrors = Object.entries(serverJsonResponse.errors)
+        .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(", ") : String(errs)}`)
+        .join(" |** ");
+      message += ` → ${validationErrors}`;
+    }
+    message += `***${serverJsonResponse?.error ?? ""}`;
+
+    log.error("API request failed", {
+      url: requestUrl,
+      status,
+      message,
+      serverJsonResponse,
+    });
+    if (errorMode === ErrorMode.Throw) throw new Error(message);
+    return { success: false, message, status };
+  }
+
+  const method = (options.method || "GET").toUpperCase();
+  const baseResponse: ApiClientResponse<T, TFilters> = {
+    success: true,
+    data: serverJsonResponse?.data as T,
+    status,
+  };
+
+  return method !== "GET"
+    ? baseResponse
+    : {
+        ...baseResponse,
+        pagination: serverJsonResponse?.pagination,
+        table_columns_config: serverJsonResponse?.table_columns_config,
+        filters_config: serverJsonResponse?.filters_config,
+        form_config: serverJsonResponse?.form_config,
+      };
 }
 
 

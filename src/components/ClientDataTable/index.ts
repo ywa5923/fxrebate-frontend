@@ -1,5 +1,5 @@
-export { default } from "./ClientDataTable";
-export type { ClientDataTableProps } from "./ClientDataTable";
+export { default } from "./ClientdataTable";
+export type { ClientdataTableProps } from "./ClientdataTable";
 export type {
   BrokerTableColumn,
   BrokerTableColumnsConfig,

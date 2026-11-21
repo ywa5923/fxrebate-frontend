@@ -1,0 +1,19 @@
+{
+  "page_url": "en/forex-brokers/compare",
+  "client": {
+    "breadcrumb_home": "Home",
+    "breadcrumb_forex_brokers": "Forex Brokers",
+    "breadcrumb_reviews": "Reviews",
+    "share_reviews_page_aria": "Share reviews page",
+    "broker_categories_aria": "Broker categories",
+    "tab_forex_brokers": "Forex Brokers",
+    "tab_crypto_exchanges": "Crypto Exchanges",
+    "tab_prop_firms": "Prop Firms",
+    "page_title_forex_brokers": "Forex Broker Ratings & Reviews",
+    "page_title_crypto_exchanges": "Crypto Exchange Ratings & Reviews",
+    "page_title_prop_firms": "Prop Firm Ratings & Reviews",
+    "page_description_forex_brokers": "Reliable forex broker ratings based on up to 6 importance-weighted categories, including real customer reviews from traders who have synced their live trading account, regulation strength, broker popularity and web traffic, pricing, features, and customer support.",
+    "page_description_crypto_exchanges": "Reliable crypto exchange ratings based on up to 6 importance-weighted categories, including real customer reviews from users who have synced their live trading account, exchange popularity and web traffic, pricing, features, and customer support.",
+    "page_description_prop_firms": "Reliable prop firm ratings based on up to 6 importance-weighted categories, including real customer reviews from traders who have synced their live trading account, firm popularity and web traffic, pricing, program features, and customer support."
+  }
+}

@@ -1,72 +1,34 @@
 "use client";
 
-import { Suspense } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Share2 } from "lucide-react";
-import type { FilterConfig } from "@/components/FilterPanel";
 import LocalizedLink from "@/components/LocalizedLink";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import ReviewsDataTable from "./ReviewsDataTable";
-import type {
-  BrokerTableColumnsConfig,
-  BrokerTableDefaultColumn,
-  BrokerTableRow,
-} from "./reviews-table";
+import { useTranslation } from "@/providers/translations";
+import { CATEGORY_TABS, getCategoryTab } from "./category-tabs";
 
-export type ClientDataTableProps = {
-  locale: string;
+export type ComparePageContentProps = {
   brokerType: string;
-  brokers: BrokerTableRow[];
-  tableColumnsConfig: BrokerTableColumnsConfig | null;
-  defaultColumns: BrokerTableDefaultColumn[];
-  filtersConfig: FilterConfig | null;
+  children: ReactNode;
 };
 
-const CATEGORY_TABS = [
-  { brokerType: "broker", label: "Forex Brokers", title: "Forex Broker Ratings & Reviews" },
-  { brokerType: "crypto", label: "Crypto Exchanges", title: "Crypto Exchange Ratings & Reviews" },
-  { brokerType: "prop_firm", label: "Prop Firms", title: "Prop Firm Ratings & Reviews" },
-] as const;
-
-const TABLE_LABELS = {
-  en: {
-    chooseColumns: "Choose columns",
-  },
-  fr: {
-    chooseColumns: "Choisir les colonnes",
-  },
-} as const;
-
-export default function ClientDataTable(props: ClientDataTableProps) {
-  return (
-    <Suspense fallback={<div className="min-h-[60vh] bg-white dark:bg-[#0c110f]" />}>
-      <ClientDataTableContent key={props.brokerType} {...props} />
-    </Suspense>
-  );
+export default function ComparePageContent(props: ComparePageContentProps) {
+  return <ComparePageContentContent key={props.brokerType} {...props} />;
 }
 
-function ClientDataTableContent({
-  locale,
+function ComparePageContentContent({
   brokerType,
-  brokers,
-  tableColumnsConfig,
-  defaultColumns,
-  filtersConfig,
-}: ClientDataTableProps) {
+  children,
+}: ComparePageContentProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab =
-    CATEGORY_TABS.find((tab) => tab.brokerType === brokerType) ?? CATEGORY_TABS[0];
-  const tableLabels = TABLE_LABELS[locale as keyof typeof TABLE_LABELS] ?? TABLE_LABELS.en;
-  const resolvedTableColumnsConfig = tableColumnsConfig ?? {
-    columns: [],
-    btn_labels: {
-      columns: "Columns",
-      reset_columns: "Reset Columns",
-    },
-  };
+  const { t } = useTranslation();
+  const activeTab = getCategoryTab(brokerType);
+  const pageTitle = t(activeTab.titleKey);
 
   function getTabHref(nextBrokerType: string) {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -85,7 +47,7 @@ function ClientDataTableContent({
   async function handleShare() {
     const url = window.location.href;
     try {
-      if (navigator.share) await navigator.share({ title: activeTab.title, url });
+      if (navigator.share) await navigator.share({ title: pageTitle, url });
       else if (navigator.clipboard) await navigator.clipboard.writeText(url);
     } catch {
       // Ignore a canceled share action.
@@ -101,7 +63,7 @@ function ClientDataTableContent({
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <LocalizedLink routeKey="/" className="hover:text-[#0c110f] dark:hover:text-white">
-                    Home
+                    {t("breadcrumb_home")}
                   </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -112,14 +74,14 @@ function ClientDataTableContent({
                     routeKey="/forex-brokers"
                     className="hover:text-[#0c110f] dark:hover:text-white"
                   >
-                    Forex Brokers
+                    {t("breadcrumb_forex_brokers")}
                   </LocalizedLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="[&>svg]:size-3" />
               <BreadcrumbItem>
                 <BreadcrumbPage className="font-medium text-[#0c110f] dark:text-gray-100">
-                  Reviews
+                  {t("breadcrumb_reviews")}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -127,7 +89,7 @@ function ClientDataTableContent({
           <button
             type="button"
             onClick={handleShare}
-            aria-label="Share reviews page"
+            aria-label={t("share_reviews_page_aria")}
             className="flex size-9 shrink-0 items-center justify-center rounded-md text-[#0c110f] hover:bg-black/5 dark:text-gray-100 dark:hover:bg-white/10"
           >
             <Share2 className="size-5" aria-hidden="true" />
@@ -137,7 +99,7 @@ function ClientDataTableContent({
         <nav
           className="mb-8 flex flex-col gap-2 rounded-lg bg-[#f6f6f6] p-1 dark:bg-[#202221] md:inline-flex md:h-10 md:max-w-full md:flex-row md:items-center md:gap-0 md:overflow-x-auto"
           role="tablist"
-          aria-label="Broker categories"
+          aria-label={t("broker_categories_aria")}
         >
           {CATEGORY_TABS.map((tab) => {
             const selected = tab.brokerType === activeTab.brokerType;
@@ -154,37 +116,67 @@ function ClientDataTableContent({
                     : "bg-transparent text-[#0c110f]/75 hover:text-[#0c110f] dark:text-white/80 dark:hover:text-white",
                 )}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </Link>
             );
           })}
         </nav>
 
         <div className="mb-10 max-w-[1040px]">
-          <div className="mb-4 flex items-center gap-3 text-xs sm:text-sm">
-            <span className="font-normal">Last updated</span>
-            <span className="font-medium text-base">December,2024</span>
-          </div>
           <h1 className="text-[32px] font-bold leading-[1.12] tracking-tight sm:text-4xl lg:text-[56px]">
-            {activeTab.title}
+            {pageTitle}
           </h1>
           <p className="mt-5 max-w-[1000px] text-sm leading-relaxed text-[#0c110f]/80 dark:text-white/80">
-            Reliable ratings based on up to 6 importance-weighted categories including real customer
-            reviews from customers who have synced their live trading account, as well as regulation
-            strength, broker popularity and web traffic, pricing, features &amp; customer support.
+            {t(activeTab.descriptionKey)}
           </p>
         </div>
 
-        <ReviewsDataTable
-          brokers={brokers}
-          tableColumnsConfig={resolvedTableColumnsConfig}
-          defaultColumns={defaultColumns}
-          filtersConfig={filtersConfig}
-          activeTabLabel={activeTab.label}
-          labels={{ chooseColumns: tableLabels.chooseColumns }}
-        />
+        <Accordion type="single" collapsible className="mb-10 max-w-[1040px] space-y-3">
+          <InfoAccordionItem
+            value="high-risk-trading"
+            title={t("page_title_high_risk_trading")}
+            description={t("page_description_high_risk_trading")}
+          />
+          <InfoAccordionItem
+            value="advertising-disclosure"
+            title={t("page_title_advertising_disclosure")}
+            description={t("page_description_advertising_disclosure")}
+          />
+        </Accordion>
+
+        {children}
       </div>
     </main>
+  );
+}
+
+function InfoAccordionItem({
+  value,
+  title,
+  description,
+}: {
+  value: string;
+  title: string;
+  description: string;
+}) {
+  const paragraphs = description.split(/\r?\n\s*\r?\n/).filter((paragraph) => paragraph.trim());
+
+  return (
+    <AccordionItem
+      value={value}
+      className="overflow-hidden rounded-xl border border-[#0c110f]/10 bg-[#f8f9f8] px-5 last:border-b dark:border-white/10 dark:bg-[#151918]"
+    >
+      <AccordionTrigger className="py-5 text-left text-base font-semibold tracking-tight hover:no-underline sm:text-lg [&>svg]:size-5">
+        {title}
+      </AccordionTrigger>
+      <AccordionContent className="pb-5">
+        <div className="space-y-4 text-sm leading-relaxed text-[#0c110f]/80 dark:text-white/75">
+          {paragraphs.map((paragraph, index) => (
+            <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+          ))}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 

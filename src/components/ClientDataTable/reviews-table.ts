@@ -11,9 +11,9 @@ export type BrokerTableColumn = {
 
 export type BrokerTableColumnsConfig = {
   columns: BrokerTableColumn[];
-  btn_labels: {
-    columns: string;
-    reset_columns: string;
+  btn_labels?: {
+    columns?: string;
+    reset_columns?: string;
     show?: string;
     items_per_page?: string;
     first?: string;
