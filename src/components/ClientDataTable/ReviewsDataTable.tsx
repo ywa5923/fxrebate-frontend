@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, ChevronDown, Search } from "lucide-react";
+import {
+  ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, ChevronsLeft, ChevronsRight,
+  ChevronDown, Search,
+} from "lucide-react";
 import {
   flexRender, functionalUpdate, getCoreRowModel, getPaginationRowModel, getSortedRowModel,
   useReactTable, type Column, type ColumnDef, type SortingState,
@@ -18,22 +21,34 @@ import { cn } from "@/lib/utils";
 import BrokerTableCell from "./BrokerTableCell";
 import {
   FALLBACK_DEFAULT_COLUMN_COUNT, filterBrokers, getPagination, getVisiblePageNumbers,
-  setPageParam, updateTableUrl,
-  type BrokerTableColumn, type BrokerTableDefaultColumn, type BrokerTableRow,
+  setPageParam, setPageSizeParam, TABLE_PAGE_SIZE, TABLE_PAGE_SIZES, updateTableUrl,
+  type BrokerTableColumnsConfig, type BrokerTableDefaultColumn, type BrokerTableRow,
 } from "./reviews-table";
 
 type ReviewsDataTableProps = {
   brokers: BrokerTableRow[];
-  columnsConfig: BrokerTableColumn[];
+  tableColumnsConfig: BrokerTableColumnsConfig;
   defaultColumns: BrokerTableDefaultColumn[];
   filtersConfig: FilterConfig | null;
   activeTabLabel: string;
+  labels: {
+    chooseColumns: string;
+  };
 };
 
 export default function ReviewsDataTable({
-  brokers, columnsConfig, defaultColumns, filtersConfig, activeTabLabel,
+  brokers, tableColumnsConfig, defaultColumns, filtersConfig, activeTabLabel, labels,
 }: ReviewsDataTableProps) {
   const searchParams = useSearchParams();
+  const columnsConfig = tableColumnsConfig.columns;
+  const paginationLabels = {
+    show: tableColumnsConfig.btn_labels.show ?? "Show",
+    itemsPerPage: tableColumnsConfig.btn_labels.items_per_page ?? "items/page",
+    first: tableColumnsConfig.btn_labels.first ?? "First",
+    previous: tableColumnsConfig.btn_labels.previous ?? "Previous",
+    next: tableColumnsConfig.btn_labels.next ?? "Next",
+    last: tableColumnsConfig.btn_labels.last ?? "Last",
+  };
   const globalFilter = searchParams.get("search") ?? "";
   const filteredBrokers = useMemo(() => filterBrokers(brokers, globalFilter), [brokers, globalFilter]);
 
@@ -59,17 +74,24 @@ export default function ReviewsDataTable({
   }, [columnsConfig, searchParams]);
 
   const rawPage = searchParams.get("page");
-  const { page: currentPage, pageCount, pageIndex, pageSize } = getPagination(rawPage, filteredBrokers.length);
+  const rawPageSize = searchParams.get("per_page");
+  const { page: currentPage, pageCount, pageIndex, pageSize } = getPagination(
+    rawPage,
+    filteredBrokers.length,
+    rawPageSize,
+  );
   const pagination = { pageIndex, pageSize };
 
   useEffect(() => {
     const canonicalPage = currentPage > 1 ? String(currentPage) : null;
-    if (rawPage === canonicalPage) return;
+    const canonicalPageSize = pageSize === TABLE_PAGE_SIZE ? null : String(pageSize);
+    if (rawPage === canonicalPage && rawPageSize === canonicalPageSize) return;
     updateTableUrl((params) => {
-      // Don't overwrite a newer navigation while correcting an invalid URL page.
+      // Don't overwrite newer navigation while correcting invalid URL pagination.
       if (params.get("page") === rawPage) setPageParam(params, currentPage);
+      if (params.get("per_page") === rawPageSize) setPageSizeParam(params, pageSize);
     }, "replace");
-  }, [rawPage, currentPage]);
+  }, [rawPage, rawPageSize, currentPage, pageSize]);
 
   const tableColumns = useMemo<ColumnDef<BrokerTableRow>[]>(
     () => columnsConfig.map((config) => ({
@@ -139,51 +161,57 @@ export default function ReviewsDataTable({
           />
         </form>
 
-        <div className="flex w-full items-center gap-2 md:w-auto md:flex-1 md:justify-between">
-          <div className="flex-1 [&>button]:w-full md:flex-none md:[&>button]:w-auto">
-            {filtersConfig ? (
-              <FilterPanel triggerLabel="Show Filter" config={filtersConfig} />
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="h-11 rounded-md bg-[#0c110f] px-4 text-sm font-medium text-white opacity-60 dark:bg-white dark:text-[#0c110f]"
-              >
-                Show Filter
-              </button>
-            )}
-          </div>
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-1 md:flex-nowrap md:justify-between">
+          {filtersConfig && (
+            <div className="min-w-[280px] flex-1 md:min-w-0 md:flex-none">
+              <FilterPanel
+                config={filtersConfig}
+                showResetButton
+              />
+            </div>
+          )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-10 w-[115px] justify-center gap-2 rounded-md border-[#0c110f]/20 bg-transparent px-4 text-xs font-medium text-[#0c110f] dark:border-white/30 dark:text-white"
-              >
-                Column
-                <ChevronDown className="size-4" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-80 w-64 overflow-y-auto">
-              <DropdownMenuLabel>Choose columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {columnsConfig.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.key}
-                  checked={selectedColumnKeys.includes(column.key)}
-                  onSelect={(event) => event.preventDefault()}
-                  onCheckedChange={(checked) => {
-                    const nextKeys = checked
-                      ? [...selectedColumnKeys, column.key]
-                      : selectedColumnKeys.filter((key) => key !== column.key);
-                    updateTableUrl((params) => params.set("columns", nextKeys.join(",")));
-                  }}
+          <div className="flex shrink-0 items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 w-[115px] justify-center gap-2 rounded-md border-[#0c110f]/20 bg-transparent px-4 text-xs font-medium text-[#0c110f] dark:border-white/30 dark:text-white"
                 >
-                  {column.label || column.key}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {tableColumnsConfig.btn_labels.columns}
+                  <ChevronDown className="size-4" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-h-80 w-64 overflow-y-auto">
+                <DropdownMenuLabel>{labels.chooseColumns}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {columnsConfig.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.key}
+                    checked={selectedColumnKeys.includes(column.key)}
+                    onSelect={(event) => event.preventDefault()}
+                    onCheckedChange={(checked) => {
+                      const nextKeys = checked
+                        ? [...selectedColumnKeys, column.key]
+                        : selectedColumnKeys.filter((key) => key !== column.key);
+                      updateTableUrl((params) => params.set("columns", nextKeys.join(",")));
+                    }}
+                  >
+                    {column.label || column.key}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!searchParams.has("columns")}
+              onClick={() => updateTableUrl((params) => params.delete("columns"))}
+              className="h-10 justify-center rounded-md border-[#0c110f]/20 bg-transparent px-3 text-xs font-medium text-[#0c110f] dark:border-white/30 dark:text-white"
+            >
+              {tableColumnsConfig.btn_labels.reset_columns}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -238,47 +266,98 @@ export default function ReviewsDataTable({
         </TableBody>
       </Table>
 
-      <nav aria-label="Table pagination" className="mt-6 flex flex-wrap items-center justify-end gap-2 text-sm">
-        <button
-          type="button"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-          className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          <span>Previous</span>
-        </button>
-        {getVisiblePageNumbers(currentPage, pageCount).map((pageNumber, index) =>
-          pageNumber === "ellipsis" ? (
-            <span key={`ellipsis-${index}`} className="px-2 text-[#0c110f]/70 dark:text-gray-300" aria-hidden="true">
-              …
-            </span>
-          ) : (
-            <button
-              key={pageNumber}
-              type="button"
-              aria-current={currentPage === pageNumber ? "page" : undefined}
-              onClick={() => table.setPageIndex(pageNumber - 1)}
-              className={cn(
-                "h-9 min-w-9 rounded-md px-2 text-center",
-                currentPage === pageNumber
-                  ? "border border-[#0c110f]/20 text-[#0c110f] dark:border-white/25 dark:text-white"
-                  : "text-[#0c110f] hover:bg-black/5 dark:text-gray-100 dark:hover:bg-white/10",
-              )}
-            >
-              {pageNumber}
-            </button>
-          ),
-        )}
-        <button
-          type="button"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-          className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
-        >
-          <span>Next</span>
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </button>
+      <nav aria-label="Table pagination" className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <label className="flex items-center gap-2 text-[#0c110f] dark:text-gray-100">
+          <span>{paginationLabels.show}</span>
+          <select
+            value={pageSize}
+            onChange={(event) => {
+              const nextPageSize = Number(event.currentTarget.value);
+              updateTableUrl((params) => {
+                setPageSizeParam(params, nextPageSize);
+                params.delete("page");
+              });
+            }}
+            aria-label={paginationLabels.itemsPerPage}
+            className="h-9 rounded-md border border-[#0c110f]/20 bg-transparent px-2 text-sm dark:border-white/30"
+          >
+            {TABLE_PAGE_SIZES.map((size) => (
+              <option key={size} value={size} className="bg-white text-[#0c110f]">
+                {size}
+              </option>
+            ))}
+          </select>
+          <span>{paginationLabels.itemsPerPage}</span>
+        </label>
+
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          <button
+            type="button"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+            aria-label={paginationLabels.first}
+            title={paginationLabels.first}
+            className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
+          >
+            <ChevronsLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{paginationLabels.first}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            aria-label={paginationLabels.previous}
+            title={paginationLabels.previous}
+            className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span>{paginationLabels.previous}</span>
+          </button>
+          {getVisiblePageNumbers(currentPage, pageCount).map((pageNumber, index) =>
+            pageNumber === "ellipsis" ? (
+              <span key={`ellipsis-${index}`} className="px-2 text-[#0c110f]/70 dark:text-gray-300" aria-hidden="true">
+                …
+              </span>
+            ) : (
+              <button
+                key={pageNumber}
+                type="button"
+                aria-current={currentPage === pageNumber ? "page" : undefined}
+                onClick={() => table.setPageIndex(pageNumber - 1)}
+                className={cn(
+                  "h-9 min-w-9 rounded-md px-2 text-center",
+                  currentPage === pageNumber
+                    ? "border border-[#0c110f]/20 text-[#0c110f] dark:border-white/25 dark:text-white"
+                    : "text-[#0c110f] hover:bg-black/5 dark:text-gray-100 dark:hover:bg-white/10",
+                )}
+              >
+                {pageNumber}
+              </button>
+            ),
+          )}
+          <button
+            type="button"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            aria-label={paginationLabels.next}
+            title={paginationLabels.next}
+            className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
+          >
+            <span>{paginationLabels.next}</span>
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => table.setPageIndex(pageCount - 1)}
+            disabled={!table.getCanNextPage()}
+            aria-label={paginationLabels.last}
+            title={paginationLabels.last}
+            className="inline-flex h-9 items-center gap-2 px-2 text-[#0c110f] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-100"
+          >
+            <span className="hidden sm:inline">{paginationLabels.last}</span>
+            <ChevronsRight className="size-4" aria-hidden="true" />
+          </button>
+        </div>
       </nav>
     </section>
   );

@@ -1,6 +1,8 @@
 {
   "title": "Filters",
   "clearLabel": "Clear all",
+  "showFilterBtnLabel": "Show Filter",
+  "resetFilterBtnLabel": "Reset Filters",
   "emptyOptionLabel": "Any",
   "advancedTitle": "Advanced Filters",
   "primarySectionId": "main",

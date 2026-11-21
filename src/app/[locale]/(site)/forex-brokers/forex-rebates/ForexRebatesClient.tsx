@@ -291,7 +291,7 @@ function ForexRebatesClientContent({
               />
             </label>
             {filtersConfig && (
-              <FilterPanel triggerLabel={t("show_filter")} config={filtersConfig} />
+              <FilterPanel config={filtersConfig} />
             )}
           </form>
 

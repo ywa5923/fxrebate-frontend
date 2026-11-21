@@ -10,7 +10,7 @@ import { SITE_BROKER_TYPES } from "@/constants";
 import type { FilterConfig } from "@/components/FilterPanel";
 import { normalizeRatingFilterParams } from "@/lib/rating-filter-params";
 
-const FOREX_REBATES_TRANSLATION_KEY = "forex_rebates_page";
+const TRANSLATION_KEY = "forex_rebates_page";
 
 function parseSiteBrokerType(
   value: string | undefined | null,
@@ -100,7 +100,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
       ErrorMode.Return,
     ),
     fetchTranslations({
-      key: FOREX_REBATES_TRANSLATION_KEY,
+      key: TRANSLATION_KEY,
       locale,
       zone,
     }),
@@ -118,7 +118,7 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
   return (
     <PageTranslationProvider
       translations={clientTranslations}
-      context={{ resource: FOREX_REBATES_TRANSLATION_KEY, section: "client", locale, zone }}
+      context={{ resource: TRANSLATION_KEY, section: "client", locale, zone }}
     >
       <ForexRebatesClient
         brokers={response.data}

@@ -50,6 +50,8 @@ export type FilterField = {
 export type FilterConfig = {
   title: string;
   clearLabel: string;
+  showFilterBtnLabel: string;
+  resetFilterBtnLabel: string;
   emptyOptionLabel: string;
   advancedTitle: string;
   primarySectionId: string;
@@ -269,8 +271,8 @@ function RangeWithUnitControl({
 }
 
 type FilterPanelProps = {
-  triggerLabel: string;
   config: FilterConfig;
+  showResetButton?: boolean;
 };
 
 function MultiSelectControl({
@@ -381,8 +383,8 @@ function MultiSelectControl({
 }
 
 export default function FilterPanel({
-  triggerLabel,
   config,
+  showResetButton = false,
 }: FilterPanelProps) {
   const [open, setOpen] = useState(false);
 
@@ -396,8 +398,10 @@ export default function FilterPanel({
   );
   const { searchParams, updateValue, toggleValue, clearValues } = useFilterParams(ratingQueryParams);
   const activeFilterCount = fields.reduce(
-    (count, field) =>
-      count + (valuesFromParams(searchParams, field.queryParam).length > 0 ? 1 : 0),
+    (count, field) => {
+      const selectedCount = valuesFromParams(searchParams, field.queryParam).length;
+      return count + (field.type === "checkbox-group" ? selectedCount : selectedCount > 0 ? 1 : 0);
+    },
     0,
   );
 
@@ -579,15 +583,18 @@ export default function FilterPanel({
     );
   }
 
-  return (
+  const filterSheet = (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           type="button"
-          className="h-11 shrink-0 gap-2 rounded-md bg-[#0c110f] px-4 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200"
+          className={cn(
+            "h-11 gap-2 rounded-md bg-[#0c110f] px-4 text-sm font-medium text-white shadow-[0px_3px_4px_rgba(0,0,0,0.22)] hover:bg-[#0c110f]/90 dark:bg-white dark:text-[#0c110f] dark:hover:bg-gray-200",
+            showResetButton ? "min-w-0 flex-1 justify-center" : "shrink-0",
+          )}
         >
           <ListFilter className="size-4" />
-          {triggerLabel}
+          {config.showFilterBtnLabel}
           {activeFilterCount > 0 && (
             <span className="inline-flex size-5 items-center justify-center rounded-full bg-white/20 text-xs dark:bg-black/10">
               {activeFilterCount}
@@ -637,5 +644,22 @@ export default function FilterPanel({
         </div>
       </SheetContent>
     </Sheet>
+  );
+
+  if (!showResetButton) return filterSheet;
+
+  return (
+    <div className="flex w-full items-center gap-2 md:w-auto">
+      {filterSheet}
+      <Button
+        type="button"
+        variant="outline"
+        disabled={activeFilterCount === 0}
+        onClick={clearFilters}
+        className="h-11 shrink-0 rounded-md border-[#0c110f]/20 px-4 text-sm font-medium text-[#0c110f] dark:border-white/30 dark:text-gray-100"
+      >
+        {config.resetFilterBtnLabel}
+      </Button>
+    </div>
   );
 }

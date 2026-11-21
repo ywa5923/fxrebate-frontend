@@ -9,6 +9,20 @@ export type BrokerTableColumn = {
   allow_order_by?: boolean;
 };
 
+export type BrokerTableColumnsConfig = {
+  columns: BrokerTableColumn[];
+  btn_labels: {
+    columns: string;
+    reset_columns: string;
+    show?: string;
+    items_per_page?: string;
+    first?: string;
+    previous?: string;
+    next?: string;
+    last?: string;
+  };
+};
+
 export type BrokerTableDefaultColumn = {
   key: string;
   label?: string;
@@ -16,6 +30,7 @@ export type BrokerTableDefaultColumn = {
 };
 
 export const TABLE_PAGE_SIZE = 10;
+export const TABLE_PAGE_SIZES = [10, 20, 50, 100, 200, 500] as const;
 export const FALLBACK_DEFAULT_COLUMN_COUNT = 7;
 
 export function getBooleanValue(value: unknown): boolean | null {
@@ -57,13 +72,23 @@ export function filterBrokers(brokers: BrokerTableRow[], search: string): Broker
   );
 }
 
-export function getPagination(rawPage: string | null, rowCount: number) {
-  const pageCount = Math.max(1, Math.ceil(rowCount / TABLE_PAGE_SIZE));
+export function getPagination(
+  rawPage: string | null,
+  rowCount: number,
+  rawPageSize: string | null = null,
+) {
+  const requestedPageSize = rawPageSize !== null && /^\d+$/.test(rawPageSize)
+    ? Number(rawPageSize)
+    : TABLE_PAGE_SIZE;
+  const pageSize = (TABLE_PAGE_SIZES as readonly number[]).includes(requestedPageSize)
+    ? requestedPageSize
+    : TABLE_PAGE_SIZE;
+  const pageCount = Math.max(1, Math.ceil(rowCount / pageSize));
   const requested = rawPage !== null && /^\d+$/.test(rawPage) ? Number(rawPage) : 1;
   const page = Number.isSafeInteger(requested)
     ? Math.min(Math.max(1, requested), pageCount)
     : 1;
-  return { page, pageCount, pageIndex: page - 1, pageSize: TABLE_PAGE_SIZE };
+  return { page, pageCount, pageIndex: page - 1, pageSize };
 }
 
 export function getVisiblePageNumbers(page: number, pageCount: number): Array<number | "ellipsis"> {
@@ -87,6 +112,11 @@ export function getVisiblePageNumbers(page: number, pageCount: number): Array<nu
 export function setPageParam(params: URLSearchParams, page: number) {
   if (page > 1) params.set("page", String(page));
   else params.delete("page");
+}
+
+export function setPageSizeParam(params: URLSearchParams, pageSize: number) {
+  if (pageSize === TABLE_PAGE_SIZE) params.delete("per_page");
+  else params.set("per_page", String(pageSize));
 }
 
 export function updateTableUrl(

@@ -1,18 +1,20 @@
 import { BASE_URL, SITE_BROKER_TYPES } from "@/constants";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import logger from "@/lib/logger";
-import ClientdataTable, {
-  type BrokerTableColumn,
+import ClientDataTable, {
+  type BrokerTableColumnsConfig,
   type BrokerTableDefaultColumn,
   type BrokerTableRow,
-} from "@/components/ClientdataTable";
+} from "@/components/ClientDataTable";
 import type { FilterConfig } from "@/components/FilterPanel";
 import { normalizeRatingFilterParams } from "@/lib/rating-filter-params";
+
+const TRANSLATION_KEY = "forex_brokers_compare";
 
 type ReviewsApiResponse = {
   success: boolean;
   data?: BrokerTableRow[];
-  table_columns_config?: BrokerTableColumn[];
+  table_columns_config?: BrokerTableColumnsConfig | null;
   table_default_columns?: BrokerTableDefaultColumn[];
   filters_config?: FilterConfig | null;
   message?: string;
@@ -84,11 +86,11 @@ export default async function ReviewsPage({ params, searchParams }: PageProps) {
   }
 
   return (
-    <ClientdataTable
+    <ClientDataTable
       locale={locale}
       brokerType={brokerType}
       brokers={payload.data ?? []}
-      columnsConfig={payload.table_columns_config ?? []}
+      tableColumnsConfig={payload.table_columns_config ?? null}
       defaultColumns={payload.table_default_columns ?? []}
       filtersConfig={payload.filters_config ?? null}
     />

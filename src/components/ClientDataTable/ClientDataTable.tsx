@@ -9,13 +9,17 @@ import LocalizedLink from "@/components/LocalizedLink";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 import ReviewsDataTable from "./ReviewsDataTable";
-import type { BrokerTableColumn, BrokerTableDefaultColumn, BrokerTableRow } from "./reviews-table";
+import type {
+  BrokerTableColumnsConfig,
+  BrokerTableDefaultColumn,
+  BrokerTableRow,
+} from "./reviews-table";
 
-export type ClientdataTableProps = {
+export type ClientDataTableProps = {
   locale: string;
   brokerType: string;
   brokers: BrokerTableRow[];
-  columnsConfig: BrokerTableColumn[];
+  tableColumnsConfig: BrokerTableColumnsConfig | null;
   defaultColumns: BrokerTableDefaultColumn[];
   filtersConfig: FilterConfig | null;
 };
@@ -26,26 +30,43 @@ const CATEGORY_TABS = [
   { brokerType: "prop_firm", label: "Prop Firms", title: "Prop Firm Ratings & Reviews" },
 ] as const;
 
-export default function ClientdataTable(props: ClientdataTableProps) {
+const TABLE_LABELS = {
+  en: {
+    chooseColumns: "Choose columns",
+  },
+  fr: {
+    chooseColumns: "Choisir les colonnes",
+  },
+} as const;
+
+export default function ClientDataTable(props: ClientDataTableProps) {
   return (
     <Suspense fallback={<div className="min-h-[60vh] bg-white dark:bg-[#0c110f]" />}>
-      <ClientdataTableContent key={props.brokerType} {...props} />
+      <ClientDataTableContent key={props.brokerType} {...props} />
     </Suspense>
   );
 }
 
-function ClientdataTableContent({
+function ClientDataTableContent({
   locale,
   brokerType,
   brokers,
-  columnsConfig,
+  tableColumnsConfig,
   defaultColumns,
   filtersConfig,
-}: ClientdataTableProps) {
+}: ClientDataTableProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeTab =
     CATEGORY_TABS.find((tab) => tab.brokerType === brokerType) ?? CATEGORY_TABS[0];
+  const tableLabels = TABLE_LABELS[locale as keyof typeof TABLE_LABELS] ?? TABLE_LABELS.en;
+  const resolvedTableColumnsConfig = tableColumnsConfig ?? {
+    columns: [],
+    btn_labels: {
+      columns: "Columns",
+      reset_columns: "Reset Columns",
+    },
+  };
 
   function getTabHref(nextBrokerType: string) {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -156,10 +177,11 @@ function ClientdataTableContent({
 
         <ReviewsDataTable
           brokers={brokers}
-          columnsConfig={columnsConfig}
+          tableColumnsConfig={resolvedTableColumnsConfig}
           defaultColumns={defaultColumns}
           filtersConfig={filtersConfig}
           activeTabLabel={activeTab.label}
+          labels={{ chooseColumns: tableLabels.chooseColumns }}
         />
       </div>
     </main>
