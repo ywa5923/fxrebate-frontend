@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import { fetchTranslations } from "@/lib/fetchTranslations";
 import { getSiteBrokerType } from "@/lib/getSiteBrokerType";
+import { prepareTranslations } from "@/lib/translations";
 import PageTranslationProvider from "@/providers/PageTranslationProvider";
 import ComparePageContent from "./ComparePageContent";
 import CompareTableData from "./CompareTableData";
@@ -22,8 +23,15 @@ export default async function ComparePage({ params, searchParams }: PageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const brokerType = getSiteBrokerType(resolvedSearchParams.broker_type);
   const zone = await getZoneFromCookie();
-  const clientTranslations = await fetchTranslations({
+  const translationSections = await fetchTranslations({
     key: TRANSLATION_KEY,
+    locale,
+    zone,
+    sections: ["client"],
+  });
+  const clientTranslations = prepareTranslations(translationSections.client, {
+    resource: TRANSLATION_KEY,
+    section: "client",
     locale,
     zone,
   });

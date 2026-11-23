@@ -49,17 +49,22 @@ export function BrokerIdentity({ broker }: { broker: HighestRebateBroker }) {
   );
 }
 
-export function PaymentMethods({ text }: { text: string }) {
+export function PaymentMethods({ methods }: { methods: string[] | null }) {
   const { t } = useTranslation();
+  const displayedMethods = methods?.filter((method) => method.trim()) ?? [];
   return (
     <div className="flex flex-col gap-1">
       <p className="text-sm font-bold capitalize text-[#0c110f] dark:text-white">
         {t("payment_methods")}
       </p>
-      <div className="flex items-center gap-1 text-sm text-[#0c110f]/80 dark:text-white/80">
-        <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-        <span className="capitalize">{text}</span>
-      </div>
+      <ul className="flex flex-col gap-1 text-sm text-[#0c110f]/80 dark:text-white/80">
+        {(displayedMethods.length > 0 ? displayedMethods : ["—"]).map((method, index) => (
+          <li key={`${method}-${index}`} className="flex items-center gap-1">
+            <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span className="capitalize">{method}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -114,7 +119,7 @@ function CardViewLayout({
   return (
     <article className="flex h-full flex-col gap-8 rounded-lg bg-[#f6f6f6] p-6 dark:bg-[#171f1c]">
       <BrokerIdentity broker={broker} />
-      <PaymentMethods text={broker.payment_options ?? "—"} />
+      <PaymentMethods methods={broker.payment_options} />
       <RatesGrid rebates={broker.rebates} columns="card" />
       <div className="mt-auto flex items-center gap-2">
         <LocalizedLink
@@ -150,7 +155,7 @@ function ListViewLayout({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <BrokerIdentity broker={broker} />
         <div className="lg:min-w-[247px]">
-          <PaymentMethods text={broker.payment_options ?? "—"} />
+          <PaymentMethods methods={broker.payment_options} />
         </div>
         <div className="flex items-center gap-3 lg:justify-end">
           <LocalizedLink

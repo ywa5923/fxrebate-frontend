@@ -32,10 +32,7 @@ export const setupFormDataSchema = z.object({
     account_type_id: z.number().int().positive(),
     account_type_name: z.string().min(1),
     platform_urls: z.array(selectOptionSchema.extend({ id: z.number().int() })),
-    jurisdictions: z.array(selectOptionSchema.extend({
-      company_ids: z.array(z.number().int()),
-      option_value_ids: z.array(z.number().int()),
-    })),
+    jurisdictions: z.array(selectOptionSchema),
   })),
   ib_links: z.array(registrationLinkSchema),
   sub_ib_links: z.array(registrationLinkSchema),

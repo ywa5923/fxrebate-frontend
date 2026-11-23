@@ -1,7 +1,7 @@
 import { ourPartners, ourPaymentMethods, testimonials } from "@/lib/content";
 import { fetchTranslations } from "@/lib/fetchTranslations";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
-import { createTranslator } from "@/lib/translations";
+import { createTranslator, prepareTranslations } from "@/lib/translations";
 
 import Hero from "@/components/Hero";
 import InfiniteImageScroll from "@/components/InfiniteImageScroll";
@@ -27,7 +27,18 @@ export default async function Home({ params }: Props) {
   const { title: paymentTitle, methods } = ourPaymentMethods;
   const { title: partnersTitle, items: partnersItems } = ourPartners;
 
-  const pageTranslations = await fetchTranslations({ key: HOME_PAGE_TRANSLATION_KEY, locale, zone });
+  const translationSections = await fetchTranslations({
+    key: HOME_PAGE_TRANSLATION_KEY,
+    locale,
+    zone,
+    sections: ["client"],
+  });
+  const pageTranslations = prepareTranslations(translationSections.client, {
+    resource: HOME_PAGE_TRANSLATION_KEY,
+    section: "client",
+    locale,
+    zone,
+  });
   const t = createTranslator(pageTranslations);
 
   return (

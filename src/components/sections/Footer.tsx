@@ -1,64 +1,137 @@
-"use client"
+"use client";
 
-import Link from 'next/link'
+import { Logo } from "@/components/ui/Logo";
+import LocalizedLink from "@/components/LocalizedLink";
+import { socialItems } from "@/lib/content";
+import { useTranslation } from "@/providers/translations";
 
-import { Logo } from '@/components/ui/Logo'
-import { footerContent, socialItems } from '@/lib/content'
+const FOOTER_COLUMNS = [
+  {
+    title: "column_rebates_reviews",
+    links: [
+      "forex_broker_rebates",
+      "crypto_exchange_rebates",
+      "prop_firm_rebates",
+      "forex_broker_ratings_reviews",
+      "crypto_exchange_ratings_reviews",
+      "prop_firm_ratings_reviews",
+    ],
+  },
+  {
+    title: "column_promotions_trading_tools",
+    links: [
+      "latest_offers",
+      "forex_broker_promotions",
+      "crypto_exchange_promotions",
+      "prop_firm_discounts_promotions",
+      "trading_tools",
+      "live_charts",
+    ],
+  },
+  {
+    title: "column_education_community",
+    links: [
+      "trading_academy",
+      "forex_broker_guides",
+      "crypto_exchange_guides",
+      "prop_firm_guides",
+      "latest_posts",
+      "join_telegram_community",
+    ],
+  },
+  {
+    title: "column_fxrebate",
+    links: [
+      "affiliate_program",
+      "about_us",
+      "contact_us",
+      "faqs",
+      "live_chat",
+      "careers",
+    ],
+  },
+] as const;
+
+const LEGAL_LINKS = [
+  "terms_of_service",
+  "privacy_policy",
+  "cookie_policy",
+  "affiliate_terms_of_service",
+  "risk_disclosure",
+] as const;
 
 const Footer = () => {
-  const { disclaimer, navItems } = footerContent
+  const { t } = useTranslation("footer");
 
   return (
-    <footer className="mt-[150px] pb-[120px]">
-      <div className='border-t border-b border-black/15 dark:border-white/15 pt-12 lg:pt-[86px] pb-12'>
-        <div className="custom-container lg:px-10">
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-20">
-            {/* Logo and Social Icons */}
-            <div>
-              <Logo />
-              <div className="flex items-center gap-[14px] mt-3.75 ml-1.5">
-                {socialItems.map((item) => (
-                  <Link key={item.id} href="#" className='w-[24px] h-[24px] flex items-center justify-center'>
-                    {item.icon}
-                  </Link>
-                ))}
-              </div>
+    <footer className="mt-[150px] border-t border-black/15 pb-10 pt-12 dark:border-white/15 lg:pt-[86px]">
+      <div className="custom-container lg:px-10">
+        <div className="flex flex-col items-start justify-between gap-12 xl:flex-row xl:gap-16">
+          <div className="shrink-0">
+            <Logo />
+            <div className="ml-1.5 mt-3.5 flex items-center gap-[14px]">
+              {socialItems.map((item) => (
+                <LocalizedLink
+                  key={item.id}
+                  routeKey="#"
+                  aria-label={item.name}
+                  className="flex size-6 items-center justify-center"
+                >
+                  {item.icon}
+                </LocalizedLink>
+              ))}
             </div>
+          </div>
 
-            {/* Nav Items */}
-            <ul className='flex flex-wrap items-start gap-x-22 gap-y-12 md:gap-26 xl:gap-[150px]'>
-              {navItems.map((item) => (
-                <li key={item.title}>
-                  <span className="text-black dark:text-white text-lg font-medium">{item.title}</span>
+          <nav aria-label={t("navigation_aria_label")} className="grid w-full grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:max-w-[1030px]">
+            {FOOTER_COLUMNS.map((column) => (
+              <section key={column.title}>
+                <h2 className="text-lg font-medium text-black dark:text-white">{t(column.title)}</h2>
+                <ul className="mt-5 flex flex-col gap-3">
+                  {column.links.map((key) => (
+                    <li key={key}>
+                      <LocalizedLink
+                        routeKey="#"
+                        className="text-base font-normal text-black/70 transition-colors hover:text-black dark:text-white/70 dark:hover:text-white"
+                      >
+                        {t(key)}
+                      </LocalizedLink>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </nav>
+        </div>
 
-                  <ul className='flex flex-col gap-3 mt-6'>
-                    {item.items.map((elm) => (
-                      <li key={elm.name}>
-                        <Link href={elm.href} className='text-black dark:text-white/70 hover:text-black dark:hover:text-white transition-colors duration-200 text-lg font-normal'>
-                          {elm.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+        <div className="mt-12 border-t border-black/15 pt-6 dark:border-white/15">
+          <nav aria-label={t("legal_navigation_aria_label")}>
+            <ul className="flex flex-wrap gap-x-5 gap-y-3">
+              {LEGAL_LINKS.map((key) => (
+                <li key={key}>
+                  <LocalizedLink
+                    routeKey="#"
+                    className="text-sm text-black/70 underline-offset-4 hover:underline dark:text-white/70 dark:hover:text-white"
+                  >
+                    {t(key)}
+                  </LocalizedLink>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Disclaimer */}
-          <div className='bg-white-200 dark:bg-dark-green-100 border border-white-400 dark:border-dark-brown-100 rounded-lg py-[26px] px-[12.5px] md:px-10 mt-12'>
-            <p className='text-black dark:text-white text-sm font-medium'>
-              <span className='font-bold'>Disclaimer: </span> {disclaimer}
-            </p>
-          </div>
-
+          <p className="mt-6 whitespace-pre-line text-sm leading-relaxed text-black/70 dark:text-white/70">
+            <span className="font-semibold text-black dark:text-white">{t("disclaimer_label")}</span>{" "}
+            {t("disclaimer")}
+          </p>
         </div>
+
+        <p className="mt-8 text-center text-sm font-normal text-black/70 dark:text-white/70">
+          {t("copyright")}
+        </p>
       </div>
-
-      {/* Copyright */}
-      <p className='text-black dark:text-white text-base font-normal text-center mt-8'>@ All copy rights are reserved</p>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

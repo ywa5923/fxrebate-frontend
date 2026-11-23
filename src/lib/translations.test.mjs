@@ -131,23 +131,23 @@ function fetcher(response, requests = []) {
   }).fetchTranslations;
 }
 
-test("fetches translations without caching by default and preserves resource context", async () => {
+test("fetches the requested translation section and preserves resource context", async () => {
   const requests = [];
   const fetchTranslations = fetcher({ success: true, data: { client: { title: "Rebates", invalid: null } } }, requests);
-  const dictionary = await fetchTranslations({ key: "forex_rebates_page", locale: "ro", zone: "eu" });
+  const dictionary = await fetchTranslations({ key: "forex_rebates_page", locale: "ro", zone: "eu", sections: ["client"] });
   const query = new URL(requests[0][0], "http://localhost").searchParams;
   assert.equal(query.get("lang[eq]"), "ro");
   assert.equal(query.get("key[eq]"), "forex_rebates_page");
   assert.equal(query.get("zone[eq]"), "eu");
-  assert.equal(requests[0][2].cache, "no-store");
-  assert.equal(t(dictionary, "title"), "Rebates");
-  assert.equal(t(dictionary, "missing"), "missing");
+  assert.equal(query.get("section[eq]"), "client");
+  assert.equal(t(dictionary.client, "title"), "Rebates");
+  assert.equal(t(dictionary.client, "missing"), "missing");
   assert.equal(logs[0].meta.page, "/ro/brokeri-forex/rebaturi-forex");
   assert.equal(logs[0].meta.resource, "forex_rebates_page");
 });
 
 test("throws and reports page context for backend failures and empty responses", async () => {
-  const options = { key: "forex_rebates_page", locale: "ro" };
+  const options = { key: "forex_rebates_page", locale: "ro", sections: ["client"] };
   await assert.rejects(fetcher({ success: false, status: 503, message: "Unavailable" })(options), /Unavailable/);
   await assert.rejects(fetcher({ success: true, data: { client: {} } })(options), /No valid translations/);
   await assert.rejects(fetcher({ success: true, data: {} })(options), /No valid translations/);

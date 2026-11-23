@@ -1,6 +1,7 @@
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import { getSiteBrokerType } from "@/lib/getSiteBrokerType";
 import { fetchTranslations } from "@/lib/fetchTranslations";
+import { prepareTranslations } from "@/lib/translations";
 import PageTranslationProvider from "@/providers/PageTranslationProvider";
 import { Suspense } from "react";
 import RebatePageContent from "./RebatePageContent";
@@ -29,8 +30,15 @@ export default async function ForexRebatesPage({ params, searchParams }: Props) 
 
   const brokerType = getSiteBrokerType(resolvedSearchParams.broker_type);
 
-  const clientTranslations = await fetchTranslations({
+  const translationSections = await fetchTranslations({
     key: TRANSLATION_KEY,
+    locale,
+    zone,
+    sections: ["client"],
+  });
+  const clientTranslations = prepareTranslations(translationSections.client, {
+    resource: TRANSLATION_KEY,
+    section: "client",
     locale,
     zone,
   });

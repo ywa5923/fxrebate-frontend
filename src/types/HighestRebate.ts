@@ -12,6 +12,6 @@ export type HighestRebateBroker = {
   broker_id: number;
   trading_name: string;
   logo: string | null;
-  payment_options: string | null;
+  payment_options: string[] | null;
   rebates: HighestRebateEntry[];
 };

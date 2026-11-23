@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { fetchTranslations } from "@/lib/fetchTranslations";
+import { prepareTranslations } from "@/lib/translations";
 import { getZoneFromCookie } from "@/lib/getZoneFromCookie";
 import { getSiteBrokerType } from "@/lib/getSiteBrokerType";
 import PageTranslationProvider from "@/providers/PageTranslationProvider";
@@ -33,14 +34,21 @@ export default async function BrokerRebateDetailPage({
   const zone = await getZoneFromCookie();
   const brokerType = getSiteBrokerType(resolvedSearchParams.broker_type);
 
-  const [formData, clientTranslations] = await Promise.all([
+  const [formData, translationSections] = await Promise.all([
     fetchSetupFormData(brokerId, locale),
     fetchTranslations({
       key: SET_REBATES_ACCOUNT_TRANSLATION_KEY,
       locale,
       zone,
+      sections: ["client"],
     }),
   ]);
+  const clientTranslations = prepareTranslations(translationSections.client, {
+    resource: SET_REBATES_ACCOUNT_TRANSLATION_KEY,
+    section: "client",
+    locale,
+    zone,
+  });
 
   return (
     <PageTranslationProvider
