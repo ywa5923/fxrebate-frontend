@@ -26,7 +26,7 @@ export default async function BrokerProfilePage({
 }: {
   params: Promise<{ optionCategory: string[]; brokerId: string }>;
 }) {
-  let log = logger.child(
+  const log = logger.child(
     "Dashboard/[brokerId]/Broker profile/[...optionCategory]/page.tsx",
   );
 
@@ -48,12 +48,12 @@ export default async function BrokerProfilePage({
   // let is_admin = isAdminOfBroker(user, brokerInfo);
 
   // const is_admin = false;
-  let brokerInfo = await getBrokerInfo(brokerId);
-  let broker_type = brokerInfo.broker_type;
+  const brokerInfo = await getBrokerInfo(brokerId);
+  const broker_type = brokerInfo.broker_type;
 
-  let is_admin = isAdminOfBroker(user, brokerInfo);
-  let can_edit = canEditBroker(user, brokerInfo);
-  let can_manage = canManageBroker(user, brokerInfo);
+  const is_admin = isAdminOfBroker(user, brokerInfo);
+  const can_edit = canEditBroker(user, brokerInfo);
+ const can_manage = canManageBroker(user, brokerInfo);
   log.debug("User authenticated successfully", {
     user: user,
     is_admin: is_admin,
@@ -62,8 +62,8 @@ export default async function BrokerProfilePage({
   });
   //========================End of security checks==============================================
 
-  let language_code = "en";
-  let zone_code = "eu";
+ // const language_code = "en";
+//  const zone_code = "eu";
   //brokertype: broker, props, crypto
 
   // Add a small delay to ensure cookies are available after redirect
